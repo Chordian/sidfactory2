@@ -1,0 +1,94 @@
+Driver 11.00 - The Standard
+===========================
+
+Versions
+--------
+
+  o  11.00: The original default driver
+  o  11.01: Also includes the fret slide command
+  o  11.02: Also includes the pulse table index, tempo table index and main volume commands
+
+  o  11.50: Also includes additional filter enable flag (this driver has not been released)
+
+
+Instruments
+-----------
+
+  Byte 0 - AD
+  Byte 1 - SR
+  Byte 2 - Flags (see below)
+  Byte 3 - Filter table index
+  Byte 4 - Pulse table index
+  Byte 5 - Wave table index
+
+Flags:
+
+      80 - Enable hard restart
+      40 - Start filter program (filter table index in byte 3 is then used)
+      20 - [11.50] Enable filter on channel (combined with bitmask set in filter program)
+      10 - Oscillator reset (waveform 09 is used in the first frame of a note)
+      0X - Hard restart table index
+
+
+Commands
+--------
+
+00 XX YY - Slide up/down        XXYY = 16-bit speed
+01 XX YY - Vibrato              XX   = frequency            YY  = amplitude             (use smaller amplitude values for stronger vibrato)
+02 XX YY - Portamento           XXYY = 16-bit speed                                     (use 02 80 00 to disable a portamento running wild)
+03 XX YY - Arpeggio             XX   = arpeggio speed       YY  = arpeggio table index  (use this for chords)
+04 XX YY - [11.01] Fret slide   XX   = 00-7f speed up       YY  = semitones to slide    (only available in driver 11.01+)
+                                       80-ff speed down
+08 XX YY - Set local ADSR                                                               (lasts until next note is triggered)
+09 XX YY - Set instrument ADSR                                                          (lasts until a different instrument is used)
+0a -- XX - Filter program       XX   = table index
+0b -- XX - Wave program         XX   = table index
+0c -- XX - [11.02] Pulse prg    XX   = table index                                      (only available in driver 11.02)
+0d -- XX - [11.02] Tempo prg    XX   = table index                                      (only available in driver 11.02)
+0e -- -X - [11.02] Main volume  X    = 0-f main volume                                  (only available in driver 11.02)
+0f -- XX - Increase demo value  XX   = amount                                           (use this for timing demo parts)
+
+
+Wave
+----
+
+   XX YY - Waveform/semitones   XX   = waveform             YY  = 00-7f = semitones added to note in sequence
+                                                                  80-df = absolute semitone value (use for e.g. drums)
+   7f XX - Jump to index        XX   = table index
+
+
+Pulse
+-----
+
+8X XX YY - Set pulse width      XXX  = pulse width          YY  = number of frames      (when YY is done it goes to the next row)
+0X XX YY - Add to pulse         XXX  = add to pulse width   YY  = number of frames      (when YY is done it goes to the next row)
+7f -- XX - Jump to index        XX   = table index                                      (jumping to own index will end the program)
+
+
+Filter
+------
+
+XY YY RB - Set filter if X > 8  X    = passband (9-F)       YYY = 12-bit cutoff         R = resonance           B = channel select bitmask
+0X XX YY - Add to cutoff        XXX  = add to cutoff        YY  = number of frames      (when YY is done it goes to the next row)
+7f -- XX - Jump to index        XX   = table index                                      (jumping to own index will end the program)
+
+
+Arpeggio
+--------
+
+      XX - Arp if XX < 70       XX   = semitones to add
+      7X - Jump to index        X    = relative index
+
+Example:
+
+00: 0c
+01: 07 *1
+02: 04 *2
+03: 00
+04: 71 (jump to *1 if called with command 03 00 00; jump to *2 if called with command 03 00 01)
+
+
+Known bugs
+----------
+
+None

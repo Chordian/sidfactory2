@@ -1,0 +1,23 @@
+SIDFactory II installation
+--------------------------
+
+SIDFactory II consists of:
+
+- A macOS application, "SIDFactoryII.app". Drag and drop this into the
+  "Applications" folder.
+
+- The folder "SIDFactoryII" with some (optional) extra's:
+  - Documentation
+  - Example music
+  - Alternative drivers
+  - The "SF2Converter" command line tool for converting MOD and Goattracker
+    tunes to the SF2 format.
+
+Put the folder "SIDFactoryII" somewhere convenient, for example your "Music" or
+"Documents" folder.
+
+N.B. When you run SIDFactoryII for the first time, macOS might refuse to open it
+because it is from an unidentified developer. In that case do the following:
+
+- Right click the "SIDFactoryII.app" in your applications folder and select 'Open'.
+- Select 'Open' if macOS asks you if you are sure.

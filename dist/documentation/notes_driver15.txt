@@ -1,0 +1,42 @@
+Driver 15.00 - Tiny, mark I
+===========================
+
+Versions
+--------
+
+  o  15.00: This driver is supposed to be small and is really a variation of driver 12.00
+            where all of the variables used by the driver have been moved to the zero page
+            addressing space. A linear pulse sweep has been added and the code has been
+            optimized to take up as little memory as possible. Hard restart is always on
+
+
+Instruments
+-----------
+
+  Byte 0 - AD
+  Byte 1 - SR
+  Byte 2 - Pulse width XY       X    = middle 4 bits of pw  Y   = top 4 bits of pw (i.e. 12-bit pulse width)
+  Byte 3 - Linear pulse sweep   X    = add to mid 4 bits    Y   = add to top 4 bits
+  Byte 4 - Wave table index
+
+
+Commands
+--------
+
+   0X XX - Slide up             XXX  = 12-bit speed
+   1X XX - Slide down           XXX  = 12-bit speed
+   2X -Y - Vibrato              X    = frequency            Y   = amplitude
+
+
+Wave
+----
+
+   XX YY - Waveform/semitones   XX   = waveform             YY  = 00-7f = semitones added to note in sequence
+                                                                  80-df = absolute semitone value (use for e.g. drums)
+   7f XX - Jump to index        XX   = table index
+
+
+Known bugs
+----------
+
+None

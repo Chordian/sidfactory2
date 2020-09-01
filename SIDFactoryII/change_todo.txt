@@ -1,0 +1,35 @@
+Editor:
+
+* Markers table: Single click, behaves as Ctrl + G, double click behaves as Ctrl + G and play from event position (same as the orderlist overview)
+* Migrate from Import Song Data to Import Driver, this seems more natural
+* Duplicate current track [ctrl + d], by copying current sequence, removing sequence entry from orderlist, insert first free sequence in orderlist and paste
+* Marking for copy/paste functionality
+* Marking for play in loop (not sure this can be done!)
+* Remember user folder when exit and restart SF2
+* Add ".." to file menues for easier folder navigation
+* Ability to add strings to orderlist overview and instruments
+* Load and save instruments
+* Follow play functionality
+* Markers component. Single click [or ENTER], select and move to. Double click [or Ctrl + ENTER] select and play from.
+* CTRL + F on index pointers in tables will automatically find next free index in the table pointed to and insert that value before transfering focus the that table.
+* Clicking somewhere in the track should move the cursor to that position
+* CTRL + Enter in sequence should add 0x10 more rows
+DONE * ½ button should fast forward the music when playing
+* Button to fill-toggle entire range between a note with gate on (+++)
+* Writing the instrument value in a sequence should automatically select the instrument index in the instruments table
+* Writing the command value in a sequence should automatically select the command index in the commands table
+* Predictive sequence size option (for when adding an unused sequence). Automatically set the size to the size of the previous sequence in the orderlist - or something!
+* Check box in quick save dialog box to disable showing the dialog box in the future (until loading a new work file)
+* While in the track edit, editing the sequence. CTRL + UP/DOWN, move to the top of this or previous sequence, or top of next if down was pressed!
+
+Utilities:
+
+* Import
+	* Import auxilary data
+* Packing
+	* Run optimization analyzer on packing, and show dialogue if any optimizations are possible.
+
+Bugs:
+
+* Muted voices aren't cleared before saving
+

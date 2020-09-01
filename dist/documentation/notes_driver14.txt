@@ -1,0 +1,61 @@
+Driver 14.00 - The Experiment
+=============================
+
+Versions
+--------
+
+  o  14.00: This driver has an experimental approach to writing to the SID. It allows for
+            very short durations of gate off but also has a greater chance of instability
+
+
+Instruments
+-----------
+
+  Byte 0 - AD
+  Byte 1 - SR
+  Byte 2 - Flags (see below)
+  Byte 3 - Filter table index
+  Byte 4 - Pulse table index
+  Byte 5 - Wave table index
+
+Flags:
+
+      80 - Enable "immediate response" type hard restart
+      40 - Start filter program (filter table index in byte 3 is then used)
+
+
+Commands
+--------
+
+00 XX YY - Slide up/down        XXYY = 16-bit speed
+01 XX YY - Vibrato              XX   = frequency            YY  = amplitude             (use smaller amplitude values for stronger vibrato)
+
+
+Wave
+----
+
+   XX YY - Waveform/semitones   XX   = waveform             YY  = 00-7f = semitones added to note in sequence
+                                                                  80-df = absolute semitone value (use for e.g. drums)
+   7f XX - Jump to index        XX   = table index
+
+
+Pulse
+-----
+
+8X XX YY - Set pulse width      XXX  = pulse width          YY  = number of frames      (when YY is done it goes to the next row)
+0X XX YY - Add to pulse         XXX  = add to pulse width   YY  = number of frames      (when YY is done it goes to the next row)
+7f -- XX - Jump to index        XX   = table index                                      (jumping to own index will end the program)
+
+
+Filter
+------
+
+XY YY RB - Set filter if X > 8  X    = passband (9-F)       YYY = 12-bit cutoff         R = resonance           B = channel select bitmask
+0X XX YY - Add to cutoff        XXX  = add to cutoff        YY  = number of frames      (when YY is done it goes to the next row)
+7f -- XX - Jump to index        XX   = table index                                      (jumping to own index will end the program)
+
+
+Known bugs
+----------
+
+None

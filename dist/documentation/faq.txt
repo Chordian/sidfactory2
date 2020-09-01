@@ -1,0 +1,46 @@
+FREQUENTLY ASKED QUESTIONS
+==========================
+
+Q: Can I ask you something specific about SID Factory II?
+
+A: Sure. If you are you on Facebook, send us an invite to the Facebook group for SID
+   Factory II. It's our number one place for discussing all things SF2.
+
+     o  https://www.facebook.com/groups/255114778886664/
+
+   Not on Facebook? You can check out the "SID Factory II" page at the Chordian.net
+   blog which has the latest downloads and is also open to comments.
+
+     o  http://olivi.chordian.net/sf2/
+
+----
+
+Q: Why can't I start SID Factory II? It just displays an error message.
+
+A: If you're using an anti-virus program, check to see it's not blocking it. You may
+   have to whitelist both the .exe and the .dll files for it to work.
+
+   Especially Avast, F-Secure and Norton AntiVirus have been known to do this.
+
+----
+
+Q: SID Factory II crashes when I try to start it. Why is that?
+
+A: One thing you can try on your own is to replace the SDL2.dll with a "stable"
+   version from the http://libsdl.org web site.
+
+   Either way, we would appreciate it a lot if you please tell us about it. See the
+   first entry above for information about how to contact us.
+
+----
+
+Q: Why is [feature X] not in SID Factory II yet?
+
+A: SID Factory II is still in BETA and a lot of essential features may be missing.
+
+   The following features should definitely be added some time in the future:
+
+     o  Subtunes (for game support) including being able to stop a tune (jingle)
+     o  Multispeed
+     o  Load/Save instruments
+     o  Descriptions in the song list

@@ -1,0 +1,40 @@
+Driver 13.00 - The Hubbard Experience
+=====================================
+
+Versions
+--------
+
+  o  13.00: A driver that emulates the sound of Rob Hubbard's driver
+
+
+Instruments
+-----------
+
+  Byte 0 - AD
+  Byte 1 - SR
+  Byte 2 - Waveform
+  Byte 3 - Pulse width XY       X    = pulsating speed      Y   = high nibble start pulse width (Y00)
+  Byte 4 - Pulse sweep range
+  Byte 5 - Flags (see below)
+  Byte 6 - Arp properties XY    X    = regularity           Y   = speed
+
+Flags:
+
+      8X - Alternate arpeggio   X    = semitones added      (remember to also set byte 6 in the instrument)
+      40 - Dive effect
+      20 - Ignore order list transposition
+      10 = Add noise in the beginning of note
+
+
+Commands
+--------
+
+   0X XX - Slide up             XXX  = 12-bit speed
+   1X XX - Slide down           XXX  = 12-bit speed
+   2X -Y - Vibrato              X    = frequency            Y   = amplitude
+
+
+Known bugs
+----------
+
+None

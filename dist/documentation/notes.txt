@@ -1,0 +1,176 @@
+SID FACTORY II
+==============
+
+Welcome to SID Factory II, a modern cross-platform C64 music editor.
+
+  o  If you are new to SID Factory II, we recommend you read the PDF user manual first.
+  o  For answer to common questions (including how to contact us) see the faq.txt file.
+  o  See the individual note files for the drivers for information about their data tables.
+
+We hope you'll have a lot of fun composing. Enjoy! =)
+
+  - The SF2 Team
+
+
+Context         Windows keys                macOS keys                  Purpose
+--------------------------------------------------------------------------------------------------------------------------------------
+GENERAL         Tab                         Tab                         Next input focus
+                Shift + Tab                 Shift + Tab                 Previous input focus
+
+                Ctrl + z                    Ctrl + z                    Undo
+                Ctrl + x/y                  Ctrl + y                    Redo
+
+                F3/F4                       F3/F4                       Octave down or up
+                F6                          F6                          Open utility menu
+
+                Shift + F7                  Shift + F7                  Reload the settings in all .ini files
+                Ctrl + F7                   Ctrl + F7                   Select the next color scheme
+
+                F12                         F12                         Toggle showing the expanding help overlay
+
+                Ctrl + u                    Ctrl + u                    Toggle upper or lower case hexadecimal numbers
+                Ctrl + d                    Ctrl + d                    Toggle big "flight recorder" debug overlay
+                Shift + Alt + d                                         Toggle small debug overlay in top right corner
+
+                y/n                         y/n                         Choose "yes" or "no" in dialog boxes
+--------------------------------------------------------------------------------------------------------------------------------------
+FILES           F10                         F10                         Load SF2 song or driver
+                Ctrl + F10                  Ctrl + F10                  Load SF2 song on top of a different driver
+                F11                         F11                         Save SF2 song
+                Ctrl + s                    Ctrl + s                    Quick save (no file dialog)
+
+                Tab                         Tab                         Toggle between browser or filename
+                Backspace                   Backspace                   Go to parent folder
+
+                a...z                       a...z                       Jump to file starting with this letter
+
+                Enter                       Enter                       Open file or folder
+                Delete                                                  Delete the selected file
+                Escape                      Escape                      Exit file dialog
+--------------------------------------------------------------------------------------------------------------------------------------
+PLAYING         F1                          F1                          Play from start (or stop)
+                F2                          F2                          Play from current bookmark (or stop)
+                Shift + F2                  Shift + F2                  Play from the start of the current sequence (or stop)
+                Ctrl + F2                   Cmd + F2                    Play from cursor position (or stop)
+
+                Ctrl + p                    Ctrl + p                    Toggle follow-play
+
+                [Key below ESC]             Minus                       Fast forward
+                Shift + [Key below ESC]     Shift + Minus               Very fast forward
+
+                Escape                      Escape                      Stop playing
+--------------------------------------------------------------------------------------------------------------------------------------
+TRACKS          Enter                       Enter                       Toggle between editing the orderlist or the sequence itself
+
+                Tab                         Tab                         Next track (orderlist or sequence)
+                Shift + Tab                 Shift + Tab                 Previous track (orderlist or sequence)
+                Home/End                    Fn + Left/Right             Go to absolute beginning or end of song
+
+                Ctrl + 1/2/3                Ctrl + 1/2/3                Mute or unmute track 1-3
+                Ctrl + c/v                  Ctrl + c/v                  Copy or paste sequence
+
+                Ctrl + l                    Ctrl + l                    Set song loop position
+
+                Shift + F3/F4               Shift + F3/F4               Transpose sequence contents one semitone up/down
+                Ctrl + F3/F4                Shift + Cmd + F3/F4         Transpose sequence contents one octave up/down
+
+                Alt + Up/Down               Alt + Up/Down               Increase or decrease white intervals
+                Alt + Shift + Up/Down       Alt + Shift + Up/Down       Move white intervals up or down
+--------------------------------------------------------------------------------------------------------------------------------------
+ORDERLISTS      Arrows                      Arrows                      Move left/right in orderlist value or browse up/down
+                Page Up/Down                Fn + Up/Down                Browse several orderlist entries up/down
+
+                0-9/a-f                     0-9/a-f                     Type hexadecimal value in orderlist
+                Enter/Esc                   Enter/Esc                   Accept or cancel editing of orderlist value
+
+                Insert                      Shift + Backspace           Insert orderlist entry
+                Delete                                                  Delete this orderlist entry
+                Backspace                   Backspace                   Delete previous orderlist entry (i.e. moving up)
+
+                Ctrl + f                    Ctrl + f                    Insert first unused sequence (including previously edited)
+--------------------------------------------------------------------------------------------------------------------------------------
+SEQUENCES       Arrows                      Arrows                      Move around in the sequence
+                Page Up/Down                Fn + Up/Down                Move several sequence rows up/down
+
+                Ctrl + Left/Right           Cmd + Left/Right            Move to next or previous mini-column in the sequence
+
+                qwer.../zxcv...             qwer.../zxcv...             Type notes (Protracker layout)
+                Shift + qwer.../zxcv...     Shift + qwer.../zxcv...     Preview notes (Protracker layout)
+                Caps Lock                   Caps Lock                   Lock/unlock hearing the notes you're typing
+
+                Space                       Space                       Clear hexadecimal value or apply gate off (---)
+                Ctrl + Space                Ctrl + Space                Clear entire row in the sequence
+
+                Shift + Space               Shift + Space               Apply gate on (+++)
+                Ctrl + Shift + Up/Down      Ctrl + Shift + Up/Down      Fill gate on (+++) upwards/downwards (until note or boundary)
+
+                Shift + Enter               Shift + Enter               Toggle tie note (**)
+
+                Insert                      Shift + Backspace           Insert row in sequence (size is unaltered)
+                Ctrl + Insert               Ctrl + Shift + Backspace    Insert row in sequence (size is increased)
+                Delete                                                  Delete this row in sequence (size is unaltered)
+                Ctrl + Delete                                           Delete this row in sequence (size is decreased)
+                Backspace                   Backspace                   Delete previous row in sequence (moving up; size is unaltered)
+                Ctrl + Backspace            Ctrl + Backspace            Delete previous row in sequence (moving up; size is decreased)
+                Ctrl + Shift + Backspace    Ctrl + Shift + Backspace    Same as Ctrl + Insert in Windows
+
+                F3/F4                       F3/F4                       Octave down or up
+
+                F5                          F5                          Change size of sequence (rows are appended if enlargened)
+                Shift + F5                  Shift + F5                  Increase size of sequence (rows are added at cursor position)
+
+                Ctrl + b                    Ctrl + b                    Split sequence at cursor position
+
+                Ctrl + i                    Ctrl + i                    Toggle value for current instrument
+                Ctrl + o                    Ctrl + o                    Toggle value for current command
+--------------------------------------------------------------------------------------------------------------------------------------
+TABLES          Alt + c/i/w/p/f/h/a/t       Alt + c/i/w/p/f/h/a/t       Jump to or from data table with this highlighted letter
+
+                Arrows                      Arrows                      Move around in the table
+                Tab                         Tab                         Next table
+                Shift + Tab                 Shift + Tab                 Previous table
+                Page Up/Down                Fn + Up/Down                Move several table rows up/down
+                Home/End                    Fn + Left/Right             Go to beginning or end of first data then boundaries
+
+                Numpad +/-                  Cmd + Up/Down               Browse current instrument up/down
+                Ctrl + Numpad +/-           Shift + Cmd + Up/Down       Browse current command up/down
+
+                Enter                       Enter                       Edit description label (Enter to accept or Escape to cancel)
+                Shift + Enter               Shift + Enter               Open bit mask dialog box (use cursor keys and Space to toggle)
+                Ctrl + Enter                Ctrl + Enter                Jump to table index
+
+                Insert                      Shift + Backspace           Insert row in table
+                Delete                      Backspace                   Delete row in table
+
+                Space                       Space                       Repeat last note played with Shift + qwer.../zxcv...
+                Ctrl + Space                Ctrl + Space                Same as Space but with current command effect applied too
+--------------------------------------------------------------------------------------------------------------------------------------
+SETTINGS        F9                          F9                          Toggle 6581 or 8580 (SID chip model)
+                Shift + F9                  Shift + F9                  Toggle PAL or NTSC
+
+                Shift + F7                  Shift + F7                  Reload the settings in all .ini files
+                Ctrl + F7                   Ctrl + F7                   Select the next color scheme
+
+                Ctrl + p                    Ctrl + p                    Toggle follow-play
+--------------------------------------------------------------------------------------------------------------------------------------
+SONGLIST        Up/Down                     Up/Down                     Move up or down in the songlist
+                Page Up/Down                Fn + Up/Down                Move several rows up/down in the songlist
+                Home/End                    Fn + Left/Right             Go to beginning or end of visible songlist then boundaries
+                
+                Enter                       Enter                       Go to the selected songlist position
+                Ctrl + Enter                Ctrl + Enter                Play from the selected songlist position
+--------------------------------------------------------------------------------------------------------------------------------------
+BOOKMARKS       Ctrl + m                    Ctrl + m                    Set bookmark
+                Ctrl + g                    Ctrl + g                    Go to bookmark
+
+                F2                          F2                          Play from current bookmark (or stop)
+
+                Alt + 1-8                   Alt + 1-8                   Select bookmark
+
+                Up/Down                     Up/Down                     Move up or down in the bookmarks
+                Page Up/Down                Fn + Up/Down                Go to the beginning or end of bookmarks
+                Home/End                    Fn + Left/Right             Same as Page Up/Down in bookmarks
+
+                Enter                       Enter                       Go to the selected bookmark
+                Ctrl + Enter                Ctrl + Enter                Play from the selected bookmark
+--------------------------------------------------------------------------------------------------------------------------------------
