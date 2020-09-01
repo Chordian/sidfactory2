@@ -1,10 +1,13 @@
 .dockerignore
 .svn
 .vs
-builds
-./drivers
-libs
-release
+/builds
+/drivers
+/libs
+/debug
+/release
+/Debug
+/Release
 SIDFactoryII/Assets.xcassets
 SIDFactoryII/Base.lproj
 SIDFactoryII/data
@@ -20,6 +23,7 @@ SIDFactoryII/*.vcxproj.user
 *.dll
 *.exe
 *.xcodeproj
-Dockerfile
 *.o
+Dockerfile
 artifacts
+
