@@ -1,0 +1,1013 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="source\utils">
+      <UniqueIdentifier>{7b6b2aaa-dcdb-4145-abab-bac344af1edc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\resources">
+      <UniqueIdentifier>{79800443-906f-42d5-9c16-716cacd219d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime">
+      <UniqueIdentifier>{88fe8c8d-9a8e-46ec-acd4-d884cc0b2836}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\emulation">
+      <UniqueIdentifier>{456debd4-fb3a-4c6c-93c8-e93851d04a3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\execution">
+      <UniqueIdentifier>{f65a6927-a266-43ac-bd1b-31ad79b21558}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\emulation\sid">
+      <UniqueIdentifier>{679ee60a-8d7f-4d36-85ef-57121eacecef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\libraries">
+      <UniqueIdentifier>{919460a2-1ae6-45d5-8025-4104d0c3b210}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor">
+      <UniqueIdentifier>{71f9e46c-5828-430c-91a5-78521a98bfd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\components">
+      <UniqueIdentifier>{f2fd682c-948e-4596-b1e8-9faf323c7e74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\datasources">
+      <UniqueIdentifier>{0c70d927-08ff-4630-929d-314ab8fe9817}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\driver">
+      <UniqueIdentifier>{f4f91a24-9d27-4197-b6b8-a132576e2d7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\debug">
+      <UniqueIdentifier>{ea069cd7-2eaa-49f3-b0d8-53ecc22868a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\screens">
+      <UniqueIdentifier>{24aaf4be-f518-4746-98e8-a7e02203709c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\dialogs">
+      <UniqueIdentifier>{d3b1e7c7-75e1-4022-81ab-f9079f18bfec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\screens\statusbar">
+      <UniqueIdentifier>{ed7a3221-eca8-47dd-9a43-162e6c3d3550}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\datacopy">
+      <UniqueIdentifier>{f4534ec9-8267-47c6-bf52-e715d2e215b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\foundation">
+      <UniqueIdentifier>{f473ddb6-824e-4e42-9e61-5b539f954fb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\foundation\graphics">
+      <UniqueIdentifier>{4faebba9-7821-415b-a8e0-4cca8da0dc4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\foundation\input">
+      <UniqueIdentifier>{bac39e3c-ab6c-4197-9692-36aa6b015336}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\foundation\platform">
+      <UniqueIdentifier>{9a9dea78-3c45-461a-b3f1-c98ddcb09e7d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\foundation\platform\sdl">
+      <UniqueIdentifier>{40d20538-deca-443c-a99a-eced75916ddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\foundation\sound">
+      <UniqueIdentifier>{632c747c-42ae-430c-98fc-7ea451cdc990}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\packer">
+      <UniqueIdentifier>{f077e0f1-0590-401d-8d02-cd9bd793a448}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\auxilarydata">
+      <UniqueIdentifier>{eabb4ce0-659d-4350-b9b4-f8b04aca5e0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\visualizer_components">
+      <UniqueIdentifier>{1e0476af-bbaf-4ac2-a58b-af4a40c912a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\overlays">
+      <UniqueIdentifier>{7876dd66-9d36-43e1-b7c0-f0925664656a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\optimize">
+      <UniqueIdentifier>{792f7330-ee1a-4653-9b97-e227e9ec7d3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\undo">
+      <UniqueIdentifier>{7a448a81-b5a8-4191-bfe3-4cb3278b8b18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\instrument">
+      <UniqueIdentifier>{10ea3482-b1da-41bb-9053-07d3b7142ace}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\utilities">
+      <UniqueIdentifier>{95df0dad-9c85-4575-9524-968f333e39ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\libraries\picopng">
+      <UniqueIdentifier>{9a1c821b-8db2-4011-aec7-48c0b3ba421b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\libraries\ghc">
+      <UniqueIdentifier>{0651e530-0d41-4158-b7bc-53d01b65f14b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\keys">
+      <UniqueIdentifier>{aa0d803f-d714-4cb0-b040-fef93293cf9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\utils\config">
+      <UniqueIdentifier>{41e6436b-a1db-42ba-93a2-2f9d7da72f95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\libraries\residfp">
+      <UniqueIdentifier>{e004e83d-395a-47ee-8bb6-bdc4a0901ef3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\libraries\residfp\resample">
+      <UniqueIdentifier>{f2a4bed6-80f9-4ba3-b33c-eea4dfb7c2bc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\utils\bit_array.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\emulation\cpumemory.cpp">
+      <Filter>source\runtime\emulation</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\emulation\cpumos6510.cpp">
+      <Filter>source\runtime\emulation</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\emulation\sid\sidproxy.cpp">
+      <Filter>source\runtime\emulation\sid</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\execution\executionhandler.cpp">
+      <Filter>source\runtime\execution</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\execution\flightrecorder.cpp">
+      <Filter>source\runtime\execution</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_text_input.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table_column_major.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table_row_major.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\cursor_control.cpp">
+      <Filter>source\runtime\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_table_row_elements.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components_manager.cpp">
+      <Filter>source\runtime\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_base.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_memory.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_block.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\driver\driver_info.cpp">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\c64file.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_sequence.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_track.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\utilities.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\editor_facility.cpp">
+      <Filter>source\runtime\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\screens\screen_base.cpp">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\screens\screen_edit.cpp">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\screens\screen_disk.cpp">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_buffer.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_emulation_memory.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_directory.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_file_selector.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_track_components.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_tracks.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\screens\screen_edit_utils.cpp">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\driver\driver_architecture_sidfactory2.cpp">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_orderlist.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\debug\debug_views.cpp">
+      <Filter>source\runtime\editor\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_memory_view.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table_memory_view.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\debug\debug_singleton.cpp">
+      <Filter>source\runtime\editor\debug</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_base.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_message.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_text_input.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_hex_value_input.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_hex_value_input.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\keyhook.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_button.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_buffer_string.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_message_yesno.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\screens\statusbar\status_bar.cpp">
+      <Filter>source\runtime\editor\screens\statusbar</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\screens\statusbar\status_bar_edit.cpp">
+      <Filter>source\runtime\editor\screens\statusbar</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datacopy\datacopy_sequence.cpp">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\emulation\cpuframecapture.cpp">
+      <Filter>source\runtime\emulation</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\screens\screen_intro.cpp">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\driver\driver_state.cpp">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_orderlistoverview.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\graphics\color.cpp">
+      <Filter>source\foundation\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\graphics\textfield.cpp">
+      <Filter>source\foundation\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\graphics\wrapped_string.cpp">
+      <Filter>source\foundation\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\input\keyboard.cpp">
+      <Filter>source\foundation\input</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\input\keyboard_utils.cpp">
+      <Filter>source\foundation\input</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\input\mouse.cpp">
+      <Filter>source\foundation\input</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\platform\sdl\mutex_sdl.cpp">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\platform\sdl\platform_sdl.cpp">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\sound\audiostream.cpp">
+      <Filter>source\foundation\sound</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\graphics\viewport.cpp">
+      <Filter>source\foundation\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\driver\driver_utils.cpp">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_list_selector.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_play_markers.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_string_list_selector.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_utilities.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\packer\packer.cpp">
+      <Filter>source\runtime\editor\packer</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\edit_state.cpp">
+      <Filter>source\runtime\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data.cpp">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.cpp">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.cpp">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.cpp">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_collection.cpp">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\graphics\image.cpp">
+      <Filter>source\foundation\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\graphics\drawfield.cpp">
+      <Filter>source\foundation\graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_flightrecorder.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_base.cpp">
+      <Filter>source\runtime\editor\visualizer_components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.cpp">
+      <Filter>source\runtime\editor\visualizer_components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\overlays\overlay_flightrecorder.cpp">
+      <Filter>source\runtime\editor\overlays</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_flightrecorder.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_optimize.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\optimize\optimizer.cpp">
+      <Filter>source\runtime\editor\optimize</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\psidfile.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_sid_file_info.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\undo\undo.cpp">
+      <Filter>source\runtime\editor\undo</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\undo\undostep.cpp">
+      <Filter>source\runtime\editor\undo</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\instrument\instrumentdata.cpp">
+      <Filter>source\runtime\editor\instrument</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\instrument\instrumentdata_table.cpp">
+      <Filter>source\runtime\editor\instrument</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\instrument\instrumentdata_tablemapping.cpp">
+      <Filter>source\runtime\editor\instrument</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_bit_input.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_check_button.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\utilities\datasource_utils.cpp">
+      <Filter>source\runtime\editor\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\utilities\editor_utils.cpp">
+      <Filter>source\runtime\editor\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\utilities\import_utils.cpp">
+      <Filter>source\runtime\editor\utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\picopng\picopng.cpp">
+      <Filter>source\libraries\picopng</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\configfile.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.cpp">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_table_row_elements_with_text.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_windows.cpp">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_macos.cpp">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\keyhookstore.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\keys\keyhook_setup.cpp">
+      <Filter>source\runtime\editor\keys</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table_text.cpp">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\display_state.cpp">
+      <Filter>source\runtime\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\config\configtypes.cpp">
+      <Filter>source\utils\config</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\usercolors.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\config\configcolors.cpp">
+      <Filter>source\utils\config</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\config\configutils.cpp">
+      <Filter>source\utils\config</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\overlay_control.cpp">
+      <Filter>source\runtime\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\platform\platform_factory.cpp">
+      <Filter>source\foundation\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_linux.cpp">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\Dac.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\EnvelopeGenerator.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\ExternalFilter.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\Filter.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\Filter6581.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\Filter8580.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\FilterModelConfig.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\FilterModelConfig8580.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\Integrator.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\Integrator8580.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\OpAmp.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\SID.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\Spline.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\version.cc">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\WaveformCalculator.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\WaveformGenerator.cpp">
+      <Filter>source\libraries\residfp</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\residfp\resample\SincResampler.cpp">
+      <Filter>source\libraries\residfp\resample</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\utils\utilities.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\bit_array.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\resources\data_char.h">
+      <Filter>source\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\environmentdefines.h">
+      <Filter>source\runtime</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\emulation\cpuframecapture.h">
+      <Filter>source\runtime\emulation</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\emulation\cpumemory.h">
+      <Filter>source\runtime\emulation</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\emulation\cpumos6510.h">
+      <Filter>source\runtime\emulation</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\emulation\icpuwritecallback.h">
+      <Filter>source\runtime\emulation</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\emulation\sid\sidproxy.h">
+      <Filter>source\runtime\emulation\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\emulation\sid\sidproxydefines.h">
+      <Filter>source\runtime\emulation\sid</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\execution\executionhandler.h">
+      <Filter>source\runtime\execution</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\execution\flightrecorder.h">
+      <Filter>source\runtime\execution</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_text_input.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\idatasource.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table_column_major.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table_row_major.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\cursor_control.h">
+      <Filter>source\runtime\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_table_row_elements.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components_manager.h">
+      <Filter>source\runtime\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_base.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_memory.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_block.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\driver\driver_info.h">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\c64file.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_sequence.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_track.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\editor_facility.h">
+      <Filter>source\runtime\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\screens\screen_base.h">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\screens\screen_edit.h">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\screens\screen_disk.h">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_buffer.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_emulation_memory.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_tlist.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_directory.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_file_selector.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_track_components.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_tracks.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\screens\screen_edit_utils.h">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\driver\driver_architecture_sidfactory2.h">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\driver\idriver_architecture.h">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_orderlist.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_track_utils.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\debug\debug_views.h">
+      <Filter>source\runtime\editor\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_memory_view.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table_memory_view.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\debug\debug_singleton.h">
+      <Filter>source\runtime\editor\debug</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_base.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_message.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_text_input.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_hex_value_input.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_hex_value_input.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\keyhook.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_button.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_buffer_string.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_message_yesno.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\screens\statusbar\status_bar.h">
+      <Filter>source\runtime\editor\screens\statusbar</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\screens\statusbar\status_bar_edit.h">
+      <Filter>source\runtime\editor\screens\statusbar</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datacopy\datacopy_sequence.h">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\screens\screen_intro.h">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\driver\driver_state.h">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_orderlistoverview.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\graphics\color.h">
+      <Filter>source\foundation\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\graphics\textfield.h">
+      <Filter>source\foundation\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\graphics\types.h">
+      <Filter>source\foundation\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\graphics\wrapped_string.h">
+      <Filter>source\foundation\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\input\keyboard.h">
+      <Filter>source\foundation\input</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\input\keyboard_utils.h">
+      <Filter>source\foundation\input</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\input\mouse.h">
+      <Filter>source\foundation\input</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\platform\imutex.h">
+      <Filter>source\foundation\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\platform\iplatform.h">
+      <Filter>source\foundation\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\platform\sdl\mutex_sdl.h">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\platform\sdl\platform_sdl.h">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\sound\audiostream.h">
+      <Filter>source\foundation\sound</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\graphics\viewport.h">
+      <Filter>source\foundation\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\graphics\imanaged.h">
+      <Filter>source\foundation\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\emulation\imemoryrandomreadaccess.h">
+      <Filter>source\runtime\emulation</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\driver\driver_utils.h">
+      <Filter>source\runtime\editor\driver</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\delegate.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\event.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_list_selector.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_play_markers.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_string_list_selector.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_utilities.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\packer\packer.h">
+      <Filter>source\runtime\editor\packer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\edit_state.h">
+      <Filter>source\runtime\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data.h">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.h">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.h">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.h">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_utils.h">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_collection.h">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\graphics\image.h">
+      <Filter>source\foundation\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\graphics\drawfield.h">
+      <Filter>source\foundation\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_flightrecorder.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_base.h">
+      <Filter>source\runtime\editor\visualizer_components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.h">
+      <Filter>source\runtime\editor\visualizer_components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\overlays\overlay_flightrecorder.h">
+      <Filter>source\runtime\editor\overlays</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_flightrecorder.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_optimize.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\optimize\optimizer.h">
+      <Filter>source\runtime\editor\optimize</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\psidfile.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\editor_types.h">
+      <Filter>source\runtime\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_sid_file_info.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo.h">
+      <Filter>source\runtime\editor\undo</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undostep.h">
+      <Filter>source\runtime\editor\undo</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata.h">
+      <Filter>source\runtime\editor\undo</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata_tracks.h">
+      <Filter>source\runtime\editor\undo</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata_table_row_elements.h">
+      <Filter>source\runtime\editor\undo</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\instrument\instrumentdata.h">
+      <Filter>source\runtime\editor\instrument</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\instrument\instrumentdata_table.h">
+      <Filter>source\runtime\editor\instrument</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\instrument\instrumentdata_tablemapping.h">
+      <Filter>source\runtime\editor\instrument</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_bit_input.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_check_button.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\utilities\datasource_utils.h">
+      <Filter>source\runtime\editor\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\utilities\editor_utils.h">
+      <Filter>source\runtime\editor\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\utilities\import_utils.h">
+      <Filter>source\runtime\editor\utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\picopng\picopng.h">
+      <Filter>source\libraries\picopng</Filter>
+    </ClInclude>
+    <ClInclude Include="source\resources\data_logo.h">
+      <Filter>source\resources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\configfile.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_table_row_elements_with_text.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\ghc\filesystem.h">
+      <Filter>source\libraries\ghc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\ghc\fs_fwd.h">
+      <Filter>source\libraries\ghc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\ghc\fs_impl.h">
+      <Filter>source\libraries\ghc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\ghc\fs_std.h">
+      <Filter>source\libraries\ghc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\ghc\fs_std_fwd.h">
+      <Filter>source\libraries\ghc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\ghc\fs_std_impl.h">
+      <Filter>source\libraries\ghc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.h">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_windows.h">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_macos.h">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\keyhookstore.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\keys\keyhook_setup.h">
+      <Filter>source\runtime\editor\keys</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table_text.h">
+      <Filter>source\runtime\editor\datasources</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\display_state.h">
+      <Filter>source\runtime\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\config\configtypes.h">
+      <Filter>source\utils\config</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\usercolors.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\config\configcolors.h">
+      <Filter>source\utils\config</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\config\configutils.h">
+      <Filter>source\utils\config</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\overlay_control.h">
+      <Filter>source\runtime\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\platform\platform_factory.h">
+      <Filter>source\foundation\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_linux.h">
+      <Filter>source\foundation\platform\sdl</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\array.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Dac.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\EnvelopeGenerator.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\ExternalFilter.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Filter.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Filter6581.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Filter8580.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\FilterModelConfig.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\FilterModelConfig8580.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Integrator.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Integrator8580.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\OpAmp.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Potentiometer.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\SID.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\siddefs-fp.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Spline.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\Voice.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\WaveformCalculator.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\WaveformGenerator.h">
+      <Filter>source\libraries\residfp</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\resample\Resampler.h">
+      <Filter>source\libraries\residfp\resample</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\resample\SincResampler.h">
+      <Filter>source\libraries\residfp\resample</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\resample\TwoPassSincResampler.h">
+      <Filter>source\libraries\residfp\resample</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\residfp\resample\ZeroOrderResampler.h">
+      <Filter>source\libraries\residfp\resample</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="change_todo.txt" />
+  </ItemGroup>
+</Project>
