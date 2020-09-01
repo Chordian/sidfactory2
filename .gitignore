@@ -2,7 +2,6 @@
 .svn
 .vs
 builds
-debug
 drivers
 libs
 release
@@ -17,12 +16,9 @@ SIDFactoryII/Info.plist
 SIDFactoryII/SDL2.dll
 SIDFactoryII/user.ini
 SIDFactoryII/*.entitlements
-SIDFactoryII/*.vcxproj
-SIDFactoryII/*.vcxproj.filters
 SIDFactoryII/*.vcxproj.user
 *.dll
 *.exe
-*.sln
 *.xcodeproj
 Dockerfile
 Makefile

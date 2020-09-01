@@ -1,0 +1,454 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{9E0ABB2E-3E97-4CA7-BB18-77B3CA8768FA}</ProjectGuid>
+    <RootNamespace>SIDFactoryII</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>SIDFactoryII</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SF2_WINDOWS;__SSE__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>..\libs\SDL2-2.0.12\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>.\source;C:\Projects\Libs\SDL2-2.0.9\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>sdl2.lib;sdl2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Projects\Libs\SDL2-2.0.9\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SF2_WINDOWS;__SSE__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\libs\SDL2-2.0.12\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>.\source;C:\Projects\Libs\SDL2-2.0.9\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>sdl2.lib;sdl2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Projects\Libs\SDL2-2.0.9\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\foundation\graphics\drawfield.cpp" />
+    <ClCompile Include="source\foundation\graphics\image.cpp" />
+    <ClCompile Include="source\foundation\graphics\viewport.cpp" />
+    <ClCompile Include="source\foundation\graphics\color.cpp" />
+    <ClCompile Include="source\foundation\graphics\textfield.cpp" />
+    <ClCompile Include="source\foundation\graphics\wrapped_string.cpp" />
+    <ClCompile Include="source\foundation\input\keyboard.cpp" />
+    <ClCompile Include="source\foundation\input\keyboard_utils.cpp" />
+    <ClCompile Include="source\foundation\input\mouse.cpp" />
+    <ClCompile Include="source\foundation\platform\platform_factory.cpp" />
+    <ClCompile Include="source\foundation\platform\sdl\mutex_sdl.cpp" />
+    <ClCompile Include="source\foundation\platform\sdl\platform_sdl.cpp" />
+    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_linux.cpp" />
+    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_macos.cpp" />
+    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_windows.cpp" />
+    <ClCompile Include="source\foundation\sound\audiostream.cpp" />
+    <ClCompile Include="source\libraries\picopng\picopng.cpp" />
+    <ClCompile Include="source\libraries\residfp\Dac.cpp" />
+    <ClCompile Include="source\libraries\residfp\EnvelopeGenerator.cpp" />
+    <ClCompile Include="source\libraries\residfp\ExternalFilter.cpp" />
+    <ClCompile Include="source\libraries\residfp\Filter.cpp" />
+    <ClCompile Include="source\libraries\residfp\Filter6581.cpp" />
+    <ClCompile Include="source\libraries\residfp\Filter8580.cpp" />
+    <ClCompile Include="source\libraries\residfp\FilterModelConfig.cpp" />
+    <ClCompile Include="source\libraries\residfp\FilterModelConfig8580.cpp" />
+    <ClCompile Include="source\libraries\residfp\Integrator.cpp" />
+    <ClCompile Include="source\libraries\residfp\Integrator8580.cpp" />
+    <ClCompile Include="source\libraries\residfp\OpAmp.cpp" />
+    <ClCompile Include="source\libraries\residfp\resample\SincResampler.cpp" />
+    <ClCompile Include="source\libraries\residfp\SID.cpp" />
+    <ClCompile Include="source\libraries\residfp\Spline.cpp" />
+    <ClCompile Include="source\libraries\residfp\version.cc" />
+    <ClCompile Include="source\libraries\residfp\WaveformCalculator.cpp" />
+    <ClCompile Include="source\libraries\residfp\WaveformGenerator.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_collection.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_base.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_button.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_check_button.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_file_selector.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_flightrecorder.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_hex_value_input.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_list_selector.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_memory_view.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_orderlistoverview.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_string_list_selector.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_table_row_elements_with_text.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_track.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_table_row_elements.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_text_input.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_tracks.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\components_manager.cpp" />
+    <ClCompile Include="source\runtime\editor\cursor_control.cpp" />
+    <ClCompile Include="source\runtime\editor\datacopy\datacopy_sequence.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_directory.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_emulation_memory.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_flightrecorder.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_memory.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_block.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_buffer.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_buffer_string.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_orderlist.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_play_markers.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_sequence.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table_column_major.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table_memory_view.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table_row_major.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_table_text.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_track_components.cpp" />
+    <ClCompile Include="source\runtime\editor\debug\debug_singleton.cpp" />
+    <ClCompile Include="source\runtime\editor\debug\debug_views.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_base.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_bit_input.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_hex_value_input.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_message_yesno.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_optimize.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_sid_file_info.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_text_input.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_message.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_utilities.cpp" />
+    <ClCompile Include="source\runtime\editor\display_state.cpp" />
+    <ClCompile Include="source\runtime\editor\driver\driver_architecture_sidfactory2.cpp" />
+    <ClCompile Include="source\runtime\editor\driver\driver_info.cpp" />
+    <ClCompile Include="source\runtime\editor\driver\driver_state.cpp" />
+    <ClCompile Include="source\runtime\editor\driver\driver_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\editor_facility.cpp" />
+    <ClCompile Include="source\runtime\editor\edit_state.cpp" />
+    <ClCompile Include="source\runtime\editor\instrument\instrumentdata.cpp" />
+    <ClCompile Include="source\runtime\editor\instrument\instrumentdata_table.cpp" />
+    <ClCompile Include="source\runtime\editor\instrument\instrumentdata_tablemapping.cpp" />
+    <ClCompile Include="source\runtime\editor\keys\keyhook_setup.cpp" />
+    <ClCompile Include="source\runtime\editor\optimize\optimizer.cpp" />
+    <ClCompile Include="source\runtime\editor\overlays\overlay_flightrecorder.cpp" />
+    <ClCompile Include="source\runtime\editor\overlay_control.cpp" />
+    <ClCompile Include="source\runtime\editor\packer\packer.cpp" />
+    <ClCompile Include="source\runtime\editor\screens\screen_base.cpp" />
+    <ClCompile Include="source\runtime\editor\screens\screen_disk.cpp" />
+    <ClCompile Include="source\runtime\editor\screens\screen_edit.cpp" />
+    <ClCompile Include="source\runtime\editor\screens\screen_edit_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\screens\screen_intro.cpp" />
+    <ClCompile Include="source\runtime\editor\screens\statusbar\status_bar.cpp" />
+    <ClCompile Include="source\runtime\editor\screens\statusbar\status_bar_edit.cpp" />
+    <ClCompile Include="source\runtime\editor\undo\undo.cpp" />
+    <ClCompile Include="source\runtime\editor\undo\undostep.cpp" />
+    <ClCompile Include="source\runtime\editor\utilities\datasource_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\utilities\editor_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\utilities\import_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_base.cpp" />
+    <ClCompile Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.cpp" />
+    <ClCompile Include="source\runtime\emulation\cpuframecapture.cpp" />
+    <ClCompile Include="source\runtime\emulation\cpumemory.cpp" />
+    <ClCompile Include="source\runtime\emulation\cpumos6510.cpp" />
+    <ClCompile Include="source\runtime\emulation\sid\sidproxy.cpp" />
+    <ClCompile Include="source\runtime\execution\executionhandler.cpp" />
+    <ClCompile Include="source\runtime\execution\flightrecorder.cpp" />
+    <ClCompile Include="source\utils\bit_array.cpp" />
+    <ClCompile Include="source\utils\c64file.cpp" />
+    <ClCompile Include="source\utils\configfile.cpp" />
+    <ClCompile Include="source\utils\config\configcolors.cpp" />
+    <ClCompile Include="source\utils\config\configtypes.cpp" />
+    <ClCompile Include="source\utils\config\configutils.cpp" />
+    <ClCompile Include="source\utils\keyhook.cpp" />
+    <ClCompile Include="source\utils\keyhookstore.cpp" />
+    <ClCompile Include="source\utils\psidfile.cpp" />
+    <ClCompile Include="source\utils\usercolors.cpp" />
+    <ClCompile Include="source\utils\utilities.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\foundation\graphics\drawfield.h" />
+    <ClInclude Include="source\foundation\graphics\image.h" />
+    <ClInclude Include="source\foundation\graphics\imanaged.h" />
+    <ClInclude Include="source\foundation\graphics\viewport.h" />
+    <ClInclude Include="source\foundation\graphics\color.h" />
+    <ClInclude Include="source\foundation\graphics\textfield.h" />
+    <ClInclude Include="source\foundation\graphics\types.h" />
+    <ClInclude Include="source\foundation\graphics\wrapped_string.h" />
+    <ClInclude Include="source\foundation\input\keyboard.h" />
+    <ClInclude Include="source\foundation\input\keyboard_utils.h" />
+    <ClInclude Include="source\foundation\input\mouse.h" />
+    <ClInclude Include="source\foundation\platform\imutex.h" />
+    <ClInclude Include="source\foundation\platform\iplatform.h" />
+    <ClInclude Include="source\foundation\platform\platform_factory.h" />
+    <ClInclude Include="source\foundation\platform\sdl\mutex_sdl.h" />
+    <ClInclude Include="source\foundation\platform\sdl\platform_sdl.h" />
+    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_linux.h" />
+    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_macos.h" />
+    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_windows.h" />
+    <ClInclude Include="source\foundation\sound\audiostream.h" />
+    <ClInclude Include="source\libraries\ghc\filesystem.h" />
+    <ClInclude Include="source\libraries\ghc\fs_fwd.h" />
+    <ClInclude Include="source\libraries\ghc\fs_impl.h" />
+    <ClInclude Include="source\libraries\ghc\fs_std.h" />
+    <ClInclude Include="source\libraries\ghc\fs_std_fwd.h" />
+    <ClInclude Include="source\libraries\ghc\fs_std_impl.h" />
+    <ClInclude Include="source\libraries\picopng\picopng.h" />
+    <ClInclude Include="source\libraries\residfp\array.h" />
+    <ClInclude Include="source\libraries\residfp\Dac.h" />
+    <ClInclude Include="source\libraries\residfp\EnvelopeGenerator.h" />
+    <ClInclude Include="source\libraries\residfp\ExternalFilter.h" />
+    <ClInclude Include="source\libraries\residfp\Filter.h" />
+    <ClInclude Include="source\libraries\residfp\Filter6581.h" />
+    <ClInclude Include="source\libraries\residfp\Filter8580.h" />
+    <ClInclude Include="source\libraries\residfp\FilterModelConfig.h" />
+    <ClInclude Include="source\libraries\residfp\FilterModelConfig8580.h" />
+    <ClInclude Include="source\libraries\residfp\Integrator.h" />
+    <ClInclude Include="source\libraries\residfp\Integrator8580.h" />
+    <ClInclude Include="source\libraries\residfp\OpAmp.h" />
+    <ClInclude Include="source\libraries\residfp\Potentiometer.h" />
+    <ClInclude Include="source\libraries\residfp\resample\Resampler.h" />
+    <ClInclude Include="source\libraries\residfp\resample\SincResampler.h" />
+    <ClInclude Include="source\libraries\residfp\resample\TwoPassSincResampler.h" />
+    <ClInclude Include="source\libraries\residfp\resample\ZeroOrderResampler.h" />
+    <ClInclude Include="source\libraries\residfp\SID.h" />
+    <ClInclude Include="source\libraries\residfp\siddefs-fp.h" />
+    <ClInclude Include="source\libraries\residfp\Spline.h" />
+    <ClInclude Include="source\libraries\residfp\Voice.h" />
+    <ClInclude Include="source\libraries\residfp\WaveformCalculator.h" />
+    <ClInclude Include="source\libraries\residfp\WaveformGenerator.h" />
+    <ClInclude Include="source\resources\data_char.h" />
+    <ClInclude Include="source\resources\data_logo.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_collection.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_utils.h" />
+    <ClInclude Include="source\runtime\editor\components\component_base.h" />
+    <ClInclude Include="source\runtime\editor\components\component_button.h" />
+    <ClInclude Include="source\runtime\editor\components\component_check_button.h" />
+    <ClInclude Include="source\runtime\editor\components\component_file_selector.h" />
+    <ClInclude Include="source\runtime\editor\components\component_flightrecorder.h" />
+    <ClInclude Include="source\runtime\editor\components\component_hex_value_input.h" />
+    <ClInclude Include="source\runtime\editor\components\component_list_selector.h" />
+    <ClInclude Include="source\runtime\editor\components\component_memory_view.h" />
+    <ClInclude Include="source\runtime\editor\components\component_orderlistoverview.h" />
+    <ClInclude Include="source\runtime\editor\components\component_string_list_selector.h" />
+    <ClInclude Include="source\runtime\editor\components\component_table_row_elements_with_text.h" />
+    <ClInclude Include="source\runtime\editor\components\component_track.h" />
+    <ClInclude Include="source\runtime\editor\components\component_table_row_elements.h" />
+    <ClInclude Include="source\runtime\editor\components\component_text_input.h" />
+    <ClInclude Include="source\runtime\editor\components\component_tracks.h" />
+    <ClInclude Include="source\runtime\editor\components\component_track_utils.h" />
+    <ClInclude Include="source\runtime\editor\components_manager.h" />
+    <ClInclude Include="source\runtime\editor\cursor_control.h" />
+    <ClInclude Include="source\runtime\editor\datacopy\datacopy_sequence.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_directory.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_emulation_memory.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_flightrecorder.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_memory.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_block.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_buffer.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_buffer_string.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_orderlist.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_play_markers.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_sequence.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table_column_major.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table_memory_view.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table_row_major.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table_text.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_tlist.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_track_components.h" />
+    <ClInclude Include="source\runtime\editor\datasources\idatasource.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_table.h" />
+    <ClInclude Include="source\runtime\editor\debug\debug_singleton.h" />
+    <ClInclude Include="source\runtime\editor\debug\debug_views.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_base.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_bit_input.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_hex_value_input.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_message_yesno.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_optimize.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_sid_file_info.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_text_input.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_message.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_utilities.h" />
+    <ClInclude Include="source\runtime\editor\display_state.h" />
+    <ClInclude Include="source\runtime\editor\driver\driver_architecture_sidfactory2.h" />
+    <ClInclude Include="source\runtime\editor\driver\driver_info.h" />
+    <ClInclude Include="source\runtime\editor\driver\driver_state.h" />
+    <ClInclude Include="source\runtime\editor\driver\driver_utils.h" />
+    <ClInclude Include="source\runtime\editor\driver\idriver_architecture.h" />
+    <ClInclude Include="source\runtime\editor\editor_facility.h" />
+    <ClInclude Include="source\runtime\editor\editor_types.h" />
+    <ClInclude Include="source\runtime\editor\edit_state.h" />
+    <ClInclude Include="source\runtime\editor\instrument\instrumentdata.h" />
+    <ClInclude Include="source\runtime\editor\instrument\instrumentdata_table.h" />
+    <ClInclude Include="source\runtime\editor\instrument\instrumentdata_tablemapping.h" />
+    <ClInclude Include="source\runtime\editor\keys\keyhook_setup.h" />
+    <ClInclude Include="source\runtime\editor\optimize\optimizer.h" />
+    <ClInclude Include="source\runtime\editor\overlays\overlay_flightrecorder.h" />
+    <ClInclude Include="source\runtime\editor\overlay_control.h" />
+    <ClInclude Include="source\runtime\editor\packer\packer.h" />
+    <ClInclude Include="source\runtime\editor\screens\screen_base.h" />
+    <ClInclude Include="source\runtime\editor\screens\screen_disk.h" />
+    <ClInclude Include="source\runtime\editor\screens\screen_edit.h" />
+    <ClInclude Include="source\runtime\editor\screens\screen_edit_utils.h" />
+    <ClInclude Include="source\runtime\editor\screens\screen_intro.h" />
+    <ClInclude Include="source\runtime\editor\screens\statusbar\status_bar.h" />
+    <ClInclude Include="source\runtime\editor\screens\statusbar\status_bar_edit.h" />
+    <ClInclude Include="source\runtime\editor\undo\undo.h" />
+    <ClInclude Include="source\runtime\editor\undo\undostep.h" />
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata.h" />
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata_table_row_elements.h" />
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata_tracks.h" />
+    <ClInclude Include="source\runtime\editor\utilities\datasource_utils.h" />
+    <ClInclude Include="source\runtime\editor\utilities\editor_utils.h" />
+    <ClInclude Include="source\runtime\editor\utilities\import_utils.h" />
+    <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_base.h" />
+    <ClInclude Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.h" />
+    <ClInclude Include="source\runtime\emulation\cpuframecapture.h" />
+    <ClInclude Include="source\runtime\emulation\cpumemory.h" />
+    <ClInclude Include="source\runtime\emulation\cpumos6510.h" />
+    <ClInclude Include="source\runtime\emulation\icpuwritecallback.h" />
+    <ClInclude Include="source\runtime\emulation\imemoryrandomreadaccess.h" />
+    <ClInclude Include="source\runtime\emulation\sid\sidproxy.h" />
+    <ClInclude Include="source\runtime\emulation\sid\sidproxydefines.h" />
+    <ClInclude Include="source\runtime\environmentdefines.h" />
+    <ClInclude Include="source\runtime\execution\executionhandler.h" />
+    <ClInclude Include="source\runtime\execution\flightrecorder.h" />
+    <ClInclude Include="source\utils\bit_array.h" />
+    <ClInclude Include="source\utils\c64file.h" />
+    <ClInclude Include="source\utils\configfile.h" />
+    <ClInclude Include="source\utils\config\configcolors.h" />
+    <ClInclude Include="source\utils\config\configtypes.h" />
+    <ClInclude Include="source\utils\config\configutils.h" />
+    <ClInclude Include="source\utils\delegate.h" />
+    <ClInclude Include="source\utils\event.h" />
+    <ClInclude Include="source\utils\keyhook.h" />
+    <ClInclude Include="source\utils\keyhookstore.h" />
+    <ClInclude Include="source\utils\psidfile.h" />
+    <ClInclude Include="source\utils\usercolors.h" />
+    <ClInclude Include="source\utils\utilities.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="change_todo.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
