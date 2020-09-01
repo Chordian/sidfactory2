@@ -78,6 +78,7 @@ $(APP): $(EXE) $(ICONS)
 	rm -rf $(APP)
 	mkdir -p $(APP)
 	cp -r App/ ${APP}
+	mkdir -p ${APP}/Contents/MacOS
 	cp $(EXE) $(APP)/Contents/MacOS
 	cp -r $(PROJECT_ROOT)/drivers $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/overlay $(APP)/Contents/Resources
