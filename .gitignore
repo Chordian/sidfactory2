@@ -2,7 +2,7 @@
 .svn
 .vs
 builds
-drivers
+./drivers
 libs
 release
 SIDFactoryII/Assets.xcassets
@@ -21,4 +21,5 @@ SIDFactoryII/*.vcxproj.user
 *.exe
 *.xcodeproj
 Dockerfile
-Makefile
+*.o
+artifacts
