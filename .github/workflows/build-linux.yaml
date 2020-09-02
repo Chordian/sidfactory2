@@ -11,7 +11,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Install SDL2
-        run: apt-get update && apt-get -y --no-install-recommends install g++ make libsdl2-dev
       - name: Make
-        run: make
+        run: make ubuntu
