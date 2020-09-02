@@ -1,0 +1,15 @@
+name: Build linux binaries
+on:
+  push:
+    branches:
+      - linux
+
+jobs:
+  build:
+    name: Build executable
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Make
+        run: make
