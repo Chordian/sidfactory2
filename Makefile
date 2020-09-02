@@ -3,7 +3,7 @@ PLATFORM=LINUX
 # Sources
 PROJECT_ROOT=./SIDFactoryII
 SOURCE=$(PROJECT_ROOT)/source
-SRC=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp") 
+SRC=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
 
 # Artifacts
 APP_NAME=SIDFactoryII
@@ -21,11 +21,11 @@ CC_FLAGS= $(shell sdl2-config --cflags) \
 	-D _SF2_$(PLATFORM) \
 	-O2 \
 	-std=gnu++14 \
-	-flto 
+	-flto
 
 LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
 
-.PHONY: clean 
+.PHONY: clean
 .PHONY: ubuntu
 .PHONY: dist
 
@@ -38,7 +38,7 @@ OBJ = $(SRC:.cpp=.o)
 
 # Compile executable
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
-	$(CC) $(OBJ) $(LINKER_FLAGS) -o $(EXE) 
+	$(CC) $(OBJ) $(LINKER_FLAGS) -o $(EXE)
 	strip $(EXE)
 
 dist: $(EXE)
@@ -46,6 +46,7 @@ dist: $(EXE)
 	cp -r $(PROJECT_ROOT)/overlay $(ARTIFACTS_FOLDER)
 	cp -r $(PROJECT_ROOT)/color_schemes $(ARTIFACTS_FOLDER)
 	cp -r $(PROJECT_ROOT)/config $(ARTIFACTS_FOLDER)
+	cd $(ARTIFACTS_FOLDER) && zip -r SIDFactoryII-linux.zip .
 
 $(ARTIFACTS_FOLDER):
 	mkdir -p $@
@@ -59,5 +60,5 @@ ubuntu:
 	docker container rm $(TMP_CONTAINER) || true
 	docker build -t $(BUILD_IMAGE_UBUNTU) .
 	docker run --name $(TMP_CONTAINER) $(BUILD_IMAGE_UBUNTU)
-	docker cp $(TMP_CONTAINER):/home/$(ARTIFACTS_FOLDER) . 
+	docker cp $(TMP_CONTAINER):/home/$(ARTIFACTS_FOLDER) .
 	docker container rm $(TMP_CONTAINER)
