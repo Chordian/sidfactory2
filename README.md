@@ -28,15 +28,16 @@ You should now be able to compile and run it when you open the solution file in 
 #### Editor
 
 - The overlay can now be shown inside the editor with **F12** and also changes depending on what driver is loaded
-- Added **Ctrl+L** for setting a song loop position (the orderlist words will turn green in that spot)
+- Added **Ctrl+L** for setting a song loop position (the order list words will turn green in that spot)
 - It is now possible to delete a file in all file dialogues by hitting the appropriate key
 - A `config.ini` file has been added where settings can be read for audio quality, colors and key definitions
 - Also added a `user.ini` for persistent changes (the functionality of these `.ini` files are not yet complete)
-- Additional `.ini` files in a sub folder can be added to create new color schemes
+- Additional `.ini` files in a sub folder can be used for new color schemes
 - Seven new color schemes have been created in addition to the default one
 - The importer now also carries over auxiliary data (e.g. table descriptions)
+- Upgraded the ReSID emulation (resid-fp) to the latest version
 - Fixed `..` erroneously interpreted as a file to be opened instead of browsing back
-- Fixed tracks not unmuted properly after muting them and then loading a different SF2 file
+- Fixed tracks not unmuted properly after muting them and then loading a different `.sf2` file
 - Fixed the editor crashing when trying to optimize a song with no sequence data
 - Fixed not being able to properly play from a bookmark when showing tracks of uneven lengths
 - `macOS` Now using **Minus** and **Shift+Minus** for fast/faster forward
@@ -63,7 +64,7 @@ You should now be able to compile and run it when you open the solution file in 
 #### Other
 
 - The PowerShell script for the bright overlay is now deprecated and will no longer be included
-- The area previously known as the _gray orderlist_ is now called the _song list_ instead
+- The area previously known as the _gray order list_ is now called the _song list_ instead
 
 ### Build 20200718
 
@@ -88,23 +89,23 @@ You should now be able to compile and run it when you open the solution file in 
 - A separate macOS build has been released for the first time (maintained by Michel de Bree)
 - Added the **Ctrl+U** hotkey for toggling between lower and upper case letters for all hexadecimal values
 - You can now drag-and-drop an `.sf2` source file directly into the editor
-- Added exit application confirmation dialog
+- Added an exit application confirmation dialog
 - All file lists now include a `..` line for browsing back to the parent folder
 - Upgraded the ReSID emulation (resid-fp)
 - Changed the application caption text (filename now comes first)
 - Debug functionality added for examining ReSID output
 - Fixed a threading issue that could cause instability in the ReSID emulation
-- Fixed inserting/deleting rows in sequences not immediately being reflected in the orderlist overview
+- Fixed inserting/deleting rows in sequences not immediately being reflected in the order list overview
 
 ### Build 20200610
 
-- Updated fast forward: **½** = 4 x update, **Shift+½** = super fast update
+- Updated fast forward: **½** = 4x update, **Shift+½** = super fast update
 - Added **Ctrl+I** during sequence editing for inserting the current selected instrument value. If a value is already set, it will be cleared
-- Added **Ctrl+O** during sequence editing for inserting the current selected  command value. If a value is already set, it will be cleared
-- Added **Ctrl+Space** during table editing (if keyplay mode is on) - will play like space alone, but apply the current highlighted command, regardless which table is in focus
+- Added **Ctrl+O** during sequence editing for inserting the current selected command value. If a value is already set, it will be cleared
+- Added **Ctrl+Space** during table editing (if keyplay mode is on) - will play like **Space** alone but apply the current highlighted command, regardless of which table is in focus
 - In the marker view, **Enter** (or left-click) will move the current track position to that of the marker. **Ctrl+Enter** (or double-click) will do the same and then start playback
 - Reversed the direction of the CPU usage graph
-- Added command-line parsing, so that it is possible to associate `.sf2` files with the editor and open in File Explorer
+- Added command-line parsing, so that it is possible to associate `.sf2` files with the editor and open them in File Explorer
 - Added **NumPad+Plus** and **NumPad+Minus** for incrementing and decrementing the currently selected index of the instrument table
 - Added **Ctrl+NumPad+Plus** and **Ctrl+NumPad+Minus** for incrementing and decrementing the currently selected index of the command table
 
@@ -112,13 +113,13 @@ You should now be able to compile and run it when you open the solution file in 
 
 #### Drivers
 
-- Driver 11 (all variants) - fixed the meta data for command action keys (jump to relevant tables on **Ctrl+Enter**)
+-Fixed the meta data for command action keys (jump to relevant tables on **Ctrl+Enter**) in all variants of driver 11
 
 #### Editor
 
 - Fixed import strings to say import music data and dialog box to reflect the same too
 - Fixed importer assertion when trying to import an empty project (i.e. a driver)
-- Fixed **Ctrl+V** (paste) not notifying the orderlist overview
+- Fixed **Ctrl+V** (paste) not notifying the order list overview
 - Editing octave down/up has been moved to **F3** and **F4**, transpose current sequence one semi-tone down/up has been moved to **Shift+F3** and **Shift+F4**, and transpose current sequence one octave down/up has been moved to **Ctrl+F3** and **Ctrl+F4**
 - Added fast forward on the **½** key
 - Fixed a bug in directory enumeration that would cause a crash when trying to access some system files
@@ -128,15 +129,14 @@ You should now be able to compile and run it when you open the solution file in 
 #### Editor
 
 - Added automatic update of build data which is printed in right bottom of the splash screen
-- Added PNG support
-- Added a temporary embedded logo
+- Added PNG support and a temporary embedded logo
 - Pressing **End** in a table will set the row of the last occurrence of a zero-only row found from the bottom and upwards
 - OrderlistOverview: Added **Ctrl+Enter** to move to and start playing from position
 - OrderlistOverview: Mouse left-click will select and move tracks view to position
 - OrderlistOverview: Mouse double-click will select and move tracks view to position and start playing from position
-- OrderlistOverview: **Page Up** and **Page Down** implemented (skips 20 lines)
+- OrderlistOverview: Implemented **Page Up** and **Page Down** (skips 20 lines)
 - OrderlistOverview: Added **Home** which goes to top visible then first index, and **End** which goes to last visible then last index
-- Tracks and orderlist focus: Fixed issue where cursor position would be misaligned when focusing on orderlist entry and pressing **Ctrl+G**
+- Tracks and order list focus: Fixed issue where cursor position would be misaligned when focusing on order list entry and pressing **Ctrl+G**
 - Changed **Shift+F2** to play from the event position of the top current sequence of the track in focus (or last in focus)
 - Added **Space** during table edit for previewing the last note played with **Shift+[note]** value (this will do nothing if not already in "play through input" mode)
 
