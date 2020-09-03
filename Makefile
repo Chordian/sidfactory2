@@ -46,7 +46,7 @@ dist: $(EXE)
 	cp -r $(PROJECT_ROOT)/overlay $(ARTIFACTS_FOLDER)
 	cp -r $(PROJECT_ROOT)/color_schemes $(ARTIFACTS_FOLDER)
 	cp -r $(PROJECT_ROOT)/config $(ARTIFACTS_FOLDER)
-	cd $(ARTIFACTS_FOLDER) && zip -r SIDFactoryII-linux.zip .
+	# cd $(ARTIFACTS_FOLDER) && zip -r SIDFactoryII-linux.zip .
 
 $(ARTIFACTS_FOLDER):
 	mkdir -p $@
