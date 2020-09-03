@@ -11,8 +11,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Install SDL2
+        run: sudo apt-get update && sudo apt-get -y install libsdl2-dev
       - name: Build binaries
-        run: make ubuntu
+        run: make dist
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
