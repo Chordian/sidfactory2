@@ -128,7 +128,7 @@ $(ICONS): icon.svg $(ARTIFACTS_FOLDER)
 	cp $(ICONSET)/icon_32x32.png $(ICONSET)/icon_16x16@2x.png
 	cp $(ICONSET)/icon_256x256.png $(ICONSET)/icon_128x128@2x.png
 	cp $(ICONSET)/icon_512x512.png $(ICONSET)/icon_256x256@2x.png
-	iconutil -c icns $(ICONSET) $@
+	iconutil -c icns -o $@ $(ICONSET)
 
 # Create html from markdown documentation
 $(ARTIFACTS_FOLDER)/%.html: %.md
