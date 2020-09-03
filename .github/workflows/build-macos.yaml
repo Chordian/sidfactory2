@@ -1,0 +1,22 @@
+name: Build macOS binaries
+on:
+  push:
+    branches:
+      - macos
+
+jobs:
+  build:
+    name: Build executable
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install extra build tooling
+        run: brew install gnu-sed librsvg pandoc
+      - name: Build binaries
+        run: (cd macos && make app)
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: SIDFactoryII.app
+          path: ./macos/artifacts/
