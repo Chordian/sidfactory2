@@ -6,11 +6,26 @@ a Commodore 64. It uses the reSID emulator and is currently in open BETA.
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
+## Compiling
+
+### Visual Studio on Windows
+
+In order to compile and run SID Factory II in Visual Studio on Windows you need to do this:
+
+- First clone this repository into a folder on your computer. The `sidfactory2` folder is created which you can rename to something else if you want. (We will assume you kept the original name as is below.)
+- Create a `libs` folder next to the `sidfactory2` folder
+- Download the development library archive of SDL2 for Visual C++ from https://www.libsdl.org
+- Extract it into the `libs` folder so you end up with `libs/SDL2-2.0.12` with various files and folders in it
+- Download the runtime binary archive of SDL2 for x86 from the same web site
+- Extract it and copy the `SDL2.dll` file in it to the `sidfactory2/SidFactoryII` folder
+
+You should now be able to compile and run it when you open the solution file in Visual Studio.
+
 ## Changelog
 
 ### Build 2020????
 
-Editor:
+#### Editor
 
 - The overlay can now be shown inside the editor with F12 and also changes depending on what driver is loaded
 - Added Ctrl + l for setting a song loop position (the orderlist words will turn green in that spot)
@@ -28,24 +43,24 @@ Editor:
 - macOS: Remapped keys; instrument up/down is now Cmd + up/down while Cmd + up/down is now Shift + Cmd + up/down
 - macOS: You can now open .sf2 files with SID Factory II directly from Finder (Open With)
 
-Drivers:
+#### Drivers
 
 - Driver update 11.02 adds commands for pulse program index, tempo change, and main volume
 
-Converter:
+#### Converter
 
 - Added a third conversion option for handling .ct source tunes from CheeseCutter
 - The SNG and CT converters now support the pulse program index and main volume commands added in driver 11.02
 - The MOD, SNG and CT converters now support then tempo change command added in driver 11.02
 - Command description labels are now created by the MOD and SNG converters too
 
-Documentation:
+#### Documentation
 
 - Expanded the user manual with a table of contents, chapters about the data tables, and various pictures
 - The notes.txt file has been overhauled to show a complete list of all default keys for both Windows and macOS
 - The text files for all of the drivers have been polished to be easier to read at a glance
 
-Other:
+#### Other
 
 - The PowerShell script for the bright overlay is now deprecated and will no longer be included
 - The area previously known as the "gray orderlist" is now called the "song list" instead
@@ -95,11 +110,11 @@ Other:
 
 ### Build 20200603
 
-Drivers:
+#### Drivers
 
 - Driver 11 (all variants), fixed the meta data for command action keys (jump to relevant tables on Ctrl + Enter)
 
-Editor:
+#### Editor
 
 - Fixed import strings to say import music data, and dialog box to reflect the same too
 - Fixed importer assertion when trying to import an empty project (aka. a driver)
@@ -110,7 +125,7 @@ Editor:
 
 ### Build 20200528
 
-Editor:
+#### Editor
 
 - Added: Automatic update of build data, which is printed in right bottom of the splash screen
 - Added: PNG support
