@@ -81,12 +81,12 @@ $(APP): $(EXE) $(ICONS)
 	cp -r App/ ${APP}
 	mkdir -p ${APP}/Contents/MacOS
 	mkdir -p ${APP}/Contents/Resources
-	cp $(EXE) $(APP)/Contents/MacOS
+	mv $(EXE) $(APP)/Contents/MacOS
 	cp -r $(PROJECT_ROOT)/drivers $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/overlay $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/color_schemes $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/config $(APP)/Contents/Resources
-	cp $(ICONS) $(APP)/Contents/Resources
+	mv $(ICONS) $(APP)/Contents/Resources
 	gsed -i 's/{VERSION}/$(BUILD_NR)/g' $(APP)/Contents/Info.plist
 
 
@@ -129,6 +129,7 @@ $(ICONS): icon.svg $(ARTIFACTS_FOLDER)
 	cp $(ICONSET)/icon_256x256.png $(ICONSET)/icon_128x128@2x.png
 	cp $(ICONSET)/icon_512x512.png $(ICONSET)/icon_256x256@2x.png
 	iconutil -c icns -o $@ $(ICONSET)
+	rm -rf $(ICONSET)
 
 # Create html from markdown documentation
 $(ARTIFACTS_FOLDER)/%.html: %.md
