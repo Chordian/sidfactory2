@@ -113,7 +113,7 @@ You should now be able to compile and run it when you open the solution file in 
 
 #### Drivers
 
--Fixed the meta data for command action keys (jump to relevant tables on **Ctrl+Enter**) in all variants of driver 11
+- Fixed the meta data for command action keys (jump to relevant tables on **Ctrl+Enter**) in all variants of driver 11
 
 #### Editor
 
