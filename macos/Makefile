@@ -87,7 +87,7 @@ $(APP): $(EXE) $(ICONS)
 	cp -r $(PROJECT_ROOT)/color_schemes $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/config $(APP)/Contents/Resources
 	cp $(ICONS) $(APP)/Contents/Resources
-	sed -i 's/{VERSION}/$(BUILD_NR)/g' $(APP)/Contents/Info.plist
+	gsed -i 's/{VERSION}/$(BUILD_NR)/g' $(APP)/Contents/Info.plist
 
 
 # Make final distribution DMG
