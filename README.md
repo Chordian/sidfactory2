@@ -6,6 +6,8 @@ a Commodore 64. It uses the reSID emulator and is currently in open BETA. You ca
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
+![alt text](http://deepsid.chordian.net/images/players/122_1_sidfactory_ii.png "SID Factory II")
+
 ## Compiling
 
 ### Visual Studio on Windows
