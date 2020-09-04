@@ -13,13 +13,14 @@ Building macOS distribution from command line (iTerm)
 ## Targets
 
 - `make`: Create just the executable
-- `make tmp`:  Create a temporary DMG image
-- `make dmg`: Finalize existing temporary DMG image 
+- `make app`: Create the `SIDFactoryII.app`
+- `make tmp`: Create a temporary DMG image
+- `make dmg`: Finalize existing temporary DMG image
 
 ## Create a distribution
 
-First commit all changes! (To make sure the revision number in the application
-is correct)
+First commit all changes! (To make sure the commit hash used in the application
+version is correct)
 
 Checkout `sf2converter` alongside `sidfactory2`, so that both projects are in
 the same root folder.

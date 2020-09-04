@@ -40,6 +40,7 @@ LINKER_FLAGS=\
 	-framework ApplicationServices \
 	-F ./App/Contents/Frameworks \
 	-lstdc++ \
+	-flto \
 	-Wl,-rpath,@executable_path/../Frameworks
 
 .PHONY: clean 
@@ -79,6 +80,7 @@ $(APP): $(EXE) $(ICONS)
 	mkdir -p $(APP)
 	cp -r App/ ${APP}
 	mkdir -p ${APP}/Contents/MacOS
+	mkdir -p ${APP}/Contents/Resources
 	cp $(EXE) $(APP)/Contents/MacOS
 	cp -r $(PROJECT_ROOT)/drivers $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/overlay $(APP)/Contents/Resources
