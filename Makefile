@@ -23,7 +23,12 @@ CC_FLAGS= $(shell sdl2-config --cflags) \
 	-std=gnu++14 \
 	-flto
 
-LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
+ifeq ($(PLATFORM),MACOS)
+	LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto \
+	-framework ApplicationServices 
+else
+	LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
+endif
 
 .PHONY: clean
 .PHONY: ubuntu
@@ -46,6 +51,7 @@ dist: $(EXE)
 	cp -r $(PROJECT_ROOT)/overlay $(ARTIFACTS_FOLDER)
 	cp -r $(PROJECT_ROOT)/color_schemes $(ARTIFACTS_FOLDER)
 	cp -r $(PROJECT_ROOT)/config $(ARTIFACTS_FOLDER)
+	cp -r $(PROJECT_ROOT)/music $(ARTIFACTS_FOLDER)
 	# cd $(ARTIFACTS_FOLDER) && zip -r SIDFactoryII-linux.zip .
 
 $(ARTIFACTS_FOLDER):
@@ -53,6 +59,7 @@ $(ARTIFACTS_FOLDER):
 
 clean:
 	rm ${OBJ} || true
+	rm -rf $(ARTIFACTS_FOLDER) || true
 
 # Compile with the Ubuntu image on Docker
 

@@ -5,6 +5,8 @@
 #include "libraries/ghc/fs_std.h"
 #include <assert.h>
 #include <system_error>
+#include <libgen.h>
+#include <unistd.h>
 
 using namespace fs;
 
@@ -80,31 +82,31 @@ namespace Foundation
 
     std::string PlatformSDLLinux::Storage_GetHomePath() const
     {
-        return m_RealHome;      // This should be the user default 
+        return m_RealHome;      // This should be the user default
     }
 
 
     std::string PlatformSDLLinux::Storage_GetConfigHomePath() const
     {
-        return m_RealHome;      // This should be the user default 
+       return GetResourcePath("config");
     }
 
 
     std::string PlatformSDLLinux::Storage_GetDriversHomePath() const
     {
-        return m_RealHome;
+       return GetResourcePath("drivers");
     }
 
-    
+
     std::string PlatformSDLLinux::Storage_GetOverlaysHomePath() const
     {
-        return m_RealHome;
+        return GetResourcePath("overlay");
     }
 
 
-    std::string PlatformSDLLinux::Storage_GetColorSchemesHomePath() const 
+    std::string PlatformSDLLinux::Storage_GetColorSchemesHomePath() const
     {
-        return m_RealHome;
+       return GetResourcePath("color_schemes");
     }
 
 
@@ -112,6 +114,16 @@ namespace Foundation
     {
         return inPath;
     }
+
+    // https://stackoverflow.com/questions/23943239/how-to-get-path-to-current-exe-file-on-linux
+    std::string PlatformSDLLinux::GetResourcePath(const std::string& relativePath) const {
+        char result[PATH_MAX];
+        ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+        if (count != -1)
+            return std::string(dirname(result)) + '/' + relativePath;
+        return NULL;
+    }
+
 }
 
 #endif

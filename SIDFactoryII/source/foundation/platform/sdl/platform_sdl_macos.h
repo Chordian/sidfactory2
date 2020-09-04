@@ -34,10 +34,10 @@ namespace Foundation
 	private:
 		unsigned long m_LogicalDrivesMask;
 		std::vector<std::string> m_LogicalDrivesList;
-        
-        char m_ApplicationPath[PATH_MAX];
-        std::string m_RealHome;
-        std::string GetResourcePath(const std::string& relativePath) const;
+		char m_ApplicationPath[PATH_MAX];
+		std::string m_RealHome;
+
+		std::string GetResourcePath(const std::string& relativePath) const;
 	};
 }
 #endif
