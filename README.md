@@ -8,6 +8,8 @@ Huus and Michel de Bree.
 
 ![alt text](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
+![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
+
 ## Compiling
 
 ### Visual Studio on Windows
