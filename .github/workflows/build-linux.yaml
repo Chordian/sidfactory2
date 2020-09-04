@@ -1,8 +1,5 @@
 name: Build linux binaries
-on:
-  push:
-    branches:
-      - linux
+on: workflow_dispatch
 
 jobs:
   build:
