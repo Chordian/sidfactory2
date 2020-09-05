@@ -22,7 +22,7 @@ In order to compile and run SID Factory II in Visual Studio on Windows you need 
 - Download the development library archive of SDL2 for Visual C++ from https://www.libsdl.org.
 - Extract it into the `libs` folder so you end up with `libs/SDL2-2.0.12` with various files and folders in it.
 - Download the runtime binary archive of SDL2 for x86 from the same web site.
-- Extract it and copy the `SDL2.dll` file in it to both the `sidfactory2/SF2Converter` folder and the `sidfactory2/SidFactoryII`.
+- Extract it and copy the `SDL2.dll` file in it to both the `sidfactory2/SF2Converter` and `sidfactory2/SidFactoryII` folders.
 
 You should now be able to compile and run it when you open the solution file in Visual Studio.
 
