@@ -3,7 +3,6 @@
 .vs
 /builds
 /drivers
-/libs
 /debug
 /release
 /Debug
@@ -22,7 +21,6 @@ SIDFactoryII/drivers_dev
 SIDFactoryII/Debug
 SIDFactoryII/Release
 SIDFactoryII/Info.plist
-SIDFactoryII/SDL2.dll
 SIDFactoryII/user.ini
 SIDFactoryII/*.entitlements
 SIDFactoryII/*.vcxproj.user

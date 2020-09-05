@@ -6,6 +6,7 @@
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/execution/executionhandler.h"
 #include "runtime/execution/flightrecorder.h"
+#include "runtime/editor/converters/iconverter.h"
 #include "runtime/editor/screens/screen_base.h"
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/screens/screen_edit.h"
@@ -172,7 +173,7 @@ namespace Editor
 			if (inFileToLoad != nullptr)
 			{
 				std::string file_to_load(inFileToLoad);
-				return LoadFile(file_to_load);
+				return LoadFile(file_to_load, nullptr);
 			}
 
 			return false;
@@ -183,7 +184,7 @@ namespace Editor
 		{
 			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(m_ConfigFile, "Editor.Driver.Default", std::string("sf2driver11_00.prg"));
 			std::string drivers_folder = m_Platform->Storage_GetDriversHomePath();
-			LoadFile(drivers_folder + default_driver_filename);
+			LoadFile(drivers_folder + default_driver_filename, nullptr);
 		}
 
         // After loading, set the current path, so that opening the disk menu will be correct.
@@ -275,7 +276,7 @@ namespace Editor
 		{
 			m_CurrentScreen->TryLoad(inPathAndFilename, [&, path_and_filename = inPathAndFilename](bool inQuit)
 			{
-				if (LoadFile(path_and_filename))
+				if (LoadFile(path_and_filename, m_CurrentScreen))
 					ForceRequestScreen(m_EditScreen.get());
 				else
 					m_CurrentScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Invalid file", "The selected file is not compatible with SID Factory II.", DefaultDialogWidth, true, []() {}));
@@ -405,59 +406,66 @@ namespace Editor
 	}
 
 
-	bool EditorFacility::LoadFile(const std::string& inPathAndFilename)
+	bool EditorFacility::LoadFile(const std::string& inPathAndFilename, ScreenBase* inCallerScreen)
 	{
+		const int max_file_size = 4 * (1024 * 1024);
+
 		// Read test music data to cpu memory
 		void* data = nullptr;
 		long data_size = 0;
 
 		std::shared_ptr<DriverInfo> driver_info = std::make_shared<DriverInfo>();
+		std::shared_ptr<Utility::C64File> c64_file = nullptr;
 
-		if (Utility::ReadFile(inPathAndFilename, 65536, &data, data_size))
+		if (Utility::ReadFile(inPathAndFilename, max_file_size, &data, data_size))
 		{
-			if (data_size > 2)
+			if (data_size > 2 && data_size < 0x10000)
 			{
-				std::shared_ptr<Utility::C64File> c64_file = Utility::C64File::CreateFromPRGData(data, static_cast<unsigned int>(data_size));
+				// Try to parse the data immediately
+				c64_file = Utility::C64File::CreateFromPRGData(data, static_cast<unsigned int>(data_size));
 
 				if (c64_file != nullptr)
-				{
 					driver_info->Parse(*c64_file);
+			}
 
-					if (driver_info->IsValid())
-					{
-						m_DriverInfo->GetAuxilaryDataCollection().Reset();
-						m_DriverInfo = driver_info;
+			// Try converting, if there're no valid results yet
+			if (inCallerScreen != nullptr)
+			{
+				const size_t converter_count = m_Converters.size();
 
-						//const unsigned short auxilary_data_vector = m_DriverInfo->GetDriverCommon().m_InitAddress - 5;
-						//const unsigned short auxilary_data_address = c64_file->GetWord(auxilary_data_vector);
-						//
-						//if (auxilary_data_address != 0)
-						//{
-						//	Utility::C64FileReader reader = Utility::C64FileReader(*c64_file, auxilary_data_address);
-						//	m_DriverInfo->GetAuxilaryDataCollection().Load(reader);
-						//}
+				for (size_t i = 0; i < converter_count && !driver_info->IsValid(); ++i)
+				{
+					c64_file = m_Converters[i].Convert(data, static_cast<unsigned int>(data_size), inCallerScreen->GetComponentsManager());
 
-						// Copy the data to the emulated memory
-						m_CPUMemory->Lock();
-						m_CPUMemory->Clear();
-						m_CPUMemory->SetData(c64_file->GetTopAddress(), c64_file->GetData(), c64_file->GetDataSize());
-						m_CPUMemory->Unlock();
-
-						// Init the execution handler 
-						m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
-						m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
-						m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
-
-						// Store name of last read file
-						SetLastSavedPathAndFilename(inPathAndFilename);
-
-						// Flush undo after load
-						m_EditScreen->FlushUndo();
-
-						// Notify overlay
-						m_OverlayControl->OnChange(*m_DriverInfo);
-					}
+					if (c64_file != nullptr)
+						driver_info->Parse(*c64_file);
 				}
+			}
+
+			if (driver_info->IsValid())
+			{
+				m_DriverInfo->GetAuxilaryDataCollection().Reset();
+				m_DriverInfo = driver_info;
+
+				// Copy the data to the emulated memory
+				m_CPUMemory->Lock();
+				m_CPUMemory->Clear();
+				m_CPUMemory->SetData(c64_file->GetTopAddress(), c64_file->GetData(), c64_file->GetDataSize());
+				m_CPUMemory->Unlock();
+
+				// Init the execution handler 
+				m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
+				m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
+				m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
+
+				// Store name of last read file
+				SetLastSavedPathAndFilename(inPathAndFilename);
+
+				// Flush undo after load
+				m_EditScreen->FlushUndo();
+
+				// Notify overlay
+				m_OverlayControl->OnChange(*m_DriverInfo);
 			}
 
 			delete[] static_cast<char*>(data);
@@ -743,7 +751,7 @@ namespace Editor
 	{
 		auto do_load = [&, inSelectedFilename, inCallerScreen]()
 		{
-			if (LoadFile(inSelectedFilename))
+			if (LoadFile(inSelectedFilename, inCallerScreen))
 				RequestScreen(m_EditScreen.get());
 			else
 				inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Invalid file", "The selected file is not compatible with SID Factory II.", DefaultDialogWidth, true, []() {}));

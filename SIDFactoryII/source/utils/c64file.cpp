@@ -15,14 +15,19 @@ namespace Utility
 		if (inDataSize > 2)
 		{
 			const unsigned char* data_bytes = static_cast<const unsigned char*>(inPRGData);
-			m_TopAddress = static_cast<unsigned short>(data_bytes[0]) | (static_cast<unsigned short>(data_bytes[1]) << 8);
+			const unsigned int top_addres = static_cast<unsigned short>(data_bytes[0]) | (static_cast<unsigned short>(data_bytes[1]) << 8);
+			const unsigned int bottom_address = top_addres + inDataSize - 2;
 
-			m_BottomAddress = m_TopAddress + (inDataSize - 2);
+			assert(bottom_address < 0x10000);
+
+			m_TopAddress = static_cast<unsigned short>(top_addres);
+			m_BottomAddress = static_cast<unsigned short>(bottom_address);
+
 			m_Data = new unsigned char[0x10000];
 			memset(m_Data, 0, 0x10000);
 
 			if (IsValid())
-				memcpy(&m_Data[m_TopAddress], &data_bytes[2], inDataSize - 2);
+				memcpy(&m_Data[m_TopAddress], &data_bytes[2], bottom_address - top_addres);
 		}
 	}
 

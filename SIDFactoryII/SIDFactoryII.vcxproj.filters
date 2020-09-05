@@ -113,6 +113,9 @@
     <Filter Include="source\libraries\residfp\resample">
       <UniqueIdentifier>{f2a4bed6-80f9-4ba3-b33c-eea4dfb7c2bc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\editor\converters">
+      <UniqueIdentifier>{9b9a4fb6-915c-436d-a82f-6ee28d0d0152}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -1005,6 +1008,9 @@
     </ClInclude>
     <ClInclude Include="source\libraries\residfp\resample\ZeroOrderResampler.h">
       <Filter>source\libraries\residfp\resample</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\iconverter.h">
+      <Filter>source\runtime\editor\converters</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
