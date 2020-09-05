@@ -1,8 +1,5 @@
 name: Build macOS binaries
-on:
-  push:
-    branches:
-      - macos
+on: workflow_dispatch
 
 jobs:
   build:
