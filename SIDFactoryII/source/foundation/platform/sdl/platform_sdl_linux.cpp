@@ -5,6 +5,7 @@
 #include "libraries/ghc/fs_std.h"
 #include <assert.h>
 #include <system_error>
+#include <pwd.h>
 #include <libgen.h>
 #include <unistd.h>
 
@@ -15,6 +16,36 @@ namespace Foundation
 	PlatformSDLLinux::PlatformSDLLinux()
         : PlatformSDL("linux")
 	{
+        std::error_code error_code;
+        char buffer[PATH_MAX];
+
+        // Standard mount points for external Drives
+        m_LogicalDrivesList.push_back("/mnt");
+        m_LogicalDrivesList.push_back("/Media");
+
+        // Add the user's home folder
+        char *realHome = getpwuid(getuid())->pw_dir;
+
+        if(realHome != nullptr)
+        {
+            m_RealHome = std::string(realHome);
+
+            m_LogicalDrivesList.push_back(realHome);
+
+            // Add some standard folders that user might want to use...
+            m_LogicalDrivesList.push_back(std::string(realHome) + "/Desktop");
+            m_LogicalDrivesList.push_back(std::string(realHome) + "/Music");
+            m_LogicalDrivesList.push_back(std::string(realHome) + "/Documents");
+        }
+
+        // let's also add the current dir
+        fs::path application_path = getcwd(buffer, PATH_MAX);
+        m_LogicalDrivesList.push_back(std::string(buffer));
+
+        if(!fs::is_directory(application_path))
+            fs::current_path(application_path.remove_filename());
+        else
+            fs::current_path(application_path);//, error_code);
     }
 
 
@@ -26,26 +57,42 @@ namespace Foundation
 
     unsigned int PlatformSDLLinux::Storage_GetLogicalDrivesCount() const
     {
-        return 0;
+        return static_cast<unsigned int>(m_LogicalDrivesList.size());
     }
-
 
     std::string PlatformSDLLinux::Storage_GetLogicalDriveName(unsigned int inLogicalDrive) const
     {
-        return "";
+        assert(inLogicalDrive < m_LogicalDrivesList.size());
+        return m_LogicalDrivesList[inLogicalDrive];
     }
-
 
     bool PlatformSDLLinux::Storage_SetCurrentPath(const std::string& inPath) const
     {
         std::error_code ec;
-        fs::current_path(inPath, ec);
-        if (ec)
-            return false;
+        fs::path previous_path = fs::current_path(ec);
 
-        return true;
+        if (!ec)
+        {
+            // Set current path, if that fails, set the prevcious path again
+            fs::current_path(inPath, ec);
+            if (ec)
+            {
+                fs::current_path(previous_path, ec);
+                return false;
+            }
+
+            // Try get the current path to verify that it works (which will pop up a dialog on macOS for instance, if there are special enforcements to consider. If getting the path fails, set the previous again.
+            auto cp = fs::current_path(ec);
+
+            fs::directory_iterator(cp, ec);
+            if(!ec)
+                return true;
+
+            fs::current_path(previous_path, ec);
+        }
+
+        return false;
     }
-
 
     bool PlatformSDLLinux::Storage_IsSystemFile(const std::string& inPath) const
     {
@@ -119,9 +166,10 @@ namespace Foundation
     std::string PlatformSDLLinux::GetResourcePath(const std::string& relativePath) const {
         char result[PATH_MAX];
         ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+        std::string resourcePath = m_ApplicationPath;
         if (count != -1)
-            return std::string(dirname(result)) + '/' + relativePath;
-        return NULL;
+            resourcePath = std::string(dirname(result));
+        return resourcePath + "/" + relativePath;
     }
 
 }
