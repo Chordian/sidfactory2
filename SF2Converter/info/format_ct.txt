@@ -1,0 +1,150 @@
+CheeseCutter 2 file format
+==========================
+
+Researched for SF2Converter (SID Factory II) by Jens-Christian Huus.
+
+At first, the CT file has three ID bytes "CC2" followed by data packed with ZLIB. After decompressing the data
+from position 3 and onwards, you have to skip down to 0x10000 to read the data as described below.
+
+Pos             Size        Example         Notes
+
+10000           0x01        0x0c            Version – < 6 = too old, > 128 = 2SID
+10001           0x01        0x00            Clock – appears to be a real timer – not sure if work or tune clock?
+10002           0x01        0x01            Multiplier (0-16) – multispeed, so 1x, 2x, etc.
+10003           0x01        0x01            SID model – 0 or 1 – as far as I can see, 0 is 6581 and 1 is 8580
+10004           0x01        0x00            Fppres – appears to be filter parameter, probably related to ReSID chip model
+
+10005           0x20                        Song speeds (version >= 6)
+
+10026           0x01        0x04            Highlight – appears to have something to do with the row count highlighting
+10027           0x01        0x00            Highlight offset
+
+10105           0x20                        Title (32 characters)
+10125           0x20                        Author (32 characters)
+10145           0x20                        Release (32 characters)
+
+101A5           0x600                       Instrument names (48 instruments, each with 32 characters = 1536 = 0x600)
+                                            However, the editor actually only edits and displays 16 characters.
+
+109A5           0x18000                     Sub tunes (1024 * 3 * 32 = 98304 = 0x18000) - all order lists as follows here:
+
+109A5           0x400       0xa0 0x01...    Orderlist for channel 1 (transpose and sequence pairs - 0xf0 is the end)
+                                            0x80 can be used to repeat the previous transposition
+10DA5           0x400       0xa0 0x08...    Orderlist for channel 2
+111A5           0x400       0xa0 0x11...    Orderlist for channel 3
+
+.....           .....                       More orderlists for up to 32 sub tunes
+                                            The block below has its own local set of order lists for three channels.
+
+-------------------------------------------------------------------------------------------------------------------------
+
+Now go back to the start at 0x0000 for the rest of the source tune data described below.
+
+Pos    Useful   Size        Example         Notes
+
+0FA0            0x54        ......          List of offset to various tables, as follows here:
+
+0FA0            0x02        0x0e00          Offset to Features
+0FA2    X       0x02        0x1943          Offset to Volume (main volume 0x0f among player variables)
+0FA4            0x02        0x1926          Offset to Editorflag (presumably voice on/off flags among player variables)
+0FA6            0x02        0x2000          Offset to Songsets (word addresses to orderlist tracks)
+0FA8    X ?     0x02        0x193e          Offset to PlaySpeed (set to 0x05 0x01 in a speed 1 song - maybe only 0x05 is used to indicate default?)
+0FAA            0x02        0xf80a          Offset to Subnoteplay (points to a small piece of code)
+0FAC            0x02        0xf800          Offset to Submplayplay (points to a small piece of code)
+0FAE            0x02        0x0e19          Offset to InstrumentDescriptionsHeader (points to address 0xf000 which points to editor info strings)
+0FB0            0x02        0x0e29          Offset to PulseDescriptionsHeader (points to address 0xf120 which points to editor info strings)
+0FB2            0x02        0x0e31          Offset to FilterDescriptionsHeader (points to address 0xf1f0 which points to editor info strings)
+0FB4            0x02        0x0e39          Offset to WaveDescriptionsHeader (points to address 0xf2cb which points to editor info strings)
+0FB6            0x02        0x0e3d          Offset to CmdDescriptionsHeader (points to address 0xf479 which points to editor info strings)
+0FB8            0x02        0x1862          Offset to FREQTABLE (same address \)
+0FBA            0x02        0x1862          Offset to FINETUNE  (same address /)
+0FBC    X       0x02        0xaf00          Offset to Arp1 (left byte column with offsets and 7E = stop and 7F = absolute wrap)
+0FBE    X       0x02        0xb000          Offset to Arp2 (right byte column with waveforms and wrap index for 7F)
+0FC0    X       0x02        0xb400          Offset to FILTTAB (no column separation here; just sets of 4 bytes all together)
+0FC2    X       0x02        0xb500          Offset to PULSTAB (no column separation here; just sets of 4 bytes all together)
+0FC4    X       0x02        0xb100          Offset to Inst (columnized; 0x2f bytes of the first column, then 0x2f bytes of the next column, etc.)
+0FC6    X       0x02        0x2200          Offset to Track1 (orderlist with the usual 0xa0 0x01 0xa0 0x02, etc. - until 0xf0 in the end)
+                                                      0x80 can be used to repeat the previous transposition
+0FC8    X       0x02        0x2600          Offset to Track2 (orderlist)
+0FCA    X       0x02        0x2a00          Offset to Track3 (orderlist)
+0FCC            0x02        0x2e00          Offset to SeqLO (points to 128 bytes that are usually all 0x00)
+0FCE            0x02        0x2e80          Offset to SeqHI (points to 128 bytes with high byte of address to sequences spaced 0x100 apart)
+0FD0    X       0x02        0xb300          Offset to CMD1 (columnized; 0x3f bytes with command, 0x3f bytes with byte 1, 0x3f bytes with byte 2)
+0FD2    X       0x02        0x2f00          Offset to S00 (location of the first sequence #00; should also be pointed to by first SeqLO/SeqHI)
+0FD4    X ?     0x02        0x193c          Offset to SPEED (might be tune speed; set to 0x01 in a speed 1 song)
+0FD6            0x02        0x1930          Offset to TRACKLO (contains 0x06 0x04 0x04 among player variables)
+0FD8            0x02        0x192d          Offset to VOICE (contains 0x00 0x07 0x0e among player variables)
+0FDA            0x02        0x1986          Offset to GATE (contains 0xff 0xfe 0xfe among player variables)
+0FDC    X       0x02        0xb600          Offset to ChordTable (128 consecutive bytes)
+0FDE            0x02        0x1983          Offset to TRANS (contains 0x00 0x00 0x00 among player variables)
+0FE0    X       0x02        0xb680          Offset to ChordIndexTable (my guess is this is index values of each cluster chord set; e.g. 0x00 0x05)
+0FE2            0x02        0x1965          Offset to SHTRANS (contains 0x00 0x00 0x00 among player variables)
+0FE4            0x02        0x1862          Offset to FOO3    (same address \ - contains 0x00 0x16 0x27 among player variables)
+0FE6            0x02        0x1862          Offset to NEXT    (same address |)
+0FE8            0x02        0x1862          Offset to CURINST (same address |)
+0FEA            0x02        0x1862          Offset to GEED    (same address /)
+0FEC            0x02        0x1940          Offset to NEWSEQ (contains 0x00 0x00 0x00 among player variables)
+
+In pulse and filter programs, a fourth byte of 00 doesn't mean "loop to first row" but "continue to next row"
+instead. This can be confusing.
+
+Likewise, a 0x00 waveform in the wave table means "continue the last waveform" (and not waveform 0x00, as that
+would have been set with a 0xE0 byte instead). Think of it as a "non-repeating" repeat command.
+
+--------
+
+Sequences start at the address pointed to in 0x0fd2 (which is 0x2f00 in the example tune I examined). There can
+up be 128 sequences each with a maximum of 64 rows. All sequences are spaced 256 bytes apart.
+
+If a sequence starts with 0xf0 0xf0 0x60 0x00 followed by 0xbf 0x00 0x00 0x00, it's unused and you can skip it.
+
+Events each take up 4 bytes:
+
+Pos             Size        Example         Notes
+
+                0x01        0xf0            0xbf      = end of sequence (actually 0xbf 0x00 0x00 0x00)
+                                            0xc0-0xef = instruments (00-2F)
+                                            0xf0      = nothing
+
+                0x01        0xf0            0x5f      = tie note
+                                            0xf0      = nothing
+
+                0x01        0x60            0x60      = nothing
+                                            0x61      = gate off
+                                            0x62      = gate on
+                                            0x63-0xbe = notes (D#0 to A#7 can be typed in editor)
+                
+                0x01        0x00            0x00      = nothing (points to HR value but is ignored)
+                                            0x01-0x3f = commands (01-3F)
+                                            0x40-0x5f = pulse table index (00-1F)
+                                            0x60-0x7f = filter table index (00-1F)
+                                            0x80-0x9f = chord table index (cluster index 1-F)
+                                            0xa0-0xaf = attack (0-F)
+                                            0xb0-0xbf = decay (0-F)
+                                            0xc0-0xcf = sustain (0-F)
+                                            0xd0-0xdf = release (0-F)
+                                            0xe0-0xef = main volume (0-F)
+                                            0xf0-0xff = song speed (0-F; 0 or 1 is swing tempo)
+
+The first chord table index is used as a tempo program when the speed is set to less than 2, but if a standard
+speed 2 or above is set, it can be used as a chord program too.
+
+--------
+
+The first position in the commands tables is always HR (default 0F 00).
+
+Commands available:
+
+                            0 XX XX         Slide up (XXXX = speed)
+                            1 XX XX         Slide down (XXXX = speed)
+                            2 0X YZ         Hi-fi vibrato (X = feel, Y = speed, Z = depth)
+                            3 XX XX         Detune (XXXX = amount)
+                            4 AD SR         Set ADSR
+                            5 XX YY         Lo-fi vibrato (XX = speed, YY = depth)
+                            6 00 XX         Set waveform (XX = waveform)
+                            7 XX XX         Portamento (XXXX = speed)
+                            8 .. ..         Portamento off
+
+See my overlay image for CheeseCutter for information about how the data tables work.
+
+--------

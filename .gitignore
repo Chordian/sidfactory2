@@ -8,6 +8,12 @@
 /release
 /Debug
 /Release
+SF2Converter/data
+SF2Converter/Debug
+SF2Converter/Release
+SF2Converter/SDL2.dll
+SF2Converter/test
+SF2Converter/*.vcxproj.user
 SIDFactoryII/Assets.xcassets
 SIDFactoryII/Base.lproj
 SIDFactoryII/data
@@ -26,4 +32,3 @@ SIDFactoryII/*.vcxproj.user
 *.o
 Dockerfile
 artifacts
-
