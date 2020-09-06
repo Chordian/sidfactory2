@@ -11,7 +11,7 @@ jobs:
       - name: Install extra build tooling
         run: brew install gnu-sed librsvg pandoc
       - name: Build binaries
-        run: (cd macos && make app)
+        run: (cd macos && make raw)
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:

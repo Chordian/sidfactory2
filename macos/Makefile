@@ -4,9 +4,13 @@
 BUILD_NR=$(shell date +"%Y%m%d").$(shell git rev-parse --short HEAD)
 PROJECT_ROOT=../SIDFactoryII
 SOURCE=$(PROJECT_ROOT)/source
-SRC=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp") 
+SRC=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
 DOCS=../dist/documentation
-SF2_CONVERTER=../../sf2converter/macos/artifacts/SF2Converter
+SRC_SF2C=\
+  ../SF2Converter/main.cpp \
+	$(shell find ../SF2Converter/converter -name "*.cpp") \
+	$(shell find $(SOURCE) -name "*.cpp")
+SRC_SF2C_C=../SF2Converter/libraries/miniz_v115_r4/miniz.c
 
 # Artifacts
 APP_NAME=SIDFactoryII
@@ -14,18 +18,21 @@ ARTIFACTS_FOLDER=artifacts
 EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 APP=$(ARTIFACTS_FOLDER)/$(APP_NAME).app
 DMG=$(ARTIFACTS_FOLDER)/$(APP_NAME)_macOS_$(BUILD_NR).dmg
-DMG_TMP=$(ARTIFACTS_FOLDER)/tmp.dmg
+DMG_RAW=$(ARTIFACTS_FOLDER)/$(APP_NAME)_macOS_$(BUILD_NR)-RAW.dmg
 DMG_CONTENTS=$(ARTIFACTS_FOLDER)/dmg
 DMG_TITLE=$(APP_NAME)
 DMG_SIZE=16384
 ICONSET=$(ARTIFACTS_FOLDER)/$(APP_NAME).iconset
 ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
+EXE_SF2C=$(ARTIFACTS_FOLDER)/SF2Converter
+
 # The compiler (gcc, g++, c++,clang++)
 CC=gcc
 
 CC_FLAGS= \
   -I $(SOURCE) \
+	-I ../SF2Converter \
 	-I ./App/Contents/Frameworks/SDL2.framework/Headers \
 	-D_THREAD_SAFE \
 	-std=gnu++14 \
@@ -33,7 +40,7 @@ CC_FLAGS= \
 	-O2 \
 	-flto \
 	-mmacosx-version-min=10.7 \
-	-Wno-bitwise-op-parentheses 
+	-Wno-bitwise-op-parentheses
 
 LINKER_FLAGS=\
 	-framework SDL2 \
@@ -43,29 +50,42 @@ LINKER_FLAGS=\
 	-flto \
 	-Wl,-rpath,@executable_path/../Frameworks
 
-.PHONY: clean 
-.PHONY: tmp 
+.PHONY: clean
+.PHONY: tmp
 .PHONY: dmg
 .PHONY: app
+.PHONY: sf2c
 
 # Rule to compile .o from .cpp
 %.o: %.cpp
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
+# Rule to compile .o from .c
+%.o: %.c
+	$(CC) -c $< -o $@
+
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o)
+OBJ_SF2C = $(SRC_SF2C:.cpp=.o) $(SRC_SF2C_C:.c=.o)
 
 # Compile executable
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
 	$(CC) $(LINKER_FLAGS) -o $(EXE) $(OBJ)
 	strip $(EXE)
-	 
+
+# Compile SF2Converter
+$(EXE_SF2C) : $(OBJ_SF2C) $(ARTIFACTS_FOLDER)
+	$(CC) $(LINKER_FLAGS) -o $(EXE_SF2C) $(OBJ_SF2C)
+	strip $(EXE_SF2C)
+
 app: $(APP)
+
+sf2c: $(EXE_SF2C)
 
 # ----------------------------------------------------
 
-# Step 1: "make tmp" to create a temporary DMG
-tmp: $(DMG_TMP)
+# Step 1: "make raw" to create a "raw" DMG
+raw: $(DMG_RAW)
 
 # Step 2: Mount tmp.dmg, lay it out manually, unmount
 
@@ -89,32 +109,32 @@ $(APP): $(EXE) $(ICONS)
 	mv $(ICONS) $(APP)/Contents/Resources
 	gsed -i 's/{VERSION}/$(BUILD_NR)/g' $(APP)/Contents/Info.plist
 
-
 # Make final distribution DMG
 $(DMG):
 	DMG=$(DMG) \
   APP_NAME=$(APP_NAME) \
 	DMG_TITLE=$(DMG_TITLE) \
-	DMG_TMP=$(DMG_TMP) \
+	DMG_RAW=$(DMG_RAW) \
 	./make_dmg.sh
 
 # Collect the contents of the DMG
-$(DMG_CONTENTS): $(APP) $(ARTIFACTS_FOLDER)/keys.html
+$(DMG_CONTENTS): $(APP) $(EXE_SF2C) $(ARTIFACTS_FOLDER)/keys.html
 	rm -rf $(DMG_CONTENTS)
 	mkdir -p $(DMG_CONTENTS)/$(APP_NAME)
-	cp -r $(APP) $(DMG_CONTENTS)
+	mv $(APP) $(DMG_CONTENTS)
 	cp -r $(DOCS)/ $(DMG_CONTENTS)/$(APP_NAME)/documentation
-	cp $(ARTIFACTS_FOLDER)/*.html $(DMG_CONTENTS)/$(APP_NAME)/documentation
+	mv $(ARTIFACTS_FOLDER)/keys.html $(DMG_CONTENTS)/$(APP_NAME)/documentation
 	cp -r Install.txt $(DMG_CONTENTS)
 	cp -r $(PROJECT_ROOT)/music/ ${DMG_CONTENTS}/$(APP_NAME)/music
 	cp -r $(PROJECT_ROOT)/drivers ${DMG_CONTENTS}/$(APP_NAME)/drivers
-	cp $(SF2_CONVERTER) $(DMG_CONTENTS)/$(APP_NAME)
+	mv $(ARTIFACTS_FOLDER)/SF2Converter $(DMG_CONTENTS)/$(APP_NAME)
 	ln -s /Applications $(DMG_CONTENTS)/Applications
 
 # Make a temporary DMG. This needs to be layed out nicely by hand before building the final DMG.
-$(DMG_TMP): $(DMG_CONTENTS)
-	rm -f $(DMG_TMP)
+$(DMG_RAW): $(DMG_CONTENTS)
+	rm -f $(DMG_RAW)
 	hdiutil create -srcfolder "$<" -volname "$(DMG_TITLE)" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size $(DMG_SIZE)k $@
+	rm -rf "$<"
 
 # https://developer.apple.com/library/archive/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/Optimizing/Optimizing.html
 $(ICONS): icon.svg $(ARTIFACTS_FOLDER)
@@ -124,7 +144,7 @@ $(ICONS): icon.svg $(ARTIFACTS_FOLDER)
 	rsvg-convert -w 128 -h 128 -f png -o $(ICONSET)/icon_128x128.png $<
 	rsvg-convert -w 256 -h 256 -f png -o $(ICONSET)/icon_256x256.png $<
 	rsvg-convert -w 512 -h 512 -f png -o $(ICONSET)/icon_512x512.png $<
-	rsvg-convert -w 1024 -h 1024 -f png -o $(ICONSET)/icon_512x512@2x.png $< 
+	rsvg-convert -w 1024 -h 1024 -f png -o $(ICONSET)/icon_512x512@2x.png $<
 	cp $(ICONSET)/icon_32x32.png $(ICONSET)/icon_16x16@2x.png
 	cp $(ICONSET)/icon_256x256.png $(ICONSET)/icon_128x128@2x.png
 	cp $(ICONSET)/icon_512x512.png $(ICONSET)/icon_256x256@2x.png
