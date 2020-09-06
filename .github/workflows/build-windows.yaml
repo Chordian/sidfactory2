@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build binaries
-        run: build_windows.bat
+        run: ./build_windows.bat
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
