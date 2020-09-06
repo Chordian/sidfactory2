@@ -28,7 +28,7 @@ ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 EXE_SF2C=$(ARTIFACTS_FOLDER)/SF2Converter
 
 # The compiler (gcc, g++, c++,clang++)
-CC=gcc
+CC=MACOSX_DEPLOYMENT_TARGET=10.9 gcc
 
 CC_FLAGS= \
   -I $(SOURCE) \
@@ -39,7 +39,6 @@ CC_FLAGS= \
 	-stdlib=libc++ \
 	-O2 \
 	-flto \
-	-mmacosx-version-min=10.7 \
 	-Wno-bitwise-op-parentheses
 
 LINKER_FLAGS=\
