@@ -1,0 +1,20 @@
+name: Build windows binaries
+on:
+  push:
+    branches:
+      - windows
+
+jobs:
+  build:
+    name: Build executable
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build binaries
+        run: build_windows.bat
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: SIDFactoryII-windows
+          path: ./artifacts/

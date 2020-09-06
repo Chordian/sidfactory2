@@ -30,3 +30,4 @@ SIDFactoryII/*.vcxproj.user
 *.o
 Dockerfile
 artifacts
+.vscode
