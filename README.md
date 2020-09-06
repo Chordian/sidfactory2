@@ -11,21 +11,6 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
-## Compiling
-
-### Visual Studio on Windows
-
-In order to compile and run SID Factory II in Visual Studio on Windows you need to do this:
-
-- First clone this repository into a folder on your computer. The `sidfactory2` folder is created which you can rename to something else if you want. (We will assume you kept the original name as is below.)
-- Create a `libs` folder next to the `sidfactory2` folder.
-- Download the development library archive of SDL2 for Visual C++ from https://www.libsdl.org.
-- Extract it into the `libs` folder so you end up with `libs/SDL2-2.0.12` with various files and folders in it.
-- Download the runtime binary archive of SDL2 for x86 from the same web site.
-- Extract it and copy the `SDL2.dll` file in it to both the `sidfactory2/SF2Converter` and `sidfactory2/SidFactoryII` folders.
-
-You should now be able to compile and run it when you open the solution file in Visual Studio.
-
 ## Changelog
 
 ### Build 2020????
