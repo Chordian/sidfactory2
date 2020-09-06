@@ -11,6 +11,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.1
       - name: Build binaries
         run: ./build_windows.bat
       - name: Upload artifact
