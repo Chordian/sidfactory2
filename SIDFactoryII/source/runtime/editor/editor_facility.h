@@ -9,6 +9,7 @@
 #include "utils/keyhookstore.h"
 #include <memory>
 #include <string>
+#include <functional>
 
 namespace Foundation
 {
@@ -72,10 +73,11 @@ namespace Editor
 		void SetCurrentScreen(ScreenBase* inCurrentScreen);
 		void HandleScreenState();
 
-		bool IsFileSF2(const std::string& inFilename);
-		bool LoadFile(const std::string& inFilename, ScreenBase* inCallerScreen);
+		bool IsFileSF2(const std::string& inPathAndFilename);
+		bool LoadFile(const std::string& inPathAndFilename);
+		bool LoadFileForImport(const std::string& inPathAndFilename, std::shared_ptr<DriverInfo>& outDriverInfo, std::shared_ptr<Utility::C64File>& outC64File);
+		bool LoadAndConvertFile(const std::string& inPathAndFilename, ScreenBase* inCallerScreen, std::function<void()> inSuccesfullConversionAction);
 		bool SaveFile(const std::string& inSavename);
-		bool LoadFileForImport(const std::string& inFileName, std::shared_ptr<DriverInfo>& outDriverInfo, std::shared_ptr<Utility::C64File>& outC64File);
 		bool SavePackedFile(const std::string& inSavename);
 		bool SavePackedFileToSID(ScreenBase* inCallerScreen, const std::string& inSavename);
 
@@ -140,6 +142,6 @@ namespace Editor
 
 		std::shared_ptr<Utility::C64File> m_PackedData;
 
-		std::vector<IConverter> m_Converters;
+		std::vector<std::unique_ptr<IConverter>> m_Converters;
 	};
 }

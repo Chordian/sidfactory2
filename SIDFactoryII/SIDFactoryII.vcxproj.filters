@@ -116,6 +116,9 @@
     <Filter Include="source\runtime\editor\converters">
       <UniqueIdentifier>{9b9a4fb6-915c-436d-a82f-6ee28d0d0152}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\editor\converters\null">
+      <UniqueIdentifier>{03caad82-a324-459b-9ae7-12337697aa85}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -514,6 +517,9 @@
     </ClCompile>
     <ClCompile Include="source\libraries\residfp\resample\SincResampler.cpp">
       <Filter>source\libraries\residfp\resample</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\null\converter_null.cpp">
+      <Filter>source\runtime\editor\converters\null</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1011,6 +1017,9 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\converters\iconverter.h">
       <Filter>source\runtime\editor\converters</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\null\converter_null.h">
+      <Filter>source\runtime\editor\converters\null</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

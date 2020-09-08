@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <functional>
 
 namespace Utility
 {
@@ -18,11 +19,17 @@ namespace Editor
 		}
 	
 	public:
-		~IConverter() 
+		virtual ~IConverter() 
 		{
 		}
 
 
-		virtual std::shared_ptr<Utility::C64File> Convert(void* inData, unsigned int inDataSize, ComponentsManager& inComponentsManager) = 0;
+		virtual bool Convert
+		(
+			void* inData, 
+			unsigned int inDataSize, 
+			ComponentsManager& inComponentsManager,
+			std::function<void(std::shared_ptr<Utility::C64File>)> inSuccessAction
+		) = 0;
 	};
 }
