@@ -813,12 +813,12 @@ namespace Editor
 
 	void EditorFacility::DoLoad(ScreenBase* inCallerScreen, const std::string& inSelectedFilename)
 	{
-		auto on_success = [&]()
+		auto on_success = [this]()
 		{
 			RequestScreen(m_EditScreen.get());
 		};
 
-		auto do_load = [&, inSelectedFilename, inCallerScreen]()
+		auto do_load = [this, on_success, inSelectedFilename, inCallerScreen]()
 		{
 			if (LoadFile(inSelectedFilename))
 				on_success();
