@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - windows
-
 jobs:
   build:
     name: Build executable
