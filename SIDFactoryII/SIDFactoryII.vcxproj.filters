@@ -119,6 +119,9 @@
     <Filter Include="source\runtime\editor\converters\null">
       <UniqueIdentifier>{03caad82-a324-459b-9ae7-12337697aa85}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\editor\converters\jch">
+      <UniqueIdentifier>{4d2fdef3-6e28-47e2-a1bb-33aa7b571002}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -520,6 +523,9 @@
     </ClCompile>
     <ClCompile Include="source\runtime\editor\converters\null\converter_null.cpp">
       <Filter>source\runtime\editor\converters\null</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp">
+      <Filter>source\runtime\editor\converters\jch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1020,6 +1026,9 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\converters\null\converter_null.h">
       <Filter>source\runtime\editor\converters\null</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\jch\converter_jch.h">
+      <Filter>source\runtime\editor\converters\jch</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

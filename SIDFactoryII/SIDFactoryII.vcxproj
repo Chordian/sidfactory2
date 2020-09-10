@@ -203,6 +203,7 @@
     <ClCompile Include="source\runtime\editor\components\component_tracks.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp" />
     <ClCompile Include="source\runtime\editor\components_manager.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp" />
     <ClCompile Include="source\runtime\editor\converters\null\converter_null.cpp" />
     <ClCompile Include="source\runtime\editor\cursor_control.cpp" />
     <ClCompile Include="source\runtime\editor\datacopy\datacopy_sequence.cpp" />
@@ -358,6 +359,7 @@
     <ClInclude Include="source\runtime\editor\components\component_track_utils.h" />
     <ClInclude Include="source\runtime\editor\components_manager.h" />
     <ClInclude Include="source\runtime\editor\converters\iconverter.h" />
+    <ClInclude Include="source\runtime\editor\converters\jch\converter_jch.h" />
     <ClInclude Include="source\runtime\editor\converters\null\converter_null.h" />
     <ClInclude Include="source\runtime\editor\cursor_control.h" />
     <ClInclude Include="source\runtime\editor\datacopy\datacopy_sequence.h" />
