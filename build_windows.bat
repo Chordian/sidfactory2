@@ -1,4 +1,4 @@
-MSBuild.exe SIDFactoryII.sln -property:Configuration=Release
+MSBuild.exe SIDFactoryII.sln -property:Configuration=Release -property:Platform=x86
 
 md artifacts
 md artifacts\color_schemes
