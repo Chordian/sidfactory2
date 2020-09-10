@@ -1,8 +1,5 @@
 name: Build windows binaries
-on:
-  push:
-    branches:
-      - windows
+on: workflow_dispatch
 jobs:
   build:
     name: Build executable
