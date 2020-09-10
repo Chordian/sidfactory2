@@ -5,7 +5,7 @@ set -e
 rm -f "${DMG}"
 
 # mount the temporary image
-DEVICE=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_TMP}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
+DEVICE=$(hdiutil attach -readwrite -noverify -noautoopen "${DMG_RAW}" | egrep '^/dev/' | sed 1q | awk '{print $1}')
 sleep 5 
 
 # layout the window (this doesn't work reliably yet)
@@ -57,4 +57,4 @@ sync
 hdiutil detach "${DEVICE}"
 
 # make the final compressed DMG
-hdiutil convert "${DMG_TMP}" -format UDZO -imagekey zlib-level=9 -o "${DMG}"
+hdiutil convert "${DMG_RAW}" -format UDZO -imagekey zlib-level=9 -o "${DMG}"

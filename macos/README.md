@@ -22,29 +22,16 @@ Building macOS distribution from command line (iTerm)
 First commit all changes! (To make sure the commit hash used in the application
 version is correct)
 
-Checkout `sf2converter` alongside `sidfactory2`, so that both projects are in
-the same root folder.
-
-### Build `SF2converter`
-
-This creates the `SF2Converter` binary in `macos/artifacts`
-
-From `sf2converter/macos`:
-
-```sh
-make clean && make
-```
-
-### Build `SIDfactoryII`
+### Build "raw" DMG image
 
 This creates a DMG image that is ready for distribution, except that the window
 not nicely layed out when you open it, and it isn't compressed. The created
-image is `macos/artifacts/tmp.dmg`
+image is in the `artifacts` folder.
 
 From `sidfactory2/macos`:
 
 ```sh
-make clean && make tmp
+make clean && make raw
 ```
 
 ### Layout the DMG
@@ -53,7 +40,7 @@ make clean && make tmp
 
 Manually for now
 
-- Mount the `tmp.dmg`
+- Mount the raw DMG image
 - Open the DMG in finder
 - Close other tabs if any
 - View -> As Icons
