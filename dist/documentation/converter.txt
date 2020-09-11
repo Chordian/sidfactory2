@@ -61,5 +61,3 @@ About CT (CheeseCutter) conversions.
 
   o  Delay commands are expanded too, but you may want to check the loop index
      marker after expanded wave table clusters to see if they are correct.
-
-JCH, 20200726
