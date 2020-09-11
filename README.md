@@ -22,9 +22,6 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - The overlay can now be shown inside the editor with **F12** and also changes depending on what driver is loaded
 - Added **Ctrl+L** for setting a song loop position (the order list words will turn green in that spot)
 - It is now possible to delete a file in all file dialogues by hitting the appropriate key
-- A `config.ini` file has been added where settings can be read for audio quality, colors and key definitions
-- Also added a `user.ini` for persistent changes (the functionality of these `.ini` files are not yet complete)
-- Additional `.ini` files in a sub folder can be used for new color schemes
 - Seven new color schemes have been created in addition to the default one
 - The importer now also carries over auxiliary data (e.g. table descriptions)
 - Upgraded the ReSID emulation (resid-fp) to the latest version
