@@ -15,16 +15,13 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
-### Build 2020????
+### Build 20200911
 
 #### Editor
 
 - The overlay can now be shown inside the editor with **F12** and also changes depending on what driver is loaded
 - Added **Ctrl+L** for setting a song loop position (the order list words will turn green in that spot)
 - It is now possible to delete a file in all file dialogues by hitting the appropriate key
-- A `config.ini` file has been added where settings can be read for audio quality, colors and key definitions
-- Also added a `user.ini` for persistent changes (the functionality of these `.ini` files are not yet complete)
-- Additional `.ini` files in a sub folder can be used for new color schemes
 - Seven new color schemes have been created in addition to the default one
 - The importer now also carries over auxiliary data (e.g. table descriptions)
 - Upgraded the ReSID emulation (resid-fp) to the latest version
@@ -43,7 +40,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 #### Converter
 
 - Added a third conversion option for handling `.ct` source tunes from CheeseCutter
-- The SNG and CT converters now support the pulse program index and main volume commands added in driver 11.02
+- The SNG and CT converters now support the pulse index and main volume commands in driver 11.02
 - The MOD, SNG and CT converters now support then tempo change command added in driver 11.02
 - Command description labels are now created by the MOD and SNG converters too
 
