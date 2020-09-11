@@ -40,7 +40,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 #### Converter
 
 - Added a third conversion option for handling `.ct` source tunes from CheeseCutter
-- The SNG and CT converters now support the pulse program index and main volume commands added in driver 11.02
+- The SNG and CT converters now support the pulse index and main volume commands in driver 11.02
 - The MOD, SNG and CT converters now support then tempo change command added in driver 11.02
 - Command description labels are now created by the MOD and SNG converters too
 
