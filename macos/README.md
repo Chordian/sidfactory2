@@ -6,9 +6,7 @@ Building macOS distribution from command line (iTerm)
 
 - [Homebrew](https://brew.sh)
 - Xcode with command line tools
-- `brew install librsvg pandoc`
-- Maybe `brew install gnu-sed awk grep`
-  Not sure which are standard on macOS
+- `brew install gnu-sed librsvg pandoc`
 
 ## Targets
 
