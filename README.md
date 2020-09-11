@@ -30,7 +30,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Fixed the editor crashing when trying to optimize a song with no sequence data
 - Fixed not being able to properly play from a bookmark when showing tracks of uneven lengths
 - `macOS` Now using **Minus** and **Shift+Minus** for fast/faster forward
-- `macOS` Instrument up/down is now **Cmd+Up/Down** while **Cmd+Up/Down** is now **Shift+Cmd+Up/Down**
+- `macOS` Instrument up/down is now **Cmd+Up/Down** while Command up/down is now **Shift+Cmd+Up/Down**
 - `macOS` You can now open `.sf2` files with SID Factory II directly from Finder (Open With)
 - `macOS` Backward compatible until macOS 10.9 (Mavericks)
 
