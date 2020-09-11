@@ -40,6 +40,7 @@ namespace Editor
 	class ScreenIntro;
 	class ScreenEdit;
 	class ScreenDisk;
+	class IConverter;
 
 	enum FileType : int;
 
@@ -72,7 +73,7 @@ namespace Editor
 		void HandleScreenState();
 
 		bool IsFileSF2(const std::string& inFilename);
-		bool LoadFile(const std::string& inFilename);
+		bool LoadFile(const std::string& inFilename, ScreenBase* inCallerScreen);
 		bool SaveFile(const std::string& inSavename);
 		bool LoadFileForImport(const std::string& inFileName, std::shared_ptr<DriverInfo>& outDriverInfo, std::shared_ptr<Utility::C64File>& outC64File);
 		bool SavePackedFile(const std::string& inSavename);
@@ -138,5 +139,7 @@ namespace Editor
 		std::unique_ptr<ScreenDisk> m_DiskScreen;
 
 		std::shared_ptr<Utility::C64File> m_PackedData;
+
+		std::vector<IConverter> m_Converters;
 	};
 }

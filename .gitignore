@@ -2,11 +2,16 @@
 .vs
 /builds
 /drivers
-/libs
 /debug
 /release
 /Debug
 /Release
+SF2Converter/data
+SF2Converter/Debug
+SF2Converter/Release
+SF2Converter/SDL2.dll
+SF2Converter/test
+SF2Converter/*.vcxproj.user
 SIDFactoryII/Assets.xcassets
 SIDFactoryII/Base.lproj
 SIDFactoryII/data
@@ -15,7 +20,6 @@ SIDFactoryII/drivers_dev
 SIDFactoryII/Debug
 SIDFactoryII/Release
 SIDFactoryII/Info.plist
-SIDFactoryII/SDL2.dll
 SIDFactoryII/user.ini
 SIDFactoryII/*.entitlements
 SIDFactoryII/*.vcxproj.user
@@ -24,3 +28,4 @@ SIDFactoryII/*.vcxproj.user
 *.xcodeproj
 *.o
 artifacts
+.vscode

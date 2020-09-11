@@ -1,0 +1,18 @@
+name: Build windows binaries
+on: workflow_dispatch
+jobs:
+  build:
+    name: Build executable
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup MSBuild.exe
+        uses: microsoft/setup-msbuild@v1.0.1
+      - name: Build binaries
+        run: ./build_windows.bat
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: SIDFactoryII-windows
+          path: ./artifacts/

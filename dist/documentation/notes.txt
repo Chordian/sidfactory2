@@ -23,7 +23,7 @@ GENERAL         Tab                         Tab                         Next inp
                 F3/F4                       F3/F4                       Octave down or up
                 F6                          F6                          Open utility menu
 
-                Shift + F7                  Shift + F7                  Reload the settings in all .ini files
+                Shift + F7                  Shift + F7                  Reload the settings
                 Ctrl + F7                   Ctrl + F7                   Select the next color scheme
 
                 F12                         F12                         Toggle showing the expanding help overlay
@@ -148,7 +148,7 @@ TABLES          Alt + c/i/w/p/f/h/a/t       Alt + c/i/w/p/f/h/a/t       Jump to 
 SETTINGS        F9                          F9                          Toggle 6581 or 8580 (SID chip model)
                 Shift + F9                  Shift + F9                  Toggle PAL or NTSC
 
-                Shift + F7                  Shift + F7                  Reload the settings in all .ini files
+                Shift + F7                  Shift + F7                  Reload the settings
                 Ctrl + F7                   Ctrl + F7                   Select the next color scheme
 
                 Ctrl + p                    Ctrl + p                    Toggle follow-play

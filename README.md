@@ -6,37 +6,24 @@ a Commodore 64. It uses the reSID emulator and is currently in open BETA. You ca
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
-![alt text](https://chordian.net/media/SF2_20200816.png "SID Factory II")
-
+![Build windows
+binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-## Compiling
+![Build macOS
+binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 
-### Visual Studio on Windows
-
-In order to compile and run SID Factory II in Visual Studio on Windows you need to do this:
-
-- First clone this repository into a folder on your computer. The `sidfactory2` folder is created which you can rename to something else if you want. (We will assume you kept the original name as is below.)
-- Create a `libs` folder next to the `sidfactory2` folder.
-- Download the development library archive of SDL2 for Visual C++ from https://www.libsdl.org.
-- Extract it into the `libs` folder so you end up with `libs/SDL2-2.0.12` with various files and folders in it.
-- Download the runtime binary archive of SDL2 for x86 from the same web site.
-- Extract it and copy the `SDL2.dll` file in it to the `sidfactory2/SidFactoryII` folder.
-
-You should now be able to compile and run it when you open the solution file in Visual Studio.
+![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
 ## Changelog
 
-### Build 2020????
+### Build 20200911
 
 #### Editor
 
 - The overlay can now be shown inside the editor with **F12** and also changes depending on what driver is loaded
 - Added **Ctrl+L** for setting a song loop position (the order list words will turn green in that spot)
 - It is now possible to delete a file in all file dialogues by hitting the appropriate key
-- A `config.ini` file has been added where settings can be read for audio quality, colors and key definitions
-- Also added a `user.ini` for persistent changes (the functionality of these `.ini` files are not yet complete)
-- Additional `.ini` files in a sub folder can be used for new color schemes
 - Seven new color schemes have been created in addition to the default one
 - The importer now also carries over auxiliary data (e.g. table descriptions)
 - Upgraded the ReSID emulation (resid-fp) to the latest version
@@ -55,7 +42,7 @@ You should now be able to compile and run it when you open the solution file in 
 #### Converter
 
 - Added a third conversion option for handling `.ct` source tunes from CheeseCutter
-- The SNG and CT converters now support the pulse program index and main volume commands added in driver 11.02
+- The SNG and CT converters now support the pulse index and main volume commands in driver 11.02
 - The MOD, SNG and CT converters now support then tempo change command added in driver 11.02
 - Command description labels are now created by the MOD and SNG converters too
 
