@@ -38,6 +38,7 @@
 #include "libraries/ghc/fs_std.h"
 
 // Test converter
+#include "runtime/editor/converters/jch/converter_jch.h"
 #include "runtime/editor/converters/null/converter_null.h"
 
 // System
@@ -150,6 +151,7 @@ namespace Editor
 		);
 
 		// Configure the converters
+		m_Converters.push_back(std::make_unique<ConverterJCH>());
 		m_Converters.push_back(std::make_unique<ConverterNull>());
 	}
 
@@ -506,7 +508,7 @@ namespace Editor
 		void* data = nullptr;
 		long data_size = 0;
 
-		auto on_successfull_conversion = [this, inSuccesfullConversionAction, inCallerScreen](std::shared_ptr<Utility::C64File> inC64File)
+		auto on_successfull_conversion = [this, inPathAndFilename, inCallerScreen, inSuccesfullConversionAction](std::shared_ptr<Utility::C64File> inC64File)
 		{
 			std::shared_ptr<DriverInfo> driver_info = std::make_shared<DriverInfo>();
 
@@ -531,23 +533,20 @@ namespace Editor
 					m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
 
 					// Store name of last read file
-					SetLastSavedPathAndFilename("");
+					SetLastSavedPathAndFilename(inPathAndFilename);
 
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
 
 					// Notify overlay
 					m_OverlayControl->OnChange(*m_DriverInfo);
-				}
 
-				inSuccesfullConversionAction();
-				
-				return;
+					inSuccesfullConversionAction();
+					return;
+				}
 			}
-			else
-			{
-				inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Conversion failed", "The selected file couldn't be converted correctly.", DefaultDialogWidth, true, []() {}));
-			}
+
+			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Conversion failed", "The selected file couldn't be converted correctly.", DefaultDialogWidth, true, []() {}));
 		};
 
 		if (Utility::ReadFile(inPathAndFilename, max_file_size, &data, data_size))
@@ -559,7 +558,7 @@ namespace Editor
 
 				for (size_t i = 0; i < converter_count; ++i)
 				{
-					if (m_Converters[i]->Convert(data, static_cast<unsigned int>(data_size), inCallerScreen->GetComponentsManager(), on_successfull_conversion))
+					if (m_Converters[i]->Convert(data, static_cast<unsigned int>(data_size), m_Platform, inCallerScreen->GetComponentsManager(), on_successfull_conversion))
 					{
 						delete[] static_cast<char*>(data);
 						return true;

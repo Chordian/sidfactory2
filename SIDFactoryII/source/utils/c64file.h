@@ -25,6 +25,7 @@ namespace Utility
 		static std::shared_ptr<C64File> CreateFromPRGData(const void* inPRGData, unsigned int inDataSize);
 		static std::shared_ptr<C64File> CreateAsContainer(unsigned short inTopAddress, unsigned int inBottomAddres);
 		static std::shared_ptr<C64File> CreateFromData(unsigned short inTopAddress, const void* inData, unsigned short inDataSize);
+		static unsigned short ReadTargetAddressFromData(const void* inData, unsigned short inDataSize);
 
 		bool IsValid() const;
 

@@ -3,6 +3,11 @@
 #include <memory>
 #include <functional>
 
+namespace Foundation
+{
+	class IPlatform;
+}
+
 namespace Utility
 {
 	class C64File;
@@ -28,6 +33,7 @@ namespace Editor
 		(
 			void* inData, 
 			unsigned int inDataSize, 
+			Foundation::IPlatform* inPlatform,
 			ComponentsManager& inComponentsManager,
 			std::function<void(std::shared_ptr<Utility::C64File>)> inSuccessAction
 		) = 0;
