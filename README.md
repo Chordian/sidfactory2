@@ -10,12 +10,15 @@ Huus and Michel de Bree.
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build macOS
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
+![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
 ![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
 ## Changelog
 
 ### Build 20200911
+
+- `linux` First _experimental_ linux distribution!
 
 #### Editor
 
