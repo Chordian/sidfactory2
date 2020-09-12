@@ -1,14 +1,9 @@
 name: Build linux binaries
-on:
-  push:
-    branches:
-      - linux
-
+on: workflow_dispatch
 jobs:
   build:
     name: Build executable
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
       - name: Install SDL2
