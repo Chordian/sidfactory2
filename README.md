@@ -16,9 +16,9 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
-### Build 20200911
+- `linux` Now includes SF2Converter in the build
 
-- `linux` First _experimental_ linux distribution!
+### Build 20200911
 
 #### Editor
 
