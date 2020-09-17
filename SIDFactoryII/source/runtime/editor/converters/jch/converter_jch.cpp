@@ -16,6 +16,20 @@ using namespace fs;
 
 namespace Editor
 {
+	namespace Details
+	{
+		const DriverInfo::TableDefinition* FindTableByName(const std::string& inName, const std::vector<DriverInfo::TableDefinition>& inTableDefinitions)
+		{
+			for (const DriverInfo::TableDefinition& table_definition : inTableDefinitions)
+			{
+				if (table_definition.m_Name == inName)
+					return &table_definition;
+			}
+
+			return nullptr;
+		}
+	}
+
 	ConverterJCH::ConverterJCH()
 		: m_CPUMemory(nullptr)
 	{
@@ -62,6 +76,10 @@ namespace Editor
 
 				// Import all tables
 				ImportTables();
+
+				// Build
+				BuildTempoTable();
+				BuildInitTable();
 
 				// Create cpu memory
 				m_CPUMemory = new Emulation::CPUMemory(0x10000, inPlatform);
@@ -138,6 +156,7 @@ namespace Editor
 		assert(m_InputData != nullptr);
 		assert(m_InputData->GetTopAddress() == 0x0f00);
 
+		const unsigned short address_fine_tune = 0x0fba;
 		const unsigned short address_pointer_wave_table = 0x0fbc;
 		const unsigned short address_pointer_filter_table = 0x0fc0;
 		const unsigned short address_pointer_pulse_table = 0x0fc2;
@@ -148,7 +167,9 @@ namespace Editor
 		const unsigned short address_pointer_orderlist_v3 = 0x0fca;
 		const unsigned short address_pointer_sequence_vector_low = 0x0fcc;
 		const unsigned short address_pointer_sequence_vector_high = 0x0fce;
+		const unsigned short address_speed_setting = 0x0fd4;
 
+		m_InputInfo.m_FineTuneAddress = m_InputData->GetWord(address_fine_tune);
 		m_InputInfo.m_WaveTableAddress = m_InputData->GetWord(address_pointer_wave_table);
 		m_InputInfo.m_FilterTableAddress = m_InputData->GetWord(address_pointer_filter_table);
 		m_InputInfo.m_PulseTableAddress = m_InputData->GetWord(address_pointer_pulse_table);
@@ -159,60 +180,86 @@ namespace Editor
 		m_InputInfo.m_OrderlistV3Address = m_InputData->GetWord(address_pointer_orderlist_v3);
 		m_InputInfo.m_SequenceVectorLowAddress = m_InputData->GetWord(address_pointer_sequence_vector_low);
 		m_InputInfo.m_SequenceVectorHighAddress = m_InputData->GetWord(address_pointer_sequence_vector_high);
+		m_InputInfo.m_SpeedSettingAddress = m_InputData->GetWord(address_speed_setting);
 	}
 
 
 	bool ConverterJCH::ImportTables()
 	{
+		using namespace Details;
 		const std::vector<DriverInfo::TableDefinition>& table_definitions = m_DriverInfo->GetTableDefinitions();
 
-		auto find_table = [&](const std::string& inName) -> const DriverInfo::TableDefinition*
 		{
-			for (const DriverInfo::TableDefinition& table_definition : table_definitions)
-			{
-				if (table_definition.m_Name == inName)
-					return &table_definition;
-			}
-
-			return nullptr;
-		};
-
-		{
-			const DriverInfo::TableDefinition* table = find_table("Instruments");
+			const DriverInfo::TableDefinition* table = FindTableByName("Instruments", table_definitions);
 			if (table == nullptr)
 				return false;
 			CopyTableRowToColumnMajor(m_InputInfo.m_InstrumentTableAddress, table->m_Address, table->m_RowCount, table->m_ColumnCount);
 		}
 
 		{
-			const DriverInfo::TableDefinition* table = find_table("Commands");
+			const DriverInfo::TableDefinition* table = FindTableByName("Commands", table_definitions);
 			if (table == nullptr)
 				return false;
 			CopyTableRowToColumnMajor(m_InputInfo.m_CommandTableAddress, table->m_Address, table->m_RowCount, table->m_ColumnCount);
 		}
 
 		{
-			const DriverInfo::TableDefinition* table = find_table("Wave");
+			const DriverInfo::TableDefinition* table = FindTableByName("Wave", table_definitions);
 			if (table == nullptr)
 				return false;
 			CopyTable(m_InputInfo.m_WaveTableAddress, table->m_Address, table->m_RowCount * table->m_ColumnCount);
 		}
 
 		{
-			const DriverInfo::TableDefinition* table = find_table("Pulse");
+			const DriverInfo::TableDefinition* table = FindTableByName("Pulse", table_definitions);
 			if (table == nullptr)
 				return false;
 			CopyTable(m_InputInfo.m_PulseTableAddress, table->m_Address, table->m_RowCount * table->m_ColumnCount);
 		}
 
 		{
-			const DriverInfo::TableDefinition* table = find_table("Filter");
+			const DriverInfo::TableDefinition* table = FindTableByName("Filter", table_definitions);
 			if (table == nullptr)
 				return false;
 			CopyTable(m_InputInfo.m_FilterTableAddress, table->m_Address, table->m_RowCount * table->m_ColumnCount);
 		}
 
 		return true;
+	}
+
+
+	bool ConverterJCH::BuildTempoTable()
+	{
+		using namespace Details;
+		const std::vector<DriverInfo::TableDefinition>& table_definitions = m_DriverInfo->GetTableDefinitions();
+		const DriverInfo::TableDefinition* table = FindTableByName("Tempo", table_definitions);
+
+		if (table == nullptr)
+			return false;
+
+		std::vector<unsigned char> speed_values;
+
+		unsigned char speed = (*m_InputData)[m_InputInfo.m_SpeedSettingAddress];
+		if (speed >= 2)
+			speed_values.push_back(speed);
+		else
+		{
+			speed_values.push_back((*m_InputData)[m_InputInfo.m_FilterTableAddress]);
+			speed_values.push_back((*m_InputData)[m_InputInfo.m_FilterTableAddress + 1]);
+		}
+
+		speed_values.push_back(0x7f);
+
+		for (size_t i = 0; i < speed_values.size(); ++i)
+			(*m_OutputData)[table->m_Address + i] = speed_values[i];
+
+		return true;
+	}
+
+
+	bool ConverterJCH::BuildInitTable()
+	{
+		return false;
 	}
 
 

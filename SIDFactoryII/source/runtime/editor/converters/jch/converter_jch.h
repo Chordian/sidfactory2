@@ -17,17 +17,20 @@ namespace Editor
 	private:
 		struct JCH20g4Info
 		{
-			unsigned short m_WaveTableAddress = 0x0fbc;
-			unsigned short m_FilterTableAddress = 0x0fc0;
-			unsigned short m_PulseTableAddress = 0x0fc2;
-			unsigned short m_InstrumentTableAddress = 0x0fc4;
-			unsigned short m_CommandTableAddress = 0x0fd0;
-			unsigned short m_OrderlistV1Address = 0x0fc6;
-			unsigned short m_OrderlistV2Address = 0x0fc8;
-			unsigned short m_OrderlistV3Address = 0x0fca;
-			unsigned short m_SequenceVectorLowAddress = 0x0fcc;
-			unsigned short m_SequenceVectorHighAddress = 0x0fce;
+			unsigned short m_FineTuneAddress;
+			unsigned short m_WaveTableAddress;
+			unsigned short m_FilterTableAddress;
+			unsigned short m_PulseTableAddress;
+			unsigned short m_InstrumentTableAddress;
+			unsigned short m_CommandTableAddress;
+			unsigned short m_OrderlistV1Address;
+			unsigned short m_OrderlistV2Address;
+			unsigned short m_OrderlistV3Address;
+			unsigned short m_SequenceVectorLowAddress;
+			unsigned short m_SequenceVectorHighAddress;
+			unsigned short m_SpeedSettingAddress;
 		};
+
 	public:
 		ConverterJCH();
 		virtual ~ConverterJCH();
@@ -45,6 +48,8 @@ namespace Editor
 		bool LoadDestinationDriver(Foundation::IPlatform* inPlatform);
 		void GatherInputInfo();
 		bool ImportTables();
+		bool BuildTempoTable();
+		bool BuildInitTable();
 		unsigned int ImportOrderLists();
 		void ImportSequences(unsigned int inMaxSequenceIndex);
 		void ImportSequence(unsigned short inReadAddress, std::shared_ptr<DataSourceSequence>& inWriteDataSource);
