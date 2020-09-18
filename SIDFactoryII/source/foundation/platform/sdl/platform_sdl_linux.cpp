@@ -170,14 +170,11 @@ namespace Foundation
         ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
         if (count > 0) {
             resourcePath = std::string(dirname(result));
-            std::cout << "exe path: " << resourcePath << std::endl;
         } else {
             // use current path
             fs::path application_path = getcwd(result, PATH_MAX);
             resourcePath = std::string(result);
         }
-        std::cout << "current path: " << resourcePath << std::endl;
-        std::cout << "relative path:" << relativePath << std::endl;
         return resourcePath + "/" + relativePath + "/";
     }
 
