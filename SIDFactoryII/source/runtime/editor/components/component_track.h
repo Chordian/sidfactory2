@@ -60,7 +60,7 @@ namespace Editor
 		struct KeyHookContext
 		{
 			ComponentsManager& m_ComponentsManager;
-			int& m_NewEventPos; 
+			int& m_NewEventPos;
 		};
 
 		struct SequenceColors
@@ -98,20 +98,20 @@ namespace Editor
 		using OrderListChangedEvent = Utility::TEvent<void(void)>;
 
 		ComponentTrack(
-			int inID, 
-			int inGroupID, 
+			int inID,
+			int inGroupID,
 			Undo* inUndo,
-			std::shared_ptr<DataSourceOrderList> inDataSourceOrderList, 
-			const std::vector<std::shared_ptr<DataSourceSequence>>& inDataSourceSequenceList, 
-			Foundation::TextField* inTextField, 
-			const EditState& inEditState, 
+			std::shared_ptr<DataSourceOrderList> inDataSourceOrderList,
+			const std::vector<std::shared_ptr<DataSourceSequence>>& inDataSourceSequenceList,
+			Foundation::TextField* inTextField,
+			const EditState& inEditState,
 			const Utility::KeyHookStore& inKeyHookStore,
 			const AuxilaryDataCollection& inAuxilaryDataCollection,
 			std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
 			std::function<void(bool, int, int)> inStatusReportFunction,
 			std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
-			int inX, 
-			int inY, 
+			int inX,
+			int inY,
 			int inHeight
 		);
 		~ComponentTrack();
@@ -124,7 +124,7 @@ namespace Editor
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
-		
+
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
 		void PullDataFromSource() override;
@@ -172,7 +172,7 @@ namespace Editor
 
 		// Sequence
 		void DrawSequenceLine(int inX, int inY, const SequenceColors& inColors, const bool inIsHexUppercase, const std::shared_ptr<DataSourceSequence>& inSequence, unsigned int inSequenceIndex, int inTransposition, const bool inIsFocusLine, unsigned char& ioCurrentInstrument);
-		
+
 		bool IsCursorAtSequenceInstrument() const;
 		bool IsCursorAtSequenceCommand() const;
 		bool IsCursorAtSequenceNote() const;
@@ -251,7 +251,7 @@ namespace Editor
 
 		// Cursor and event positions
 		int m_CursorPos;
-		
+
 		int m_EventPos;
 		int m_MaxEventPos;
 		EventPosDetails m_EventPosDetails;

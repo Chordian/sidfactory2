@@ -14,7 +14,7 @@ namespace Editor
 		const Editor::DriverInfo& inDriverInfo,
 		const Editor::DriverState& inDriverState,
 		const unsigned char inSequenceIndex,
-		unsigned short inSourceAddress, 
+		unsigned short inSourceAddress,
 		int inBlockSize
 	)
 		: DataSourceEmulationMemory(inCPUMemory, inSourceAddress, inBlockSize)
@@ -56,7 +56,7 @@ namespace Editor
 	}
 
 	//------------------------------------------------------------------------------------------------------------------
-	
+
 	void DataSourceSequence::operator=(const DataSourceSequence& inRhs)
 	{
 		for (int i = 0; i < MaxEventCount; ++i)
@@ -212,7 +212,7 @@ namespace Editor
 				break;
 			}
 
-			if (value >= 0xc0)	// Command		
+			if (value >= 0xc0)	// Command
 			{
 				m_Events[event_index].m_Command = value;
 				m_LastCommandSet = value & 0x3f;
