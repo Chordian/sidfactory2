@@ -32,13 +32,14 @@ CC_FLAGS= $(shell sdl2-config --cflags) \
   -I $(SOURCE) \
 	-I ./SF2Converter \
 	-D _SF2_$(PLATFORM) \
+	-g \
 	-O2 \
 	-std=gnu++14 \
 	-flto
 
 ifeq ($(PLATFORM),MACOS)
 	LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto \
-	-framework ApplicationServices 
+	-framework ApplicationServices
 else
 	LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
 endif
@@ -60,17 +61,36 @@ OBJ = $(SRC:.cpp=.o)
 OBJ_SF2C = $(SRC_SF2C:.cpp=.o) $(SRC_SF2C_C:.c=.o)
 
 # Compile SIDFactoryII
-$(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
+$(EXE): $(OBJ) $(ARTIFACTS_FOLDER) \
+$(ARTIFACTS_FOLDER)/drivers \
+$(ARTIFACTS_FOLDER)/overlay \
+$(ARTIFACTS_FOLDER)/color_schemes \
+$(ARTIFACTS_FOLDER)/config
 	$(CC) $(OBJ) $(LINKER_FLAGS) -o $(EXE)
-	strip $(EXE)
-	
+
+$(ARTIFACTS_FOLDER)/drivers: $(PROJECT_ROOT)/drivers
+	cp -r $(PROJECT_ROOT)/drivers $(ARTIFACTS_FOLDER)
+
+$(ARTIFACTS_FOLDER)/overlay: $(PROJECT_ROOT)/overlay
+	cp -r $(PROJECT_ROOT)/overlay $(ARTIFACTS_FOLDER)
+
+$(ARTIFACTS_FOLDER)/color_schemes: $(PROJECT_ROOT)/color_schemes
+	cp -r $(PROJECT_ROOT)/color_schemes $(ARTIFACTS_FOLDER)
+
+$(ARTIFACTS_FOLDER)/config: $(PROJECT_ROOT)/config
+	cp -r $(PROJECT_ROOT)/config $(ARTIFACTS_FOLDER)
+
+$(ARTIFACTS_FOLDER)/overlay: $(PROJECT_ROOT)/overlay
+	cp -r $(PROJECT_ROOT)/overlay $(ARTIFACTS_FOLDER)
+
 # Compile SF2Converter
 $(EXE_SF2C) : $(OBJ_SF2C) $(ARTIFACTS_FOLDER)
 	$(CC) $(OBJ_SF2C) $(LINKER_FLAGS) -o $(EXE_SF2C)
-	strip $(EXE_SF2C)
 
 # Create a distribution folder with executables and resources
 dist: $(EXE) $(EXE_SF2C) $(DIST_FOLDER)
+	strip $(EXE)
+	strip $(EXE_SF2C)
 	mv $(EXE) $(DIST_FOLDER)
 	mv $(EXE_SF2C) $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/drivers $(DIST_FOLDER)
