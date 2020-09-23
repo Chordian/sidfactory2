@@ -167,7 +167,7 @@ namespace Editor
 		const unsigned short address_pointer_orderlist_v3 = 0x0fca;
 		const unsigned short address_pointer_sequence_vector_low = 0x0fcc;
 		const unsigned short address_pointer_sequence_vector_high = 0x0fce;
-		const unsigned short address_speed_setting = 0x0fd4;
+		const unsigned short address_init_data = 0x0fd4;
 
 		m_InputInfo.m_FineTuneAddress = m_InputData->GetWord(address_fine_tune);
 		m_InputInfo.m_WaveTableAddress = m_InputData->GetWord(address_pointer_wave_table);
@@ -180,7 +180,7 @@ namespace Editor
 		m_InputInfo.m_OrderlistV3Address = m_InputData->GetWord(address_pointer_orderlist_v3);
 		m_InputInfo.m_SequenceVectorLowAddress = m_InputData->GetWord(address_pointer_sequence_vector_low);
 		m_InputInfo.m_SequenceVectorHighAddress = m_InputData->GetWord(address_pointer_sequence_vector_high);
-		m_InputInfo.m_SpeedSettingAddress = m_InputData->GetWord(address_speed_setting);
+		m_InputInfo.m_SpeedSettingAddress = m_InputData->GetWord(address_init_data) + 6;
 	}
 
 
