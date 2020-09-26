@@ -1,7 +1,7 @@
 PLATFORM=LINUX
 
 APP_NAME=SIDFactoryII
-BUILD_NR=$(shell date +"%Y%m%d").$(shell git rev-parse --short HEAD)
+BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 ARTIFACTS_FOLDER=artifacts
 DIST_FOLDER=$(ARTIFACTS_FOLDER)/$(APP_NAME)_$(PLATFORM)_$(BUILD_NR)
 
@@ -78,6 +78,8 @@ dist: $(EXE) $(EXE_SF2C) $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/color_schemes $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/config $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/music $(DIST_FOLDER)
+	cp -r dist/documentation $(DIST_FOLDER)
+	cp $(PROJECT_ROOT)/COPYING $(DIST_FOLDER)
 
 $(ARTIFACTS_FOLDER):
 	mkdir -p $@

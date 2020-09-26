@@ -1,7 +1,7 @@
 # Makefile for macOS version
 
 # Sources
-BUILD_NR=$(shell date +"%Y%m%d").$(shell git rev-parse --short HEAD)
+BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 PROJECT_ROOT=../SIDFactoryII
 SOURCE=$(PROJECT_ROOT)/source
 SRC=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
@@ -122,6 +122,7 @@ $(DMG_CONTENTS): $(APP) $(EXE_SF2C) $(ARTIFACTS_FOLDER)/keys.html
 	mkdir -p $(DMG_CONTENTS)/$(APP_NAME)
 	mv $(APP) $(DMG_CONTENTS)
 	cp -r $(DOCS)/ $(DMG_CONTENTS)/$(APP_NAME)/documentation
+	cp $(PROJECT_ROOT)/COPYING $(DMG_CONTENTS)
 	mv $(ARTIFACTS_FOLDER)/keys.html $(DMG_CONTENTS)/$(APP_NAME)/documentation
 	cp -r Install.txt $(DMG_CONTENTS)
 	cp -r $(PROJECT_ROOT)/music/ ${DMG_CONTENTS}/$(APP_NAME)/music
