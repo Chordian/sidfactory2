@@ -58,7 +58,7 @@ namespace Editor
 		void CopyTableRowToColumnMajor(unsigned short inSourceAddress, unsigned short inDestinationAddress, unsigned short inRowCount, unsigned short inColumnCount);		
 		void CopyWaveTable(unsigned short inSourceAddress, unsigned short inDestinationAddress, unsigned short inSize);
 
-		bool IsFileValid(void* inData, unsigned int inDataSize) const;
+		bool CanConvertInput(void* inData, unsigned int inDataSize) const;
 
 
 		// Input data parsed to c64 file

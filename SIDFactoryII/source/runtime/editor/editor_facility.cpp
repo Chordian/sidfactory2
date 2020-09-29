@@ -39,6 +39,7 @@
 
 // Test converter
 #include "runtime/editor/converters/jch/converter_jch.h"
+#include "runtime/editor/converters/gt/converter_gt.h"
 #include "runtime/editor/converters/null/converter_null.h"
 
 // System
@@ -152,6 +153,7 @@ namespace Editor
 
 		// Configure the converters
 		m_Converters.push_back(std::make_unique<ConverterJCH>());
+		m_Converters.push_back(std::make_unique<ConverterGT>());
 		m_Converters.push_back(std::make_unique<ConverterNull>());
 	}
 

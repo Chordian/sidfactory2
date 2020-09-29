@@ -122,6 +122,15 @@
     <Filter Include="source\runtime\editor\converters\jch">
       <UniqueIdentifier>{4d2fdef3-6e28-47e2-a1bb-33aa7b571002}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\libraries\miniz">
+      <UniqueIdentifier>{bbc1c76c-cb73-4a17-80cb-ac9619b7d9a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\converters\gt">
+      <UniqueIdentifier>{691d8ee3-3387-4bcd-b874-77e278706d94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\converters\utils">
+      <UniqueIdentifier>{8fcfd939-841d-4946-b3b7-81767f7373fd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -526,6 +535,24 @@
     </ClCompile>
     <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp">
       <Filter>source\runtime\editor\converters\jch</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\miniz\miniz.c">
+      <Filter>source\libraries\miniz</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\gt\source_sng.cpp">
+      <Filter>source\runtime\editor\converters\gt</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\utils\misc.cpp">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\utils\sf2_interface.cpp">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\utils\source_utils.cpp">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\gt\converter_gt.cpp">
+      <Filter>source\runtime\editor\converters\gt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1029,6 +1056,21 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\converters\jch\converter_jch.h">
       <Filter>source\runtime\editor\converters\jch</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\gt\source_sng.h">
+      <Filter>source\runtime\editor\converters\gt</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\utils\misc.h">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\utils\sf2_interface.h">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\utils\source_utils.h">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\gt\converter_gt.h">
+      <Filter>source\runtime\editor\converters\gt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

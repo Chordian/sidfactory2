@@ -58,7 +58,7 @@ namespace Editor
 		assert(inPlatform != nullptr);
 
 		// Detect if the converter can presumably convert the data
-		const bool can_convert_this = IsFileValid(inData, inDataSize);
+		const bool can_convert_this = CanConvertInput(inData, inDataSize);
 
 		if (can_convert_this)
 		{
@@ -441,7 +441,7 @@ namespace Editor
 	}
 
 
-	bool ConverterJCH::IsFileValid(void* inData, unsigned int inDataSize) const
+	bool ConverterJCH::CanConvertInput(void* inData, unsigned int inDataSize) const
 	{
 		const unsigned short address_version = 0x0fee;
 

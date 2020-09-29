@@ -162,6 +162,7 @@
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl_macos.cpp" />
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl_windows.cpp" />
     <ClCompile Include="source\foundation\sound\audiostream.cpp" />
+    <ClCompile Include="source\libraries\miniz\miniz.c" />
     <ClCompile Include="source\libraries\picopng\picopng.cpp" />
     <ClCompile Include="source\libraries\residfp\Dac.cpp" />
     <ClCompile Include="source\libraries\residfp\EnvelopeGenerator.cpp" />
@@ -203,8 +204,13 @@
     <ClCompile Include="source\runtime\editor\components\component_tracks.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp" />
     <ClCompile Include="source\runtime\editor\components_manager.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\gt\converter_gt.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\gt\source_sng.cpp" />
     <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp" />
     <ClCompile Include="source\runtime\editor\converters\null\converter_null.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\utils\misc.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\utils\sf2_interface.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\utils\source_utils.cpp" />
     <ClCompile Include="source\runtime\editor\cursor_control.cpp" />
     <ClCompile Include="source\runtime\editor\datacopy\datacopy_sequence.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_directory.cpp" />
@@ -358,9 +364,14 @@
     <ClInclude Include="source\runtime\editor\components\component_tracks.h" />
     <ClInclude Include="source\runtime\editor\components\component_track_utils.h" />
     <ClInclude Include="source\runtime\editor\components_manager.h" />
+    <ClInclude Include="source\runtime\editor\converters\gt\converter_gt.h" />
+    <ClInclude Include="source\runtime\editor\converters\gt\source_sng.h" />
     <ClInclude Include="source\runtime\editor\converters\iconverter.h" />
     <ClInclude Include="source\runtime\editor\converters\jch\converter_jch.h" />
     <ClInclude Include="source\runtime\editor\converters\null\converter_null.h" />
+    <ClInclude Include="source\runtime\editor\converters\utils\misc.h" />
+    <ClInclude Include="source\runtime\editor\converters\utils\sf2_interface.h" />
+    <ClInclude Include="source\runtime\editor\converters\utils\source_utils.h" />
     <ClInclude Include="source\runtime\editor\cursor_control.h" />
     <ClInclude Include="source\runtime\editor\datacopy\datacopy_sequence.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_directory.h" />
