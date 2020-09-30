@@ -930,6 +930,15 @@ namespace Editor
 
 			return first_free_sequence_index;
 		};
+        
+        auto get_first_empty_sequence_index = [&]() -> unsigned char
+        {
+            m_CPUMemory->Lock();
+            unsigned char first_free_sequence_index = DriverUtils::GetFirstEmptySequenceIndex(*m_DriverInfo, *m_CPUMemory);
+            m_CPUMemory->Unlock();
+
+            return first_free_sequence_index;
+        };
 
 		// Create copy/paste data container
 		m_TrackCopyPasteData = std::make_shared<TrackCopyPasteData>();
@@ -952,6 +961,7 @@ namespace Editor
 					m_TrackCopyPasteData,
 					sequence_editing_status_report,
 					get_first_free_sequence_index,
+                    get_first_empty_sequence_index,
 					0, 0, 0
 					)
 			);

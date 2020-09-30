@@ -137,6 +137,7 @@ namespace Editor
 		definitions.push_back({ "Key.Track.Copy", {{ SDLK_c, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.Paste", {{ SDLK_v, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.InsertFirstFreeSequence", {{ SDLK_f, Keyboard::Control }} });
+		definitions.push_back({ "Key.Track.InsertFirstEmptySequence", {{ SDLK_f, Keyboard::Shift | Keyboard::Control  }} });
 		definitions.push_back({ "Key.Track.SplitSequenceAtEventPosition", {{ SDLK_b, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedInstrumentIndexValue", {{ SDLK_i, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedCommandIndexValue", {{ SDLK_o, Keyboard::Control }} });

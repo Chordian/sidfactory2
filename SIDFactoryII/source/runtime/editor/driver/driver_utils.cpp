@@ -104,7 +104,21 @@ namespace Editor
 			return 0xff;
 		}
 
-		
+        unsigned char GetFirstEmptySequenceIndex(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader)
+        {
+            std::vector<int> sequence_usage_count = GetSequenceUsageCount(inDriverInfo, inMemoryReader);
+
+            for (size_t i = 0; i < sequence_usage_count.size(); ++i)
+            {
+                if (sequence_usage_count[i] == 0)
+                    return static_cast<unsigned char>(i);
+            }
+
+            return 0xff;
+        }
+
+        
+    
 
 		unsigned char GetHighestInstrumentIndexUsed(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader)
 		{

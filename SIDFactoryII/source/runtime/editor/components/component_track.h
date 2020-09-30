@@ -110,6 +110,7 @@ namespace Editor
 			std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
 			std::function<void(bool, int, int)> inStatusReportFunction,
 			std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
+            std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
 			int inX,
 			int inY,
 			int inHeight
@@ -213,6 +214,7 @@ namespace Editor
 		int DoDelete(bool inIsControlDown);
 		int DoBackspace(bool inIsControlDown);
 		int DoInsertFirstFreeSequence();
+        int DoInsertFirstEmptySequence();
 		void DoSplitSequence();
 		void DoTestExpandSequence();
 		void DoResizeSequence(ComponentsManager& inComponentsManager);
@@ -291,6 +293,7 @@ namespace Editor
 
 		std::function<void(bool, int, int)> m_StatusReportFunction;
 		std::function<unsigned char()> m_GetFirstFreeSequenceIndexFunction;
+        std::function<unsigned char()> m_GetFirstEmptySequenceIndexFunction;
 
 		std::shared_ptr<TrackCopyPasteData> m_CopyPasteData;
 
