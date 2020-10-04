@@ -170,9 +170,9 @@ namespace Foundation
 
         if (appUrlRef != nullptr)
         {
-            CFStringRef filePathRef = CFURLCopyPath(appUrlRef);
+            CFStringRef filePathRef = CFURLCopyFileSystemPath(appUrlRef, kCFURLPOSIXPathStyle);
             const char* filePath = CFStringGetCStringPtr(filePathRef, kCFStringEncodingUTF8);
-            return std::string(filePath);
+            return std::string(filePath) + '/';
         }
 
         return std::string();

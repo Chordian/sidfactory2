@@ -15,6 +15,12 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+#### Editor
+
+- `macOS` Fixed crash when run from a path with spaces
+  [#67](https://github.com/Chordian/sidfactory2/issues/67)
+
+
 ### Build 20200911
 
 #### Editor
