@@ -10,13 +10,13 @@ Huus and Michel de Bree.
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build macOS
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
+![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
 ![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
 ## Changelog
 
-#### Editor
-
+- `linux` Now includes SF2Converter in the build
 - `macOS` Fixed crash when run from a path with spaces
   [#67](https://github.com/Chordian/sidfactory2/issues/67)
 
@@ -36,7 +36,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Fixed the editor crashing when trying to optimize a song with no sequence data
 - Fixed not being able to properly play from a bookmark when showing tracks of uneven lengths
 - `macOS` Now using **Minus** and **Shift+Minus** for fast/faster forward
-- `macOS` Instrument up/down is now **Cmd+Up/Down** while **Cmd+Up/Down** is now **Shift+Cmd+Up/Down**
+- `macOS` Instrument up/down is now **Cmd+Up/Down** while Command up/down is now **Shift+Cmd+Up/Down**
 - `macOS` You can now open `.sf2` files with SID Factory II directly from Finder (Open With)
 - `macOS` Backward compatible until macOS 10.9 (Mavericks)
 
