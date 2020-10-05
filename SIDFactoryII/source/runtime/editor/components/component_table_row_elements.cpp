@@ -154,7 +154,7 @@ namespace Editor
 						}
 						break;
 					case SDLK_RIGHT:
-					if (inKeyboard.IsModifierEmpty())
+						if (inKeyboard.IsModifierEmpty())
 						{
 							m_CursorX = m_CursorX < m_MaxCursorX ? (m_CursorX + 1) : m_MaxCursorX;
 							consume = true;
@@ -168,11 +168,11 @@ namespace Editor
 						}
 						break;
 					case SDLK_DOWN:
-					if (inKeyboard.IsModifierEmpty())
-					{
-						DoCursorDown();
-						consume = true;
-					}
+						if (inKeyboard.IsModifierEmpty())
+						{
+							DoCursorDown();
+							consume = true;
+						}
 						break;
 					case SDLK_INSERT:
 						if (m_InsertDeleteEnabled)
