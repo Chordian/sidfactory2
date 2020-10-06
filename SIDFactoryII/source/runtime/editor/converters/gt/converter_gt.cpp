@@ -20,65 +20,13 @@ namespace Editor
 	{
 	}
 
-	bool ConverterGT::Convert
-	(
-		void* inData,
-		unsigned int inDataSize,
-		Foundation::IPlatform* inPlatform,
-		ComponentsManager& inComponentsManager,
-		std::function<void(std::shared_ptr<Utility::C64File>)> inSuccessAction
-	) 
+
+	bool ConverterGT::CanConvert(const void* inData, unsigned int inDataSize) const
 	{
 		// Assert that there's is some data in the first place
 		assert(inData != nullptr);
 		assert(inDataSize > 0);
 
-		// Detect if the converter can presumably convert the data
-		const bool can_convert_this = CanConvertInput(inData, inDataSize);
-
-		if (can_convert_this)
-		{
-			// Store the success action
-			m_SuccessAction = inSuccessAction;
-
-			SF2::Interface sf2(inPlatform);
-			const path driver_path = inPlatform->Storage_GetDriversHomePath();
-			const path driver_path_and_filename = driver_path / "sf2driver11_02.prg";
-			bool driver_loaded = sf2.LoadFile(driver_path_and_filename.string());
-
-			Converter::SourceSng converter(&sf2, static_cast<unsigned char*>(inData));
-			if (converter.Convert(0))
-			{
-				m_Result = sf2.GetResult();
-				
-				inComponentsManager.StartDialog(std::make_shared<DialogMessage>("GT Converter", "Conversion complete!", 80, true, [&]()
-					{
-						m_SuccessAction(m_Result);
-					}
-				));
-			}
-			else
-			{
-				inComponentsManager.StartDialog(std::make_shared<DialogMessage>("GT Converter", "Error! \n" + converter.GetErrorMessage(), 80, true, [&]()
-					{
-						m_SuccessAction(std::shared_ptr<Utility::C64File>());
-					}
-				));
-			}
-
-			// Show a dialog, to test the flow!
-
-			// Return true, to indicate that the convertion 
-			return true;
-		}
-
-		// Return false, if the converter cannot convert the type of data parsed in!
-		return false;
-	}
-
-
-	bool ConverterGT::CanConvertInput(void* inData, unsigned int inDataSize) const
-	{
 		if (inDataSize >= 4)
 		{
 			if (memcmp("GTS3", inData, 4) == 0)
@@ -90,5 +38,35 @@ namespace Editor
 		}
 
 		return false;
+	}
+
+
+	bool ConverterGT::Update() 
+	{
+		assert(GetState() != State::Uninitialized);
+
+		if (GetState() == State::Initialized)
+		{
+			m_State = State::Completed;
+
+			SF2::Interface sf2(m_Platform);
+			const path driver_path = m_Platform->Storage_GetDriversHomePath();
+			const path driver_path_and_filename = driver_path / "sf2driver11_02.prg";
+			bool driver_loaded = sf2.LoadFile(driver_path_and_filename.string());
+
+			Converter::SourceSng converter(&sf2, static_cast<unsigned char*>(m_Data));
+			if (!converter.Convert(0))
+			{
+				m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("GT Converter", "Error! \n" + converter.GetErrorMessage(), 80, true, [&]() {}));
+
+				return false;
+			}
+
+			m_Result = sf2.GetResult();
+
+			m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("GT Converter", "Conversion complete!", 80, true, [&]() {}));
+		}
+
+		return true;
 	}
 }

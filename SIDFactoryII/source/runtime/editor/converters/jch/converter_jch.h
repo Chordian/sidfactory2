@@ -1,6 +1,6 @@
 #pragma once
 
-#include "runtime/editor/converters/iconverter.h"
+#include "runtime/editor/converters/converterbase.h"
 #include "runtime/editor/driver/driver_info.h"
 
 namespace Emulation
@@ -12,7 +12,7 @@ namespace Editor
 {
 	class DataSourceSequence;
 
-	class ConverterJCH : public IConverter
+	class ConverterJCH : public ConverterBase
 	{
 	private:
 		struct JCH20g4Info
@@ -35,14 +35,8 @@ namespace Editor
 		ConverterJCH();
 		virtual ~ConverterJCH();
 
-		virtual bool Convert
-		(
-			void* inData,
-			unsigned int inDataSize,
-			Foundation::IPlatform* inPlatform,
-			ComponentsManager& inComponentsManager,
-			std::function<void(std::shared_ptr<Utility::C64File>)> inSuccessAction
-		) override;
+		bool CanConvert(const void* inData, unsigned int inDataSize) const override;
+		bool Update() override;
 
 	private:
 		bool LoadDestinationDriver(Foundation::IPlatform* inPlatform);
@@ -75,8 +69,5 @@ namespace Editor
 
 		// Input file info
 		JCH20g4Info m_InputInfo;
-
-		// Success function callback
-		std::function<void(std::shared_ptr<Utility::C64File>)> m_SuccessAction;
 	};
 }

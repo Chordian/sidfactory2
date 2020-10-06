@@ -31,7 +31,8 @@ namespace Editor
 	}
 
 	ConverterJCH::ConverterJCH()
-		: m_CPUMemory(nullptr)
+		: ConverterBase()
+		, m_CPUMemory(nullptr)
 	{
 	}
 
@@ -41,48 +42,78 @@ namespace Editor
 	}
 
 
-	bool ConverterJCH::Convert
-	(
-		void* inData,
-		unsigned int inDataSize,
-		Foundation::IPlatform* inPlatform,
-		ComponentsManager& inComponentsManager,
-		std::function<void(std::shared_ptr<Utility::C64File>)> inSuccessAction
-	)
+	bool ConverterJCH::CanConvert(const void* inData, unsigned int inDataSize) const
 	{
-		assert(m_CPUMemory == nullptr);
-
-		// Assert that there's is some data in the first place and the platfomr exists
+		// Assert that there's is some data in the first place exists. If there isn't, this should have been caught earlier
 		assert(inData != nullptr);
 		assert(inDataSize > 0);
-		assert(inPlatform != nullptr);
 
-		// Detect if the converter can presumably convert the data
-		const bool can_convert_this = CanConvertInput(inData, inDataSize);
+		const unsigned short address_version = 0x0fee;
 
-		if (can_convert_this)
+		if (inDataSize < 0x10000)
 		{
-			// Store the success action
-			m_SuccessAction = inSuccessAction;
+			const unsigned short destination_address = Utility::C64File::ReadTargetAddressFromData(inData, inDataSize);
+
+			if (destination_address == 0x0f00)
+			{
+				auto file = Utility::C64File::CreateFromPRGData(inData, inDataSize);
+
+				unsigned char version_1 = file->GetByte(address_version + 0);
+				unsigned char version_2 = file->GetByte(address_version + 1);
+				unsigned char version_3 = file->GetByte(address_version + 2);
+				unsigned char version_4 = file->GetByte(address_version + 3);
+				unsigned char version_5 = file->GetByte(address_version + 4);
+
+				if (version_1 != '2')
+					return false;
+				if (version_2 != '0')
+					return false;
+				if (version_3 != '.')
+					return false;
+				if (version_4 != 'G')
+					return false;
+				//if (version_4 != '4')		// Not sure that this matters!
+				//	return false;
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
+	bool ConverterJCH::Update()
+	{
+		assert(GetState() != State::Uninitialized);
+		assert(m_CPUMemory == nullptr);
+		assert(m_Platform != nullptr);
+
+		if (GetState() == State::Initialized)
+		{
+			m_State = State::Completed;
 
 			// Create c64 file from the input data
-			m_InputData = Utility::C64File::CreateFromPRGData(inData, inDataSize);
+			m_InputData = Utility::C64File::CreateFromPRGData(m_Data, m_DataSize);
 
 			// Read the driver
-			if (LoadDestinationDriver(inPlatform))
+			if (LoadDestinationDriver(m_Platform))
 			{
 				// Gather info about the input data
 				GatherInputInfo();
 
 				// Import all tables
-				ImportTables();
+				if (!ImportTables())
+					return false;
 
 				// Build
-				BuildTempoTable();
-				BuildInitTable();
+				if (!BuildTempoTable())
+					return false;
+				if (!BuildInitTable())
+					return false;
 
 				// Create cpu memory
-				m_CPUMemory = new Emulation::CPUMemory(0x10000, inPlatform);
+				m_CPUMemory = new Emulation::CPUMemory(0x10000, m_Platform);
 				m_CPUMemory->Lock();
 				m_CPUMemory->Clear();
 				m_CPUMemory->SetData(m_OutputData->GetTopAddress(), m_OutputData->GetData(), m_OutputData->GetDataSize());
@@ -101,21 +132,16 @@ namespace Editor
 				m_CPUMemory->Unlock();
 				m_CPUMemory = nullptr;
 
-				// Show a dialog, to test the flow!
-				inComponentsManager.StartDialog(std::make_shared<DialogMessage>("JCH Converter", "You will now be converting this file to a JCH thing", 80, true, [&]()
-					{
-						// Notify the success!
-						m_SuccessAction(m_OutputData);
-					}
-				));
-			}
+				// Store in result
+				m_Result = m_OutputData;
 
-			// Return true, to indicate that the convertion has finished consumed the input
-			return true;
+				// Show a dialog, to test the flow!
+				m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("JCH Converter", "You will now be converting this file to a JCH thing", 80, true, [&]() {} ));
+			}
 		}
 
-		// Return false, if the converter cannot convert the type of data parsed in!
-		return false;
+		// Return true, to indicate that the convertion has finished consumed the input
+		return true;
 	}
 
 
@@ -259,7 +285,14 @@ namespace Editor
 
 	bool ConverterJCH::BuildInitTable()
 	{
-		return false;
+		using namespace Details;
+		const std::vector<DriverInfo::TableDefinition>& table_definitions = m_DriverInfo->GetTableDefinitions();
+		const DriverInfo::TableDefinition* table = FindTableByName("Init", table_definitions);
+
+		if (table == nullptr)
+			return false;
+
+		return true;
 	}
 
 
@@ -438,42 +471,5 @@ namespace Editor
 				(*m_OutputData)[inDestinationAddress + i] = (*m_InputData)[inSourceAddress + inSize + i];
 			}
 		}
-	}
-
-
-	bool ConverterJCH::CanConvertInput(void* inData, unsigned int inDataSize) const
-	{
-		const unsigned short address_version = 0x0fee;
-
-		if (inDataSize < 0x10000)
-		{
-			const unsigned short destination_address = Utility::C64File::ReadTargetAddressFromData(inData, inDataSize);
-
-			if (destination_address == 0x0f00)
-			{
-				auto file = Utility::C64File::CreateFromPRGData(inData, inDataSize);
-
-				unsigned char version_1 = file->GetByte(address_version + 0);
-				unsigned char version_2 = file->GetByte(address_version + 1);
-				unsigned char version_3 = file->GetByte(address_version + 2);
-				unsigned char version_4 = file->GetByte(address_version + 3);
-				unsigned char version_5 = file->GetByte(address_version + 4);
-
-				if (version_1 != '2')
-					return false;
-				if (version_2 != '0')
-					return false;
-				if (version_3 != '.')
-					return false;
-				if (version_4 != 'G')
-					return false;
-				//if (version_4 != '4')		// Not sure that this matters!
-				//	return false;
-
-				return true;
-			}
-		}
-
-		return false;
 	}
 }

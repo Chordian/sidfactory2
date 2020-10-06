@@ -204,6 +204,7 @@
     <ClCompile Include="source\runtime\editor\components\component_tracks.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp" />
     <ClCompile Include="source\runtime\editor\components_manager.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\converterbase.cpp" />
     <ClCompile Include="source\runtime\editor\converters\gt\converter_gt.cpp" />
     <ClCompile Include="source\runtime\editor\converters\gt\source_sng.cpp" />
     <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp" />
@@ -256,6 +257,7 @@
     <ClCompile Include="source\runtime\editor\overlay_control.cpp" />
     <ClCompile Include="source\runtime\editor\packer\packer.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_base.cpp" />
+    <ClCompile Include="source\runtime\editor\screens\screen_convert.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_disk.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_edit.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_edit_utils.cpp" />
@@ -366,7 +368,7 @@
     <ClInclude Include="source\runtime\editor\components_manager.h" />
     <ClInclude Include="source\runtime\editor\converters\gt\converter_gt.h" />
     <ClInclude Include="source\runtime\editor\converters\gt\source_sng.h" />
-    <ClInclude Include="source\runtime\editor\converters\iconverter.h" />
+    <ClInclude Include="source\runtime\editor\converters\converterbase.h" />
     <ClInclude Include="source\runtime\editor\converters\jch\converter_jch.h" />
     <ClInclude Include="source\runtime\editor\converters\null\converter_null.h" />
     <ClInclude Include="source\runtime\editor\converters\utils\misc.h" />
@@ -421,6 +423,7 @@
     <ClInclude Include="source\runtime\editor\overlay_control.h" />
     <ClInclude Include="source\runtime\editor\packer\packer.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_base.h" />
+    <ClInclude Include="source\runtime\editor\screens\screen_convert.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_disk.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_edit.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_edit_utils.h" />

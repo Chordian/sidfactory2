@@ -41,7 +41,8 @@ namespace Editor
 	class ScreenIntro;
 	class ScreenEdit;
 	class ScreenDisk;
-	class IConverter;
+	class ScreenConvert;
+	class ConverterBase;
 
 	enum FileType : int;
 
@@ -85,6 +86,7 @@ namespace Editor
 		void OnFilenameSelection(ScreenBase* inCallerScreen, const std::string& inSelectedFilename, FileType inSaveFileType);
 		void OnExitIntroScreen();
 		void OnExitIntroScreenToLoad();
+		bool OnConversionSuccess(ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult);
 
 		void OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress);
 		void OnQuickSave(ScreenBase* inCallerScreen);
@@ -101,6 +103,8 @@ namespace Editor
 
 		void SetLastSavedPathAndFilename(const std::string& inLastSavedPathAndFilename);
 		std::string ConfigureColorsFromScheme(int inSchemeIndex, const Utility::ConfigFile& inMainConfigFile, Foundation::Viewport& inViewport);
+
+		std::vector<std::shared_ptr<ConverterBase>> GetConverters() const;
 
 		bool m_IsDone;
 		bool m_FlipOverlayState;
@@ -139,9 +143,10 @@ namespace Editor
 		std::unique_ptr<ScreenIntro> m_IntroScreen;
 		std::unique_ptr<ScreenEdit> m_EditScreen;
 		std::unique_ptr<ScreenDisk> m_DiskScreen;
+		std::unique_ptr<ScreenConvert> m_ConvertScreen;
 
 		std::shared_ptr<Utility::C64File> m_PackedData;
 
-		std::vector<std::unique_ptr<IConverter>> m_Converters;
+		//std::vector<std::unique_ptr<IConverter>> m_Converters;
 	};
 }

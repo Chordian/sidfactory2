@@ -6,11 +6,12 @@
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/execution/executionhandler.h"
 #include "runtime/execution/flightrecorder.h"
-#include "runtime/editor/converters/iconverter.h"
+#include "runtime/editor/converters/converterbase.h"
 #include "runtime/editor/screens/screen_base.h"
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/screens/screen_edit.h"
 #include "runtime/editor/screens/screen_disk.h"
+#include "runtime/editor/screens/screen_convert.h"
 #include "runtime/editor/screens/screen_edit_utils.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
@@ -123,6 +124,20 @@ namespace Editor
 			[&](const std::string& inFilenameSelection, FileType inSaveFileType) { OnFilenameSelection(m_DiskScreen.get(), inFilenameSelection, inSaveFileType); },
 			[&]() { OnCancelScreen(m_DiskScreen.get()); });
 
+		m_ConvertScreen = std::make_unique<ScreenConvert>(
+			m_Viewport,
+			m_TextField,
+			&m_CursorControl,
+			m_DisplayState,
+			m_KeyHookSetup.GetKeyHookStore(),
+			m_Platform,
+			[&]() { SetCurrentScreen(m_EditScreen.get()); },
+			[&](ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult) { return OnConversionSuccess(inCallerScreen, inPathAndFilename, inConversionResult); }
+		);
+
+		// 	bool EditorFacility::OnConversionSuccess(ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult)
+
+
 		m_EditScreen = std::make_unique<ScreenEdit>(
 			m_Viewport,
 			m_TextField,
@@ -150,11 +165,6 @@ namespace Editor
 		(
 			GetSingleConfigurationValue<ConfigValueInt>(m_ConfigFile, "Editor.Driver.ConvertLegacyColors", 0) != 0
 		);
-
-		// Configure the converters
-		m_Converters.push_back(std::make_unique<ConverterJCH>());
-		m_Converters.push_back(std::make_unique<ConverterGT>());
-		m_Converters.push_back(std::make_unique<ConverterNull>());
 	}
 
 	EditorFacility::~EditorFacility()
@@ -556,13 +566,16 @@ namespace Editor
 			// Try converting, if there're no valid results yet
 			if (inCallerScreen != nullptr)
 			{
-				const size_t converter_count = m_Converters.size();
+				auto converters = GetConverters();
+				const size_t converter_count = converters.size();
 
 				for (size_t i = 0; i < converter_count; ++i)
 				{
-					if (m_Converters[i]->Convert(data, static_cast<unsigned int>(data_size), m_Platform, inCallerScreen->GetComponentsManager(), on_successfull_conversion))
+					if (converters[i]->CanConvert(data, data_size))
 					{
-						delete[] static_cast<char*>(data);
+						m_ConvertScreen->PassConverterAndData(inPathAndFilename, converters[i], data, data_size);
+						RequestScreen(m_ConvertScreen.get());
+
 						return true;
 					}
 				}
@@ -774,6 +787,49 @@ namespace Editor
 	{
 		m_DiskScreen->SetMode(ScreenDisk::Mode::Load);
 		SetCurrentScreen(m_DiskScreen.get());
+	}
+
+
+	bool EditorFacility::OnConversionSuccess(ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult)
+	{
+		std::shared_ptr<DriverInfo> driver_info = std::make_shared<DriverInfo>();
+
+		if (inConversionResult != nullptr)
+		{
+			driver_info->Parse(*inConversionResult);
+
+			if (driver_info->IsValid())
+			{
+				m_DriverInfo->GetAuxilaryDataCollection().Reset();
+				m_DriverInfo = driver_info;
+
+				// Copy the data to the emulated memory
+				m_CPUMemory->Lock();
+				m_CPUMemory->Clear();
+				m_CPUMemory->SetData(inConversionResult->GetTopAddress(), inConversionResult->GetData(), inConversionResult->GetDataSize());
+				m_CPUMemory->Unlock();
+
+				// Init the execution handler 
+				m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
+				m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
+				m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
+
+				// Store name of last read file
+				SetLastSavedPathAndFilename(inPathAndFilename);
+
+				// Flush undo after load
+				m_EditScreen->FlushUndo();
+
+				// Notify overlay
+				m_OverlayControl->OnChange(*m_DriverInfo);
+
+				return true;
+			}
+		}
+
+		inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Conversion failed", "The selected file couldn't be converted correctly.", DefaultDialogWidth, true, []() {}));
+
+		return false;
 	}
 
 
@@ -1026,5 +1082,19 @@ namespace Editor
 
 		return "Default";
 	}
+
+
+	std::vector<std::shared_ptr<ConverterBase>> EditorFacility::GetConverters() const
+	{
+		std::vector<std::shared_ptr<ConverterBase>> converters;
+
+		// Configure the converters
+		converters.push_back(std::make_shared<ConverterJCH>());
+		converters.push_back(std::make_shared<ConverterGT>());
+		converters.push_back(std::make_shared<ConverterNull>());
+
+		return converters;
+	}
+
 }
 
