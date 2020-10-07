@@ -1,11 +1,13 @@
 #include "screen_convert.h"
 
+#include "runtime/editor/converters/converterbase.h"
+#include "runtime/editor/components/component_text_box.h"
 #include "foundation/graphics/viewport.h"
 #include "foundation/graphics/textfield.h"
 #include "utils/utilities.h"
-#include "runtime/editor/converters/converterbase.h"
 
 #include <string>
+#include <memory>
 #include <assert.h>
 
 
@@ -55,20 +57,22 @@ namespace Editor
 		// Data must have a size
 		assert(m_DataSize > 0);
 
-		// Activate converter
-		m_Converter->Activate(m_Data, m_DataSize, m_Platform, m_ComponentsManager.get());
-
 		// Clear the text field
 		ClearTextField();
 
-		const auto& dimensions = m_MainTextField->GetDimensions();
+		// Activate converter
+		m_Converter->Activate(m_Data, m_DataSize, m_Platform, m_ComponentsManager.get());
 
-		m_MainTextField->Print(0, 0, "Converter");
+		const auto& dimensions = m_MainTextField->GetDimensions();
+		m_Console = std::make_shared<ComponentTextBox>(0, 0, nullptr, m_MainTextField, 1, 1, dimensions.m_Width - 2, (dimensions.m_Height >> 1) - 2);
+		m_ComponentsManager->AddComponent(m_Console);
 	}
 
 
 	void ScreenConvert::Deactivate()
 	{
+		m_ComponentsManager->Clear();
+
 		m_Converter = nullptr;
 
 		delete[] static_cast<char*>(m_Data);
@@ -114,8 +118,26 @@ namespace Editor
 
 	void ScreenConvert::Update(int inDeltaTick)
 	{
+		ScreenBase::Update(inDeltaTick);
+
+		ComponentTextBox& cout = *m_Console;
+
 		if (m_Converter != nullptr)
+		{
+			const auto state_pre = m_Converter->GetState();
 			m_Converter->Update();
+			const auto state = m_Converter->GetState();
+
+			if (state_pre != state && state == ConverterBase::State::Completed)
+			{
+				cout << "Conversion has completed!";
+
+				if (m_Converter->GetResult() != nullptr)
+					cout << "Successfully... Press ENTER to open into the editor, or ESCAPE to cancel.";
+				else
+					cout << "Failure.. Press ESCAPE to return to the editor";
+			}
+		}
 	}
 }
 

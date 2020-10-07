@@ -169,8 +169,6 @@ namespace Editor
 	void ScreenDisk::Refresh()
 	{
 		ScreenBase::Refresh();
-
-		m_ComponentsManager->Refresh(m_DisplayState);
 	}
 
 	//------------------------------------------------------------------------------------------------------------

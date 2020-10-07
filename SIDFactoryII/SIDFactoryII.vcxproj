@@ -198,6 +198,7 @@
     <ClCompile Include="source\runtime\editor\components\component_orderlistoverview.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_string_list_selector.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_table_row_elements_with_text.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_text_box.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_track.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_table_row_elements.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_text_input.cpp" />
@@ -360,6 +361,7 @@
     <ClInclude Include="source\runtime\editor\components\component_orderlistoverview.h" />
     <ClInclude Include="source\runtime\editor\components\component_string_list_selector.h" />
     <ClInclude Include="source\runtime\editor\components\component_table_row_elements_with_text.h" />
+    <ClInclude Include="source\runtime\editor\components\component_text_box.h" />
     <ClInclude Include="source\runtime\editor\components\component_track.h" />
     <ClInclude Include="source\runtime\editor\components\component_table_row_elements.h" />
     <ClInclude Include="source\runtime\editor\components\component_text_input.h" />

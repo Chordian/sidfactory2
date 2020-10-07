@@ -17,6 +17,8 @@ namespace Utility
 namespace Editor
 {
 	class ConverterBase;
+	class ComponentTextBox;
+
 	class ScreenConvert final : public ScreenBase
 	{
 	public:
@@ -53,9 +55,9 @@ namespace Editor
 		std::function<void(void)> m_ExitScreenCallback;
 		std::function<bool(ScreenBase*, const std::string&, std::shared_ptr<Utility::C64File>)> m_SuccessfullConversionCallback;
 
-
 		std::string m_PathAndFilename;
 		std::shared_ptr<ConverterBase> m_Converter;
+		std::shared_ptr<ComponentTextBox> m_Console;
 		
 		void* m_Data;
 		unsigned int m_DataSize;

@@ -353,8 +353,6 @@ namespace Editor
 	{
 		ScreenBase::Refresh();
 
-		m_ComponentsManager->Refresh(m_DisplayState);
-
 		// Refresh info rect
 		const int h = 4;
 		const int x = m_TracksComponent->GetPosition().m_X + m_TracksComponent->GetDimensions().m_Width + 1;
