@@ -17,7 +17,7 @@ namespace Utility
 namespace Editor
 {
 	class ConverterBase;
-	class ComponentTextBox;
+	class ComponentConsole;
 
 	class ScreenConvert final : public ScreenBase
 	{
@@ -57,7 +57,7 @@ namespace Editor
 
 		std::string m_PathAndFilename;
 		std::shared_ptr<ConverterBase> m_Converter;
-		std::shared_ptr<ComponentTextBox> m_Console;
+		std::shared_ptr<ComponentConsole> m_Console;
 		
 		void* m_Data;
 		unsigned int m_DataSize;

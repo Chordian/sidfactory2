@@ -6,6 +6,7 @@
 namespace Foundation
 {
 	class IPlatform;
+	class TextField;
 }
 
 namespace Utility
@@ -38,24 +39,25 @@ namespace Editor
 			void* inData,
 			unsigned int inDataSize,
 			Foundation::IPlatform* inPlatform,
+			Foundation::TextField* inTextField,
 			ComponentsManager* inComponentsManager
 		);
 
 		State GetState() const;
 		std::shared_ptr<Utility::C64File> GetResult();
 
-
 		virtual bool CanConvert(const void* inData, unsigned int inDataSize) const = 0;
-		virtual bool Update
-		(
-		) = 0;
+		virtual bool Update() = 0;
 
 	protected:
+		virtual void Setup() = 0;
+
 		State m_State;
 
 		void* m_Data;
 		unsigned int m_DataSize;
 		Foundation::IPlatform* m_Platform;
+		Foundation::TextField* m_TextField;
 		ComponentsManager* m_ComponentsManager;
 
 		std::shared_ptr<Utility::C64File> m_Result;

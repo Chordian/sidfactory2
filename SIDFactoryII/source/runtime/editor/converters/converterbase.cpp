@@ -22,6 +22,7 @@ namespace Editor
 		void* inData,
 		unsigned int inDataSize,
 		Foundation::IPlatform* inPlatform,
+		Foundation::TextField* inTextField,
 		ComponentsManager* inComponentsManager
 	)
 	{
@@ -30,9 +31,12 @@ namespace Editor
 		m_Data = inData;
 		m_DataSize = inDataSize;
 		m_Platform = inPlatform;
+		m_TextField = inTextField;
 		m_ComponentsManager = inComponentsManager;
 
 		m_State = State::Initialized;
+
+		Setup();
 	}
 
 

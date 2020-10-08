@@ -5,11 +5,13 @@
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/editor/screens/screen_edit_utils.h"
+#include "runtime/editor/components/component_console.h"
 #include "runtime/emulation/cpumemory.h"
 #include "utils/utilities.h"
 #include "utils/c64file.h"
 #include "libraries/ghc/fs_std.h"
 #include "foundation/platform/iplatform.h"
+#include "foundation/graphics/textfield.h"
 #include <assert.h>
 
 using namespace fs;
@@ -91,53 +93,85 @@ namespace Editor
 
 		if (GetState() == State::Initialized)
 		{
+			ComponentConsole& cout = *m_Console;
+
+			cout << "JCH converter!\n";
+			cout << "--------------\n\n";
+
 			m_State = State::Completed;
 
 			// Create c64 file from the input data
 			m_InputData = Utility::C64File::CreateFromPRGData(m_Data, m_DataSize);
 
 			// Read the driver
-			if (LoadDestinationDriver(m_Platform))
+			cout << "Load driver... ";
+
+			if (!LoadDestinationDriver(m_Platform))
 			{
-				// Gather info about the input data
-				GatherInputInfo();
-
-				// Import all tables
-				if (!ImportTables())
-					return false;
-
-				// Build
-				if (!BuildTempoTable())
-					return false;
-				if (!BuildInitTable())
-					return false;
-
-				// Create cpu memory
-				m_CPUMemory = new Emulation::CPUMemory(0x10000, m_Platform);
-				m_CPUMemory->Lock();
-				m_CPUMemory->Clear();
-				m_CPUMemory->SetData(m_OutputData->GetTopAddress(), m_OutputData->GetData(), m_OutputData->GetDataSize());
-				m_CPUMemory->Unlock();
-
-				// Import order list
-				unsigned int max_sequence_index = ImportOrderLists();
-
-				// Import sequences
-				ImportSequences(max_sequence_index);
-
-				// Reflect to output
-				ReflectToOutput();
-
-				// Destroy cpu memory
-				m_CPUMemory->Unlock();
-				m_CPUMemory = nullptr;
-
-				// Store in result
-				m_Result = m_OutputData;
-
-				// Show a dialog, to test the flow!
-				m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("JCH Converter", "You will now be converting this file to a JCH thing", 80, true, [&]() {} ));
+				cout << "\nERROR: Failed to load driver!";
+				return false;
 			}
+
+			cout << "succeeded!\n";
+
+			// Gather info about the input data
+			GatherInputInfo();
+
+			// Import all tables
+			cout << "Import tables... ";
+
+			if (!ImportTables())
+			{
+				cout << "\nERROR: Failed to import tables!";
+				return false;
+			}
+
+			cout << "succeeded!\n";
+			cout << "Build tempo table... ";
+
+			// Build
+			if (!BuildTempoTable())
+			{
+				cout << "\nERROR: Failed to build tempo table!";
+				return false;
+			}
+
+			cout << "succeeded!\n";
+			cout << "Build init table... ";
+
+			if (!BuildInitTable())
+			{
+				cout << "\nERROR: Failed to build init table!";
+				return false;
+			}
+
+			cout << "succeeded!\n";
+			cout << "Import sequences... ";
+
+			// Create cpu memory
+			m_CPUMemory = new Emulation::CPUMemory(0x10000, m_Platform);
+			m_CPUMemory->Lock();
+			m_CPUMemory->Clear();
+			m_CPUMemory->SetData(m_OutputData->GetTopAddress(), m_OutputData->GetData(), m_OutputData->GetDataSize());
+			m_CPUMemory->Unlock();
+
+			// Import order list
+			unsigned int max_sequence_index = ImportOrderLists();
+
+			// Import sequences
+			ImportSequences(max_sequence_index);
+			cout << "succeeded!\n";
+
+			// Reflect to output
+			ReflectToOutput();
+
+			// Destroy cpu memory
+			m_CPUMemory->Unlock();
+			m_CPUMemory = nullptr;
+
+			// Store in result
+			m_Result = m_OutputData;
+			cout << "\nConversion complete!";
 		}
 
 		// Return true, to indicate that the convertion has finished consumed the input
@@ -471,5 +505,13 @@ namespace Editor
 				(*m_OutputData)[inDestinationAddress + i] = (*m_InputData)[inSourceAddress + inSize + i];
 			}
 		}
+	}
+
+
+	void ConverterJCH::Setup()
+	{
+		const auto& dimensions = m_TextField->GetDimensions();
+		m_Console = std::make_shared<ComponentConsole>(0, 0, nullptr, m_TextField, 1, 1, dimensions.m_Width - 2, (dimensions.m_Height >> 1) - 2);
+		m_ComponentsManager->AddComponent(m_Console);
 	}
 }

@@ -43,4 +43,10 @@ namespace Editor
 		// Return true, to indicate that the convertion 
 		return true;
 	}
+
+
+	void ConverterNull::Setup()
+	{
+
+	}
 }

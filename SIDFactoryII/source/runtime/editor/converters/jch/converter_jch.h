@@ -11,6 +11,7 @@ namespace Emulation
 namespace Editor
 {
 	class DataSourceSequence;
+	class ComponentConsole;
 
 	class ConverterJCH : public ConverterBase
 	{
@@ -54,6 +55,8 @@ namespace Editor
 
 		bool CanConvertInput(void* inData, unsigned int inDataSize) const;
 
+		void Setup() override;
+
 
 		// Input data parsed to c64 file
 		std::shared_ptr<Utility::C64File> m_InputData;
@@ -69,5 +72,8 @@ namespace Editor
 
 		// Input file info
 		JCH20g4Info m_InputInfo;
+
+		// Console
+		std::shared_ptr<ComponentConsole> m_Console;
 	};
 }

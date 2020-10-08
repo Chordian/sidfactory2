@@ -560,7 +560,7 @@
     <ClCompile Include="source\runtime\editor\converters\converterbase.cpp">
       <Filter>source\runtime\editor\converters</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\editor\components\component_text_box.cpp">
+    <ClCompile Include="source\runtime\editor\components\component_console.cpp">
       <Filter>source\runtime\editor\components</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1084,7 +1084,7 @@
     <ClInclude Include="source\runtime\editor\converters\converterbase.h">
       <Filter>source\runtime\editor\converters</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\editor\components\component_text_box.h">
+    <ClInclude Include="source\runtime\editor\components\component_console.h">
       <Filter>source\runtime\editor\components</Filter>
     </ClInclude>
   </ItemGroup>

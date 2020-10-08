@@ -12,5 +12,8 @@ namespace Editor
 
 		bool CanConvert(const void* inData, unsigned int inDataSize) const override;
 		bool Update() override;
+
+	private:
+		void Setup();
 	};
 }

@@ -15,5 +15,6 @@ namespace Editor
 
 	private:
 		bool CanConvertInput(void* inData, unsigned int inDataSize) const;
+		void Setup() override;
 	};
 }

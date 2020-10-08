@@ -69,4 +69,10 @@ namespace Editor
 
 		return true;
 	}
+
+
+	void ConverterGT::Setup()
+	{
+
+	}
 }

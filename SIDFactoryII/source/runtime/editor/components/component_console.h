@@ -17,14 +17,14 @@ namespace Editor
 	class CursorControl;
 	class ScreenBase;
 
-	class ComponentTextBox final : public ComponentBase
+	class ComponentConsole final : public ComponentBase
 	{
 	public:
-		ComponentTextBox(int inID, int inGroupID, Undo* inUndo, Foundation::TextField* inTextField, int inX, int inY, int inWidth, int inHeight);
-		~ComponentTextBox();
+		ComponentConsole(int inID, int inGroupID, Undo* inUndo, Foundation::TextField* inTextField, int inX, int inY, int inWidth, int inHeight);
+		~ComponentConsole();
 
-		ComponentTextBox& operator << (const char* inString);
-		ComponentTextBox& operator << (std::string& inText);
+		ComponentConsole& operator << (const char* inString);
+		ComponentConsole& operator << (std::string& inText);
 
 		void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl) override;
 		void SetColors(const Foundation::Color& inTextColor, const Foundation::Color& inBackgroundColor);
