@@ -40,7 +40,6 @@ namespace Editor
 
 	ComponentConsole& ComponentConsole::operator << (std::string& inText)
 	{
-
 		std::string new_line = m_TextLines.back() + inText;
 		m_TextLines.pop_back();
 
@@ -67,6 +66,19 @@ namespace Editor
 
 		m_RequireRefresh = true;
 		return *this;
+	}
+
+	ComponentConsole& ComponentConsole::operator << (unsigned int inValue)
+	{
+		std::string string = std::to_string(inValue);
+		return this->operator << (string);
+	}
+
+
+	ComponentConsole& ComponentConsole::operator << (int inValue)
+	{
+		std::string string = std::to_string(inValue);
+		return this->operator << (string);
 	}
 
 

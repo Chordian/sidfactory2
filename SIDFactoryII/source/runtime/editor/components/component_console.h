@@ -25,6 +25,9 @@ namespace Editor
 
 		ComponentConsole& operator << (const char* inString);
 		ComponentConsole& operator << (std::string& inText);
+		ComponentConsole& operator << (unsigned int inValue);
+		ComponentConsole& operator << (int inValue);
+
 
 		void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl) override;
 		void SetColors(const Foundation::Color& inTextColor, const Foundation::Color& inBackgroundColor);

@@ -146,7 +146,6 @@ namespace Editor
 			}
 
 			cout << "succeeded!\n";
-			cout << "Import sequences... ";
 
 			// Create cpu memory
 			m_CPUMemory = new Emulation::CPUMemory(0x10000, m_Platform);
@@ -159,6 +158,7 @@ namespace Editor
 			unsigned int max_sequence_index = ImportOrderLists();
 
 			// Import sequences
+			cout << "Import " << max_sequence_index << " sequences... ";
 			ImportSequences(max_sequence_index);
 			cout << "succeeded!\n";
 
