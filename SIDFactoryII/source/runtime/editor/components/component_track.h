@@ -216,6 +216,7 @@ namespace Editor
 		int DoInsertFirstFreeSequence();
         int DoInsertFirstEmptySequence();
 		void DoSplitSequence();
+		void DoDuplicateSequence();
 		void DoTestExpandSequence();
 		void DoResizeSequence(ComponentsManager& inComponentsManager);
 		void DoInsertLinesInSequence(ComponentsManager& inComponentsManager);

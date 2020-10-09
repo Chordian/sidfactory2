@@ -1954,6 +1954,36 @@ namespace Editor
 		}
 	}
 
+	void ComponentTrack::DoDuplicateSequence()
+	{
+		if (m_FocusModeOrderList)
+		{
+			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+
+			if (orderlist_entry.m_Transposition >= 0xfe)
+				return;
+
+			unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
+			if (first_free_sequence_index >= 0x80)
+				return;
+
+			AddUndoStep();
+
+			unsigned char current_sequence_index = orderlist_entry.m_SequenceIndex;
+			auto& source = m_DataSourceSequenceList[current_sequence_index];
+			auto& destination = m_DataSourceSequenceList[first_free_sequence_index];
+
+			int new_sequence_length = source->GetLength();
+			destination->SetLength(new_sequence_length);
+
+			DataSourceUtils::CopySequence(source, 0, new_sequence_length, destination);
+
+			OnSequenceChanged(first_free_sequence_index);
+
+			m_SequenceSplitEvent.Execute(current_sequence_index, first_free_sequence_index);
+		}
+	}
+
 
 	void ComponentTrack::DoTestExpandSequence()
 	{
@@ -2560,6 +2590,19 @@ namespace Editor
 			if (!m_FocusModeOrderList)
 			{
 				DoSplitSequence();
+				UpdateMaxEventPos();
+				SetEventPosition(m_EventPos);
+				inKeyHookContext.m_NewEventPos = m_EventPos;
+				return true;
+			}
+
+			return false;
+		} });
+			m_KeyHooks.push_back({ "Key.Track.DuplicateSequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (m_FocusModeOrderList)
+			{
+				DoDuplicateSequence();
 				UpdateMaxEventPos();
 				SetEventPosition(m_EventPos);
 				inKeyHookContext.m_NewEventPos = m_EventPos;
