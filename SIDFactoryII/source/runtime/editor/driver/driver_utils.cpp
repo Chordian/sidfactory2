@@ -1,10 +1,10 @@
 #include "runtime/editor/driver/driver_utils.h"
-#include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/datasources/datasource_table.h"
 #include "runtime/editor/datasources/datasource_table_column_major.h"
 #include "runtime/editor/datasources/datasource_table_row_major.h"
-#include "runtime/emulation/imemoryrandomreadaccess.h"
+#include "runtime/editor/driver/driver_info.h"
 #include "runtime/emulation/cpumemory.h"
+#include "runtime/emulation/imemoryrandomreadaccess.h"
 #include "utils/c64file.h"
 #include <assert.h>
 
@@ -15,8 +15,8 @@ namespace Editor
 		std::shared_ptr<DataSourceTable> CreateTableDataSource(const DriverInfo::TableDefinition& inTableDefinition, Emulation::CPUMemory* inCPUMemory)
 		{
 			return (inTableDefinition.m_DataLayout == DriverInfo::TableDefinition::DataLayout::ColumnMajor)
-				? std::shared_ptr<DataSourceTable>(new  DataSourceTableColumnMajor(inCPUMemory, inTableDefinition.m_Address, inTableDefinition.m_RowCount, inTableDefinition.m_ColumnCount))
-				: std::shared_ptr<DataSourceTable>(new  DataSourceTableRowMajor(inCPUMemory, inTableDefinition.m_Address, inTableDefinition.m_RowCount, inTableDefinition.m_ColumnCount));
+				? std::shared_ptr<DataSourceTable>(new DataSourceTableColumnMajor(inCPUMemory, inTableDefinition.m_Address, inTableDefinition.m_RowCount, inTableDefinition.m_ColumnCount))
+				: std::shared_ptr<DataSourceTable>(new DataSourceTableRowMajor(inCPUMemory, inTableDefinition.m_Address, inTableDefinition.m_RowCount, inTableDefinition.m_ColumnCount));
 		}
 
 
@@ -104,21 +104,29 @@ namespace Editor
 			return 0xff;
 		}
 
-        unsigned char GetFirstEmptySequenceIndex(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader)
-        {
-            std::vector<int> sequence_usage_count = GetSequenceUsageCount(inDriverInfo, inMemoryReader);
+		unsigned char GetFirstEmptySequenceIndex(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader)
+		{
+			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
+			{
+				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 
-            for (size_t i = 0; i < sequence_usage_count.size(); ++i)
-            {
-                if (sequence_usage_count[i] == 0)
-                    return static_cast<unsigned char>(i);
-            }
+				std::vector<int> sequence_usage_count = GetSequenceUsageCount(inDriverInfo, inMemoryReader);
 
-            return 0xff;
-        }
+				for (size_t i = 0; i < sequence_usage_count.size(); ++i)
+				{
+					unsigned short sequence_address = music_data.m_Sequence00Address + i * music_data.m_SequenceSize;
 
-        
-    
+					bool is_empty = inMemoryReader[sequence_address] == 0x80
+						&& inMemoryReader[sequence_address + 1] == 0x00
+						&& inMemoryReader[sequence_address + 2] == 0x7f;
+
+					if (is_empty && sequence_usage_count[i] == 0)
+						return static_cast<unsigned char>(i);
+				}
+			}
+			return 0xff;
+		}
+
 
 		unsigned char GetHighestInstrumentIndexUsed(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader)
 		{
@@ -283,7 +291,6 @@ namespace Editor
 		}
 
 
-
 		unsigned short GetEndOfMusicDataAddress(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& InMemoryReader)
 		{
 			assert(inDriverInfo.IsValid());
@@ -304,8 +311,7 @@ namespace Editor
 
 		void InsertIRQ(const Editor::DriverInfo& inDriverInfo, Utility::C64FileWriter& inFileWriter)
 		{
-			unsigned char irq_assembly[] =
-			{
+			unsigned char irq_assembly[] = {
 				0xa9, 0x00, 0x20, 0x00, 0x10, 0x78, 0xa2, 0x00,
 				0x8e, 0x0e, 0xdc, 0xe8, 0x8e, 0x1a, 0xd0, 0xa9,
 				0x20, 0x8d, 0x14, 0x03, 0xa9, 0xc0, 0x8d, 0x15,

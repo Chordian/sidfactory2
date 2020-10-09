@@ -27,3 +27,4 @@ SIDFactoryII/*.vcxproj.user
 artifacts
 .vscode
 xcuserdata
+.ccls-cache
