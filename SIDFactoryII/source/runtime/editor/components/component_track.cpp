@@ -109,7 +109,7 @@ namespace Editor
 		, m_AuxilaryDataPlayMarkers(inAuxilaryDataCollection)
 		, m_StatusReportFunction(inStatusReportFunction)
 		, m_GetFirstFreeSequenceIndexFunction(inGetFirstFreeSequenceIndexFunction)
-        , m_GetFirstEmptySequenceIndexFunction(inGetFirstEmptySequenceIndexFunction)
+		, m_GetFirstEmptySequenceIndexFunction(inGetFirstEmptySequenceIndexFunction)
 		, m_DataSourceOrderList(inDataSourceOrderList)
 		, m_DataSourceSequenceList(inDataSourceSequenceList)
 		, m_CopyPasteData(inCopyPasteData)
@@ -1883,38 +1883,39 @@ namespace Editor
 		return m_EventPos;
 	}
 
-    int ComponentTrack::DoInsertFirstEmptySequence()
-    {
-        if (m_FocusModeOrderList)
-        {
-            AddUndoStep();
+	// TODO: deduplicate code, this is almost the same as DoInsertFirstFreeSequence
+	int ComponentTrack::DoInsertFirstEmptySequence()
+	{
+			if (m_FocusModeOrderList)
+			{
+					AddUndoStep();
 
-            // the orderlist entry (transposition + sequence number)
-            DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+					// the orderlist entry (transposition + sequence number)
+					DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
 
-            // transposition fe or ff?
-            if (orderlist_entry.m_Transposition >= 0xfe)
-            {
-                if (m_EventPosDetails.m_OrderListIndex == 0)
-                    return m_EventPos;
+					// transposition fe or ff?
+					if (orderlist_entry.m_Transposition >= 0xfe)
+					{
+							if (m_EventPosDetails.m_OrderListIndex == 0)
+									return m_EventPos;
 
-                orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1];
-            }
+							orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1];
+					}
 
-            unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
+					unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
 
-            if (first_free_sequence_index < 0x80)
-                orderlist_entry.m_SequenceIndex = first_free_sequence_index;
+					if (first_free_sequence_index < 0x80)
+							orderlist_entry.m_SequenceIndex = first_free_sequence_index;
 
-            if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.m_OrderListIndex, orderlist_entry))
-            {
-                OnOrderListChanged();
-                UpdateMaxEventPos();
-            }
-        }
+					if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.m_OrderListIndex, orderlist_entry))
+					{
+							OnOrderListChanged();
+							UpdateMaxEventPos();
+					}
+			}
 
-        return m_EventPos;
-    }
+			return m_EventPos;
+	}
 
 
 	void ComponentTrack::DoSplitSequence()
