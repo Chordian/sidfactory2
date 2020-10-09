@@ -5,6 +5,8 @@
 
 #ifdef _SF2_WINDOWS
 #include "foundation/platform/sdl/platform_sdl_windows.h"
+#elif _SF2_LINUX
+#include "foundation/platform/sdl/platform_sdl_linux.h"
 #else
 #include "foundation/platform/sdl/platform_sdl_macos.h"
 #endif
@@ -101,6 +103,8 @@ int main(int argc, char* argv[])
 
 #ifdef _SF2_WINDOWS
         PlatformSDLWindows platform;
+#elif _SF2_LINUX
+        PlatformSDLLinux platform;
 #else
         PlatformSDLMacOS platform;
 #endif 
