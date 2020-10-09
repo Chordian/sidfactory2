@@ -16,6 +16,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+- **Ctrl-Shift-f** inserts first _empty_ unused sequence 
 - `linux` Now includes SF2Converter in the build
 - `macOS` Fixed crash when run from a path with spaces
   [#67](https://github.com/Chordian/sidfactory2/issues/67)
