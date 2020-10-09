@@ -1931,7 +1931,7 @@ namespace Editor
 			if (index_in_current_sequence == 0)
 				return;
 
-			unsigned char first_free_sequence_index = m_GetFirstFreeSequenceIndexFunction();
+			unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
 			if (first_free_sequence_index >= 0x80)
 				return;
 
