@@ -10,7 +10,9 @@ namespace Editor
 		ConverterNull();
 		virtual ~ConverterNull();
 
+		const std::string GetName() const { return "NULL converter"; }
 		bool CanConvert(const void* inData, unsigned int inDataSize) const override;
+		bool ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers) override;
 		bool Update() override;
 
 	private:

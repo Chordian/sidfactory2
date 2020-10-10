@@ -1,5 +1,5 @@
-#include "runtime/editor/converters/gt/converter_gt.h"
-#include "runtime/editor/converters/gt/source_sng.h"
+#include "runtime/editor/converters/cc/converter_cc.h"
+#include "runtime/editor/converters/cc/source_ct.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/components_manager.h"
 #include "runtime/editor/components/component_console.h"
@@ -14,28 +14,24 @@ using namespace fs;
 
 namespace Editor
 {
-	ConverterGT::ConverterGT()
+	ConverterCC::ConverterCC()
 	{
 	}
 
-	ConverterGT::~ConverterGT()
+	ConverterCC::~ConverterCC()
 	{
 	}
 
 
-	bool ConverterGT::CanConvert(const void* inData, unsigned int inDataSize) const
+	bool ConverterCC::CanConvert(const void* inData, unsigned int inDataSize) const
 	{
 		// Assert that there's is some data in the first place
 		assert(inData != nullptr);
 		assert(inDataSize > 0);
 
-		if (inDataSize >= 4)
+		if (inDataSize >= 3)
 		{
-			if (memcmp("GTS3", inData, 4) == 0)
-				return true;
-			if (memcmp("GTS4", inData, 4) == 0)
-				return true;
-			if (memcmp("GTS5", inData, 4) == 0)
+			if (memcmp("CC2", inData, 3) == 0)
 				return true;
 		}
 
@@ -43,13 +39,13 @@ namespace Editor
 	}
 
 
-	bool ConverterGT::ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers)
+	bool ConverterCC::ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers)
 	{
 		return false;
 	}
 
 
-	bool ConverterGT::Update() 
+	bool ConverterCC::Update() 
 	{
 		assert(GetState() != State::Uninitialized);
 
@@ -62,9 +58,9 @@ namespace Editor
 			const path driver_path_and_filename = driver_path / "sf2driver11_02.prg";
 			bool driver_loaded = sf2.LoadFile(driver_path_and_filename.string());
 
-			Converter::SourceSng converter(&sf2, static_cast<unsigned char*>(m_Data));
+			Converter::SourceCt converter(&sf2, static_cast<unsigned char*>(m_Data), static_cast<long>(m_DataSize));
 
-			if (converter.Convert(0))
+			if (converter.CanConvert() && converter.Convert(0))
 				m_Result = sf2.GetResult();
 		}
 
@@ -72,7 +68,7 @@ namespace Editor
 	}
 
 
-	void ConverterGT::Setup()
+	void ConverterCC::Setup()
 	{
 		const auto& dimensions = m_TextField->GetDimensions();
 		m_Console = std::make_shared<ComponentConsole>(0, 0, nullptr, m_TextField, 1, 2, dimensions.m_Width - 2, dimensions.m_Height - 5);

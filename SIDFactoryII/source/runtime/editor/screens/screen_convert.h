@@ -61,5 +61,7 @@ namespace Editor
 		
 		void* m_Data;
 		unsigned int m_DataSize;
+
+		bool m_HasCompletedConversionProcess;
 	};
 }

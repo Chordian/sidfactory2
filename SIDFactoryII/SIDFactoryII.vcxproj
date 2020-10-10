@@ -205,6 +205,8 @@
     <ClCompile Include="source\runtime\editor\components\component_tracks.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp" />
     <ClCompile Include="source\runtime\editor\components_manager.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\cc\converter_cc.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\cc\source_ct.cpp" />
     <ClCompile Include="source\runtime\editor\converters\converterbase.cpp" />
     <ClCompile Include="source\runtime\editor\converters\gt\converter_gt.cpp" />
     <ClCompile Include="source\runtime\editor\converters\gt\source_sng.cpp" />
@@ -369,6 +371,8 @@
     <ClInclude Include="source\runtime\editor\components\component_tracks.h" />
     <ClInclude Include="source\runtime\editor\components\component_track_utils.h" />
     <ClInclude Include="source\runtime\editor\components_manager.h" />
+    <ClInclude Include="source\runtime\editor\converters\cc\converter_cc.h" />
+    <ClInclude Include="source\runtime\editor\converters\cc\source_ct.h" />
     <ClInclude Include="source\runtime\editor\converters\gt\converter_gt.h" />
     <ClInclude Include="source\runtime\editor\converters\gt\source_sng.h" />
     <ClInclude Include="source\runtime\editor\converters\converterbase.h" />

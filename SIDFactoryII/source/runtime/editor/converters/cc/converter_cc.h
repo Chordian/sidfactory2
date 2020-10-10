@@ -6,13 +6,13 @@ namespace Editor
 {
 	class ComponentConsole;
 
-	class ConverterGT : public ConverterBase
+	class ConverterCC : public ConverterBase
 	{
 	public:
-		ConverterGT();
-		virtual ~ConverterGT();
+		ConverterCC();
+		virtual ~ConverterCC();
 
-		const std::string GetName() const { return "Goat Tracker converter"; }
+		const std::string GetName() const { return "Cheese Cutter converter"; }
 		bool CanConvert(const void* inData, unsigned int inDataSize) const override;
 		bool ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers) override;
 		bool Update() override;

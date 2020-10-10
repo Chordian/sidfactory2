@@ -25,6 +25,12 @@ namespace Editor
 	}
 
 
+	bool ConverterNull::ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers)
+	{
+		return false;
+	}
+
+
 	bool ConverterNull::Update() 
 	{
 		assert(GetState() != State::Uninitialized);

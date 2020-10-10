@@ -85,6 +85,13 @@ namespace Editor
 		return false;
 	}
 
+
+	bool ConverterJCH::ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers)
+	{
+		return false;
+	}
+
+
 	bool ConverterJCH::Update()
 	{
 		assert(GetState() != State::Uninitialized);
@@ -512,7 +519,7 @@ namespace Editor
 	void ConverterJCH::Setup()
 	{
 		const auto& dimensions = m_TextField->GetDimensions();
-		m_Console = std::make_shared<ComponentConsole>(0, 0, nullptr, m_TextField, 1, 1, dimensions.m_Width - 2, (dimensions.m_Height >> 1) - 2);
+		m_Console = std::make_shared<ComponentConsole>(0, 0, nullptr, m_TextField, 1, 2, dimensions.m_Width - 2, dimensions.m_Height - 5);
 		m_ComponentsManager->AddComponent(m_Console);
 	}
 }

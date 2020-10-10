@@ -2,15 +2,20 @@
 
 #include "foundation/graphics/textfield.h"
 #include "foundation/input/mouse.h"
+#include "foundation/graphics/color.h"
+#include "utils/usercolors.h"
 #include <assert.h>
+
+using namespace Utility;
+using namespace Foundation;
 
 namespace Editor
 {
 	StatusBar::StatusBar(Foundation::TextField* inTextField) 
 		: m_TextField(inTextField)
 		, m_NeedRefresh(true)
-		, m_TextColor(Foundation::Color::White)
-		, m_BackgroundColor(Foundation::Color::Blue)
+		, m_TextColor(ToColor(UserColor::StatusBarText))
+		, m_BackgroundColor(ToColor(UserColor::StatusBarBackgroundStoppedMouseOverRegion))
 		, m_BackgroundMouseOverColor(Foundation::Color::LightBlue)
 		, m_TextClearTimer(0)
 		, m_MouseOverTextSectionIndex(-1)

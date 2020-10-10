@@ -131,6 +131,9 @@
     <Filter Include="source\runtime\editor\converters\utils">
       <UniqueIdentifier>{8fcfd939-841d-4946-b3b7-81767f7373fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\editor\converters\cc">
+      <UniqueIdentifier>{92cf4868-b1a9-42bc-b99e-6e423ac3c6eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -565,6 +568,12 @@
     </ClCompile>
     <ClCompile Include="source\runtime\editor\converters\utils\consoleostreambuffer.cpp">
       <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\cc\source_ct.cpp">
+      <Filter>source\runtime\editor\converters\cc</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\cc\converter_cc.cpp">
+      <Filter>source\runtime\editor\converters\cc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1092,6 +1101,12 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\converters\utils\consoleostreambuffer.h">
       <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\cc\source_ct.h">
+      <Filter>source\runtime\editor\converters\cc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\cc\converter_cc.h">
+      <Filter>source\runtime\editor\converters\cc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL_keycode.h>
 #include <memory>
 #include <functional>
 
@@ -46,7 +47,9 @@ namespace Editor
 		State GetState() const;
 		std::shared_ptr<Utility::C64File> GetResult();
 
+		virtual const std::string GetName() const = 0;
 		virtual bool CanConvert(const void* inData, unsigned int inDataSize) const = 0;
+		virtual bool ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers) = 0;
 		virtual bool Update() = 0;
 
 	protected:
