@@ -563,6 +563,9 @@
     <ClCompile Include="source\runtime\editor\components\component_console.cpp">
       <Filter>source\runtime\editor\components</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\utils\consoleostreambuffer.cpp">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\utilities.h">
@@ -1086,6 +1089,9 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\components\component_console.h">
       <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\utils\consoleostreambuffer.h">
+      <Filter>source\runtime\editor\converters\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

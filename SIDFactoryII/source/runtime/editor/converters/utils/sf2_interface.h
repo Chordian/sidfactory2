@@ -3,10 +3,12 @@
 #include "runtime/editor/datasources/datasource_table.h"
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/driver/driver_state.h"
+#include "runtime/editor/converters/utils/consoleostreambuffer.h"
 
 #include <memory>
 #include <vector>
 #include <map>
+#include <ostream>
 
 #define TABLE_INSTR		SF2::Interface::TableType::Instruments
 #define TABLE_CMDS		SF2::Interface::TableType::Commands
@@ -37,6 +39,7 @@ namespace Editor
 {
 	class DataSourceOrderList;
 	class DataSourceSequence;
+	class ComponentConsole;
 }
 
 namespace Converter
@@ -141,8 +144,10 @@ namespace SF2
 			Editor::DriverInfo::TableDefinition m_TableDefinition;
 		};
 
-		Interface(Foundation::IPlatform* platform);
+		Interface(Foundation::IPlatform* platform, Editor::ComponentConsole& inConsole);
 		~Interface();
+
+		std::ostream GetCout();
 
 		bool LoadFile(const std::string& inFilename);
 		std::shared_ptr<Utility::C64File> GetResult();
@@ -200,5 +205,7 @@ namespace SF2
 		unsigned char* m_EntireBlock;
 		Range m_Range;
 		std::vector<unsigned char> m_CommandChecked;
+
+		Editor::ConsoleOStreamBuffer m_StreamOutputBuffer;
 	};
 }

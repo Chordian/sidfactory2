@@ -146,10 +146,12 @@ namespace Editor
 			m_TextField->ColorAreaBackground(color, m_Rect);
 
 			size_t display_line_count = static_cast<size_t>(GetDimensions().m_Height);
-			size_t top_entry = m_TextLines.size() < display_line_count ? 0 : (display_line_count - m_TextLines.size());
+			size_t top_entry = m_TextLines.size() < display_line_count ? 0 : (m_TextLines.size() - display_line_count);
 
 			for(size_t i=top_entry; i<m_TextLines.size(); ++i)
 				m_TextField->Print(m_Position.m_X, m_Position.m_Y + i, m_TextColor, m_TextLines[i]);
+
+			m_RequireRefresh = false;
 		}
 	}
 

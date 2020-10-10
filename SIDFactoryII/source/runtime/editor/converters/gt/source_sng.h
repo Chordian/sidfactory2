@@ -19,7 +19,6 @@ namespace Converter
 		~SourceSng();
 
 		bool Convert(int inTranspose);
-		const std::string& GetErrorMessage() const;
 
 	private:
 
@@ -33,7 +32,5 @@ namespace Converter
 
 		std::vector<std::string> m_SngCommandChecked;
 		std::vector<std::string> m_SngCommandsUsed;
-
-		std::string m_ErrorMessage;
 	};
 }

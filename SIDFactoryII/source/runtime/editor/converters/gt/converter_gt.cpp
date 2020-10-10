@@ -2,8 +2,10 @@
 #include "runtime/editor/converters/gt/source_sng.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/components_manager.h"
+#include "runtime/editor/components/component_console.h"
 #include "runtime/editor/converters/utils/sf2_interface.h"
 #include "foundation/platform/iplatform.h"
+#include "foundation/graphics/textfield.h"
 #include "utils/c64file.h"
 #include "libraries/ghc/fs_std.h"
 #include <assert.h>
@@ -49,22 +51,15 @@ namespace Editor
 		{
 			m_State = State::Completed;
 
-			SF2::Interface sf2(m_Platform);
+			SF2::Interface sf2(m_Platform, *m_Console);
 			const path driver_path = m_Platform->Storage_GetDriversHomePath();
 			const path driver_path_and_filename = driver_path / "sf2driver11_02.prg";
 			bool driver_loaded = sf2.LoadFile(driver_path_and_filename.string());
 
 			Converter::SourceSng converter(&sf2, static_cast<unsigned char*>(m_Data));
-			if (!converter.Convert(0))
-			{
-				m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("GT Converter", "Error! \n" + converter.GetErrorMessage(), 80, true, [&]() {}));
 
-				return false;
-			}
-
-			m_Result = sf2.GetResult();
-
-			m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("GT Converter", "Conversion complete!", 80, true, [&]() {}));
+			if (converter.Convert(0))
+				m_Result = sf2.GetResult();
 		}
 
 		return true;
@@ -73,6 +68,8 @@ namespace Editor
 
 	void ConverterGT::Setup()
 	{
-
+		const auto& dimensions = m_TextField->GetDimensions();
+		m_Console = std::make_shared<ComponentConsole>(0, 0, nullptr, m_TextField, 1, 1, dimensions.m_Width - 2, (dimensions.m_Height >> 1) - 2);
+		m_ComponentsManager->AddComponent(m_Console);
 	}
 }

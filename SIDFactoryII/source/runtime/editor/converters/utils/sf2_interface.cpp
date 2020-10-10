@@ -35,10 +35,12 @@ using namespace Editor;
 
 namespace SF2
 {
-	Interface::Interface(IPlatform* inPlatform)
+	Interface::Interface(IPlatform* inPlatform, Editor::ComponentConsole& inConsole)
 		: m_Platform(inPlatform)
 		, m_Range({ 0, 0 })
 	{
+		m_StreamOutputBuffer = Editor::ConsoleOStreamBuffer(&inConsole);
+
 		m_EntireBlock = new unsigned char[0x10000];
 		m_CPUMemory = new CPUMemory(0x10000, m_Platform);
 
@@ -65,6 +67,13 @@ namespace SF2
 		delete m_EntireBlock;
 		delete m_CPUMemory;
 	}
+
+
+	std::ostream Interface::GetCout()
+	{
+		return std::ostream(&m_StreamOutputBuffer);
+	}
+
 
 	/**
 	 * Load the SF2 driver into the emulated C64 memory.
@@ -326,8 +335,7 @@ namespace SF2
 		int column_count = m_DriverDetails.m_TableColCount[inTableType];
 		if (inCoutOnError && column_count == 0)
 		{
-			std::cerr << "\nERROR: The specified table is not defined in this driver." << std::endl;
-			// exit(0);
+			GetCout() << "\nERROR: The specified table is not defined in this driver." << std::endl;
 		}
 
 		return column_count != 0;
@@ -348,7 +356,7 @@ namespace SF2
 		{
 			for (unsigned char checked_command : m_CommandChecked)
 				if (inCommand == checked_command) return false;
-			std::cerr << "WARNING: This driver does not have a \"" << m_CommandName[command] << "\" command." << std::endl;
+			GetCout() << "WARNING: This driver does not have a \"" << m_CommandName[command] << "\" command." << std::endl;
 			m_CommandChecked.push_back(inCommand);
 		}
 
@@ -703,8 +711,8 @@ namespace SF2
 
 		if (table.m_RowCount > table_data.m_TableDefinition.m_RowCount - 1)
 		{
-			std::cerr << "\nSong is too complex; exceeded the " << std::dec << table_data.m_TableDefinition.m_RowCount << " rows available in the \"" << table_data.m_TableDefinition.m_Name << "\" table." << std::endl;
-			exit(0);
+			GetCout() << "\nSong is too complex; exceeded the " << std::dec << table_data.m_TableDefinition.m_RowCount << " rows available in the \"" << table_data.m_TableDefinition.m_Name << "\" table." << std::endl;
+			return 0xff;
 		}
 
 		// The row data is new
@@ -799,7 +807,7 @@ namespace SF2
 		TableData table_data = GetTableData(inTableType);
 		if (table_data.m_TableDefinition.m_TextFieldSize == 0)
 		{
-			std::cerr << "WARNING: The \"" << table_data.m_TableDefinition.m_Name << "\" table in this driver does not have descriptions." << std::endl;
+			GetCout() << "WARNING: The \"" << table_data.m_TableDefinition.m_Name << "\" table in this driver does not have descriptions." << std::endl;
 			return false;
 		}
 

@@ -6,6 +6,7 @@
 #include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/editor/screens/screen_edit_utils.h"
 #include "runtime/editor/components/component_console.h"
+#include "runtime/editor/converters/utils/consoleostreambuffer.h"
 #include "runtime/emulation/cpumemory.h"
 #include "utils/utilities.h"
 #include "utils/c64file.h"
@@ -84,7 +85,6 @@ namespace Editor
 		return false;
 	}
 
-
 	bool ConverterJCH::Update()
 	{
 		assert(GetState() != State::Uninitialized);
@@ -93,7 +93,8 @@ namespace Editor
 
 		if (GetState() == State::Initialized)
 		{
-			ComponentConsole& cout = *m_Console;
+			ConsoleOStreamBuffer outstream(&(*m_Console));
+			std::ostream cout(&outstream);
 
 			cout << "JCH converter!\n";
 			cout << "--------------\n\n";

@@ -210,6 +210,7 @@
     <ClCompile Include="source\runtime\editor\converters\gt\source_sng.cpp" />
     <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp" />
     <ClCompile Include="source\runtime\editor\converters\null\converter_null.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\utils\consoleostreambuffer.cpp" />
     <ClCompile Include="source\runtime\editor\converters\utils\misc.cpp" />
     <ClCompile Include="source\runtime\editor\converters\utils\sf2_interface.cpp" />
     <ClCompile Include="source\runtime\editor\converters\utils\source_utils.cpp" />
@@ -373,6 +374,7 @@
     <ClInclude Include="source\runtime\editor\converters\converterbase.h" />
     <ClInclude Include="source\runtime\editor\converters\jch\converter_jch.h" />
     <ClInclude Include="source\runtime\editor\converters\null\converter_null.h" />
+    <ClInclude Include="source\runtime\editor\converters\utils\consoleostreambuffer.h" />
     <ClInclude Include="source\runtime\editor\converters\utils\misc.h" />
     <ClInclude Include="source\runtime\editor\converters\utils\sf2_interface.h" />
     <ClInclude Include="source\runtime\editor\converters\utils\source_utils.h" />

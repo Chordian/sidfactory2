@@ -14,18 +14,11 @@ namespace Converter
 		, m_ByteData(inByteBuffer)
 		, m_SngVersion(0)
 	{
-        // std::cout << "Converting to \"" << m_SF2->GetDriverName() << "\" now." << std::endl;
+        m_SF2->GetCout() << "Converting to \"" << m_SF2->GetDriverName() << "\" now." << std::endl;
 	}
 
 	SourceSng::~SourceSng()
 	{
-	}
-
-
-
-	const std::string& SourceSng::GetErrorMessage() const
-	{
-		return m_ErrorMessage;
 	}
 
 	/**
@@ -36,7 +29,7 @@ namespace Converter
 		for (const std::string checked_command : m_SngCommandChecked)
 			if (inSngCommand == checked_command) return;
 
-		std::cerr << "WARNING: SNG command " << inSngCommand << " is not supported by the SF2 driver." << std::endl;
+		m_SF2->GetCout() << "WARNING: SNG command " << inSngCommand << " is not supported by the SF2 driver." << std::endl;
 		m_SngCommandChecked.push_back(inSngCommand);
 	}
 
@@ -80,7 +73,7 @@ namespace Converter
 			{
 				if (subtune && !warning_shown)
 				{
-					std::cerr << "WARNING: Multiple sub tunes are not supported by SF2 yet; only the first sub tune will be converted." << std::endl;
+					m_SF2->GetCout() << "WARNING: Multiple sub tunes are not supported by SF2 yet; only the first sub tune will be converted." << std::endl;
 					warning_shown = true;
 				}
 
@@ -121,7 +114,7 @@ namespace Converter
 			int instr_count = m_ByteData[pos++], this_instr;
 			if (instr_count > 0x1f)
 			{
-				m_ErrorMessage = "Song is too complex; exceeded the 32 available instruments for SID Factory II.";
+				m_SF2->GetCout() << "Song is too complex; exceeded the 32 available instruments for SID Factory II.";
 				return false;
 			}
 
@@ -150,7 +143,7 @@ namespace Converter
 					});
 				if (m_ByteData[this_instr + 6])
 				{
-					std::cerr << std::setfill('0') << "Ignored vibrato set directly in GT2 instrument $" << std::uppercase << std::setw(2) << std::hex << instr << "; please use SF2 command $01 instead." << std::endl;
+					m_SF2->GetCout() << std::setfill('0') << "Ignored vibrato set directly in GT2 instrument $" << std::uppercase << std::setw(2) << std::hex << instr << "; please use SF2 command $01 instead." << std::endl;
 					ignored_message = true;
 				}
 
@@ -178,12 +171,12 @@ namespace Converter
 
 				if (left >= 0x01 && left <= 0x0f)
 				{
-					if (!warning_delay_shown) std::cerr << "WARNING: Delay values in the wave table are not supported and will be ignored." << std::endl;
+					if (!warning_delay_shown) m_SF2->GetCout() << "WARNING: Delay values in the wave table are not supported and will be ignored." << std::endl;
 					warning_delay_shown = true;
 				}
 				else if (left >= 0xf0 && left <= 0xfe)
 				{
-					if (!warning_cmd_shown) std::cerr << "WARNING: Pattern commands in the wave table are not supported and will be ignored." << std::endl;
+					if (!warning_cmd_shown) m_SF2->GetCout() << "WARNING: Pattern commands in the wave table are not supported and will be ignored." << std::endl;
 					warning_cmd_shown = true;
 				}
 				else
@@ -319,7 +312,7 @@ namespace Converter
 			int speed_table_count = m_ByteData[pos++];
 			if (speed_table_count > 0x3e) // Also need one more for the portamento reset below
 			{
-				m_ErrorMessage = "Song is too complex; exceeded the 64 available commands for SID Factory II.";
+				m_SF2->GetCout() << "Song is too complex; exceeded the 64 available commands for SID Factory II.";
 				return false;
 			}
 
@@ -342,7 +335,7 @@ namespace Converter
 			int pat_count = m_ByteData[pos++], pat_size;
 			if (pat_count > 0x7f)
 			{
-				m_ErrorMessage = "Song is too complex; exceeded the 127 available sequences for SID Factory II.";
+				m_SF2->GetCout() << "Song is too complex; exceeded the 127 available sequences for SID Factory II.";
 				return false;
 			}
 
@@ -386,7 +379,7 @@ namespace Converter
 					sng_data = m_ByteData[pos + pat_event + 3];		// Sometimes this is a speed table index
 
 					/*if (pat == 9) // For debugging
-						std::cout
+						m_SF2->GetCout()
 							<< std::setfill('0') << std::setw(2) << std::hex << (int)note << " "
 							<< std::setw(2) << std::hex << (int)instrument << " "
 							<< std::hex << (int)sng_command
@@ -447,6 +440,8 @@ namespace Converter
 
 							// Because of reversing the speed in SF2 a new row has to be appended (or reused) in the SF2 command table
 							this_cmd = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_Slide, (unsigned char)(down_speed >> 8), (unsigned char)(down_speed & 0x00ff) });
+							if (this_cmd == 0xff)
+								return false;
 							m_SF2->EditTableRowText(TABLE_CMDS, this_cmd, "Slide down");
 							ongoing_effect = sng_command;
 
@@ -483,6 +478,8 @@ namespace Converter
 						{
 							// Have to append (or reuse) here too because portamento commands in SF2 have their own identifier
 							this_cmd = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_Portamento, speed_table[sng_data].first, speed_table[sng_data].second });
+							if (this_cmd == 0xff)
+								return false;
 							m_SF2->EditTableRowText(TABLE_CMDS, this_cmd, "Portamento");
 							ongoing_effect = sng_command;
 
@@ -517,6 +514,8 @@ namespace Converter
 						if (!vib_depth) vib_depth = 1;
 
 						this_cmd = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_Vibrato, vib_speed, vib_depth });
+						if (this_cmd == 0xff)
+							return false;
 						m_SF2->EditTableRowText(TABLE_CMDS, this_cmd, "Vibrato");
 						ongoing_effect = sng_command;
 
@@ -531,6 +530,8 @@ namespace Converter
 						// approx <<= 2;
 
 						command_to_set = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_ADSR_Note, approx, instr_adsr[last_instr].second });
+						if (command_to_set == 0xff)
+							return false;
 						m_SF2->EditTableRowText(TABLE_CMDS, command_to_set, "ADSR local");
 						ongoing_effect = 0;
 						break;
@@ -542,6 +543,8 @@ namespace Converter
 						// approx <<= 2;
 
 						command_to_set = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_ADSR_Note, instr_adsr[last_instr].first, approx });
+						if (command_to_set == 0xff)
+							return false;
 						m_SF2->EditTableRowText(TABLE_CMDS, command_to_set, "ADSR local");
 						ongoing_effect = 0;
 						break;
@@ -553,18 +556,24 @@ namespace Converter
 
 					case 0x8:	// 8xx: Wave table index (00 stops execution)
 						command_to_set = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_Index_Wave, 0x00, sng_data });
+						if (command_to_set == 0xff)
+							return false;
 						m_SF2->EditTableRowText(TABLE_CMDS, command_to_set, "Wave index");
 						ongoing_effect = 0;
 						break;
 
 					case 0x9:	// 9xx: Pulse table index (00 stops execution)
 						command_to_set = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_Index_Pulse, 0x00, sng_data });
+						if (command_to_set == 0xff)
+							return false;
 						m_SF2->EditTableRowText(TABLE_CMDS, command_to_set, "Pulse index");
 						ongoing_effect = 0;
 						break;
 
 					case 0xa:	// Axx: Filter table index (00 stops execution)
 						command_to_set = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_Index_Filter, 0x00, sng_data });
+						if (command_to_set == 0xff)
+							return false;
 						m_SF2->EditTableRowText(TABLE_CMDS, command_to_set, "Filter index");
 						ongoing_effect = 0;
 						break;
@@ -583,6 +592,8 @@ namespace Converter
 						if ((sng_data & 0xf0) == 0)
 						{
 							command_to_set = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_Volume, 0x00, sng_data });
+							if (command_to_set == 0xff)
+								return false;
 							m_SF2->EditTableRowText(TABLE_CMDS, command_to_set, "Main volume");
 						}
 						ongoing_effect = 0;
@@ -607,7 +618,12 @@ namespace Converter
 									{{ --sng_data }},
 									{{ 0x7f }},
 								});
+							if (index == 0xff)
+								return false;
+
 							this_cmd = m_SF2->AppendToTable(TABLE_CMDS, { SF2::Interface::Cmd_Tempo, 0x00, index });
+							if (this_cmd == 0xff)
+								return false;
 							m_SF2->EditTableRowText(TABLE_CMDS, this_cmd, "Set tempo");
 						}
 						if (this_cmd != last_cmd) command_to_set = last_cmd = this_cmd;
@@ -634,19 +650,19 @@ namespace Converter
 		m_SF2->EditTableRow(TABLE_CMDS, 0, { 0x00, 0x00, 0x00 });
 
 		// Compile the roster of commands used
-		// std::sort(m_SngCommandsUsed.begin(), m_SngCommandsUsed.end());
-		// std::string commands_used;
-		// for (std::string command : m_SngCommandsUsed)
-		// 	commands_used += command + " ";
-		// 
-		// std::cout << std::endl
-		// 	<< "  GT2 commands used:       " << commands_used << "\n"
-		// 	<< "  SF2 commands allocated:  " << /*std::setw(3) <<*/ m_SF2->GetCount(TABLE_CMDS) << std::endl;
+		std::sort(m_SngCommandsUsed.begin(), m_SngCommandsUsed.end());
+		std::string commands_used;
+		for (std::string command : m_SngCommandsUsed)
+			commands_used += command + " ";
+		
+		m_SF2->GetCout() << std::endl
+			<< "  GT2 commands used:       " << commands_used << "\n"
+			<< "  SF2 commands allocated:  " << /*std::setw(3) <<*/ m_SF2->GetCount(TABLE_CMDS) << std::endl;
 
 		bool data_pushed = m_SF2->PushAllDataToMemory(false);
 		if (!data_pushed)
 		{
-			std::cerr << "Could not pack the data before saving it.";
+			m_SF2->GetCout() << "Could not pack the data before saving it.";
 			return false;
 		}
 
