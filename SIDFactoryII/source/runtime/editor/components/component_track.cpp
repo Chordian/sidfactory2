@@ -1852,7 +1852,7 @@ namespace Editor
 	}
 
 
-	int ComponentTrack::DoInsertFirstFreeSequence()
+	int ComponentTrack::DoInsertFirstFreeSequence(std::function<unsigned char()> find_free_sequence)
 	{
 		if (m_FocusModeOrderList)
 		{
@@ -1868,7 +1868,7 @@ namespace Editor
 				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1];
 			}
 
-			unsigned char first_free_sequence_index = m_GetFirstFreeSequenceIndexFunction();
+			unsigned char first_free_sequence_index = find_free_sequence();
 
 			if (first_free_sequence_index < 0x80)
 				orderlist_entry.m_SequenceIndex = first_free_sequence_index;
@@ -1882,41 +1882,6 @@ namespace Editor
 
 		return m_EventPos;
 	}
-
-	// TODO: deduplicate code, this is almost the same as DoInsertFirstFreeSequence
-	int ComponentTrack::DoInsertFirstEmptySequence()
-	{
-			if (m_FocusModeOrderList)
-			{
-					AddUndoStep();
-
-					// the orderlist entry (transposition + sequence number)
-					DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
-
-					// transposition fe or ff?
-					if (orderlist_entry.m_Transposition >= 0xfe)
-					{
-							if (m_EventPosDetails.m_OrderListIndex == 0)
-									return m_EventPos;
-
-							orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1];
-					}
-
-					unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
-
-					if (first_free_sequence_index < 0x80)
-							orderlist_entry.m_SequenceIndex = first_free_sequence_index;
-
-					if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.m_OrderListIndex, orderlist_entry))
-					{
-							OnOrderListChanged();
-							UpdateMaxEventPos();
-					}
-			}
-
-			return m_EventPos;
-	}
-
 
 	void ComponentTrack::DoSplitSequence()
 	{
@@ -2569,22 +2534,22 @@ namespace Editor
 		{
 			if (m_FocusModeOrderList && !m_TakingOrderListInput)
 			{
-				inKeyHookContext.m_NewEventPos = DoInsertFirstFreeSequence();
+				inKeyHookContext.m_NewEventPos = DoInsertFirstFreeSequence(m_GetFirstFreeSequenceIndexFunction);
 				return true;
 			}
 
 			return false;
 		} });
-        m_KeyHooks.push_back({ "Key.Track.InsertFirstEmptySequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
-        {
-            if (m_FocusModeOrderList && !m_TakingOrderListInput)
-            {
-                inKeyHookContext.m_NewEventPos = DoInsertFirstEmptySequence();
-                return true;
-            }
+		m_KeyHooks.push_back({ "Key.Track.InsertFirstEmptySequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+				if (m_FocusModeOrderList && !m_TakingOrderListInput)
+				{
+						inKeyHookContext.m_NewEventPos = DoInsertFirstFreeSequence(m_GetFirstEmptySequenceIndexFunction);
+						return true;
+				}
 
-            return false;
-        } });
+				return false;
+		} });
 		m_KeyHooks.push_back({ "Key.Track.SplitSequenceAtEventPosition", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
 			if (!m_FocusModeOrderList)
