@@ -15,6 +15,8 @@ namespace Foundation
 				return false;
 			if (static_cast<bool>(inModifiersToCheckAgainst & Keyboard::Alt) != static_cast<bool>(inModifierMask & Keyboard::Alt))
 				return false;
+			if (static_cast<bool>(inModifiersToCheckAgainst & Keyboard::Cmd) != static_cast<bool>(inModifierMask & Keyboard::Cmd))
+				return false;
 
 			return true;
 		}
