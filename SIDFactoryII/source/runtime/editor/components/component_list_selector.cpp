@@ -43,13 +43,21 @@ namespace Editor
 				switch (key_event)
 				{
 				case SDLK_DOWN:
-					DoCursorDown();
-					m_RequireRefresh = true;
-					return true;
+					if (inKeyboard.IsModifierEmpty())
+					{
+						DoCursorDown();
+						m_RequireRefresh = true;
+						return true;
+					}
+					break;
 				case SDLK_UP:
-					DoCursorUp();
-					m_RequireRefresh = true;
-					return true;
+					if (inKeyboard.IsModifierEmpty())
+					{
+						DoCursorUp();
+						m_RequireRefresh = true;
+						return true;
+					}
+					break;
 				case SDLK_PAGEDOWN:
 					DoPageDown();
 					m_RequireRefresh = true;

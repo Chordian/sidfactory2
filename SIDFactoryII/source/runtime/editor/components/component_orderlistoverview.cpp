@@ -75,14 +75,14 @@ namespace Editor
 			switch(key_event)
 			{
 			case SDLK_DOWN:
-				if (DoCursorDown(1))
+				if (inKeyboard.IsModifierEmpty() && DoCursorDown(1))
 				{
 					m_RequireRefresh = true;
 					consume = true;
 				}
 				break;
 			case SDLK_UP:
-				if (DoCursorUp(1))
+				if (inKeyboard.IsModifierEmpty() && DoCursorUp(1))
 				{
 					m_RequireRefresh = true;
 					consume = true;
