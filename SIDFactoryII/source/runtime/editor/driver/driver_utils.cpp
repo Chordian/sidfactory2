@@ -109,14 +109,13 @@ namespace Editor
 			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
 			{
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
-
-				std::vector<int> sequence_usage_count = GetSequenceUsageCount(inDriverInfo, inMemoryReader);
+				const std::vector<int> sequence_usage_count = GetSequenceUsageCount(inDriverInfo, inMemoryReader);
 
 				for (size_t i = 0; i < sequence_usage_count.size(); ++i)
 				{
-					unsigned short sequence_address = music_data.m_Sequence00Address + i * music_data.m_SequenceSize;
+					const unsigned short sequence_address = music_data.m_Sequence00Address + i * music_data.m_SequenceSize;
 
-					bool is_empty = inMemoryReader[sequence_address] == 0x80
+					const bool is_empty = inMemoryReader[sequence_address] == 0x80
 						&& inMemoryReader[sequence_address + 1] == 0x00
 						&& inMemoryReader[sequence_address + 2] == 0x7f;
 

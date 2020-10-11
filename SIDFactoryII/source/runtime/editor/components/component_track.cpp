@@ -1958,22 +1958,22 @@ namespace Editor
 	{
 		if (m_FocusModeOrderList)
 		{
-			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
 				return;
 
-			unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
+			const unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
 			if (first_free_sequence_index >= 0x80)
 				return;
 
 			AddUndoStep();
 
-			unsigned char current_sequence_index = orderlist_entry.m_SequenceIndex;
-			auto& source = m_DataSourceSequenceList[current_sequence_index];
-			auto& destination = m_DataSourceSequenceList[first_free_sequence_index];
+			const unsigned char current_sequence_index = orderlist_entry.m_SequenceIndex;
+			const auto& source = m_DataSourceSequenceList[current_sequence_index];
+			const auto& destination = m_DataSourceSequenceList[first_free_sequence_index];
 
-			int new_sequence_length = source->GetLength();
+			const int new_sequence_length = source->GetLength();
 			destination->SetLength(new_sequence_length);
 
 			DataSourceUtils::CopySequence(source, 0, new_sequence_length, destination);
