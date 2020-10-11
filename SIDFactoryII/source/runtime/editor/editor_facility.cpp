@@ -42,6 +42,7 @@
 #include "runtime/editor/converters/jch/converter_jch.h"
 #include "runtime/editor/converters/gt/converter_gt.h"
 #include "runtime/editor/converters/cc/converter_cc.h"
+#include "runtime/editor/converters/mod/converter_mod.h"
 #include "runtime/editor/converters/null/converter_null.h"
 
 // System
@@ -1093,6 +1094,7 @@ namespace Editor
 		converters.push_back(std::make_shared<ConverterJCH>());
 		converters.push_back(std::make_shared<ConverterGT>());
 		converters.push_back(std::make_shared<ConverterCC>());
+		converters.push_back(std::make_shared<ConverterMod>());
 		converters.push_back(std::make_shared<ConverterNull>());
 
 		return converters;

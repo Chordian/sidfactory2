@@ -211,6 +211,8 @@
     <ClCompile Include="source\runtime\editor\converters\gt\converter_gt.cpp" />
     <ClCompile Include="source\runtime\editor\converters\gt\source_sng.cpp" />
     <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\mod\converter_mod.cpp" />
+    <ClCompile Include="source\runtime\editor\converters\mod\source_mod.cpp" />
     <ClCompile Include="source\runtime\editor\converters\null\converter_null.cpp" />
     <ClCompile Include="source\runtime\editor\converters\utils\consoleostreambuffer.cpp" />
     <ClCompile Include="source\runtime\editor\converters\utils\misc.cpp" />
@@ -377,6 +379,8 @@
     <ClInclude Include="source\runtime\editor\converters\gt\source_sng.h" />
     <ClInclude Include="source\runtime\editor\converters\converterbase.h" />
     <ClInclude Include="source\runtime\editor\converters\jch\converter_jch.h" />
+    <ClInclude Include="source\runtime\editor\converters\mod\converter_mod.h" />
+    <ClInclude Include="source\runtime\editor\converters\mod\source_mod.h" />
     <ClInclude Include="source\runtime\editor\converters\null\converter_null.h" />
     <ClInclude Include="source\runtime\editor\converters\utils\consoleostreambuffer.h" />
     <ClInclude Include="source\runtime\editor\converters\utils\misc.h" />

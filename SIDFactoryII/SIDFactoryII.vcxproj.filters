@@ -134,6 +134,9 @@
     <Filter Include="source\runtime\editor\converters\cc">
       <UniqueIdentifier>{92cf4868-b1a9-42bc-b99e-6e423ac3c6eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\editor\converters\mod">
+      <UniqueIdentifier>{646adf23-587e-4d8c-b00a-e0f8c19ab4f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -574,6 +577,12 @@
     </ClCompile>
     <ClCompile Include="source\runtime\editor\converters\cc\converter_cc.cpp">
       <Filter>source\runtime\editor\converters\cc</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\mod\source_mod.cpp">
+      <Filter>source\runtime\editor\converters\mod</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\mod\converter_mod.cpp">
+      <Filter>source\runtime\editor\converters\mod</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1107,6 +1116,12 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\converters\cc\converter_cc.h">
       <Filter>source\runtime\editor\converters\cc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\mod\source_mod.h">
+      <Filter>source\runtime\editor\converters\mod</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\mod\converter_mod.h">
+      <Filter>source\runtime\editor\converters\mod</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
