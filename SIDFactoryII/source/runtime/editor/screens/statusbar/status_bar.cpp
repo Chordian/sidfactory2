@@ -15,7 +15,7 @@ namespace Editor
 		: m_TextField(inTextField)
 		, m_NeedRefresh(true)
 		, m_TextColor(ToColor(UserColor::StatusBarText))
-		, m_BackgroundColor(ToColor(UserColor::StatusBarBackgroundStoppedMouseOverRegion))
+		, m_BackgroundColor(ToColor(UserColor::StatusBarBackgroundStopped))
 		, m_BackgroundMouseOverColor(Foundation::Color::LightBlue)
 		, m_TextClearTimer(0)
 		, m_MouseOverTextSectionIndex(-1)

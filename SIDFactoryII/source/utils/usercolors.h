@@ -106,6 +106,7 @@ namespace Utility
 		ScreenEditTableHeadlineHotkeyLetter,
 		ConsoleBackground,
 		ConsoleText,
+		ConvertersBackground,
 
 		DriverColorSet = 0x60,
 		DriverColorJump,

@@ -26,6 +26,7 @@ namespace Editor
 			Uninitialized,
 			Initialized,
 			Input,
+			Convert,
 			Completed
 		};
 

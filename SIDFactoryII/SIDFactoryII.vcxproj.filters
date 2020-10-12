@@ -584,6 +584,9 @@
     <ClCompile Include="source\runtime\editor\converters\mod\converter_mod.cpp">
       <Filter>source\runtime\editor\converters\mod</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_selection_list.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\utilities.h">
@@ -1122,6 +1125,9 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\converters\mod\converter_mod.h">
       <Filter>source\runtime\editor\converters\mod</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_selection_list.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

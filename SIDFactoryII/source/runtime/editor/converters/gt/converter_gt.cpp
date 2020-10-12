@@ -60,12 +60,19 @@ namespace Editor
 			SF2::Interface sf2(m_Platform, *m_Console);
 			const path driver_path = m_Platform->Storage_GetDriversHomePath();
 			const path driver_path_and_filename = driver_path / "sf2driver11_02.prg";
-			bool driver_loaded = sf2.LoadFile(driver_path_and_filename.string());
+			const bool driver_loaded = sf2.LoadFile(driver_path_and_filename.string());
 
-			Converter::SourceSng converter(&sf2, static_cast<unsigned char*>(m_Data));
+			if (!driver_loaded)
+				sf2.GetCout() << "\nFailed to load driver: " << driver_path_and_filename.string();
+			else
+			{
+				Converter::SourceSng converter(&sf2, static_cast<unsigned char*>(m_Data));
 
-			if (converter.Convert(0))
-				m_Result = sf2.GetResult();
+				if (converter.Convert(0))
+					m_Result = sf2.GetResult();
+				else
+					sf2.GetCout() << "\nConversion failed!";
+			}
 		}
 
 		return true;

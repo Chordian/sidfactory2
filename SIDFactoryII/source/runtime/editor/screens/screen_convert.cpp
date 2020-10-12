@@ -7,11 +7,13 @@
 #include "foundation/graphics/viewport.h"
 #include "foundation/graphics/textfield.h"
 #include "utils/utilities.h"
+#include "utils/usercolors.h"
 
 #include <string>
 #include <memory>
 #include <assert.h>
 
+using namespace Utility;
 
 
 namespace Editor
@@ -21,10 +23,10 @@ namespace Editor
 		Foundation::TextField* inMainTextField,
 		CursorControl* inCursorControl,
 		DisplayState& inDisplayState,
-		Utility::KeyHookStore& inKeyHookStore,
+		KeyHookStore& inKeyHookStore,
 		Foundation::IPlatform* inPlatform,
 		std::function<void(void)> inExitScreenCallback,
-		std::function<bool(ScreenBase*, const std::string&, std::shared_ptr<Utility::C64File>)> inSuccessfullConversionCallback
+		std::function<bool(ScreenBase*, const std::string&, std::shared_ptr<C64File>)> inSuccessfullConversionCallback
 	)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
 		, m_Platform(inPlatform)
@@ -62,13 +64,14 @@ namespace Editor
 
 		// Clear the text field
 		ClearTextField();
+		m_MainTextField->ColorAreaBackground(ToColor(UserColor::ConvertersBackground));
 
 		// Reset conversion completed
 		m_HasCompletedConversionProcess = false;
 
 		// Add status bar
 		m_StatusBar = std::make_unique<StatusBar>(m_MainTextField);
-		m_StatusBar->SetText(m_Converter->GetName());
+		m_StatusBar->SetText(" " + m_Converter->GetName());
 
 		// Activate converter
 		m_Converter->Activate(m_Data, m_DataSize, m_Platform, m_MainTextField, m_ComponentsManager.get());
