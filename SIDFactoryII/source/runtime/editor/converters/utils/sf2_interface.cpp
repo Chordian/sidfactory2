@@ -40,6 +40,7 @@ namespace SF2
 		, m_Range({ 0, 0 })
 	{
 		m_StreamOutputBuffer = Editor::ConsoleOStreamBuffer(&inConsole);
+		m_COutStream = std::make_shared<COutStream>(&m_StreamOutputBuffer);
 
 		m_EntireBlock = new unsigned char[0x10000];
 		m_CPUMemory = new CPUMemory(0x10000, m_Platform);
@@ -69,9 +70,9 @@ namespace SF2
 	}
 
 
-	std::ostream Interface::GetCout()
+	std::ostream& Interface::GetCout()
 	{
-		return std::ostream(&m_StreamOutputBuffer);
+		return *m_COutStream;
 	}
 
 

@@ -51,6 +51,16 @@ namespace SF2
 {
 	class Interface
 	{
+	private:
+		class COutStream : public std::ostream
+		{
+		public:
+			COutStream(std::streambuf* inBuffer)
+				: std::ostream(inBuffer)
+			{
+			}
+		};
+
 	public:
 
 		enum TableType : int
@@ -147,7 +157,7 @@ namespace SF2
 		Interface(Foundation::IPlatform* platform, Editor::ComponentConsole& inConsole);
 		~Interface();
 
-		std::ostream GetCout();
+		std::ostream& GetCout();
 
 		bool LoadFile(const std::string& inFilename);
 		std::shared_ptr<Utility::C64File> GetResult();
@@ -207,5 +217,6 @@ namespace SF2
 		std::vector<unsigned char> m_CommandChecked;
 
 		Editor::ConsoleOStreamBuffer m_StreamOutputBuffer;
+		std::shared_ptr<COutStream> m_COutStream;
 	};
 }
