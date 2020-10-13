@@ -22,6 +22,7 @@ namespace Editor
 	{
 	}
 
+	const std::string GetName() { return "Goat Tracker converter"; }
 
 	bool ConverterGT::CanConvert(const void* inData, unsigned int inDataSize) const
 	{
