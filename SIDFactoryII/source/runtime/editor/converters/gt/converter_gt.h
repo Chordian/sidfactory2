@@ -12,7 +12,7 @@ namespace Editor
 		ConverterGT();
 		virtual ~ConverterGT();
 
-		const std::string GetName() const { return "Goat Tracker converter"; }
+		const std::string GetName() const override;
 		bool CanConvert(const void* inData, unsigned int inDataSize) const override;
 		bool ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers) override;
 		bool Update() override;
