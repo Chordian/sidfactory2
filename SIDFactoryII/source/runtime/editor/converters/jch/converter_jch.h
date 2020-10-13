@@ -36,9 +36,9 @@ namespace Editor
 		ConverterJCH();
 		virtual ~ConverterJCH();
 
-		const std::string GetName() const { return "JCH NP20.gX converter"; }
+		const std::string GetName() const override;
 		bool CanConvert(const void* inData, unsigned int inDataSize) const override;
-		bool ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers) override; 
+		bool ConsumeKeyEvent(SDL_Keycode inKeyEvent, unsigned int inModifiers) override;
 		bool Update() override;
 
 	private:

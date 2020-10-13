@@ -22,6 +22,7 @@ namespace Editor
 	{
 	}
 
+	const std::string GetName() { return "Cheese Cutter converter"; }
 
 	bool ConverterCC::CanConvert(const void* inData, unsigned int inDataSize) const
 	{

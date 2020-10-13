@@ -28,6 +28,7 @@ namespace Editor
 	{
 	}
 
+	const std::string GetName() { return "MOD converter"; }
 
 	bool ConverterMod::CanConvert(const void* inData, unsigned int inDataSize) const
 	{
