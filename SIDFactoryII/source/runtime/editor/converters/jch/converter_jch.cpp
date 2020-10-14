@@ -44,7 +44,7 @@ namespace Editor
 	{
 	}
 
-	const std::string GetName() { return "JCH NP20.gX converter"; }
+	const std::string ConverterJCH::GetName() const { return "JCH NP20.gX converter"; }
 
 	bool ConverterJCH::CanConvert(const void* inData, unsigned int inDataSize) const
 	{

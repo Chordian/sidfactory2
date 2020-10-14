@@ -14,7 +14,7 @@ namespace Editor
 	{
 	}
 
-	const std::string GetName() { return "NULL converter"; }
+	const std::string ConverterNull::GetName() const { return "NULL converter"; }
 
 	bool ConverterNull::CanConvert(const void* inData, unsigned int inDataSize) const
 	{

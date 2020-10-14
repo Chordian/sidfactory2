@@ -4,7 +4,8 @@
 BUILD_NR=$(shell date +"%Y%m%d").$(shell git rev-parse --short HEAD)
 PROJECT_ROOT=../SIDFactoryII
 SOURCE=$(PROJECT_ROOT)/source
-SRC=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
+SRC_TMP=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
+SRC=$(patsubst %miniz_tester.cpp,,$(SRC_TMP))
 DOCS=../dist/documentation
 SRC_SF2C=\
   ../SF2Converter/main.cpp \
