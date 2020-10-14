@@ -7,11 +7,6 @@ SOURCE=$(PROJECT_ROOT)/source
 SRC_TMP=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
 SRC=$(patsubst %miniz_tester.cpp,,$(SRC_TMP))
 DOCS=../dist/documentation
-SRC_SF2C=\
-  ../SF2Converter/main.cpp \
-	$(shell find ../SF2Converter/converter -name "*.cpp") \
-	$(shell find $(SOURCE) -name "*.cpp")
-SRC_SF2C_C=../SF2Converter/libraries/miniz_v115_r4/miniz.c
 
 # Artifacts
 APP_NAME=SIDFactoryII
