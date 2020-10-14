@@ -16,7 +16,7 @@ EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 
 # The compiler (gcc, g++, c++,clang++)
 ifeq ($(PLATFORM),MACOS)
-	CC=MACOSX_DEPLOYMENT_TARGET=10.9 gcc
+	CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
 else
 	CC=g++
 endif
@@ -45,7 +45,7 @@ endif
 
 # Rule to compile .o from .c
 %.o: %.c
-	$(CC) -c $< -o $@
+	gcc -c $< -o $@
 
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o

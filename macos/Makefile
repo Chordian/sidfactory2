@@ -22,7 +22,7 @@ ICONSET=$(ARTIFACTS_FOLDER)/$(APP_NAME).iconset
 ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
 # The compiler (gcc, g++, c++,clang++)
-CC=MACOSX_DEPLOYMENT_TARGET=10.9 gcc
+CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
 
 CC_FLAGS= \
   -I $(SOURCE) \
@@ -53,7 +53,7 @@ LINKER_FLAGS=\
 
 # Rule to compile .o from .c
 %.o: %.c
-	$(CC) -c $< -o $@
+	gcc -c $< -o $@
 
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
