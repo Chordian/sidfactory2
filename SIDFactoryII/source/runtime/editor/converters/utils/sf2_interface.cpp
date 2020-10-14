@@ -17,7 +17,9 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#if __has_include(<filesystem>)
 #include <filesystem>
+#endif
 #include <vector>
 #include <algorithm>
 
