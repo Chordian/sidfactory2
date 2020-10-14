@@ -22,33 +22,36 @@ namespace Utility
 		char* buffer = new char[read_file_size];
 
 		// Read the data from the file
-		fread(buffer, 1, read_file_size, file_read);
+		size_t bytes_read = fread(buffer, 1, read_file_size, file_read);
 
 		// Close the file
 		fclose(file_read);
 
-		// Open the output file
-		FILE* write_file = fopen(inWriteFileName.c_str(), "w");
-		fprintf(write_file, "#pragma once\n\n");
-		fprintf(write_file, "namespace %s\n{\n", inNamespace.c_str());
-		fprintf(write_file, "\tconst unsigned char %s[0x%08x] =\n\t{", inDataName.c_str(), static_cast<unsigned int>(read_file_size));
-
-		for (int data_counter = 0; data_counter < read_file_size; ++data_counter)
+		if (bytes_read == static_cast<size_t>(read_file_size))
 		{
-			unsigned char byte = buffer[data_counter];
+			// Open the output file
+			FILE* write_file = fopen(inWriteFileName.c_str(), "w");
+			fprintf(write_file, "#pragma once\n\n");
+			fprintf(write_file, "namespace %s\n{\n", inNamespace.c_str());
+			fprintf(write_file, "\tconst unsigned char %s[0x%08x] =\n\t{", inDataName.c_str(), static_cast<unsigned int>(read_file_size));
 
-			if (data_counter > 0)
-				fprintf(write_file, ", ");
-			if ((data_counter & 0x0f) == 0)
-				fprintf(write_file, "\n\t\t");
+			for (int data_counter = 0; data_counter < read_file_size; ++data_counter)
+			{
+				unsigned char byte = buffer[data_counter];
 
-			fprintf(write_file, "0x%02x", byte);
+				if (data_counter > 0)
+					fprintf(write_file, ", ");
+				if ((data_counter & 0x0f) == 0)
+					fprintf(write_file, "\n\t\t");
+
+				fprintf(write_file, "0x%02x", byte);
+			}
+
+			fprintf(write_file, "\n\t};\n}");
+
+			fclose(write_file);
+			delete[] buffer;
 		}
-
-		fprintf(write_file, "\n\t};\n}");
-
-		fclose(write_file);
-		delete[] buffer;
 	}
 
 
@@ -75,15 +78,21 @@ namespace Utility
 		char* buffer = new char[read_file_size];
 
 		// Read the data from the file
-		fread(buffer, 1, read_file_size, file_read);
+		size_t bytes_read = fread(buffer, 1, read_file_size, file_read);
 
 		// Close the file
 		fclose(file_read);
 
-		outDataSize = read_file_size;
-		*outData = buffer;
+		if (bytes_read == static_cast<size_t>(read_file_size))
+		{
+			outDataSize = read_file_size;
+			*outData = buffer;
 
-		return true;
+			return true;
+		}
+
+		delete[] buffer;
+		return false;
 	}
 
 
