@@ -26,14 +26,11 @@ DMG_SIZE=16384
 ICONSET=$(ARTIFACTS_FOLDER)/$(APP_NAME).iconset
 ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
-EXE_SF2C=$(ARTIFACTS_FOLDER)/SF2Converter
-
 # The compiler (gcc, g++, c++,clang++)
 CC=MACOSX_DEPLOYMENT_TARGET=10.9 gcc
 
 CC_FLAGS= \
   -I $(SOURCE) \
-	-I ../SF2Converter \
 	-I ./App/Contents/Frameworks/SDL2.framework/Headers \
 	-D_THREAD_SAFE \
 	-std=gnu++14 \
@@ -54,7 +51,6 @@ LINKER_FLAGS=\
 .PHONY: tmp
 .PHONY: dmg
 .PHONY: app
-.PHONY: sf2c
 
 # Rule to compile .o from .cpp
 %.o: %.cpp
@@ -65,22 +61,14 @@ LINKER_FLAGS=\
 	$(CC) -c $< -o $@
 
 # Determine all .o files to be built
-OBJ = $(SRC:.cpp=.o)
-OBJ_SF2C = $(SRC_SF2C:.cpp=.o) $(SRC_SF2C_C:.c=.o)
+OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
 
 # Compile executable
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
 	$(CC) $(LINKER_FLAGS) -o $(EXE) $(OBJ)
 	strip $(EXE)
 
-# Compile SF2Converter
-$(EXE_SF2C) : $(OBJ_SF2C) $(ARTIFACTS_FOLDER)
-	$(CC) $(LINKER_FLAGS) -o $(EXE_SF2C) $(OBJ_SF2C)
-	strip $(EXE_SF2C)
-
 app: $(APP)
-
-sf2c: $(EXE_SF2C)
 
 # ----------------------------------------------------
 
@@ -127,7 +115,6 @@ $(DMG_CONTENTS): $(APP) $(EXE_SF2C) $(ARTIFACTS_FOLDER)/keys.html
 	cp -r Install.txt $(DMG_CONTENTS)
 	cp -r $(PROJECT_ROOT)/music/ ${DMG_CONTENTS}/$(APP_NAME)/music
 	cp -r $(PROJECT_ROOT)/drivers ${DMG_CONTENTS}/$(APP_NAME)/drivers
-	mv $(ARTIFACTS_FOLDER)/SF2Converter $(DMG_CONTENTS)/$(APP_NAME)
 	ln -s /Applications $(DMG_CONTENTS)/Applications
 
 # Make a temporary DMG. This needs to be layed out nicely by hand before building the final DMG.
