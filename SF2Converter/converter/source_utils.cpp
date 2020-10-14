@@ -2,6 +2,7 @@
 
 #include "source_utils.h"
 #include "utils/utilities.h"
+#include <cstring>
 
 namespace Converter
 {

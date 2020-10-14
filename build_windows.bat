@@ -1,10 +1,11 @@
-MSBuild.exe SIDFactoryII.sln -property:Configuration=Release
+MSBuild.exe SIDFactoryII.sln -property:Configuration=Release -property:Platform=x86
 
 md artifacts
 md artifacts\color_schemes
 md artifacts\drivers
 md artifacts\music
 md artifacts\overlay
+md artifacts\documentation
 
 copy /Y release\SIDFactoryII.exe artifacts\
 copy /Y release\SF2Converter.exe artifacts\
@@ -17,3 +18,4 @@ copy /Y SIDFactoryII\color_schemes\*.* artifacts\color_schemes\
 copy /Y SIDFactoryII\drivers\*.* artifacts\drivers\
 copy /Y SIDFactoryII\music\*.* artifacts\music\
 copy /Y SIDFactoryII\overlay\*.* artifacts\overlay\
+copy /Y dist\documentation\*.* artifacts\documentation\

@@ -1,4 +1,3 @@
-.dockerignore
 .svn
 .vs
 /builds
@@ -13,20 +12,18 @@ SF2Converter/Release
 SF2Converter/SDL2.dll
 SF2Converter/test
 SF2Converter/*.vcxproj.user
-SIDFactoryII/Assets.xcassets
 SIDFactoryII/Base.lproj
 SIDFactoryII/data
 SIDFactoryII/drivers_custom
 SIDFactoryII/drivers_dev
 SIDFactoryII/Debug
 SIDFactoryII/Release
-SIDFactoryII/Info.plist
 SIDFactoryII/user.ini
 SIDFactoryII/*.entitlements
 SIDFactoryII/*.vcxproj.user
 *.dll
 *.exe
-*.xcodeproj
 *.o
-Dockerfile
 artifacts
+.vscode
+xcuserdata

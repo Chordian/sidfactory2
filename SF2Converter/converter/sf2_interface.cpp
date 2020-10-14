@@ -16,7 +16,10 @@
 #include <assert.h>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
+#ifdef _SF2_WINDOWS
 #include <filesystem>
+#endif
 #include <vector>
 #include <algorithm>
 

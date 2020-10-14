@@ -18,21 +18,21 @@ namespace Foundation
         : PlatformSDL("macos")
 	{
         std::error_code error_code;
-        
+
         uint32_t buffer_size = PATH_MAX;
         _NSGetExecutablePath(m_ApplicationPath, &buffer_size);
-        
+
         m_LogicalDrivesList.push_back("/Volumes");
-        
+
         // Add the user's home folder
         char *realHome = getpwuid(getuid())->pw_dir;
-        
+
         if(realHome != nullptr)
         {
             m_RealHome = std::string(realHome);
-            
+
             m_LogicalDrivesList.push_back(realHome);
-            
+
             // Add some standard folders that user might want to use...
             m_LogicalDrivesList.push_back(std::string(realHome) + "/Desktop");
             m_LogicalDrivesList.push_back(std::string(realHome) + "/Music");
@@ -40,7 +40,7 @@ namespace Foundation
         }
 
         path application_path = m_ApplicationPath;
-        
+
         if(!fs::is_directory(application_path))
             current_path(application_path.remove_filename());
         else
@@ -131,7 +131,7 @@ namespace Foundation
 
     std::string PlatformSDLMacOS::Storage_GetHomePath() const
     {
-        return m_RealHome;      // This should be the user default 
+        return m_RealHome;      // This should be the user default
     }
 
 
@@ -146,14 +146,14 @@ namespace Foundation
         return GetResourcePath("drivers");
     }
 
-    
+
     std::string PlatformSDLMacOS::Storage_GetOverlaysHomePath() const
     {
         return GetResourcePath("overlay");
     }
 
 
-    std::string PlatformSDLMacOS::Storage_GetColorSchemesHomePath() const 
+    std::string PlatformSDLMacOS::Storage_GetColorSchemesHomePath() const
     {
         return GetResourcePath("color_schemes");
     }
@@ -170,9 +170,9 @@ namespace Foundation
 
         if (appUrlRef != nullptr)
         {
-            CFStringRef filePathRef = CFURLCopyPath(appUrlRef);
+            CFStringRef filePathRef = CFURLCopyFileSystemPath(appUrlRef, kCFURLPOSIXPathStyle);
             const char* filePath = CFStringGetCStringPtr(filePathRef, kCFStringEncodingUTF8);
-            return std::string(filePath);
+            return std::string(filePath) + '/';
         }
 
         return std::string();
@@ -185,5 +185,5 @@ namespace Foundation
     }
 }
 
-#endif 
+#endif
 #endif

@@ -6,23 +6,30 @@ a Commodore 64. It uses the reSID emulator and is currently in open BETA. You ca
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
+![Build windows
+binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build macOS
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
+![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
 ![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
 ## Changelog
 
-### Build 2020????
+- `linux` Now includes SF2Converter in the build
+- `macOS` Fixed [#71](https://github.com/Chordian/sidfactory2/issues/71) switch instrument/command while in a table (Thanks to Adam Davidovics
+  for reporting)
+- `macOS` Fixed [#67](https://github.com/Chordian/sidfactory2/issues/67) crash when run from a path with spaces
+  (Thanks to Arjen
+  Bokhoven for reporting)
+
+### Build 20200911
 
 #### Editor
 
 - The overlay can now be shown inside the editor with **F12** and also changes depending on what driver is loaded
 - Added **Ctrl+L** for setting a song loop position (the order list words will turn green in that spot)
 - It is now possible to delete a file in all file dialogues by hitting the appropriate key
-- A `config.ini` file has been added where settings can be read for audio quality, colors and key definitions
-- Also added a `user.ini` for persistent changes (the functionality of these `.ini` files are not yet complete)
-- Additional `.ini` files in a sub folder can be used for new color schemes
 - Seven new color schemes have been created in addition to the default one
 - The importer now also carries over auxiliary data (e.g. table descriptions)
 - Upgraded the ReSID emulation (resid-fp) to the latest version
@@ -31,8 +38,9 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Fixed the editor crashing when trying to optimize a song with no sequence data
 - Fixed not being able to properly play from a bookmark when showing tracks of uneven lengths
 - `macOS` Now using **Minus** and **Shift+Minus** for fast/faster forward
-- `macOS` Instrument up/down is now **Cmd+Up/Down** while **Cmd+Up/Down** is now **Shift+Cmd+Up/Down**
+- `macOS` Instrument up/down is now **Cmd+Up/Down** while Command up/down is now **Shift+Cmd+Up/Down**
 - `macOS` You can now open `.sf2` files with SID Factory II directly from Finder (Open With)
+- `macOS` Backward compatible until macOS 10.9 (Mavericks)
 
 #### Drivers
 
@@ -41,7 +49,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 #### Converter
 
 - Added a third conversion option for handling `.ct` source tunes from CheeseCutter
-- The SNG and CT converters now support the pulse program index and main volume commands added in driver 11.02
+- The SNG and CT converters now support the pulse index and main volume commands in driver 11.02
 - The MOD, SNG and CT converters now support then tempo change command added in driver 11.02
 - Command description labels are now created by the MOD and SNG converters too
 
