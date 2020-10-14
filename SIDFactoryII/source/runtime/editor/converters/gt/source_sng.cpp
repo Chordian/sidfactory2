@@ -613,10 +613,10 @@ namespace Converter
 						else
 						{
 							// Tempo command was added in driver 11.02
-							index = m_SF2->AppendToTable(TABLE_TEMPO,
+							index = m_SF2->AppendClusterToTable(TABLE_TEMPO,
 								{
-									{{ --sng_data }},
-									{{ 0x7f }},
+									{ --sng_data },
+									{ 0x7f },
 								});
 							if (index == 0xff)
 								return false;

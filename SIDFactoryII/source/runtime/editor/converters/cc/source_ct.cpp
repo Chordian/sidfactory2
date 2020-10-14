@@ -204,7 +204,7 @@ namespace Converter
 			}
 		}
 		// This automatically reuses any matching cluster
-		return m_SF2->AppendToTable(TABLE_PULSE, m_Cluster);
+		return m_SF2->AppendClusterToTable(TABLE_PULSE, m_Cluster);
 	}
 
 	/**
@@ -307,7 +307,7 @@ namespace Converter
 			}
 		}
 		// This automatically reuses any matching cluster
-		return m_SF2->AppendToTable(TABLE_FILTER, m_Cluster);
+		return m_SF2->AppendClusterToTable(TABLE_FILTER, m_Cluster);
 	}
 
 	/**
@@ -360,7 +360,7 @@ namespace Converter
 				else
 					m_Cluster.push_back({ tempo_byte });
 			}
-			tempo_program_index = m_SF2->AppendToTable(TABLE_TEMPO, m_Cluster);
+			tempo_program_index = m_SF2->AppendClusterToTable(TABLE_TEMPO, m_Cluster);
 
 			if (tempo_program_index == 0xff)
 				return false;
@@ -539,7 +539,7 @@ namespace Converter
 				sf2_pulse_cluster_index = HandlePulseProgram(m_Instrument[5]);
 			else if (m_Instrument[5] >= 0x80)
 				// A simple pulse high nibble is just set
-				sf2_pulse_cluster_index = m_SF2->AppendToTable(TABLE_PULSE, {
+				sf2_pulse_cluster_index = m_SF2->AppendClusterToTable(TABLE_PULSE, {
 					{ (unsigned char)(0x80 + (m_Instrument[5] & 0x0f)), 0x00, 0x00 },	// Set to the high pulse width nibble
 					{ 0x7f, 0x00, 0x01 },												// Wrap to itself
 				});
@@ -764,7 +764,7 @@ namespace Converter
 						else if (chord_byte >= 0x40)
 						{
 							// Negative chord offsets are not supported by the SF2 driver
-							Unsupported(sbyte_command + " uses a chord with a negative offset which");
+							Unsupported(std::to_string(sbyte_command) + " uses a chord with a negative offset which");
 							arp_desc.append("x");
 							m_Cluster.push_back({ 0x00 }); // Just set it to 0
 						}
@@ -775,7 +775,7 @@ namespace Converter
 						}
 					}
 					// Add chord cluster in SF2 arpeggio table
-					index = m_SF2->AppendToTable(TABLE_ARP, m_Cluster);
+					index = m_SF2->AppendClusterToTable(TABLE_ARP, m_Cluster);
 					if (index == 0xff)
 						return false;
 
@@ -835,10 +835,10 @@ namespace Converter
 					if (value <= 1)
 						index = tempo_program_index; // @todo If a tempo program was not initially added this won't work
 					else
-						index = m_SF2->AppendToTable(TABLE_TEMPO,
+						index = m_SF2->AppendClusterToTable(TABLE_TEMPO,
 							{
-								{{ value }},
-								{{ 0x7f }},
+								{ value },
+								{ 0x7f },
 							});
 					if (index == 0xff)
 						return false;

@@ -101,19 +101,19 @@ namespace Editor
 
 	bool ComponentConsole::ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
-		if (m_HasControl)
-		{
-			// Get key events
-			for (const auto& key_event : inKeyboard.GetKeyEventList())
-			{
-				//switch (key_event)
-				//{
-				//default:
-				//	break;
-				//}
-			}
-		}
-
+//		if (m_HasControl)
+//		{
+//			// Get key events
+//			for (const auto& key_event : inKeyboard.GetKeyEventList())
+//			{
+//				switch (key_event)
+//				{
+//				default:
+//					break;
+//				}
+//			}
+//		}
+//
 		return false;
 	}
 

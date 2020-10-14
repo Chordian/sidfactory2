@@ -1,5 +1,3 @@
-#pragma once
-
 #include "runtime/editor/converters/utils/consoleostreambuffer.h"
 #include "runtime/editor/components/component_console.h"
 
@@ -29,7 +27,7 @@ namespace Editor
         if (ch != EOF)
         {
             char cbuf[1];
-            cbuf[0] = ch;
+            cbuf[0] = static_cast<char>(ch);
             if (write_to_console(cbuf, 1) != 1)
                 return EOF;
         }

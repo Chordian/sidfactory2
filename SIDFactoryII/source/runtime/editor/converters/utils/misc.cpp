@@ -17,7 +17,7 @@ namespace Converter
 	{
 		// Colors only work in Visual Studio's console
 		if (!m_IgnoreColors)
-			std::string m_Zebra[2] =
+			m_Zebra[2] =
 			{
 				"\033[0m",				// Reset (default gray)
 				"\033[1m\033[37m"		// White

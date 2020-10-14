@@ -183,7 +183,7 @@ namespace Converter
         m_SF2->EditTableRowText(TABLE_CMDS, 1, "Stop effect");
 
         // Add a dummy triangle sound for all instruments
-        if (m_SF2->AppendToTable(TABLE_WAVE,
+        if (m_SF2->AppendClusterToTable(TABLE_WAVE,
             {
                 { 0x11, 0x00 },
                 { 0x7f, 0x00 },
@@ -264,12 +264,12 @@ namespace Converter
                                 arp_second = mod_data & 0x0f;
 
                                 // :: Nibbles at 0 just make for unique arpeggios on their own
-                                index = m_SF2->AppendToTable(TABLE_ARP,
+                                index = m_SF2->AppendClusterToTable(TABLE_ARP,
                                     {
-                                        {{ 0x00 }},
-                                        {{ arp_first }},
-                                        {{ arp_second }},
-                                        {{ 0x70 }},
+                                        { 0x00 },
+                                        { arp_first },
+                                        { arp_second },
+                                        { 0x70 },
                                     });
                                 if (index == 0xff)
                                     return false;
@@ -439,10 +439,10 @@ namespace Converter
                             else if (mod_data < 0x20)
                             {
                                 // Tempo command was added in driver 11.02
-                                index = m_SF2->AppendToTable(TABLE_TEMPO,
+                                index = m_SF2->AppendClusterToTable(TABLE_TEMPO,
                                     {
-                                        {{ (unsigned char)(mod_data > 1 ? mod_data - 1 : 1) }},
-                                        {{ 0x7f }},
+                                        { (unsigned char)(mod_data > 1 ? mod_data - 1 : 1) },
+                                        { 0x7f },
                                     });
                                 if (index == 0xff)
                                     return false;

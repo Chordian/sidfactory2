@@ -124,7 +124,7 @@ namespace SF2
 				}
 			}
 
-			delete data;
+			delete[] static_cast<char*>(data);
 		}
 
 		return driver_info->IsValid();
@@ -737,7 +737,7 @@ namespace SF2
 	 *
 	 * For single column tables such as arpeggio, use {{ x }} for byte values.
 	 */
-	unsigned char Interface::AppendToTable(int inTableType, const std::vector<std::vector<unsigned char>>& inBytesCluster)
+	unsigned char Interface::AppendClusterToTable(int inTableType, const std::vector<std::vector<unsigned char>>& inBytesCluster)
 	{
 		Table table = GetTable(inTableType);
 		TableData table_data = GetTableData(inTableType);

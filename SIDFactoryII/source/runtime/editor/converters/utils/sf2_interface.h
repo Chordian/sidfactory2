@@ -174,7 +174,7 @@ namespace SF2
 		bool AppendToOrderList(int inTrack, std::vector<unsigned char> inBytes);
 		bool AppendToSequence(int inSequenceIndex, std::vector<unsigned char> inBytes);
 		unsigned char AppendToTable(int inTableType, const std::vector<unsigned char>& inBytes);
-		unsigned char AppendToTable(int inTableType, const std::vector<std::vector<unsigned char>>& inBytesCluster);
+		unsigned char AppendClusterToTable(int inTableType, const std::vector<std::vector<unsigned char>>& inBytesCluster);
 		bool EditTableRow(int inTableType, int inRow, std::vector<unsigned char> inBytes);
 		bool EditTableRowText(int inTableType, int inRow, const std::string& inText);
 		std::vector<unsigned char> ReadTableRow(int inTableType, int inRow);

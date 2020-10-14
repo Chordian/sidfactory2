@@ -56,7 +56,7 @@ namespace Editor
 
 		if (inDataSize < 0x10000)
 		{
-			const unsigned short destination_address = Utility::C64File::ReadTargetAddressFromData(inData, inDataSize);
+			const unsigned short destination_address = Utility::C64File::ReadTargetAddressFromData(inData, static_cast<unsigned short>(inDataSize));
 
 			if (destination_address == 0x0f00)
 			{
@@ -66,7 +66,7 @@ namespace Editor
 				unsigned char version_2 = file->GetByte(address_version + 1);
 				unsigned char version_3 = file->GetByte(address_version + 2);
 				unsigned char version_4 = file->GetByte(address_version + 3);
-				unsigned char version_5 = file->GetByte(address_version + 4);
+				//unsigned char version_5 = file->GetByte(address_version + 4);
 
 				if (version_1 != '2')
 					return false;
@@ -76,7 +76,7 @@ namespace Editor
 					return false;
 				if (version_4 != 'G')
 					return false;
-				//if (version_4 != '4')		// Not sure that this matters!
+				//if (version_5 != '4')		// Not sure that this matters!
 				//	return false;
 
 				return true;
@@ -208,7 +208,7 @@ namespace Editor
 			m_OutputData = Utility::C64File::CreateFromPRGData(data, static_cast<unsigned int>(data_size));
 
 			// The data has been copied to the c64file container
-			delete[] data;
+			delete[] static_cast<char*>(data);
 
 			if (m_OutputData != nullptr)
 				m_DriverInfo->Parse(*m_OutputData);
