@@ -17,11 +17,10 @@ namespace Converter
 	{
 		// Colors only work in Visual Studio's console
 		if (!m_IgnoreColors)
-			m_Zebra[2] =
-			{
-				"\033[0m",				// Reset (default gray)
-				"\033[1m\033[37m"		// White
-			};
+		{
+			m_Zebra[0] = "\033[0m";					// Reset (default gray)
+			m_Zebra[1] = "\033[1m\033[37m";	// White
+		}
 	}
 
 	Misc::~Misc()

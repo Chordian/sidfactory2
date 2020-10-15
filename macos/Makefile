@@ -31,8 +31,7 @@ CC_FLAGS= \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \
-	-flto \
-	-Wno-bitwise-op-parentheses
+	-flto 
 
 LINKER_FLAGS=\
 	-framework SDL2 \
