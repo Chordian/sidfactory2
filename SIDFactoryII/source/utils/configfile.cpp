@@ -21,6 +21,7 @@ namespace Utility
 	{
 		struct ConfigKeyValuePair
 		{
+			bool m_Add;
 			std::string m_Key;
 			std::vector<std::string> m_Values;
 		};
@@ -38,6 +39,8 @@ namespace Utility
 
 		template<class TYPE>
 		std::shared_ptr<Utility::Config::IConfigValue> TryBuildConfigValue(const std::vector<std::string>& inValues);
+
+		void TryAddValue(std::shared_ptr<Utility::Config::IConfigValue>& inExistingValue, std::shared_ptr<Utility::Config::IConfigValue>& inValueToAdd);
 	}
 
 	ConfigFile::ConfigFile(const IPlatform& inPlatform, const std::string& inFilename, const std::vector<std::string>& inValidSectionTags)
@@ -114,7 +117,12 @@ namespace Utility
 				std::shared_ptr<Config::IConfigValue> value = BuildConfigValue(key_value_pair.m_Values);
 
 				if (value != nullptr)
-					m_Map[key_value_pair.m_Key] = value;
+				{
+					if (key_value_pair.m_Add && m_Map.find(key_value_pair.m_Key) != m_Map.end())
+						TryAddValue(m_Map[key_value_pair.m_Key], value);
+					else
+						m_Map[key_value_pair.m_Key] = value;
+				}
 			}
 
 			m_IsValid = true;
@@ -265,19 +273,28 @@ namespace Utility
 		{
 			for (const auto& line : inLineList)
 			{
-				size_t index = line.find('=');
+				bool add = true;
+				size_t index = line.find("+=");
+
+				if (index == std::string::npos)
+				{
+					add = false;
+					index = line.find('=');
+				}
 
 				if (index != std::string::npos)
 				{
+					size_t offset = add ? 2 : 1;
+
 					std::string key = line.substr(0, index);
-					std::string value = line.substr(index + 1, line.length() - (index + 1));
+					std::string value = line.substr(index + offset, line.length() - (index + offset));
 
 					Utility::TrimStringInPlace(key);
 
 					std::vector<std::string> values;
 					GatherKeyValues(value, values);
 
-					outKeyValuePairs.push_back({ key, values });
+					outKeyValuePairs.push_back({ add, key, values });
 				}
 			}
 		}
@@ -346,6 +363,13 @@ namespace Utility
 			}
 
 			return std::make_shared<TYPE>(inValues);
+		}
+
+
+		void TryAddValue(std::shared_ptr<Utility::Config::IConfigValue>& inExistingValue, std::shared_ptr<Utility::Config::IConfigValue>& inValueToAdd)
+		{
+			if (inExistingValue->GetType() == inValueToAdd->GetType())
+				inExistingValue->AddValues(*inValueToAdd);
 		}
 	}
 }

@@ -72,10 +72,16 @@ namespace Editor
 		m_KeyHookSetup.ApplyConfigSettings(inConfigFile);
 
 		// Configure colors
-		m_ColorSchemeCount = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "ColorScheme.Count", 0);
-		m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "ColorScheme.Selection", 0);
+		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(inConfigFile, "ColorScheme.Name", {});
+		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(inConfigFile, "ColorScheme.Filename", {});
 
-		ConfigureColorsFromScheme(m_SelectedColorScheme, inConfigFile, *inViewport);
+		if (color_scheme_names.size() == color_scheme_filenames.size())
+		{
+			m_ColorSchemeCount = color_scheme_names.size();
+			m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "ColorScheme.Selection", 0);
+
+			ConfigureColorsFromScheme(m_SelectedColorScheme, inConfigFile, *inViewport);
+		}
 
 		// Create emulation environment
 		SIDConfiguration sid_configuration;										// Default settings are applicable
@@ -1065,23 +1071,20 @@ namespace Editor
 	{
 		if (inSchemeIndex < m_ColorSchemeCount)
 		{
-			std::string color_scheme_filename_key = "ColorScheme.Filename." + std::to_string(inSchemeIndex);
-			std::string color_scheme_name_key = "ColorScheme.Name." + std::to_string(inSchemeIndex);
-			std::string color_scheme_filename = GetSingleConfigurationValue<ConfigValueString>(inMainConfigFile, color_scheme_filename_key, std::string(""));
-			std::string color_scheme_name = GetSingleConfigurationValue<ConfigValueString>(inMainConfigFile, color_scheme_name_key, std::string("Unknown"));
+			auto color_scheme_names = GetConfigurationValues<ConfigValueString>(inMainConfigFile, "ColorScheme.Name", {});
+			auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(inMainConfigFile, "ColorScheme.Filename", {});
 
-			std::string color_config_path_and_filename = m_Platform->Storage_GetColorSchemesHomePath() + color_scheme_filename;
+			std::string color_config_path_and_filename = m_Platform->Storage_GetColorSchemesHomePath() + color_scheme_filenames[inSchemeIndex];
 			ConfigFile color_config(*m_Platform, color_config_path_and_filename, inMainConfigFile.GetValidSectionTags());
 
 			if (color_config.IsValid())
 			{
 				Utility::Config::ConfigureColors(color_config, inViewport);
-				return color_scheme_name;
+				return color_scheme_names[inSchemeIndex];
 			}
 		}
 
 		Utility::Config::ConfigureColors(inMainConfigFile, inViewport);
-
 		return "Default";
 	}
 

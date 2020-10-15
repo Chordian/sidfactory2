@@ -23,6 +23,7 @@ namespace Utility
 			virtual ~IConfigValue() { }
 			virtual ValueType GetType() const = 0;
 			virtual size_t GetValueCount() const = 0;
+			virtual void AddValues(const IConfigValue& inValuesToAdd) = 0;
 		};
 
 
@@ -34,6 +35,7 @@ namespace Utility
 			ConfigValueCharacter(const std::vector<std::string>& inValues);
 			ValueType GetType() const override;
 			size_t GetValueCount() const override;
+			void AddValues(const IConfigValue& inValuesToAdd) override;
 			const DATATYPE& GetValue(size_t inIndex) const;
 			const std::vector<DATATYPE>& GetValues() const;
 
@@ -54,6 +56,7 @@ namespace Utility
 			ConfigValueInt(const std::vector<std::string>& inValues);
 			ValueType GetType() const override;
 			size_t GetValueCount() const override;
+			void AddValues(const IConfigValue& inValuesToAdd) override;
 			const DATATYPE& GetValue(size_t inIndex) const;
 			const std::vector<DATATYPE>& GetValues() const;
 
@@ -73,6 +76,7 @@ namespace Utility
 			ConfigValueString(const std::vector<std::string>& inValues);
 			ValueType GetType() const override;
 			size_t GetValueCount() const override;
+			void AddValues(const IConfigValue& inValuesToAdd) override;
 			const DATATYPE& GetValue(size_t inIndex) const;
 			const std::vector<DATATYPE>& GetValues() const;
 
@@ -98,6 +102,7 @@ namespace Utility
 			ConfigValueKey(const std::vector<std::string>& inValues);
 			ValueType GetType() const override;
 			size_t GetValueCount() const override;
+			void AddValues(const IConfigValue& inValuesToAdd) override;
 			const DATATYPE& GetValue(size_t inIndex) const;
 			const std::vector<DATATYPE>& GetValues() const;
 
@@ -119,6 +124,7 @@ namespace Utility
 			ConfigValueRedirect(const std::vector<std::string>& inValues);
 			ValueType GetType() const override;
 			size_t GetValueCount() const override;
+			void AddValues(const IConfigValue& inValuesToAdd) override;
 			const DATATYPE& GetValue(size_t inIndex) const;
 			const std::vector<DATATYPE>& GetValues() const;
 
