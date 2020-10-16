@@ -146,7 +146,5 @@ namespace Editor
 		std::unique_ptr<ScreenConvert> m_ConvertScreen;
 
 		std::shared_ptr<Utility::C64File> m_PackedData;
-
-		//std::vector<std::unique_ptr<IConverter>> m_Converters;
 	};
 }

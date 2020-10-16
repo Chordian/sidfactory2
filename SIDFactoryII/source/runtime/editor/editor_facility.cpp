@@ -129,6 +129,7 @@ namespace Editor
 			&m_CursorControl,
 			m_DisplayState,
 			m_KeyHookSetup.GetKeyHookStore(),
+			m_ConfigFile,
 			[&](const std::string& inFilenameSelection, FileType inSaveFileType) { OnFilenameSelection(m_DiskScreen.get(), inFilenameSelection, inSaveFileType); },
 			[&]() { OnCancelScreen(m_DiskScreen.get()); });
 
@@ -572,7 +573,7 @@ namespace Editor
 		if (Utility::ReadFile(inPathAndFilename, max_file_size, &data, data_size))
 		{
 			// Try converting, if there're no valid results yet
-			if (inCallerScreen != nullptr)
+			if (inCallerScreen != nullptr && data_size > 2)
 			{
 				auto converters = GetConverters();
 				const size_t converter_count = converters.size();

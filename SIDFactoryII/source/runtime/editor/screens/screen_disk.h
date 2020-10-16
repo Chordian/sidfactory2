@@ -8,6 +8,11 @@
 #include <vector>
 #include <functional>
 
+namespace Utility
+{
+	class ConfigFile;
+}
+
 namespace Foundation
 {
 	class IPlatform;
@@ -39,6 +44,7 @@ namespace Editor
 			CursorControl* inCursorControl,
 			DisplayState& inDisplayState,
 			Utility::KeyHookStore& inKeyHookStore,
+			Utility::ConfigFile& inConfigFile,
 			std::function<void(const std::string&, FileType)> inSelectionCallback,
 			std::function<void(void)> inCancelCallback);
 		virtual ~ScreenDisk();
@@ -69,6 +75,7 @@ namespace Editor
 		std::shared_ptr<ComponentTextInput> m_ComponentFileNameInput;
 
 		Foundation::IPlatform* m_Platform;
+		const Utility::ConfigFile& m_ConfigFile;
 
 		std::function<void(const std::string&, FileType)> m_SelectionCallback;
 		std::function<void(void)> m_CancelCallback;
