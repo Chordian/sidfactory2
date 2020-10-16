@@ -1923,31 +1923,36 @@ namespace Editor
 	{
 		if (m_FocusModeOrderList)
 		{
-			const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			const unsigned int order_index = m_EventPosDetails.m_OrderListIndex;
+			const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[order_index];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
 				return;
 
+			// determine the empty, unused sequence to use for the duplicate
 			const unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
 			if (first_free_sequence_index >= 0x80)
 				return;
 
 			AddUndoStep();
 
+			// copy current sequence to the new sequence
 			const unsigned char current_sequence_index = orderlist_entry.m_SequenceIndex;
 			const auto& source = m_DataSourceSequenceList[current_sequence_index];
 			const auto& destination = m_DataSourceSequenceList[first_free_sequence_index];
-
 			const int new_sequence_length = source->GetLength();
+
 			destination->SetLength(new_sequence_length);
-
 			DataSourceUtils::CopySequence(source, 0, new_sequence_length, destination);
-
 			OnSequenceChanged(first_free_sequence_index);
 
-			m_SequenceSplitEvent.Execute(current_sequence_index, first_free_sequence_index);
+			// insert the duplicate in the order list right after the original
+			const auto& entry = (*m_DataSourceOrderList)[order_index];
+			auto new_entry = entry;
+			new_entry.m_SequenceIndex = first_free_sequence_index;
+			OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry);
+			}
 		}
-	}
 
 
 	void ComponentTrack::DoTestExpandSequence()
