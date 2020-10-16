@@ -2565,7 +2565,7 @@ namespace Editor
 		} });
 			m_KeyHooks.push_back({ "Key.Track.DuplicateSequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
-			if (m_FocusModeOrderList)
+			if (m_FocusModeOrderList && !m_TakingOrderListInput)
 			{
 				DoDuplicateSequence();
 				UpdateMaxEventPos();

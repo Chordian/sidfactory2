@@ -76,8 +76,8 @@ namespace Editor
 		definitions.push_back({ "Key.ScreenEdit.SaveSong", {{ SDLK_F11, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.SaveInstrument", {{ SDLK_F11, Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleOverlay", {{ SDLK_F12, Keyboard::None }} });
-		definitions.push_back({ "Key.ScreenEdit.ToggleFlightRecorderOverlay", {{ SDLK_d, Keyboard::Shift | Keyboard::Control }} });
-		definitions.push_back({ "Key.ScreenEdit.ToggleDebugView", {{ SDLK_d, Keyboard::Shift | Keyboard::Alt }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleFlightRecorderOverlay", {{ SDLK_F12, Keyboard::Shift }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleDebugView", {{ SDLK_F12, Keyboard::Shift | Keyboard::Alt }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel1", {{ SDLK_1, Keyboard::Control }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel2", {{ SDLK_2, Keyboard::Control }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel3", {{ SDLK_3, Keyboard::Control }} });
@@ -143,7 +143,7 @@ namespace Editor
 		definitions.push_back({ "Key.Track.SetSelectedInstrumentIndexValue", {{ SDLK_i, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedCommandIndexValue", {{ SDLK_o, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetOrderlistLoopPoint", {{ SDLK_l, Keyboard::Shift | Keyboard::Control }} });
-		definitions.push_back({ "Key.Track.Debug", {{ SDLK_d, Keyboard::Alt }} });
+		definitions.push_back({ "Key.Track.Debug", {{ SDLK_F12, Keyboard::Alt }} });
 
 		m_KeyHookStore.PassBaseDefinitions(definitions);
 	}

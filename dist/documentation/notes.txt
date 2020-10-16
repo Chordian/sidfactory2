@@ -29,8 +29,6 @@ GENERAL         Tab                         Tab                         Next inp
                 F12                         F12                         Toggle showing the expanding help overlay
 
                 Ctrl + u                    Ctrl + u                    Toggle upper or lower case hexadecimal numbers
-                Ctrl + d                    Ctrl + d                    Toggle big "flight recorder" debug overlay
-                Shift + Alt + d                                         Toggle small debug overlay in top right corner
 
                 y/n                         y/n                         Choose "yes" or "no" in dialog boxes
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -88,6 +86,9 @@ ORDERLISTS      Arrows                      Arrows                      Move lef
                 Backspace                   Backspace                   Delete previous orderlist entry (i.e. moving up)
 
                 Ctrl + f                    Ctrl + f                    Insert first unused sequence (including previously edited)
+                Ctrl + Shift + f            Ctrl + Shift + f            Insert first unused empty sequence
+
+                Ctrl + d                    Ctrl + d                    Duplicate sequence
 --------------------------------------------------------------------------------------------------------------------------------------
 SEQUENCES       Arrows                      Arrows                      Move around in the sequence
                 Page Up/Down                Fn + Up/Down                Move several sequence rows up/down
@@ -156,7 +157,7 @@ SETTINGS        F9                          F9                          Toggle 6
 SONGLIST        Up/Down                     Up/Down                     Move up or down in the songlist
                 Page Up/Down                Fn + Up/Down                Move several rows up/down in the songlist
                 Home/End                    Fn + Left/Right             Go to beginning or end of visible songlist then boundaries
-                
+
                 Enter                       Enter                       Go to the selected songlist position
                 Ctrl + Enter                Ctrl + Enter                Play from the selected songlist position
 --------------------------------------------------------------------------------------------------------------------------------------
