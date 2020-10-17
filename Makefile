@@ -58,10 +58,11 @@ $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
 # Create a distribution folder with executables and resources
 dist: $(EXE) $(DIST_FOLDER)
 	mv $(EXE) $(DIST_FOLDER)
+	mkdir -p ${DIST_FOLDER}/config
 	cp -r $(PROJECT_ROOT)/drivers $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/overlay $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/color_schemes $(DIST_FOLDER)
-	cp -r $(PROJECT_ROOT)/config $(DIST_FOLDER)
+	cp -r $(PROJECT_ROOT)/config.ini $(DIST_FOLDER)/config/
 	cp -r $(PROJECT_ROOT)/music $(DIST_FOLDER)
 	cp -r dist/documentation $(DIST_FOLDER)
 	cp $(PROJECT_ROOT)/COPYING $(DIST_FOLDER)

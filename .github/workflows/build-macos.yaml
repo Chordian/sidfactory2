@@ -1,5 +1,11 @@
 name: Build macOS binaries
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'README.md'
+      - 'tools/**'
 jobs:
   build:
     name: Build executable
