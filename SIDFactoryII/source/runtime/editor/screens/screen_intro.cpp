@@ -81,8 +81,8 @@ namespace Editor
 		const Foundation::Rect credits_rect_left({ { credits_margin, credits_y }, { block_width - credits_margin, driver_info_y - credits_y - 1 } });
         const Foundation::Rect credits_rect_right({ { block_width, credits_y }, { block_width - credits_margin, driver_info_y - credits_y - 1 } });
         
-		const Foundation::WrappedString credits_text_left("Editor facilities designed and suggested by:\n \nThomas Egeskov Petersen\nJens-Christian Huus\nTorben Korgaard Hansen\nThomas Laurits Mogensen\nThomas Bendt\nMichel de Bree\n \nProgramming by:\n \nThomas Egeskov Petersen", block_width);
-        const Foundation::WrappedString credits_text_right("macOS version by:\nMichel de Bree\n \nreSID-fp Engine by:\nDag Lem\nand Antti S. Lankila \n \npicoPNG by:\nLode Vandevenne\n \nghc::filesystem for c++11 by:\nSteffen Schumann", block_width);
+		const Foundation::WrappedString credits_text_left("Programming by:\nThomas Egeskov Petersen\nJens-Christian Huus\nMichel de Bree\n \nAdditional design and suggestions by:\n Torben Korgaard Hansen\nThomas Laurits Mogensen\nThomas Bendt", block_width);
+        const Foundation::WrappedString credits_text_right("reSID-fp Engine by:\nDag Lem\nAntti S. Lankila \n \npicoPNG by:\nLode Vandevenne\n \nghc::filesystem for c++11 by:\nSteffen Schumann", block_width);
 
 		m_MainTextField->PrintAligned(credits_rect_left, credits_text_left, Foundation::TextField::HorizontalAlignment::Center);
         m_MainTextField->PrintAligned(credits_rect_right, credits_text_right, Foundation::TextField::HorizontalAlignment::Center);

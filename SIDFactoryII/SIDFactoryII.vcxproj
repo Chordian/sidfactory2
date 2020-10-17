@@ -224,7 +224,6 @@
     <ClCompile Include="source\runtime\editor\datasources\datasource_emulation_memory.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_flightrecorder.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_memory.cpp" />
-    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_block.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_memory_buffer.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_memory_buffer_string.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_orderlist.cpp" />
@@ -393,7 +392,6 @@
     <ClInclude Include="source\runtime\editor\datasources\datasource_emulation_memory.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_flightrecorder.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_memory.h" />
-    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_block.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_memory_buffer.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_memory_buffer_string.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_orderlist.h" />
