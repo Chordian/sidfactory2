@@ -29,12 +29,16 @@ namespace Editor
 
 		for (size_t i = 0; i<user_folder_count; ++i)
 		{
-			const auto& user_folder = user_folders[i];
+			const std::string& user_folder = user_folders[i];
 			path userfolder_path(user_folder);
 
 			if (is_directory(userfolder_path))
 			{
-				m_Drives.push_back({ user_folder, has_aliases ? user_folders_alias[i] : "" });
+				if(has_aliases)
+					m_Drives.push_back({ user_folder, user_folders_alias[i] });
+				else
+					m_Drives.push_back({ user_folder, "" });
+
 			}
 		}
         
