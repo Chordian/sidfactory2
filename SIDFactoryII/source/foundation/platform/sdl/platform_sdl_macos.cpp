@@ -182,10 +182,14 @@ namespace Foundation
 
 		std::string PlatformSDLMacOS::OS_ParsePath(const std::string& inPath) const
 		{
+				std::string result = inPath;
 				wordexp_t p;
 				wordexp(inPath.c_str(), &p, 0);
-				char **w = p.we_wordv;
-				auto result = std::string(w[0]);
+				if (p.we_wordc == 1)
+				{
+						char **w = p.we_wordv;
+						result = std::string(w[0]);
+				}
 				wordfree(&p);
 
 				return result;
