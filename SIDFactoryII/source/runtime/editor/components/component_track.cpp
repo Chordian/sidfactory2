@@ -1852,7 +1852,7 @@ namespace Editor
 	}
 
 
-	int ComponentTrack::DoInsertFirstFreeSequence(std::function<unsigned char()> find_free_sequence)
+	int ComponentTrack::DoInsertFirstFreeSequence(const std::function<unsigned char()> inFindFreeSequence)
 	{
 		if (m_FocusModeOrderList)
 		{
@@ -1868,7 +1868,7 @@ namespace Editor
 				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1];
 			}
 
-			unsigned char first_free_sequence_index = find_free_sequence();
+			unsigned char first_free_sequence_index = inFindFreeSequence();
 
 			if (first_free_sequence_index < 0x80)
 				orderlist_entry.m_SequenceIndex = first_free_sequence_index;

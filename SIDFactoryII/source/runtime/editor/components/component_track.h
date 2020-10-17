@@ -213,7 +213,7 @@ namespace Editor
 		int DoInsert(bool inIsControlDown);
 		int DoDelete(bool inIsControlDown);
 		int DoBackspace(bool inIsControlDown);
-		int DoInsertFirstFreeSequence(std::function<unsigned char()> func);
+		int DoInsertFirstFreeSequence(const std::function<unsigned char()> inFindFreeSequence);
 		void DoSplitSequence();
 		void DoDuplicateSequence();
 		void DoTestExpandSequence();
