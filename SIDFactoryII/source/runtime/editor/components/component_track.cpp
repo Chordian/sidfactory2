@@ -1950,9 +1950,12 @@ namespace Editor
 			const auto& entry = (*m_DataSourceOrderList)[order_index];
 			auto new_entry = entry;
 			new_entry.m_SequenceIndex = first_free_sequence_index;
-			OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry);
-			}
+			if (OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry)) {
+				OnOrderListChanged();
+				UpdateMaxEventPos();
+			};
 		}
+	}
 
 
 	void ComponentTrack::DoTestExpandSequence()
