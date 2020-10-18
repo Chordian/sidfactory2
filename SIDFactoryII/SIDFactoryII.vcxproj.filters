@@ -185,9 +185,6 @@
     <ClCompile Include="source\runtime\editor\datasources\datasource_memory.cpp">
       <Filter>source\runtime\editor\datasources</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_block.cpp">
-      <Filter>source\runtime\editor\datasources</Filter>
-    </ClCompile>
     <ClCompile Include="source\runtime\editor\driver\driver_info.cpp">
       <Filter>source\runtime\editor\driver</Filter>
     </ClCompile>
@@ -653,9 +650,6 @@
       <Filter>source\runtime\editor\components</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\editor\datasources\datasource_memory.h">
-      <Filter>source\runtime\editor\datasources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_block.h">
       <Filter>source\runtime\editor\datasources</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\editor\driver\driver_info.h">
