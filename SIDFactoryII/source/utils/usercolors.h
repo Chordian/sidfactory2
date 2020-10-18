@@ -104,6 +104,9 @@ namespace Utility
 		ScreenEditInfoRectTextTimePlaybackState,
 		ScreenEditTableHeadline,
 		ScreenEditTableHeadlineHotkeyLetter,
+		ConsoleBackground,
+		ConsoleText,
+		ConvertersBackground,
 
 		DriverColorSet = 0x60,
 		DriverColorJump,

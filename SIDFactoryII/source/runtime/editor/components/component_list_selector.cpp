@@ -43,13 +43,21 @@ namespace Editor
 				switch (key_event)
 				{
 				case SDLK_DOWN:
-					DoCursorDown();
-					m_RequireRefresh = true;
-					return true;
+					if (inKeyboard.IsModifierEmpty())
+					{
+						DoCursorDown();
+						m_RequireRefresh = true;
+						return true;
+					}
+					break;
 				case SDLK_UP:
-					DoCursorUp();
-					m_RequireRefresh = true;
-					return true;
+					if (inKeyboard.IsModifierEmpty())
+					{
+						DoCursorUp();
+						m_RequireRefresh = true;
+						return true;
+					}
+					break;
 				case SDLK_PAGEDOWN:
 					DoPageDown();
 					m_RequireRefresh = true;
@@ -79,7 +87,7 @@ namespace Editor
 	{
 		if (inMouse.IsButtonPressed(Mouse::Left))
 		{
-			Foundation::Point local_cell_position = GetLocalCellPosition(inMouse.GetPosition());
+			Foundation::Point local_cell_position = m_TextField->GetCellPositionFromPixelPosition(inMouse.GetPosition()) - m_Position;
 
 			if (local_cell_position.m_X >= m_VerticalMargin && local_cell_position.m_X < m_Dimensions.m_Width - m_VerticalMargin && local_cell_position.m_Y >= 0 && local_cell_position.m_Y < m_Dimensions.m_Height)
 			{

@@ -1,20 +1,40 @@
 #include "datasource_directory.h"
 #include "foundation/platform/iplatform.h"
+#include "utils/configfile.h"
+#include "utils/config/configtypes.h"
 #include <cctype>
 
 using namespace fs;
+using namespace Utility;
+using namespace Utility::Config;
 
 namespace Editor
 {
-	DataSourceDirectory::DataSourceDirectory(Foundation::IPlatform* inPlatform)
+	DataSourceDirectory::DataSourceDirectory(Foundation::IPlatform* inPlatform, const ConfigFile& inConfigFile)
 		: DataSourceTList<DirectoryEntry>()
 		, m_Platform(inPlatform)
+		, m_ConfigFile(inConfigFile)
 		, m_HasFileSelection(false)
 		, m_SelectedFileIndex(0)
 	{
-        const unsigned int drives_count = inPlatform->Storage_GetLogicalDrivesCount();
-        for(unsigned int i = 0; i < drives_count; ++i)
-            m_Drives.push_back(inPlatform->Storage_GetLogicalDriveName(i));
+		const unsigned int drives_count = inPlatform->Storage_GetLogicalDrivesCount();
+		for (unsigned int i = 0; i < drives_count; ++i)
+			m_Drives.push_back({ inPlatform->Storage_GetLogicalDriveName(i), "" });
+
+		auto user_folders = GetConfigurationValues<ConfigValueString>(inConfigFile, "Disk.UserFolders", {});
+		auto user_folders_alias = GetConfigurationValues<ConfigValueString>(inConfigFile, "Disk.UserFolders.Aliases", {});
+
+		const size_t user_folder_count = user_folders.size();
+		const bool has_aliases = user_folders_alias.size() == user_folder_count;
+
+		for (size_t i = 0; i<user_folder_count; ++i)
+		{
+			const std::string& user_folder = inPlatform->OS_ParsePath(user_folders[i]);
+			path user_folder_path = path(user_folder);
+
+			if (is_directory(user_folder_path))
+				m_Drives.push_back({ user_folder, has_aliases ? user_folders_alias[i] : "" });
+		}
         
 		GenerateData();
 	}
@@ -118,8 +138,8 @@ namespace Editor
 		m_List.clear();
 
 		// Add drives to the list
-		for (const std::string& drive_name : m_Drives)
-			m_List.push_back({ DirectoryEntry::Drive, path(drive_name) });
+		for (const Drive& drive_name : m_Drives)
+			m_List.push_back({ DirectoryEntry::Drive, path(drive_name.m_Path), drive_name.m_Alias });
 
 		// Add back
 		fs::path current_path = fs::current_path();

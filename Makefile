@@ -1,36 +1,28 @@
 PLATFORM=LINUX
 
 APP_NAME=SIDFactoryII
-BUILD_NR=$(shell date +"%Y%m%d").$(shell git rev-parse --short HEAD)
+BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 ARTIFACTS_FOLDER=artifacts
 DIST_FOLDER=$(ARTIFACTS_FOLDER)/$(APP_NAME)_$(PLATFORM)_$(BUILD_NR)
 
 # SF2 sources
 PROJECT_ROOT=./SIDFactoryII
 SOURCE=$(PROJECT_ROOT)/source
-SRC=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
-
-SRC_SF2C=\
-  ./SF2Converter/main.cpp \
-	$(shell find ./SF2Converter/converter -name "*.cpp") \
-	$(shell find $(SOURCE) -name "*.cpp")
-SRC_SF2C_C=./SF2Converter/libraries/miniz_v115_r4/miniz.c
+SRC_TMP=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
+SRC=$(patsubst %miniz_tester.cpp,,$(SRC_TMP))
 
 # Artifacts
 EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 
-EXE_SF2C=$(ARTIFACTS_FOLDER)/SF2Converter
-
 # The compiler (gcc, g++, c++,clang++)
 ifeq ($(PLATFORM),MACOS)
-	CC=MACOSX_DEPLOYMENT_TARGET=10.9 gcc
+	CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
 else
 	CC=g++
 endif
 
 CC_FLAGS= $(shell sdl2-config --cflags) \
   -I $(SOURCE) \
-	-I ./SF2Converter \
 	-D _SF2_$(PLATFORM) \
 	-g \
 	-O2 \
@@ -54,11 +46,10 @@ endif
 
 # Rule to compile .o from .c
 %.o: %.c
-	$(CC) -c $< -o $@
+	gcc -c $< -o $@
 
 # Determine all .o files to be built
-OBJ = $(SRC:.cpp=.o)
-OBJ_SF2C = $(SRC_SF2C:.cpp=.o) $(SRC_SF2C_C:.c=.o)
+OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
 
 # Compile SIDFactoryII
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER) \
@@ -83,21 +74,19 @@ $(ARTIFACTS_FOLDER)/config: $(PROJECT_ROOT)/config
 $(ARTIFACTS_FOLDER)/overlay: $(PROJECT_ROOT)/overlay
 	cp -r $(PROJECT_ROOT)/overlay $(ARTIFACTS_FOLDER)
 
-# Compile SF2Converter
-$(EXE_SF2C) : $(OBJ_SF2C) $(ARTIFACTS_FOLDER)
-	$(CC) $(OBJ_SF2C) $(LINKER_FLAGS) -o $(EXE_SF2C)
-
 # Create a distribution folder with executables and resources
-dist: $(EXE) $(EXE_SF2C) $(DIST_FOLDER)
+dist: $(EXE) $(DIST_FOLDER)
 	strip $(EXE)
 	strip $(EXE_SF2C)
 	mv $(EXE) $(DIST_FOLDER)
-	mv $(EXE_SF2C) $(DIST_FOLDER)
+	mkdir -p ${DIST_FOLDER}/config
 	cp -r $(PROJECT_ROOT)/drivers $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/overlay $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/color_schemes $(DIST_FOLDER)
-	cp -r $(PROJECT_ROOT)/config $(DIST_FOLDER)
+	cp -r $(PROJECT_ROOT)/config.ini $(DIST_FOLDER)/config/
 	cp -r $(PROJECT_ROOT)/music $(DIST_FOLDER)
+	cp -r dist/documentation $(DIST_FOLDER)
+	cp $(PROJECT_ROOT)/COPYING $(DIST_FOLDER)
 
 $(ARTIFACTS_FOLDER):
 	mkdir -p $@

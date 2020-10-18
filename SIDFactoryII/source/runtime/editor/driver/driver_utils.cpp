@@ -190,8 +190,6 @@ namespace Editor
 
 		unsigned char GetHighestTableRowUsedIndex(const Editor::DriverInfo::TableDefinition& inTableDefinition, const Emulation::IMemoryRandomReadAccess& inMemoryReader)
 		{
-			assert(inTableDefinition.m_DataLayout == Editor::DriverInfo::TableDefinition::DataLayout::ColumnMajor);
-
 			unsigned short highest_used_index = 0;
 
 			const unsigned short table_address = inTableDefinition.m_Address;
@@ -205,6 +203,24 @@ namespace Editor
 					for (unsigned short j = 0; j < inTableDefinition.m_ColumnCount; ++j)
 					{
 						const unsigned short address = table_address + i + table_row_count * j;
+
+						if (inMemoryReader[address] != 0)
+						{
+							highest_used_index = i;
+							break;
+						}
+					}
+				}
+			}
+			else if(inTableDefinition.m_DataLayout == Editor::DriverInfo::TableDefinition::DataLayout::RowMajor)
+			{
+				// Column major scan
+				const unsigned short table_column_count = inTableDefinition.m_ColumnCount;
+				for (unsigned short i = 0; i < inTableDefinition.m_RowCount; ++i)
+				{
+					for (unsigned short j = 0; j < table_column_count; ++j)
+					{
+						const unsigned short address = table_address + j + table_column_count * i;
 
 						if (inMemoryReader[address] != 0)
 						{

@@ -5,6 +5,11 @@
 #include <vector>
 #include <string>
 
+namespace Utility
+{
+	class ConfigFile;
+}
+
 namespace Foundation
 {
     class IPlatform;
@@ -24,6 +29,7 @@ namespace Editor
 
 		Type m_Type;
         fs::path m_Path;
+		std::string m_DisplayName;
 	};
 
 	class DataSourceDirectory : public DataSourceTList<DirectoryEntry>
@@ -39,7 +45,7 @@ namespace Editor
 			SelectFolderFailed
 		};
 
-		DataSourceDirectory(Foundation::IPlatform* inPlatform);
+		DataSourceDirectory(Foundation::IPlatform* inPlatform, const Utility::ConfigFile& inConfigFile);
 
 		SelectResult Select(int inIndex);
 		bool Back();
@@ -52,8 +58,16 @@ namespace Editor
 		void GenerateData();
 	private:
 
+		struct Drive
+		{
+			std::string m_Path;
+			std::string m_Alias;
+		};
+
         Foundation::IPlatform* m_Platform;
-		std::vector<std::string> m_Drives;
+		const Utility::ConfigFile& m_ConfigFile;
+
+		std::vector<Drive> m_Drives;
 
 		bool m_HasFileSelection;
 		int m_SelectedFileIndex;

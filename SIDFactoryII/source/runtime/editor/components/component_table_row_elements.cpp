@@ -147,20 +147,32 @@ namespace Editor
 					switch (key_event)
 					{
 					case SDLK_LEFT:
-						m_CursorX = m_CursorX > 0 ? (m_CursorX - 1) : 0;
-						consume = true;
+						if (inKeyboard.IsModifierEmpty())
+						{
+							m_CursorX = m_CursorX > 0 ? (m_CursorX - 1) : 0;
+							consume = true;
+						}
 						break;
 					case SDLK_RIGHT:
-						m_CursorX = m_CursorX < m_MaxCursorX ? (m_CursorX + 1) : m_MaxCursorX;
-						consume = true;
+						if (inKeyboard.IsModifierEmpty())
+						{
+							m_CursorX = m_CursorX < m_MaxCursorX ? (m_CursorX + 1) : m_MaxCursorX;
+							consume = true;
+						}
 						break;
 					case SDLK_UP:
-						DoCursorUp();
-						consume = true;
+						if (inKeyboard.IsModifierEmpty())
+						{
+							DoCursorUp();
+							consume = true;
+						}
 						break;
 					case SDLK_DOWN:
-						DoCursorDown();
-						consume = true;
+						if (inKeyboard.IsModifierEmpty())
+						{
+							DoCursorDown();
+							consume = true;
+						}
 						break;
 					case SDLK_INSERT:
 						if (m_InsertDeleteEnabled)

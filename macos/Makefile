@@ -1,16 +1,12 @@
 # Makefile for macOS version
 
 # Sources
-BUILD_NR=$(shell date +"%Y%m%d").$(shell git rev-parse --short HEAD)
+BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 PROJECT_ROOT=../SIDFactoryII
 SOURCE=$(PROJECT_ROOT)/source
-SRC=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
+SRC_TMP=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
+SRC=$(patsubst %miniz_tester.cpp,,$(SRC_TMP))
 DOCS=../dist/documentation
-SRC_SF2C=\
-  ../SF2Converter/main.cpp \
-	$(shell find ../SF2Converter/converter -name "*.cpp") \
-	$(shell find $(SOURCE) -name "*.cpp")
-SRC_SF2C_C=../SF2Converter/libraries/miniz_v115_r4/miniz.c
 
 # Artifacts
 APP_NAME=SIDFactoryII
@@ -25,21 +21,17 @@ DMG_SIZE=16384
 ICONSET=$(ARTIFACTS_FOLDER)/$(APP_NAME).iconset
 ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
-EXE_SF2C=$(ARTIFACTS_FOLDER)/SF2Converter
-
 # The compiler (gcc, g++, c++,clang++)
-CC=MACOSX_DEPLOYMENT_TARGET=10.9 gcc
+CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
 
 CC_FLAGS= \
   -I $(SOURCE) \
-	-I ../SF2Converter \
 	-I ./App/Contents/Frameworks/SDL2.framework/Headers \
 	-D_THREAD_SAFE \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \
-	-flto \
-	-Wno-bitwise-op-parentheses
+	-flto 
 
 LINKER_FLAGS=\
 	-framework SDL2 \
@@ -53,7 +45,6 @@ LINKER_FLAGS=\
 .PHONY: tmp
 .PHONY: dmg
 .PHONY: app
-.PHONY: sf2c
 
 # Rule to compile .o from .cpp
 %.o: %.cpp
@@ -61,25 +52,17 @@ LINKER_FLAGS=\
 
 # Rule to compile .o from .c
 %.o: %.c
-	$(CC) -c $< -o $@
+	gcc -c $< -o $@
 
 # Determine all .o files to be built
-OBJ = $(SRC:.cpp=.o)
-OBJ_SF2C = $(SRC_SF2C:.cpp=.o) $(SRC_SF2C_C:.c=.o)
+OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
 
 # Compile executable
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
 	$(CC) $(LINKER_FLAGS) -o $(EXE) $(OBJ)
 	strip $(EXE)
 
-# Compile SF2Converter
-$(EXE_SF2C) : $(OBJ_SF2C) $(ARTIFACTS_FOLDER)
-	$(CC) $(LINKER_FLAGS) -o $(EXE_SF2C) $(OBJ_SF2C)
-	strip $(EXE_SF2C)
-
 app: $(APP)
-
-sf2c: $(EXE_SF2C)
 
 # ----------------------------------------------------
 
@@ -100,11 +83,12 @@ $(APP): $(EXE) $(ICONS)
 	cp -r App/ ${APP}
 	mkdir -p ${APP}/Contents/MacOS
 	mkdir -p ${APP}/Contents/Resources
+	mkdir -p ${APP}/Contents/Resources/config
 	mv $(EXE) $(APP)/Contents/MacOS
 	cp -r $(PROJECT_ROOT)/drivers $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/overlay $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/color_schemes $(APP)/Contents/Resources
-	cp -r $(PROJECT_ROOT)/config $(APP)/Contents/Resources
+	cp -r $(PROJECT_ROOT)/config.ini $(APP)/Contents/Resources/config/
 	mv $(ICONS) $(APP)/Contents/Resources
 	gsed -i 's/{VERSION}/$(BUILD_NR)/g' $(APP)/Contents/Info.plist
 
@@ -122,11 +106,11 @@ $(DMG_CONTENTS): $(APP) $(EXE_SF2C) $(ARTIFACTS_FOLDER)/keys.html
 	mkdir -p $(DMG_CONTENTS)/$(APP_NAME)
 	mv $(APP) $(DMG_CONTENTS)
 	cp -r $(DOCS)/ $(DMG_CONTENTS)/$(APP_NAME)/documentation
+	cp $(PROJECT_ROOT)/COPYING $(DMG_CONTENTS)
 	mv $(ARTIFACTS_FOLDER)/keys.html $(DMG_CONTENTS)/$(APP_NAME)/documentation
 	cp -r Install.txt $(DMG_CONTENTS)
 	cp -r $(PROJECT_ROOT)/music/ ${DMG_CONTENTS}/$(APP_NAME)/music
 	cp -r $(PROJECT_ROOT)/drivers ${DMG_CONTENTS}/$(APP_NAME)/drivers
-	mv $(ARTIFACTS_FOLDER)/SF2Converter $(DMG_CONTENTS)/$(APP_NAME)
 	ln -s /Applications $(DMG_CONTENTS)/Applications
 
 # Make a temporary DMG. This needs to be layed out nicely by hand before building the final DMG.

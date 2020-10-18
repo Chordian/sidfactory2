@@ -11,6 +11,7 @@
 #include "runtime/editor/components/component_file_selector.h"
 #include "runtime/editor/editor_types.h"
 #include "utils/usercolors.h"
+#include "utils/configfile.h"
 
 #include <vector>
 #include <algorithm>
@@ -33,10 +34,12 @@ namespace Editor
 		CursorControl* inCursorControl,
 		DisplayState& inDisplayState,
 		Utility::KeyHookStore& inKeyHookStore,
+		Utility::ConfigFile& inConfigFile,
 		std::function<void(const std::string&, FileType)> inSelectionCallback,
 		std::function<void(void)> inCancelCallback)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
 		, m_Platform(inPlatform)
+		, m_ConfigFile(inConfigFile)
 		, m_Mode(Mode::Load)
 		, m_SelectionCallback(inSelectionCallback)
 		, m_CancelCallback(inCancelCallback)
@@ -169,8 +172,6 @@ namespace Editor
 	void ScreenDisk::Refresh()
 	{
 		ScreenBase::Refresh();
-
-		m_ComponentsManager->Refresh(m_DisplayState);
 	}
 
 	//------------------------------------------------------------------------------------------------------------
@@ -201,7 +202,7 @@ namespace Editor
 
 		Foundation::Extent dimensions = m_MainTextField->GetDimensions();
 
-		m_DataSourceDirectory = std::make_shared<DataSourceDirectory>(m_Platform);
+		m_DataSourceDirectory = std::make_shared<DataSourceDirectory>(m_Platform, m_ConfigFile);
 
 		auto file_selector = std::make_shared<ComponentFileSelector>(
 			0, 0,
