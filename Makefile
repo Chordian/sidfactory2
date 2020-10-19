@@ -1,3 +1,27 @@
+# Makefile for SIDFactoryII linux distribution
+#
+# Also used to build a 'linux-style' macOS binary for debugging only.
+#
+# There is a 'proper' macOS Makefile in /macos, which compiles and
+# packages a self-contained SIDFactoryII.app, and distribution disk image.
+#
+# Prerequisites:
+# - gnu make
+# - g++ (Xcode with command line utilities on macOS)
+# - git
+# - sdl2
+#
+# Make an executable:
+#   make
+#
+# Make a complete distribution:
+#   make dist
+#
+# Clean build artifacts:
+#   make clean
+#
+# Build artifacts are in /artifacts
+
 PLATFORM=LINUX
 
 APP_NAME=SIDFactoryII
@@ -14,25 +38,17 @@ SRC=$(patsubst %miniz_tester.cpp,,$(SRC_TMP))
 # Artifacts
 EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 
-# The compiler (gcc, g++, c++,clang++)
+# Compiler
+CC=g++
+CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
+LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
 ifeq ($(PLATFORM),MACOS)
-	CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
-else
-	CC=g++
+	LINKER_FLAGS := $(LINKER_FLAGS) -framework ApplicationServices
 endif
 
-CC_FLAGS= $(shell sdl2-config --cflags) \
-  -I $(SOURCE) \
-	-D _SF2_$(PLATFORM) \
-	-O2 \
-	-std=gnu++14 \
-	-flto
-
-ifeq ($(PLATFORM),MACOS)
-	LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto \
-	-framework ApplicationServices 
-else
-	LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
+ifneq ($(TARGET),DEBUG)
+  # optimizations, don't play well with debugging
+	CC_FLAGS := $(CC_FLAGS) -O2 -flto
 endif
 
 .PHONY: clean
@@ -51,12 +67,30 @@ endif
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
 
 # Compile SIDFactoryII
-$(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
+$(EXE): $(OBJ) $(ARTIFACTS_FOLDER) \
+$(ARTIFACTS_FOLDER)/drivers \
+$(ARTIFACTS_FOLDER)/overlay \
+$(ARTIFACTS_FOLDER)/color_schemes \
+$(ARTIFACTS_FOLDER)/config/config.ini
 	$(CC) $(OBJ) $(LINKER_FLAGS) -o $(EXE)
-	strip $(EXE)
-	
+
+$(ARTIFACTS_FOLDER)/drivers: $(PROJECT_ROOT)/drivers
+	cp -r $(PROJECT_ROOT)/drivers $(ARTIFACTS_FOLDER)
+
+$(ARTIFACTS_FOLDER)/overlay: $(PROJECT_ROOT)/overlay
+	cp -r $(PROJECT_ROOT)/overlay $(ARTIFACTS_FOLDER)
+
+$(ARTIFACTS_FOLDER)/color_schemes: $(PROJECT_ROOT)/color_schemes
+	cp -r $(PROJECT_ROOT)/color_schemes $(ARTIFACTS_FOLDER)
+
+$(ARTIFACTS_FOLDER)/config/config.ini: $(ARTIFACTS_FOLDER)/config
+	cp $(PROJECT_ROOT)/config.ini $@
+
+$(ARTIFACTS_FOLDER)/config:
+	mkdir -p $@
 # Create a distribution folder with executables and resources
 dist: $(EXE) $(DIST_FOLDER)
+	strip $(EXE)
 	mv $(EXE) $(DIST_FOLDER)
 	mkdir -p ${DIST_FOLDER}/config
 	cp -r $(PROJECT_ROOT)/drivers $(DIST_FOLDER)
@@ -78,7 +112,6 @@ clean:
 	rm -rf $(ARTIFACTS_FOLDER) || true
 
 # Compile with the Ubuntu image on Docker
-
 BUILD_IMAGE_UBUNTU=sidfactory2/build-ubuntu
 TMP_CONTAINER=sf2_build_tmp
 
