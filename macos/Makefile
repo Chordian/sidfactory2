@@ -27,8 +27,7 @@ ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
 EXE_SF2C=$(ARTIFACTS_FOLDER)/SF2Converter
 
-# The compiler (gcc, g++, c++,clang++)
-CC=MACOSX_DEPLOYMENT_TARGET=10.9 gcc
+CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
 
 CC_FLAGS= \
   -I $(SOURCE) \
@@ -38,8 +37,7 @@ CC_FLAGS= \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \
-	-flto \
-	-Wno-bitwise-op-parentheses
+	-flto
 
 LINKER_FLAGS=\
 	-framework SDL2 \
@@ -100,11 +98,12 @@ $(APP): $(EXE) $(ICONS)
 	cp -r App/ ${APP}
 	mkdir -p ${APP}/Contents/MacOS
 	mkdir -p ${APP}/Contents/Resources
+	mkdir -p ${APP}/Contents/Resources/config
 	mv $(EXE) $(APP)/Contents/MacOS
 	cp -r $(PROJECT_ROOT)/drivers $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/overlay $(APP)/Contents/Resources
 	cp -r $(PROJECT_ROOT)/color_schemes $(APP)/Contents/Resources
-	cp -r $(PROJECT_ROOT)/config $(APP)/Contents/Resources
+	cp -r $(PROJECT_ROOT)/config.ini $(APP)/Contents/Resources/config
 	mv $(ICONS) $(APP)/Contents/Resources
 	gsed -i 's/{VERSION}/$(BUILD_NR)/g' $(APP)/Contents/Info.plist
 
