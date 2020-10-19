@@ -88,7 +88,8 @@ ORDERLISTS      Arrows                      Arrows                      Move lef
                 Ctrl + f                    Ctrl + f                    Insert first unused sequence (including previously edited)
                 Ctrl + Shift + f            Ctrl + Shift + f            Insert first unused empty sequence
 
-                Ctrl + d                    Ctrl + d                    Duplicate sequence
+                Ctrl + d                    Ctrl + d                    Duplicate and replace sequence
+                Ctrl + Shift + d            Ctrl + Shift + d            Duplicate and append sequence
 --------------------------------------------------------------------------------------------------------------------------------------
 SEQUENCES       Arrows                      Arrows                      Move around in the sequence
                 Page Up/Down                Fn + Up/Down                Move several sequence rows up/down

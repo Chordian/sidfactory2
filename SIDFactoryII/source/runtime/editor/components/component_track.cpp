@@ -99,8 +99,8 @@ namespace Editor
 		std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
 		std::function<void(bool, int, int)> inStatusReportFunction,
 		std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
-        std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
-        int inX,
+		std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
+		int inX,
 		int inY,
 		int inHeight
 	)
@@ -594,7 +594,7 @@ namespace Editor
 	{
 		int event_pos = 0;
 
-        for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
+		for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
 		{
 			const unsigned char transposition = (*m_DataSourceOrderList)[i].m_Transposition;
 			const unsigned char sequence_index = (*m_DataSourceOrderList)[i].m_SequenceIndex;
@@ -1919,19 +1919,19 @@ namespace Editor
 		}
 	}
 
-	void ComponentTrack::DoDuplicateSequence()
+	void ComponentTrack::DoDuplicateSequence(const bool inReplaceOriginal)
 	{
 		if (m_FocusModeOrderList)
 		{
 			const unsigned int order_index = m_EventPosDetails.m_OrderListIndex;
-			const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[order_index];
+			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[order_index];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
 				return;
 
 			// determine the empty, unused sequence to use for the duplicate
-			const unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
-			if (first_free_sequence_index >= 0x80)
+			const unsigned char duplicate_sequence_index = m_GetFirstEmptySequenceIndexFunction();
+			if (duplicate_sequence_index >= 0x80)
 				return;
 
 			AddUndoStep();
@@ -1939,21 +1939,31 @@ namespace Editor
 			// copy current sequence to the new sequence
 			const unsigned char current_sequence_index = orderlist_entry.m_SequenceIndex;
 			const auto& source = m_DataSourceSequenceList[current_sequence_index];
-			const auto& destination = m_DataSourceSequenceList[first_free_sequence_index];
+			const auto& destination = m_DataSourceSequenceList[duplicate_sequence_index];
 			const int new_sequence_length = source->GetLength();
 
 			destination->SetLength(new_sequence_length);
 			DataSourceUtils::CopySequence(source, 0, new_sequence_length, destination);
-			OnSequenceChanged(first_free_sequence_index);
+			OnSequenceChanged(duplicate_sequence_index);
 
-			// insert the duplicate in the order list right after the original
-			const auto& entry = (*m_DataSourceOrderList)[order_index];
-			auto new_entry = entry;
-			new_entry.m_SequenceIndex = first_free_sequence_index;
-			if (OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry)) {
+			if (inReplaceOriginal)
+			{
+				// replace the original with the duplicate
+				orderlist_entry.m_SequenceIndex = duplicate_sequence_index;
+				(*m_DataSourceOrderList)[order_index] = orderlist_entry;
 				OnOrderListChanged();
-				UpdateMaxEventPos();
-			};
+			}
+			else
+			{
+				// insert the duplicate in the order list right after the original
+				auto new_entry = orderlist_entry;
+				new_entry.m_SequenceIndex = duplicate_sequence_index;
+				if (OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry))
+				{
+					OnOrderListChanged();
+					UpdateMaxEventPos();
+				};
+			}
 		}
 	}
 
@@ -2571,11 +2581,24 @@ namespace Editor
 
 			return false;
 		} });
-			m_KeyHooks.push_back({ "Key.Track.DuplicateSequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		m_KeyHooks.push_back({ "Key.Track.DuplicateAndReplaceSequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
 			if (m_FocusModeOrderList && !m_TakingOrderListInput)
 			{
-				DoDuplicateSequence();
+				DoDuplicateSequence(true);
+				UpdateMaxEventPos();
+				SetEventPosition(m_EventPos);
+				inKeyHookContext.m_NewEventPos = m_EventPos;
+				return true;
+			}
+
+			return false;
+		} });
+		m_KeyHooks.push_back({ "Key.Track.DuplicateAndAppendSequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (m_FocusModeOrderList && !m_TakingOrderListInput)
+			{
+				DoDuplicateSequence(false);
 				UpdateMaxEventPos();
 				SetEventPosition(m_EventPos);
 				inKeyHookContext.m_NewEventPos = m_EventPos;

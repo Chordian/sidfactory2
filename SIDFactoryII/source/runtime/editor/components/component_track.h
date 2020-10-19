@@ -215,7 +215,7 @@ namespace Editor
 		int DoBackspace(bool inIsControlDown);
 		int DoInsertFirstFreeSequence(const std::function<unsigned char()> inFindFreeSequence);
 		void DoSplitSequence();
-		void DoDuplicateSequence();
+		void DoDuplicateSequence(const bool inReplaceOriginal);
 		void DoTestExpandSequence();
 		void DoResizeSequence(ComponentsManager& inComponentsManager);
 		void DoInsertLinesInSequence(ComponentsManager& inComponentsManager);
