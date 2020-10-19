@@ -25,5 +25,4 @@ SIDFactoryII/*.vcxproj.user
 *.exe
 *.o
 artifacts
-.vscode
 xcuserdata
