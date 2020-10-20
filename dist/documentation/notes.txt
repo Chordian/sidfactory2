@@ -17,8 +17,8 @@ Context         Windows keys                macOS keys                  Purpose
 GENERAL         Tab                         Tab                         Next input focus
                 Shift + Tab                 Shift + Tab                 Previous input focus
 
-                Ctrl + z                    Ctrl + z                    Undo
-                Ctrl + x/y                  Ctrl + y                    Redo
+                Ctrl + z                    Cmd + z                    Undo
+                Ctrl + x/y                  Shift + Cmd + z            Redo
 
                 F3/F4                       F3/F4                       Octave down or up
                 F6                          F6                          Open utility menu
@@ -67,7 +67,7 @@ TRACKS          Enter                       Enter                       Toggle b
                 Home/End                    Fn + Left/Right             Go to absolute beginning or end of song
 
                 Ctrl + 1/2/3                Ctrl + 1/2/3                Mute or unmute track 1-3
-                Ctrl + c/v                  Ctrl + c/v                  Copy or paste sequence
+                Ctrl + c/v                  Cmd + c/v                   Copy or paste sequence
 
                 Ctrl + l                    Ctrl + l                    Set song loop position
 
@@ -156,7 +156,7 @@ SETTINGS        F9                          F9                          Toggle 6
 SONGLIST        Up/Down                     Up/Down                     Move up or down in the songlist
                 Page Up/Down                Fn + Up/Down                Move several rows up/down in the songlist
                 Home/End                    Fn + Left/Right             Go to beginning or end of visible songlist then boundaries
-                
+
                 Enter                       Enter                       Go to the selected songlist position
                 Ctrl + Enter                Ctrl + Enter                Play from the selected songlist position
 --------------------------------------------------------------------------------------------------------------------------------------

@@ -6,21 +6,20 @@ functions behind the keys, please consult the manual.
 
 ## Global
 
-| Key                            | Function                       |
-| ------------------------------ | ------------------------------ |
-| <kbd>F10</kbd>                 | Load                           |
-| <kbd>F11</kbd>                 | Save as...                     |
-| <kbd>ctrl</kbd> s              | Save                           |
-| <kbd>ctrl</kbd> z              | Undo                           |
-| <kbd>ctrl</kbd> y              | Redo                           |
-| <kbd>y / n </kbd>              | Yes / No in popup dialogs      |
-| <kbd>F9</kbd>                  | 6581 / 8580                    |
-| &#8679; <kbd>F9</kbd>          | PAL / NTSC                     |
-| <kbd>ctrl</kbd> u              | Upper / lower case hex numbers |
-| <kbd>ctrl</kbd> <kbd>F7</kbd>  | Cycle colorscheme              |
-| <kbd>F6</kbd>                  | File utilities                 |
-| <kbd>ctrl</kbd> <kbd>F10</kbd> | Load tune in current driver    |
-| <kbd>ctrl</kbd> d              | Debug view                     |
+| Key                                    | Function                       |
+| -------------------------------------- | ------------------------------ |
+| <kbd>F10</kbd>                         | Load                           |
+| <kbd>F11</kbd>                         | Save as...                     |
+| <kbd>ctrl</kbd> s                      | Save                           |
+| <kbd>&#8984;</kbd> z                   | Undo                           |
+| <kbd>&#8679;</kbd><kbd>&#8984;</kbd> z | Redo                           |
+| <kbd>y / n </kbd>                      | Yes / No in popup dialogs      |
+| <kbd>F9</kbd>                          | 6581 / 8580                    |
+| &#8679; <kbd>F9</kbd>                  | PAL / NTSC                     |
+| <kbd>ctrl</kbd> u                      | Upper / lower case hex numbers |
+| <kbd>ctrl</kbd> <kbd>F7</kbd>          | Cycle colorscheme              |
+| <kbd>F6</kbd>                          | File utilities                 |
+| <kbd>ctrl</kbd> <kbd>F10</kbd>         | Load tune in current driver    |
 
 ## File menu
 
@@ -59,7 +58,7 @@ functions behind the keys, please consult the manual.
 | <kbd>F5</kbd>                                 | New sequence                               |
 | &#8679; <kbd>F5</kbd>                         | Add line to sequence                       |
 | <kbd>ctrl</kbd> f                             | Insert next unused sequence                |
-| <kbd>ctrl</kbd> c / v                         | Copy/paste sequence                        |
+| <kbd>&#8984;</kbd> c / v                      | Copy/paste sequence                        |
 | `qwer`.. `zxcv`..                             | Enter note                                 |
 | &#8679;`qwer`.. `zxcv`..                      | Preview note                               |
 | &#8682;                                       | Lock/unlock "hear what you enter"          |

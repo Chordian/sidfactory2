@@ -16,6 +16,9 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+- `macOS` Changed [#77](https://github.com/Chordian/sidfactory2/issues/77)
+  Copy/Paste/Undo/Redo are now mapped to the standard macOS keys
+  Cmd-c/Cmd-v/Cmd-z/Shift-Cmd-z (Thanks to Bastiaan Winde for requesting)
 - `linux` Now includes SF2Converter in the build
 - `macOS` Fixed [#71](https://github.com/Chordian/sidfactory2/issues/71) switch instrument/command while in a table (Thanks to Adam Davidovics
   for reporting)
