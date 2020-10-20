@@ -26,3 +26,4 @@ SIDFactoryII/*.vcxproj.user
 *.o
 artifacts
 xcuserdata
+.ccls-cache

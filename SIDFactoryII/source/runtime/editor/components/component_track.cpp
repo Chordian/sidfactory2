@@ -87,20 +87,21 @@ namespace Editor
 	//----------------------------------------------------------------------------------------------------------------------------------------
 
 	ComponentTrack::ComponentTrack(
-		int inID, 
-		int inGroupID, 
+		int inID,
+		int inGroupID,
 		Undo* inUndo,
-		std::shared_ptr<DataSourceOrderList> inDataSourceOrderList, 
-		const std::vector<std::shared_ptr<DataSourceSequence>>& inDataSourceSequenceList, 
-		Foundation::TextField* inTextField, 
+		std::shared_ptr<DataSourceOrderList> inDataSourceOrderList,
+		const std::vector<std::shared_ptr<DataSourceSequence>>& inDataSourceSequenceList,
+		Foundation::TextField* inTextField,
 		const EditState& inEditState,
 		const Utility::KeyHookStore& inKeyHookStore,
 		const AuxilaryDataCollection& inAuxilaryDataCollection,
-		std::shared_ptr<TrackCopyPasteData> inCopyPasteData, 
-		std::function<void(bool, int, int)> inStatusReportFunction, 
+		std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
+		std::function<void(bool, int, int)> inStatusReportFunction,
 		std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
+		std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
 		int inX,
-		int inY, 
+		int inY,
 		int inHeight
 	)
 		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, 15, inHeight)
@@ -108,6 +109,7 @@ namespace Editor
 		, m_AuxilaryDataPlayMarkers(inAuxilaryDataCollection)
 		, m_StatusReportFunction(inStatusReportFunction)
 		, m_GetFirstFreeSequenceIndexFunction(inGetFirstFreeSequenceIndexFunction)
+		, m_GetFirstEmptySequenceIndexFunction(inGetFirstEmptySequenceIndexFunction)
 		, m_DataSourceOrderList(inDataSourceOrderList)
 		, m_DataSourceSequenceList(inDataSourceSequenceList)
 		, m_CopyPasteData(inCopyPasteData)
@@ -130,10 +132,10 @@ namespace Editor
 		UpdateMaxEventPos();
 
 		m_FocusRow = ComponentTrackUtils::CalculateFocusRow(m_Dimensions.m_Height >> 1, m_Dimensions.m_Height);
-	
+
 		ConfigureKeyHooks(inKeyHookStore);
 	}
-	
+
 	ComponentTrack::~ComponentTrack()
 	{
 		m_OrderListChangedEvent.Clear();
@@ -253,7 +255,7 @@ namespace Editor
 		{
 			m_OrderListChangedEvent.Execute();
 		}
-		
+
 		return consume;
 	}
 
@@ -262,7 +264,7 @@ namespace Editor
 	{
 		return false;
 	}
-			
+
 
 	void ComponentTrack::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
@@ -344,7 +346,7 @@ namespace Editor
 				}
 
 				// Draw sequence lines
-				SequenceColors sequence_colors( 
+				SequenceColors sequence_colors(
 				{
 					ToColor(UserColor::SequenceError),
 					ToColor(UserColor::SequenceInstrumentEmpty),
@@ -502,7 +504,7 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::SetCursorPosition(int inCursorPosition) 
+	void ComponentTrack::SetCursorPosition(int inCursorPosition)
 	{
 		if (m_TakingOrderListInput)
 			m_CursorPos = inCursorPosition < 0 ? 0 : (inCursorPosition > 3 ? 3 : inCursorPosition);
@@ -533,11 +535,11 @@ namespace Editor
 		{
 			m_FirstValidOrderListIndex = 0;
 			m_FirstValidSequenceIndex = 0;
-			
+
 			found_top_event_pos = true;
 			m_HasFirstValid = true;
 		}
-		
+
 		if (m_TopEventPos > m_MaxEventPos)
 		{
 			m_HasFirstValid = false;
@@ -545,7 +547,7 @@ namespace Editor
 		else
 		{
 			int event_pos = 0;
-			
+
 			for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
 			{
 				unsigned char sequence_index = (*m_DataSourceOrderList)[i].m_SequenceIndex;
@@ -592,7 +594,7 @@ namespace Editor
 	{
 		int event_pos = 0;
 
-        for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
+		for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
 		{
 			const unsigned char transposition = (*m_DataSourceOrderList)[i].m_Transposition;
 			const unsigned char sequence_index = (*m_DataSourceOrderList)[i].m_SequenceIndex;
@@ -704,7 +706,7 @@ namespace Editor
 
 	//--------------------------------------------------------------------------------------------------
 
-	bool ComponentTrack::ConsumeHasInputCausedSequenceDataChange() 
+	bool ComponentTrack::ConsumeHasInputCausedSequenceDataChange()
 	{
 		const bool return_value = m_SequenceDataHasChanged;
 		m_SequenceDataHasChanged = false;
@@ -743,7 +745,7 @@ namespace Editor
 								event_position.m_CurrentDurationValue,
 								event_position.m_RemaningTicks,
 								event_position.m_NextInstrumentAddress,
-								!event_position.m_NextIsEndOfSequence 
+								!event_position.m_NextIsEndOfSequence
 							} );
 
 						return true;
@@ -847,7 +849,7 @@ namespace Editor
 		orderlist_entry.m_SequenceIndex = static_cast<unsigned char>(m_OrderListInputValue & 0xff);
 
 		m_TakingOrderListInput = false;
-	
+
 		OnOrderListChanged();
 		UpdateMaxEventPos();
 	}
@@ -1157,7 +1159,7 @@ namespace Editor
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 			const int length = static_cast<int>(sequence_data_source->GetLength());
-			
+
 			// Validate
 			for (int i = 0; i < length; ++i)
 			{
@@ -1217,7 +1219,7 @@ namespace Editor
 
 				if (event_pos_index < 0 || event_pos_index >= static_cast<int>(sequence_data_source->GetLength()))
 					return;
-			
+
 				note = (*sequence_data_source)[event_pos_index].m_Note;
 			}
 			const bool set_gate = (note == 0x00);
@@ -1234,7 +1236,7 @@ namespace Editor
 				{
 					if (event.m_Note != 0x00)
 						break;
-				
+
 					event.m_Note = 0x7e;
 					changed = true;
 				}
@@ -1337,7 +1339,7 @@ namespace Editor
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-			
+
 			if (!sequence_data_source->IsInErrorState())
 				AddUndoStep();
 
@@ -1504,7 +1506,7 @@ namespace Editor
 				sequence_data_source->SetLength(sequence_data_source_length + inLineCount);
 
 				int dest_index = sequence_data_source_length + inLineCount - 1;
-				
+
 				assert(sequence_data_source_length > 0);
 				for (unsigned int i = sequence_data_source_length - 1; i > m_EventPosDetails.m_SequenceIndex; --i, --dest_index)
 				{
@@ -1850,7 +1852,7 @@ namespace Editor
 	}
 
 
-	int ComponentTrack::DoInsertFirstFreeSequence()
+	int ComponentTrack::DoInsertFirstFreeSequence(const std::function<unsigned char()> inFindFreeSequence)
 	{
 		if (m_FocusModeOrderList)
 		{
@@ -1866,7 +1868,7 @@ namespace Editor
 				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1];
 			}
 
-			unsigned char first_free_sequence_index = m_GetFirstFreeSequenceIndexFunction();
+			unsigned char first_free_sequence_index = inFindFreeSequence();
 
 			if (first_free_sequence_index < 0x80)
 				orderlist_entry.m_SequenceIndex = first_free_sequence_index;
@@ -1881,7 +1883,6 @@ namespace Editor
 		return m_EventPos;
 	}
 
-
 	void ComponentTrack::DoSplitSequence()
 	{
 		if (!m_FocusModeOrderList)
@@ -1895,7 +1896,7 @@ namespace Editor
 			if (index_in_current_sequence == 0)
 				return;
 
-			unsigned char first_free_sequence_index = m_GetFirstFreeSequenceIndexFunction();
+			unsigned char first_free_sequence_index = m_GetFirstEmptySequenceIndexFunction();
 			if (first_free_sequence_index >= 0x80)
 				return;
 
@@ -1915,6 +1916,54 @@ namespace Editor
 			OnSequenceChanged(first_free_sequence_index);
 
 			m_SequenceSplitEvent.Execute(current_sequence_index, first_free_sequence_index);
+		}
+	}
+
+	void ComponentTrack::DoDuplicateSequence(const bool inReplaceOriginal)
+	{
+		if (m_FocusModeOrderList)
+		{
+			const unsigned int order_index = m_EventPosDetails.m_OrderListIndex;
+			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[order_index];
+
+			if (orderlist_entry.m_Transposition >= 0xfe)
+				return;
+
+			// determine the empty, unused sequence to use for the duplicate
+			const unsigned char duplicate_sequence_index = m_GetFirstEmptySequenceIndexFunction();
+			if (duplicate_sequence_index >= 0x80)
+				return;
+
+			AddUndoStep();
+
+			// copy current sequence to the new sequence
+			const unsigned char current_sequence_index = orderlist_entry.m_SequenceIndex;
+			const auto& source = m_DataSourceSequenceList[current_sequence_index];
+			const auto& destination = m_DataSourceSequenceList[duplicate_sequence_index];
+			const int new_sequence_length = source->GetLength();
+
+			destination->SetLength(new_sequence_length);
+			DataSourceUtils::CopySequence(source, 0, new_sequence_length, destination);
+			OnSequenceChanged(duplicate_sequence_index);
+
+			if (inReplaceOriginal)
+			{
+				// replace the original with the duplicate
+				orderlist_entry.m_SequenceIndex = duplicate_sequence_index;
+				(*m_DataSourceOrderList)[order_index] = orderlist_entry;
+				OnOrderListChanged();
+			}
+			else
+			{
+				// insert the duplicate in the order list right after the original
+				auto new_entry = orderlist_entry;
+				new_entry.m_SequenceIndex = duplicate_sequence_index;
+				if (OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry))
+				{
+					OnOrderListChanged();
+					UpdateMaxEventPos();
+				};
+			}
 		}
 	}
 
@@ -2503,11 +2552,21 @@ namespace Editor
 		{
 			if (m_FocusModeOrderList && !m_TakingOrderListInput)
 			{
-				inKeyHookContext.m_NewEventPos = DoInsertFirstFreeSequence();
+				inKeyHookContext.m_NewEventPos = DoInsertFirstFreeSequence(m_GetFirstFreeSequenceIndexFunction);
 				return true;
 			}
 
 			return false;
+		} });
+		m_KeyHooks.push_back({ "Key.Track.InsertFirstEmptySequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+				if (m_FocusModeOrderList && !m_TakingOrderListInput)
+				{
+						inKeyHookContext.m_NewEventPos = DoInsertFirstFreeSequence(m_GetFirstEmptySequenceIndexFunction);
+						return true;
+				}
+
+				return false;
 		} });
 		m_KeyHooks.push_back({ "Key.Track.SplitSequenceAtEventPosition", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
@@ -2515,6 +2574,31 @@ namespace Editor
 			{
 				DoSplitSequence();
 				UpdateMaxEventPos();
+				SetEventPosition(m_EventPos);
+				inKeyHookContext.m_NewEventPos = m_EventPos;
+				return true;
+			}
+
+			return false;
+		} });
+		m_KeyHooks.push_back({ "Key.Track.DuplicateAndReplaceSequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (m_FocusModeOrderList && !m_TakingOrderListInput)
+			{
+				DoDuplicateSequence(true);
+				SetEventPosition(m_EventPos);
+				inKeyHookContext.m_NewEventPos = m_EventPos;
+				return true;
+			}
+
+			return false;
+		} });
+		m_KeyHooks.push_back({ "Key.Track.DuplicateAndAppendSequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (m_FocusModeOrderList && !m_TakingOrderListInput)
+			{
+				DoDuplicateSequence(false);
+				m_EventPos = DoKeyDown();
 				SetEventPosition(m_EventPos);
 				inKeyHookContext.m_NewEventPos = m_EventPos;
 				return true;

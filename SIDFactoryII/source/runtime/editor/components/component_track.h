@@ -51,7 +51,7 @@ namespace Editor
 				: m_OrderListIndex(0)
 				, m_SequenceIndex(0)
 			{
-			}
+		}
 
 			unsigned int m_OrderListIndex;
 			unsigned int m_SequenceIndex;
@@ -60,7 +60,7 @@ namespace Editor
 		struct KeyHookContext
 		{
 			ComponentsManager& m_ComponentsManager;
-			int& m_NewEventPos; 
+			int& m_NewEventPos;
 		};
 
 		struct SequenceColors
@@ -98,20 +98,21 @@ namespace Editor
 		using OrderListChangedEvent = Utility::TEvent<void(void)>;
 
 		ComponentTrack(
-			int inID, 
-			int inGroupID, 
+			int inID,
+			int inGroupID,
 			Undo* inUndo,
-			std::shared_ptr<DataSourceOrderList> inDataSourceOrderList, 
-			const std::vector<std::shared_ptr<DataSourceSequence>>& inDataSourceSequenceList, 
-			Foundation::TextField* inTextField, 
-			const EditState& inEditState, 
+			std::shared_ptr<DataSourceOrderList> inDataSourceOrderList,
+			const std::vector<std::shared_ptr<DataSourceSequence>>& inDataSourceSequenceList,
+			Foundation::TextField* inTextField,
+			const EditState& inEditState,
 			const Utility::KeyHookStore& inKeyHookStore,
 			const AuxilaryDataCollection& inAuxilaryDataCollection,
 			std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
 			std::function<void(bool, int, int)> inStatusReportFunction,
 			std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
-			int inX, 
-			int inY, 
+			std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
+			int inX,
+			int inY,
 			int inHeight
 		);
 		~ComponentTrack();
@@ -124,7 +125,7 @@ namespace Editor
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
-		
+
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
 		void PullDataFromSource() override;
@@ -172,7 +173,7 @@ namespace Editor
 
 		// Sequence
 		void DrawSequenceLine(int inX, int inY, const SequenceColors& inColors, const bool inIsHexUppercase, const std::shared_ptr<DataSourceSequence>& inSequence, unsigned int inSequenceIndex, int inTransposition, const bool inIsFocusLine, unsigned char& ioCurrentInstrument);
-		
+
 		bool IsCursorAtSequenceInstrument() const;
 		bool IsCursorAtSequenceCommand() const;
 		bool IsCursorAtSequenceNote() const;
@@ -212,8 +213,9 @@ namespace Editor
 		int DoInsert(bool inIsControlDown);
 		int DoDelete(bool inIsControlDown);
 		int DoBackspace(bool inIsControlDown);
-		int DoInsertFirstFreeSequence();
+		int DoInsertFirstFreeSequence(const std::function<unsigned char()> inFindFreeSequence);
 		void DoSplitSequence();
+		void DoDuplicateSequence(const bool inReplaceOriginal);
 		void DoTestExpandSequence();
 		void DoResizeSequence(ComponentsManager& inComponentsManager);
 		void DoInsertLinesInSequence(ComponentsManager& inComponentsManager);
@@ -251,7 +253,7 @@ namespace Editor
 
 		// Cursor and event positions
 		int m_CursorPos;
-		
+
 		int m_EventPos;
 		int m_MaxEventPos;
 		EventPosDetails m_EventPosDetails;
@@ -291,6 +293,7 @@ namespace Editor
 
 		std::function<void(bool, int, int)> m_StatusReportFunction;
 		std::function<unsigned char()> m_GetFirstFreeSequenceIndexFunction;
+		std::function<unsigned char()> m_GetFirstEmptySequenceIndexFunction;
 
 		std::shared_ptr<TrackCopyPasteData> m_CopyPasteData;
 
