@@ -2586,7 +2586,6 @@ namespace Editor
 			if (m_FocusModeOrderList && !m_TakingOrderListInput)
 			{
 				DoDuplicateSequence(true);
-				UpdateMaxEventPos();
 				SetEventPosition(m_EventPos);
 				inKeyHookContext.m_NewEventPos = m_EventPos;
 				return true;
@@ -2599,7 +2598,7 @@ namespace Editor
 			if (m_FocusModeOrderList && !m_TakingOrderListInput)
 			{
 				DoDuplicateSequence(false);
-				UpdateMaxEventPos();
+				m_EventPos = DoKeyDown();
 				SetEventPosition(m_EventPos);
 				inKeyHookContext.m_NewEventPos = m_EventPos;
 				return true;
