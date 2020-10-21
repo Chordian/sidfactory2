@@ -84,6 +84,8 @@ namespace Editor
 	{
 		if (m_StatusBar != nullptr)
 			m_StatusBar->Refresh();
+
+		m_ComponentsManager->Refresh(m_DisplayState);
 	}
 
 

@@ -1992,23 +1992,30 @@ namespace Editor
 	{
 		if (!m_FocusModeOrderList)
 		{
-			auto dialog_ok = [this](unsigned int inValue)
+			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+
+			if (order_list_entry.m_Transposition < 0xfe)
 			{
-				int event_pos = ResizeSequence(inValue);
+				auto dialog_ok = [this](unsigned int inValue)
+				{
+					int event_pos = ResizeSequence(inValue);
 
-				// Set the new event position
-				if (m_EventPos != event_pos)
-					SetEventPosition(event_pos);
+					// Set the new event position
+					if (m_EventPos != event_pos)
+						SetEventPosition(event_pos);
 
-				m_OrderListChangedEvent.Execute();
-			};
+					m_OrderListChangedEvent.Execute();
+				};
 
-			auto dialog_cancel = [this]()
-			{
-			};
+				auto dialog_cancel = [this]()
+				{
+				};
 
-			const unsigned int current_size = GetSequenceSize();
-			inComponentsManager.StartDialog(std::make_shared<DialogHexValueInput>("Resize sequence", "Enter size of sequence", 30, 3, current_size, DataSourceSequence::MaxEventCount, dialog_ok, dialog_cancel));
+				const unsigned int current_size = GetSequenceSize();
+				std::string message = "Enter size of sequence [" + ToHexValueString(order_list_entry.m_SequenceIndex, false) + "]";
+
+				inComponentsManager.StartDialog(std::make_shared<DialogHexValueInput>("Resize sequence", message, 30, 3, current_size, DataSourceSequence::MaxEventCount, dialog_ok, dialog_cancel));
+			}
 		}
 	}
 

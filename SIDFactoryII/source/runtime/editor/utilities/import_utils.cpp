@@ -169,7 +169,7 @@ namespace Editor
 		}
 
 	
-		void CopyTables(
+		void ImportTables(
 			const std::map<unsigned char, 
 			unsigned char>& table_mapping, 
 			const DriverInfo& inLoadedDriverInfo, 
@@ -283,7 +283,7 @@ namespace Editor
 			ClearTables(inLoadedDriverInfo, inCPUMemory);
 
 			// Copy tables
-			CopyTables(table_mapping, inLoadedDriverInfo, inCPUMemory, inImportDriverInfo, inImportFile);
+			ImportTables(table_mapping, inLoadedDriverInfo, inCPUMemory, inImportDriverInfo, inImportFile);
 
 			// Clear music data
 			ClearMusicData(inLoadedDriverInfo, inCPUMemory);

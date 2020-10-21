@@ -23,7 +23,6 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Added: **Ctrl-d** duplicate and replace sequence
 - Added: **Ctrl-Shift-d** duplicate and append sequence
 - Split sequence now splits to the first _empty_ unused sequence
-- `linux` Now includes SF2Converter in the build
 - `macOS` Fixed [#71](https://github.com/Chordian/sidfactory2/issues/71) switch instrument/command while in a table (Thanks to Adam Davidovics
   for reporting)
 - `macOS` Fixed [#67](https://github.com/Chordian/sidfactory2/issues/67) crash when run from a path with spaces

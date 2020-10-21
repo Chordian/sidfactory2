@@ -35,7 +35,7 @@ namespace Editor
 
 		// Compute the destination address delta. The driver and data are processed for the destination address at address 0x1000 in the data container, but the load 
 		// address of the file generated is altered to the destination address before saving it to disk.
-		
+
 		m_DestinationAddressDelta = m_DestinationAddress - m_DriverInfo.GetDescriptor().m_DriverCodeTop;
 
 		m_CPUMemory.Lock();
@@ -78,7 +78,7 @@ namespace Editor
 		return m_OutputData;
 	}
 
-	
+
 	const unsigned int Packer::AddDataSection(unsigned short inAddress, unsigned short inSize)
 	{
 		unsigned int section_id = static_cast<unsigned int>(m_DataSectionList.size());
@@ -107,21 +107,37 @@ namespace Editor
 
 		for (const auto& table : table_definitions)
 		{
-			assert(table.m_DataLayout == DriverInfo::TableDefinition::DataLayout::ColumnMajor);
-
-			const unsigned short data_size = [&]()
+			if (table.m_DataLayout == DriverInfo::TableDefinition::DataLayout::ColumnMajor)
 			{
-				if (table.m_Type == DriverInfo::TableType::Instruments)
-					return static_cast<unsigned short>(DriverUtils::GetHighestInstrumentIndexUsed(m_DriverInfo, m_CPUMemory)) + 1;
-				if (table.m_Type == DriverInfo::TableType::Commands)
-					return static_cast<unsigned short>(DriverUtils::GetHighestCommandIndexUsed(m_DriverInfo, m_CPUMemory)) + 1;
+				const unsigned short data_size = [&]()
+				{
+					if (table.m_Type == DriverInfo::TableType::Instruments)
+						return static_cast<unsigned short>(DriverUtils::GetHighestInstrumentIndexUsed(m_DriverInfo, m_CPUMemory)) + 1;
+					if (table.m_Type == DriverInfo::TableType::Commands)
+						return static_cast<unsigned short>(DriverUtils::GetHighestCommandIndexUsed(m_DriverInfo, m_CPUMemory)) + 1;
 
-				return static_cast<unsigned short>(DriverUtils::GetHighestTableRowUsedIndex(table, m_CPUMemory)) + 1;
-			}();
+					return static_cast<unsigned short>(DriverUtils::GetHighestTableRowUsedIndex(table, m_CPUMemory)) + 1;
+				}();
 
-			for (unsigned short i = 0; i < table.m_ColumnCount; ++i)
+				for (unsigned short i = 0; i < table.m_ColumnCount; ++i)
+				{
+					const unsigned short source_address = table.m_Address + static_cast<unsigned short>(table.m_RowCount) * i;
+					AddDataSection(source_address, data_size);
+				}
+			}
+			else if (table.m_DataLayout == DriverInfo::TableDefinition::DataLayout::RowMajor)
 			{
-				const unsigned short source_address = table.m_Address + static_cast<unsigned short>(table.m_RowCount) * i;
+				const unsigned short data_size = [&]()
+				{
+					if (table.m_Type == DriverInfo::TableType::Instruments)
+						return static_cast<unsigned short>(table.m_ColumnCount * (DriverUtils::GetHighestInstrumentIndexUsed(m_DriverInfo, m_CPUMemory) + 1));
+					if (table.m_Type == DriverInfo::TableType::Commands)
+						return static_cast<unsigned short>(table.m_ColumnCount * (DriverUtils::GetHighestCommandIndexUsed(m_DriverInfo, m_CPUMemory) + 1));
+
+					return static_cast<unsigned short>(table.m_ColumnCount * (DriverUtils::GetHighestTableRowUsedIndex(table, m_CPUMemory) + 1));
+				}();
+
+				const unsigned short source_address = table.m_Address;
 				AddDataSection(source_address, data_size);
 			}
 		}
@@ -270,8 +286,11 @@ namespace Editor
 	{
 		for (const auto& data_section : m_DataSectionList)
 		{
-			if (data_section.m_SourceAddress == inVectorAddress)
-				return data_section.m_DestinationAddress;
+			if (inVectorAddress >= data_section.m_SourceAddress && inVectorAddress < data_section.m_SourceAddress + data_section.m_SourceSize)
+			{
+				unsigned short address_offset = inVectorAddress - data_section.m_SourceAddress;
+				return data_section.m_DestinationAddress + address_offset;
+			}
 		}
 
 		return inVectorAddress;

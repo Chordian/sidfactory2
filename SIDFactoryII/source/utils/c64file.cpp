@@ -82,6 +82,17 @@ namespace Utility
 	}
 
 
+	unsigned short C64File::ReadTargetAddressFromData(const void* inData, unsigned short inDataSize)
+	{
+		if (inDataSize > 2)
+		{
+			const unsigned char* data_bytes = static_cast<const unsigned char*>(inData);
+			return static_cast<unsigned short>(data_bytes[0]) | (static_cast<unsigned short>(data_bytes[1]) << 8);
+		}
+
+		return 0;
+	}
+
 	//----------------------------------------------------------------------------------------------------
 
 	bool C64File::IsValid() const

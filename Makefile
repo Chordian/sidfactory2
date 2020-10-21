@@ -42,7 +42,9 @@ EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 CC=g++
 CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
 LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
-
+CC=g++
+CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
+LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
 ifeq ($(PLATFORM),MACOS)
 	LINKER_FLAGS := $(LINKER_FLAGS) -framework ApplicationServices
 endif
@@ -65,7 +67,7 @@ endif
 	gcc -c $< -o $@
 
 # Determine all .o files to be built
-OBJ = $(SRC:.cpp=.o) # $(SOURCE)/libraries/miniz/miniz.o
+OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
 
 # Compile SIDFactoryII
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER) \
@@ -95,10 +97,10 @@ dist: $(EXE) $(DIST_FOLDER)
 	strip $(EXE)
 	mv $(EXE) $(DIST_FOLDER)
 	mkdir -p ${DIST_FOLDER}/config
-	cp -r $(PROJECT_ROOT)/drivers $(DIST_FOLDER)
-	cp -r $(PROJECT_ROOT)/overlay $(DIST_FOLDER)
-	cp -r $(PROJECT_ROOT)/color_schemes $(DIST_FOLDER)
-	cp -r $(PROJECT_ROOT)/config.ini $(DIST_FOLDER)/config/
+	mv $(ARTIFACTS_FOLDER)/drivers $(DIST_FOLDER)
+	mv $(ARTIFACTS_FOLDER)/overlay $(DIST_FOLDER)
+	mv $(ARTIFACTS_FOLDER)/color_schemes $(DIST_FOLDER)
+	mv $(ARTIFACTS_FOLDER)/config $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/music $(DIST_FOLDER)
 	cp -r dist/documentation $(DIST_FOLDER)
 	cp $(PROJECT_ROOT)/COPYING $(DIST_FOLDER)
