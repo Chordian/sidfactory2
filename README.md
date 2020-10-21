@@ -16,6 +16,9 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+- `macOS` Changed [#77](https://github.com/Chordian/sidfactory2/issues/77)
+  Copy/Paste/Undo/Redo are now mapped to the standard macOS keys
+  Cmd-c/Cmd-v/Cmd-z/Shift-Cmd-z (Thanks to Bastiaan Winde for requesting)
 - Added: **Ctrl-Shift-f** insert first _empty_ unused sequence
 - Added: **Ctrl-d** duplicate and replace sequence
 - Added: **Ctrl-Shift-d** duplicate and append sequence

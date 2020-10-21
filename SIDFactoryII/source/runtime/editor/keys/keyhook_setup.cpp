@@ -163,6 +163,10 @@ namespace Editor
 		m_KeyHookStore.OverrideDefinition({ "Key.Track.TransposeOctaveUp", {{ SDLK_F4, Keyboard::Cmd | Keyboard::Shift }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.Track.CursorLeftColumn", {{ SDLK_LEFT, Keyboard::Cmd }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.Track.CursorRightColumn", {{ SDLK_RIGHT, Keyboard::Cmd }} });
+		m_KeyHookStore.OverrideDefinition({ "Key.Track.Copy", {{ SDLK_c, Keyboard::Cmd }} });
+		m_KeyHookStore.OverrideDefinition({ "Key.Track.Paste", {{ SDLK_v, Keyboard::Cmd }} });
+		m_KeyHookStore.OverrideDefinition({ "Key.ScreenEdit.Undo", {{ SDLK_z, Keyboard::Cmd }} });
+		m_KeyHookStore.OverrideDefinition({ "Key.ScreenEdit.Redo", {{ SDLK_z, Keyboard::Cmd | Keyboard::Shift }} });
 #endif //_SF2_WINDOWS
 	}
 }
