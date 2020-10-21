@@ -1,31 +1,28 @@
 #include "screen_intro.h"
 
-#include "foundation/graphics/viewport.h"
 #include "foundation/graphics/image.h"
 #include "foundation/graphics/textfield.h"
+#include "foundation/graphics/viewport.h"
 #include "foundation/graphics/wrapped_string.h"
-#include "resources/data_logo.h"
-#include "utils/utilities.h"
 #include "libraries/picopng/picopng.h"
+#include "resources/data_logo.h"
 #include "runtime/editor/driver/driver_info.h"
+#include "utils/utilities.h"
 
-#include <string>
 #include <assert.h>
-
-
+#include <string>
 
 namespace Editor
 {
 	ScreenIntro::ScreenIntro(
-		Foundation::Viewport* inViewport, 
+		Foundation::Viewport* inViewport,
 		Foundation::TextField* inMainTextField,
-		CursorControl* inCursorControl, 
+		CursorControl* inCursorControl,
 		DisplayState& inDisplayState,
 		Utility::KeyHookStore& inKeyHookStore,
 		std::shared_ptr<DriverInfo>& inDriverInfo,
 		std::function<void(void)> inExitScreenCallback,
-		std::function<void(void)> inExitScreenToLoadCallback
-	)
+		std::function<void(void)> inExitScreenToLoadCallback)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
 		, m_DriverInfo(inDriverInfo)
 		, m_ExitScreenCallback(inExitScreenCallback)
@@ -39,8 +36,14 @@ namespace Editor
 		assert(m_DriverInfo != nullptr);
 		ScreenBase::Activate();
 
-		// Build string
-		std::string build_string = "Development build: " + std::string(__DATE__) + " ";
+// Build string
+		#ifndef _SF2_WINDOWS
+			const std::string build_number = _BUILD_NR;
+		#else
+			const std::string build_number = std::string(__DATE__);
+		#endif
+
+		const std::string build_string = "Development build: " +  build_number + " ";
 
 		// Load bmp
 		void* file_buffer;
@@ -76,16 +79,16 @@ namespace Editor
 		const int continue_info_y = 43;
 		const int build_y = dimensions.m_Height - 1;
 		const int build_x = dimensions.m_Width;
-        const int block_width = dimensions.m_Width >> 1;
+		const int block_width = dimensions.m_Width >> 1;
 
 		const Foundation::Rect credits_rect_left({ { credits_margin, credits_y }, { block_width - credits_margin, driver_info_y - credits_y - 1 } });
-        const Foundation::Rect credits_rect_right({ { block_width, credits_y }, { block_width - credits_margin, driver_info_y - credits_y - 1 } });
-        
+		const Foundation::Rect credits_rect_right({ { block_width, credits_y }, { block_width - credits_margin, driver_info_y - credits_y - 1 } });
+
 		const Foundation::WrappedString credits_text_left("Programming by:\nThomas Egeskov Petersen\nJens-Christian Huus\nMichel de Bree\n \nAdditional design and suggestions by:\n Torben Korgaard Hansen\nThomas Laurits Mogensen\nThomas Bendt", block_width);
-        const Foundation::WrappedString credits_text_right("reSID-fp Engine by:\nDag Lem\nAntti S. Lankila \n \npicoPNG by:\nLode Vandevenne\n \nghc::filesystem for c++11 by:\nSteffen Schumann", block_width);
+		const Foundation::WrappedString credits_text_right("reSID-fp Engine by:\nDag Lem\nAntti S. Lankila \n \npicoPNG by:\nLode Vandevenne\n \nghc::filesystem for c++11 by:\nSteffen Schumann", block_width);
 
 		m_MainTextField->PrintAligned(credits_rect_left, credits_text_left, Foundation::TextField::HorizontalAlignment::Center);
-        m_MainTextField->PrintAligned(credits_rect_right, credits_text_right, Foundation::TextField::HorizontalAlignment::Center);
+		m_MainTextField->PrintAligned(credits_rect_right, credits_text_right, Foundation::TextField::HorizontalAlignment::Center);
 
 		if (m_DriverInfo->IsValid())
 		{
@@ -109,8 +112,8 @@ namespace Editor
 
 	void ScreenIntro::TryQuit(std::function<void(bool)> inResponseCallback)
 	{
-		if(inResponseCallback)
-			inResponseCallback(true); 
+		if (inResponseCallback)
+			inResponseCallback(true);
 	}
 
 
@@ -144,7 +147,6 @@ namespace Editor
 		const Foundation::WrappedString message = { inText, dimensions.m_Width };
 
 		m_MainTextField->PrintAligned({ { 0, inY }, { dimensions.m_Width, 1 } }, message, Foundation::TextField::HorizontalAlignment::Center);
-
 	}
 
 
@@ -168,4 +170,3 @@ namespace Editor
 		return nullptr;
 	}
 }
-

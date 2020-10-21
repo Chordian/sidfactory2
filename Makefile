@@ -40,11 +40,8 @@ EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 
 # Compiler
 CC=g++
-CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
-LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
-CC=g++
-CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
-LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
+CC_FLAGS=$(shell sdl2-config --cflags) -I$(SOURCE) -D_SF2_$(PLATFORM) -D_BUILD_NR=\"$(BUILD_NR)\" -std=gnu++14 -g
+LINKER_FLAGS=$(shell sdl2-config --libs) -lstdc++ -flto
 ifeq ($(PLATFORM),MACOS)
 	LINKER_FLAGS := $(LINKER_FLAGS) -framework ApplicationServices
 endif
