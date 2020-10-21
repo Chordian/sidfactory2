@@ -16,18 +16,25 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
-- `macOS` Changed [#77](https://github.com/Chordian/sidfactory2/issues/77)
-  Copy/Paste/Undo/Redo are now mapped to the standard macOS keys
-  Cmd-c/Cmd-v/Cmd-z/Shift-Cmd-z (Thanks to Bastiaan Winde for requesting)
-- Added: **Ctrl-Shift-f** insert first _empty_ unused sequence
-- Added: **Ctrl-d** duplicate and replace sequence
-- Added: **Ctrl-Shift-d** duplicate and append sequence
-- Split sequence now splits to the first _empty_ unused sequence
+### Build 202010??
+
+#### Editor
+
+- The converter has now been embedded into the editor; just load MOD, SNG or CT directly with F10 as usual
+- Converting from MOD will show a dialog for choosing which of the four channels to ignore
+- Added **Ctrl-Shift-F** for inserting the first _empty_ unused sequence
+- Added **Ctrl-D** for duplicating and replacing the currently edited sequence
+- Added **Ctrl-Shift-D** for duplicating and appending sequence after the currently edited sequence
+- Splitting a sequence with **Ctrl-B** now splits to the first _empty_ unused sequence
 - `macOS` Fixed [#71](https://github.com/Chordian/sidfactory2/issues/71) switch instrument/command while in a table (Thanks to Adam Davidovics
   for reporting)
 - `macOS` Fixed [#67](https://github.com/Chordian/sidfactory2/issues/67) crash when run from a path with spaces
   (Thanks to Arjen
   Bokhoven for reporting)
+
+#### Converter
+
+- The standalone converter has been removed due to the converter nowing being embedded into the editor
 
 ### Build 20200911
 
