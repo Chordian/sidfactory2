@@ -24,6 +24,7 @@ namespace Editor
 		unsigned char GetHighestSequenceIndexUsed(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
 		std::vector<int> GetSequenceUsageCount(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
 		unsigned char GetFirstUnusedSequenceIndex(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
+        unsigned char GetFirstEmptySequenceIndex(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
 		unsigned char GetHighestInstrumentIndexUsed(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
 		unsigned char GetHighestCommandIndexUsed(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
 		unsigned char GetHighestTableRowUsedIndex(const Editor::DriverInfo::TableDefinition& inTableDefinition, const Emulation::IMemoryRandomReadAccess& inMemoryReader);

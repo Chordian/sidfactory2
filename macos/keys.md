@@ -59,6 +59,9 @@ functions behind the keys, please consult the manual.
 | <kbd>F5</kbd>                                 | New sequence                               |
 | &#8679; <kbd>F5</kbd>                         | Add line to sequence                       |
 | <kbd>ctrl</kbd> f                             | Insert next unused sequence                |
+| <kbd>ctrl</kbd> &#8679; f                     | Insert next empty unused sequence          |
+| <kbd>ctrl</kbd> d                             | Duplicate and replace sequence             |
+| <kbd>ctrl</kbd> &#8679; d                     | Duplicate and append sequence              |
 | <kbd>ctrl</kbd> c / v                         | Copy/paste sequence                        |
 | `qwer`.. `zxcv`..                             | Enter note                                 |
 | &#8679;`qwer`.. `zxcv`..                      | Preview note                               |

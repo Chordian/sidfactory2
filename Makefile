@@ -42,6 +42,9 @@ EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 CC=g++
 CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
 LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
+CC=g++
+CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
+LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
 ifeq ($(PLATFORM),MACOS)
 	LINKER_FLAGS := $(LINKER_FLAGS) -framework ApplicationServices
 endif
@@ -85,6 +88,9 @@ $(ARTIFACTS_FOLDER)/color_schemes: $(PROJECT_ROOT)/color_schemes
 
 $(ARTIFACTS_FOLDER)/config/config.ini: $(ARTIFACTS_FOLDER)/config
 	cp $(PROJECT_ROOT)/config.ini $@
+
+$(ARTIFACTS_FOLDER)/config:
+	mkdir -p $@
 
 $(ARTIFACTS_FOLDER)/config:
 	mkdir -p $@

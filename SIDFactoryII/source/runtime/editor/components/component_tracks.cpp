@@ -24,15 +24,15 @@ using namespace Utility;
 namespace Editor
 {
 	ComponentTracks::ComponentTracks(
-		int inID, 
-		int inGroupID, 
-		Undo* inUndo, 
-		std::shared_ptr<DataSourceTrackComponents> inDataSource, 
-		TextField* inTextField, 
-		const AuxilaryDataCollection& inAuxilaryDataCollection, 
+		int inID,
+		int inGroupID,
+		Undo* inUndo,
+		std::shared_ptr<DataSourceTrackComponents> inDataSource,
+		TextField* inTextField,
+		const AuxilaryDataCollection& inAuxilaryDataCollection,
 		const EditState& inEditState,
-		int inX, 
-		int inY, 
+		int inX,
+		int inY,
 		int inHeight)
 		: ComponentBase
 		(
@@ -515,7 +515,7 @@ namespace Editor
 	}
 
 
-	void ComponentTracks::CancelFocusModeOrderList() 
+	void ComponentTracks::CancelFocusModeOrderList()
 	{
 		if (m_FocusModeOrderList)
 		{

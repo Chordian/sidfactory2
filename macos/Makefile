@@ -21,7 +21,6 @@ DMG_SIZE=16384
 ICONSET=$(ARTIFACTS_FOLDER)/$(APP_NAME).iconset
 ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
-# The compiler (gcc, g++, c++,clang++)
 CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
 
 CC_FLAGS= \
@@ -31,7 +30,7 @@ CC_FLAGS= \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \
-	-flto 
+	-flto
 
 LINKER_FLAGS=\
 	-framework SDL2 \
