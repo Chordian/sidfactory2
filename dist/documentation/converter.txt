@@ -1,16 +1,16 @@
 SF2Converter
 ============
 
-Place the SF2Converter.exe file in the same folder where SIDFactoryII.exe and
-SDL2.dll are located, then run it from a command box for help.
+The converter is now embedded in the editor itself. Just hit F10 in the editor
+and load the MOD, SNG and CT files from there.
 
-The file converts from 4-channel "Amiga" MOD files, SNG files from GoatTracker
-2, and CT files from CheeseCutter.
+It converts from 4-channel "Amiga" MOD files, SNG files from GoatTracker 2, and
+and CT files from CheeseCutter.
 
 About MOD conversions:
 
   o  You can optionally specify a switch for selecting the channel to leave out
-     when converting from 4 to 3 channels. You can also transpose.
+     when converting from 4 to 3 channels.
 
   o  It converts arpeggio, slides, portamento (to tienote), vibrato, volume (as
      note-focus ADSR commands), and break/jump cuts the sequences short.
