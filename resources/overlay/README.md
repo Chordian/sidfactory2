@@ -4,6 +4,7 @@ Use **Corel PaintShop Pro** to edit these as layers have been used.
 
 When a source image is complete:
 
+- First delete the example layer
 - Merge all layers
 - Resize to 960x976
 - Sharpen once

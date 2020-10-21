@@ -111,7 +111,7 @@ namespace Editor
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 				const std::vector<int> sequence_usage_count = GetSequenceUsageCount(inDriverInfo, inMemoryReader);
 
-				for (size_t i = 0; i < sequence_usage_count.size(); ++i)
+				for (unsigned short i = 0; i < static_cast<unsigned short>(sequence_usage_count.size()); ++i)
 				{
 					const unsigned short sequence_address = music_data.m_Sequence00Address + i * music_data.m_SequenceSize;
 

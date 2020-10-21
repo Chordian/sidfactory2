@@ -20,7 +20,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 #### Editor
 
-- The converter has now been embedded into the editor; just load MOD, SNG or CT directly with F10 as usual
+- The converter has now been embedded into the editor; just load MOD, SNG or CT directly with **F10** as usual
 - Converting from MOD will show a dialog for choosing which of the four channels to ignore
 - Added **Ctrl-Shift-F** for inserting the first _empty_ unused sequence
 - Added **Ctrl-D** for duplicating and replacing the currently edited sequence
