@@ -420,6 +420,9 @@ namespace Editor
 	{
 		if (inActionInput >= 0 && inActionInput <= m_MaxCursorY)
 		{
+			if (m_IndexAsContinuousMemory)
+				inActionInput /= m_DataSource->GetColumnCount();
+
 			SetRow(inActionInput);
 
 			AdjustVisibleArea();
