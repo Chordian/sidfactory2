@@ -92,17 +92,15 @@ $(ARTIFACTS_FOLDER)/config/config.ini: $(ARTIFACTS_FOLDER)/config
 $(ARTIFACTS_FOLDER)/config:
 	mkdir -p $@
 
-$(ARTIFACTS_FOLDER)/config:
-	mkdir -p $@
 # Create a distribution folder with executables and resources
 dist: $(EXE) $(DIST_FOLDER)
 	strip $(EXE)
 	mv $(EXE) $(DIST_FOLDER)
 	mkdir -p ${DIST_FOLDER}/config
-	cp -r $(PROJECT_ROOT)/drivers $(DIST_FOLDER)
-	cp -r $(PROJECT_ROOT)/overlay $(DIST_FOLDER)
-	cp -r $(PROJECT_ROOT)/color_schemes $(DIST_FOLDER)
-	cp -r $(PROJECT_ROOT)/config.ini $(DIST_FOLDER)/config/
+	mv $(ARTIFACTS_FOLDER)/drivers $(DIST_FOLDER)
+	mv $(ARTIFACTS_FOLDER)/overlay $(DIST_FOLDER)
+	mv $(ARTIFACTS_FOLDER)/color_schemes $(DIST_FOLDER)
+	mv $(ARTIFACTS_FOLDER)/config $(DIST_FOLDER)
 	cp -r $(PROJECT_ROOT)/music $(DIST_FOLDER)
 	cp -r dist/documentation $(DIST_FOLDER)
 	cp $(PROJECT_ROOT)/COPYING $(DIST_FOLDER)
