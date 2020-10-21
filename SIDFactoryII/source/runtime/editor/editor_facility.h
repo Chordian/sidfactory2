@@ -9,6 +9,7 @@
 #include "utils/keyhookstore.h"
 #include <memory>
 #include <string>
+#include <functional>
 
 namespace Foundation
 {
@@ -40,7 +41,8 @@ namespace Editor
 	class ScreenIntro;
 	class ScreenEdit;
 	class ScreenDisk;
-	class IConverter;
+	class ScreenConvert;
+	class ConverterBase;
 
 	enum FileType : int;
 
@@ -72,10 +74,11 @@ namespace Editor
 		void SetCurrentScreen(ScreenBase* inCurrentScreen);
 		void HandleScreenState();
 
-		bool IsFileSF2(const std::string& inFilename);
-		bool LoadFile(const std::string& inFilename, ScreenBase* inCallerScreen);
+		bool IsFileSF2(const std::string& inPathAndFilename);
+		bool LoadFile(const std::string& inPathAndFilename);
+		bool LoadFileForImport(const std::string& inPathAndFilename, std::shared_ptr<DriverInfo>& outDriverInfo, std::shared_ptr<Utility::C64File>& outC64File);
+		bool LoadAndConvertFile(const std::string& inPathAndFilename, ScreenBase* inCallerScreen, std::function<void()> inSuccesfullConversionAction);
 		bool SaveFile(const std::string& inSavename);
-		bool LoadFileForImport(const std::string& inFileName, std::shared_ptr<DriverInfo>& outDriverInfo, std::shared_ptr<Utility::C64File>& outC64File);
 		bool SavePackedFile(const std::string& inSavename);
 		bool SavePackedFileToSID(ScreenBase* inCallerScreen, const std::string& inSavename);
 
@@ -83,6 +86,7 @@ namespace Editor
 		void OnFilenameSelection(ScreenBase* inCallerScreen, const std::string& inSelectedFilename, FileType inSaveFileType);
 		void OnExitIntroScreen();
 		void OnExitIntroScreenToLoad();
+		bool OnConversionSuccess(ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult);
 
 		void OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress);
 		void OnQuickSave(ScreenBase* inCallerScreen);
@@ -99,6 +103,8 @@ namespace Editor
 
 		void SetLastSavedPathAndFilename(const std::string& inLastSavedPathAndFilename);
 		std::string ConfigureColorsFromScheme(int inSchemeIndex, const Utility::ConfigFile& inMainConfigFile, Foundation::Viewport& inViewport);
+
+		std::vector<std::shared_ptr<ConverterBase>> GetConverters() const;
 
 		bool m_IsDone;
 		bool m_FlipOverlayState;
@@ -137,9 +143,8 @@ namespace Editor
 		std::unique_ptr<ScreenIntro> m_IntroScreen;
 		std::unique_ptr<ScreenEdit> m_EditScreen;
 		std::unique_ptr<ScreenDisk> m_DiskScreen;
+		std::unique_ptr<ScreenConvert> m_ConvertScreen;
 
 		std::shared_ptr<Utility::C64File> m_PackedData;
-
-		std::vector<IConverter> m_Converters;
 	};
 }

@@ -42,7 +42,9 @@ EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 CC=g++
 CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
 LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
-
+CC=g++
+CC_FLAGS= $(shell sdl2-config --cflags) -I $(SOURCE) -D _SF2_$(PLATFORM) -std=gnu++14 -g
+LINKER_FLAGS= $(shell sdl2-config --libs) -lstdc++ -flto
 ifeq ($(PLATFORM),MACOS)
 	LINKER_FLAGS := $(LINKER_FLAGS) -framework ApplicationServices
 endif
@@ -65,7 +67,7 @@ endif
 	gcc -c $< -o $@
 
 # Determine all .o files to be built
-OBJ = $(SRC:.cpp=.o) # $(SOURCE)/libraries/miniz/miniz.o
+OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
 
 # Compile SIDFactoryII
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER) \
@@ -90,6 +92,8 @@ $(ARTIFACTS_FOLDER)/config/config.ini: $(ARTIFACTS_FOLDER)/config
 $(ARTIFACTS_FOLDER)/config:
 	mkdir -p $@
 
+$(ARTIFACTS_FOLDER)/config:
+	mkdir -p $@
 # Create a distribution folder with executables and resources
 dist: $(EXE) $(DIST_FOLDER)
 	strip $(EXE)

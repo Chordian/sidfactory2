@@ -24,11 +24,11 @@ namespace Editor
 	}
 
 
-	bool InstrumentDataTableMapping::BuildFrom(int inIndex)
+	bool InstrumentDataTableMapping::BuildFrom(unsigned int inIndex)
 	{
 		assert(inIndex < m_TableData->GetRowCount());
 
-		int current_index = inIndex;
+		unsigned int current_index = inIndex;
 
 		if (m_TablePointerDescription.m_TableDataType == 0)
 		{
@@ -59,7 +59,7 @@ namespace Editor
 	}
 
 
-	int InstrumentDataTableMapping::GetNextIndex(int inIndex)
+	unsigned int InstrumentDataTableMapping::GetNextIndex(unsigned int inIndex)
 	{
 		const int stride = m_TableData->GetColumnCount();
 

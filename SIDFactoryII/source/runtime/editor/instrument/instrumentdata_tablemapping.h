@@ -13,10 +13,10 @@ namespace Editor
 		explicit InstrumentDataTableMapping(const DataSourceTable* inTableData, const DriverInfo::InstrumentDataPointerDescription& inTablePointerDescription);
 		~InstrumentDataTableMapping();
 
-		bool BuildFrom(int inIndex);
+		bool BuildFrom(unsigned int inIndex);
 
 	private:
-		int GetNextIndex(int inIndex);
+		unsigned int GetNextIndex(unsigned int inIndex);
 
 		const DataSourceTable* m_TableData;
 		const DriverInfo::InstrumentDataPointerDescription& m_TablePointerDescription;

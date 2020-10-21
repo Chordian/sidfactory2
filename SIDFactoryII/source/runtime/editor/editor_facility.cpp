@@ -6,11 +6,12 @@
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/execution/executionhandler.h"
 #include "runtime/execution/flightrecorder.h"
-#include "runtime/editor/converters/iconverter.h"
+#include "runtime/editor/converters/converterbase.h"
 #include "runtime/editor/screens/screen_base.h"
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/screens/screen_edit.h"
 #include "runtime/editor/screens/screen_disk.h"
+#include "runtime/editor/screens/screen_convert.h"
 #include "runtime/editor/screens/screen_edit_utils.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
@@ -36,6 +37,13 @@
 #include "utils/c64file.h"
 #include "utils/psidfile.h"
 #include "libraries/ghc/fs_std.h"
+
+// Converter
+#include "runtime/editor/converters/jch/converter_jch.h"
+#include "runtime/editor/converters/gt/converter_gt.h"
+#include "runtime/editor/converters/cc/converter_cc.h"
+#include "runtime/editor/converters/mod/converter_mod.h"
+#include "runtime/editor/converters/null/converter_null.h"
 
 // System
 #include <assert.h>
@@ -64,10 +72,16 @@ namespace Editor
 		m_KeyHookSetup.ApplyConfigSettings(inConfigFile);
 
 		// Configure colors
-		m_ColorSchemeCount = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "ColorScheme.Count", 0);
-		m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "ColorScheme.Selection", 0);
+		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(inConfigFile, "ColorScheme.Name", {});
+		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(inConfigFile, "ColorScheme.Filename", {});
 
-		ConfigureColorsFromScheme(m_SelectedColorScheme, inConfigFile, *inViewport);
+		if (color_scheme_names.size() == color_scheme_filenames.size())
+		{
+			m_ColorSchemeCount = color_scheme_names.size();
+			m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "ColorScheme.Selection", 0);
+
+			ConfigureColorsFromScheme(m_SelectedColorScheme, inConfigFile, *inViewport);
+		}
 
 		// Create emulation environment
 		SIDConfiguration sid_configuration;										// Default settings are applicable
@@ -115,8 +129,23 @@ namespace Editor
 			&m_CursorControl,
 			m_DisplayState,
 			m_KeyHookSetup.GetKeyHookStore(),
+			m_ConfigFile,
 			[&](const std::string& inFilenameSelection, FileType inSaveFileType) { OnFilenameSelection(m_DiskScreen.get(), inFilenameSelection, inSaveFileType); },
 			[&]() { OnCancelScreen(m_DiskScreen.get()); });
+
+		m_ConvertScreen = std::make_unique<ScreenConvert>(
+			m_Viewport,
+			m_TextField,
+			&m_CursorControl,
+			m_DisplayState,
+			m_KeyHookSetup.GetKeyHookStore(),
+			m_Platform,
+			[&]() { SetCurrentScreen(m_EditScreen.get()); },
+			[&](ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult) { return OnConversionSuccess(inCallerScreen, inPathAndFilename, inConversionResult); }
+		);
+
+		// 	bool EditorFacility::OnConversionSuccess(ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult)
+
 
 		m_EditScreen = std::make_unique<ScreenEdit>(
 			m_Viewport,
@@ -168,12 +197,12 @@ namespace Editor
 		assert(m_ExecutionHandler != nullptr);
 		assert(m_AudioStream != nullptr);
 
-		bool file_loaded_successfully = [&]()
+		const bool file_loaded_successfully = [&]()
 		{
 			if (inFileToLoad != nullptr)
 			{
 				std::string file_to_load(inFileToLoad);
-				return LoadFile(file_to_load, nullptr);
+				return LoadFile(file_to_load);
 			}
 
 			return false;
@@ -184,7 +213,7 @@ namespace Editor
 		{
 			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(m_ConfigFile, "Editor.Driver.Default", std::string("sf2driver11_00.prg"));
 			std::string drivers_folder = m_Platform->Storage_GetDriversHomePath();
-			LoadFile(drivers_folder + default_driver_filename, nullptr);
+			LoadFile(drivers_folder + default_driver_filename);
 		}
 
         // After loading, set the current path, so that opening the disk menu will be correct.
@@ -276,7 +305,7 @@ namespace Editor
 		{
 			m_CurrentScreen->TryLoad(inPathAndFilename, [&, path_and_filename = inPathAndFilename](bool inQuit)
 			{
-				if (LoadFile(path_and_filename, m_CurrentScreen))
+				if (LoadFile(path_and_filename))
 					ForceRequestScreen(m_EditScreen.get());
 				else
 					m_CurrentScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Invalid file", "The selected file is not compatible with SID Factory II.", DefaultDialogWidth, true, []() {}));
@@ -406,9 +435,9 @@ namespace Editor
 	}
 
 
-	bool EditorFacility::LoadFile(const std::string& inPathAndFilename, ScreenBase* inCallerScreen)
+	bool EditorFacility::LoadFile(const std::string& inPathAndFilename)
 	{
-		const int max_file_size = 4 * (1024 * 1024);
+		const int max_file_size = 0x10000;
 
 		// Read test music data to cpu memory
 		void* data = nullptr;
@@ -419,28 +448,11 @@ namespace Editor
 
 		if (Utility::ReadFile(inPathAndFilename, max_file_size, &data, data_size))
 		{
-			if (data_size > 2 && data_size < 0x10000)
-			{
-				// Try to parse the data immediately
-				c64_file = Utility::C64File::CreateFromPRGData(data, static_cast<unsigned int>(data_size));
+			// Try to parse the data immediately
+			c64_file = Utility::C64File::CreateFromPRGData(data, static_cast<unsigned int>(data_size));
 
-				if (c64_file != nullptr)
-					driver_info->Parse(*c64_file);
-			}
-
-			// Try converting, if there're no valid results yet
-			if (inCallerScreen != nullptr)
-			{
-				const size_t converter_count = m_Converters.size();
-
-				for (size_t i = 0; i < converter_count && !driver_info->IsValid(); ++i)
-				{
-					c64_file = m_Converters[i].Convert(data, static_cast<unsigned int>(data_size), inCallerScreen->GetComponentsManager());
-
-					if (c64_file != nullptr)
-						driver_info->Parse(*c64_file);
-				}
-			}
+			if (c64_file != nullptr)
+				driver_info->Parse(*c64_file);
 
 			if (driver_info->IsValid())
 			{
@@ -472,50 +484,6 @@ namespace Editor
 		}
 
 		return driver_info->IsValid();
-	}
-
-
-	bool EditorFacility::SaveFile(const std::string& inPathAndFilename)
-	{
-		if (m_DriverInfo->IsValid())
-		{
-			m_CPUMemory->Lock();
-
-			const unsigned short top_of_file_address = m_DriverInfo->GetTopAddress();
-			const unsigned short end_of_file_address = DriverUtils::GetEndOfMusicDataAddress(*m_DriverInfo, reinterpret_cast<const Emulation::IMemoryRandomReadAccess&>(*m_CPUMemory));
-			const unsigned short data_size = end_of_file_address - top_of_file_address;
-
-			unsigned char* data = new unsigned char[data_size];
-			m_CPUMemory->GetData(top_of_file_address, data, data_size);
-			m_CPUMemory->Unlock();
-			std::shared_ptr<Utility::C64File> file = Utility::C64File::CreateFromData(top_of_file_address, data, data_size);
-			delete[] data;
-
-			Utility::C64FileWriter file_writer(*file, end_of_file_address, true);
-
-			const unsigned short irq_vector = file_writer.GetWriteAddress();
-			DriverUtils::InsertIRQ(*m_DriverInfo, file_writer);
-
-			const unsigned short auxilary_data_vector = file_writer.GetWriteAddress();
-			m_DriverInfo->GetAuxilaryDataCollection().Save(file_writer);
-
-			// Adjust IRQ and auxilary data vectors in file
-			const unsigned short driver_init_vector = m_DriverInfo->GetDriverCommon().m_InitAddress;
-			(*file)[driver_init_vector - 2] = static_cast<unsigned char>(irq_vector & 0xff);
-			(*file)[driver_init_vector - 1] = static_cast<unsigned char>(irq_vector >> 8);
-			(*file)[driver_init_vector - 5] = static_cast<unsigned char>(auxilary_data_vector & 0xff);
-			(*file)[driver_init_vector - 4] = static_cast<unsigned char>(auxilary_data_vector >> 8);
-
-			// Save to disk
-			if(!Utility::WriteFile(inPathAndFilename, file))
-                return false;
-
-			SetLastSavedPathAndFilename(inPathAndFilename);
-
-			return true;
-		}
-
-		return false;
 	}
 
 
@@ -552,6 +520,125 @@ namespace Editor
 		return false;
 	}
 
+
+	bool EditorFacility::LoadAndConvertFile(const std::string& inPathAndFilename, ScreenBase* inCallerScreen, std::function<void()> inSuccesfullConversionAction)
+	{
+		const int max_file_size = 16 * 1024 * 1024;		// 16MB
+
+		// Read test music data to cpu memory
+		void* data = nullptr;
+		long data_size = 0;
+
+		auto on_successfull_conversion = [this, inPathAndFilename, inCallerScreen, inSuccesfullConversionAction](std::shared_ptr<Utility::C64File> inC64File)
+		{
+			std::shared_ptr<DriverInfo> driver_info = std::make_shared<DriverInfo>();
+
+			if (inC64File != nullptr)
+			{
+				driver_info->Parse(*inC64File);
+
+				if (driver_info->IsValid())
+				{
+					m_DriverInfo->GetAuxilaryDataCollection().Reset();
+					m_DriverInfo = driver_info;
+
+					// Copy the data to the emulated memory
+					m_CPUMemory->Lock();
+					m_CPUMemory->Clear();
+					m_CPUMemory->SetData(inC64File->GetTopAddress(), inC64File->GetData(), inC64File->GetDataSize());
+					m_CPUMemory->Unlock();
+
+					// Init the execution handler 
+					m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
+					m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
+					m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
+
+					// Store name of last read file
+					SetLastSavedPathAndFilename(inPathAndFilename);
+
+					// Flush undo after load
+					m_EditScreen->FlushUndo();
+
+					// Notify overlay
+					m_OverlayControl->OnChange(*m_DriverInfo);
+
+					inSuccesfullConversionAction();
+					return;
+				}
+			}
+
+			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Conversion failed", "The selected file couldn't be converted correctly.", DefaultDialogWidth, true, []() {}));
+		};
+
+		if (Utility::ReadFile(inPathAndFilename, max_file_size, &data, data_size))
+		{
+			// Try converting, if there're no valid results yet
+			if (inCallerScreen != nullptr && data_size > 2)
+			{
+				auto converters = GetConverters();
+				const size_t converter_count = converters.size();
+
+				for (size_t i = 0; i < converter_count; ++i)
+				{
+					if (converters[i]->CanConvert(data, data_size))
+					{
+						m_ConvertScreen->PassConverterAndData(inPathAndFilename, converters[i], data, data_size);
+						RequestScreen(m_ConvertScreen.get());
+
+						return true;
+					}
+				}
+			}
+
+			delete[] static_cast<char*>(data);
+		}
+
+		return false;
+	}
+
+
+	bool EditorFacility::SaveFile(const std::string& inPathAndFilename)
+	{
+		if (m_DriverInfo->IsValid())
+		{
+			m_CPUMemory->Lock();
+
+			const unsigned short top_of_file_address = m_DriverInfo->GetTopAddress();
+			const unsigned short end_of_file_address = DriverUtils::GetEndOfMusicDataAddress(*m_DriverInfo, reinterpret_cast<const Emulation::IMemoryRandomReadAccess&>(*m_CPUMemory));
+			const unsigned short data_size = end_of_file_address - top_of_file_address;
+
+			unsigned char* data = new unsigned char[data_size];
+			m_CPUMemory->GetData(top_of_file_address, data, data_size);
+			m_CPUMemory->Unlock();
+			std::shared_ptr<Utility::C64File> file = Utility::C64File::CreateFromData(top_of_file_address, data, data_size);
+			delete[] data;
+
+			Utility::C64FileWriter file_writer(*file, end_of_file_address, true);
+
+			const unsigned short irq_vector = file_writer.GetWriteAddress();
+			DriverUtils::InsertIRQ(*m_DriverInfo, file_writer);
+
+			const unsigned short auxilary_data_vector = file_writer.GetWriteAddress();
+			m_DriverInfo->GetAuxilaryDataCollection().Save(file_writer);
+
+			// Adjust IRQ and auxilary data vectors in file
+			const unsigned short driver_init_vector = m_DriverInfo->GetDriverCommon().m_InitAddress;
+			(*file)[driver_init_vector - 2] = static_cast<unsigned char>(irq_vector & 0xff);
+			(*file)[driver_init_vector - 1] = static_cast<unsigned char>(irq_vector >> 8);
+			(*file)[driver_init_vector - 5] = static_cast<unsigned char>(auxilary_data_vector & 0xff);
+			(*file)[driver_init_vector - 4] = static_cast<unsigned char>(auxilary_data_vector >> 8);
+
+			// Save to disk
+			if (!Utility::WriteFile(inPathAndFilename, file))
+				return false;
+
+			SetLastSavedPathAndFilename(inPathAndFilename);
+
+			return true;
+		}
+
+		return false;
+	}
 
 
 	bool EditorFacility::SavePackedFile(const std::string& inFileName)
@@ -712,6 +799,49 @@ namespace Editor
 	}
 
 
+	bool EditorFacility::OnConversionSuccess(ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult)
+	{
+		std::shared_ptr<DriverInfo> driver_info = std::make_shared<DriverInfo>();
+
+		if (inConversionResult != nullptr)
+		{
+			driver_info->Parse(*inConversionResult);
+
+			if (driver_info->IsValid())
+			{
+				m_DriverInfo->GetAuxilaryDataCollection().Reset();
+				m_DriverInfo = driver_info;
+
+				// Copy the data to the emulated memory
+				m_CPUMemory->Lock();
+				m_CPUMemory->Clear();
+				m_CPUMemory->SetData(inConversionResult->GetTopAddress(), inConversionResult->GetData(), inConversionResult->GetDataSize());
+				m_CPUMemory->Unlock();
+
+				// Init the execution handler 
+				m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
+				m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
+				m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
+
+				// Store name of last read file
+				SetLastSavedPathAndFilename(inPathAndFilename);
+
+				// Flush undo after load
+				m_EditScreen->FlushUndo();
+
+				// Notify overlay
+				m_OverlayControl->OnChange(*m_DriverInfo);
+
+				return true;
+			}
+		}
+
+		inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Conversion failed", "The selected file couldn't be converted correctly.", DefaultDialogWidth, true, []() {}));
+
+		return false;
+	}
+
+
 	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAdress)
 	{
 		const bool is_uppercase = m_DisplayState.IsHexUppercase();
@@ -749,12 +879,22 @@ namespace Editor
 
 	void EditorFacility::DoLoad(ScreenBase* inCallerScreen, const std::string& inSelectedFilename)
 	{
-		auto do_load = [&, inSelectedFilename, inCallerScreen]()
+		auto on_success = [this]()
 		{
-			if (LoadFile(inSelectedFilename, inCallerScreen))
-				RequestScreen(m_EditScreen.get());
+			RequestScreen(m_EditScreen.get());
+		};
+
+		auto do_load = [this, on_success, inSelectedFilename, inCallerScreen]()
+		{
+			if (LoadFile(inSelectedFilename))
+				on_success();
 			else
+			{
+				if (LoadAndConvertFile(inSelectedFilename, inCallerScreen, on_success))
+					return;
+
 				inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Invalid file", "The selected file is not compatible with SID Factory II.", DefaultDialogWidth, true, []() {}));
+			}
 		};
 
 		if (m_DriverInfo->IsValid())
@@ -932,24 +1072,37 @@ namespace Editor
 	{
 		if (inSchemeIndex < m_ColorSchemeCount)
 		{
-			std::string color_scheme_filename_key = "ColorScheme.Filename." + std::to_string(inSchemeIndex);
-			std::string color_scheme_name_key = "ColorScheme.Name." + std::to_string(inSchemeIndex);
-			std::string color_scheme_filename = GetSingleConfigurationValue<ConfigValueString>(inMainConfigFile, color_scheme_filename_key, std::string(""));
-			std::string color_scheme_name = GetSingleConfigurationValue<ConfigValueString>(inMainConfigFile, color_scheme_name_key, std::string("Unknown"));
+			auto color_scheme_names = GetConfigurationValues<ConfigValueString>(inMainConfigFile, "ColorScheme.Name", {});
+			auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(inMainConfigFile, "ColorScheme.Filename", {});
 
-			std::string color_config_path_and_filename = m_Platform->Storage_GetColorSchemesHomePath() + color_scheme_filename;
+			std::string color_config_path_and_filename = m_Platform->Storage_GetColorSchemesHomePath() + color_scheme_filenames[inSchemeIndex];
 			ConfigFile color_config(*m_Platform, color_config_path_and_filename, inMainConfigFile.GetValidSectionTags());
 
 			if (color_config.IsValid())
 			{
 				Utility::Config::ConfigureColors(color_config, inViewport);
-				return color_scheme_name;
+				return color_scheme_names[inSchemeIndex];
 			}
 		}
 
 		Utility::Config::ConfigureColors(inMainConfigFile, inViewport);
-
 		return "Default";
 	}
+
+
+	std::vector<std::shared_ptr<ConverterBase>> EditorFacility::GetConverters() const
+	{
+		std::vector<std::shared_ptr<ConverterBase>> converters;
+
+		// Configure the converters
+		converters.push_back(std::make_shared<ConverterJCH>());
+		converters.push_back(std::make_shared<ConverterGT>());
+		converters.push_back(std::make_shared<ConverterCC>());
+		converters.push_back(std::make_shared<ConverterMod>());
+		converters.push_back(std::make_shared<ConverterNull>());
+
+		return converters;
+	}
+
 }
 

@@ -115,7 +115,7 @@ namespace Editor
 		if (m_HasCaption)
 		{
 			m_TextField->ColorAreaBackground(ToColor(UserColor::DialogHeader), { {0, 0}, {2 + m_Width, 1} });
-			m_TextField->Print((m_Width - static_cast<int>(m_Caption.length())) >> 1, 0, ToColor(UserColor::DialogHeaderText), m_Caption);
+			m_TextField->Print((2 + m_Width - static_cast<int>(m_Caption.length())) >> 1, 0, ToColor(UserColor::DialogHeaderText), m_Caption);
 		}
 	}
 

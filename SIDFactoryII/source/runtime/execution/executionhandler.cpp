@@ -36,7 +36,7 @@ namespace Emulation
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
 		// Create a sample buffer. The sample frequency is used for determining the size, which is probably 50 times the size required.
-		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 1);
+		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
 		m_Mutex = inPlatform->CreateMutex();
 

@@ -116,6 +116,27 @@
     <Filter Include="source\runtime\editor\converters">
       <UniqueIdentifier>{9b9a4fb6-915c-436d-a82f-6ee28d0d0152}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\editor\converters\null">
+      <UniqueIdentifier>{03caad82-a324-459b-9ae7-12337697aa85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\converters\jch">
+      <UniqueIdentifier>{4d2fdef3-6e28-47e2-a1bb-33aa7b571002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\libraries\miniz">
+      <UniqueIdentifier>{bbc1c76c-cb73-4a17-80cb-ac9619b7d9a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\converters\gt">
+      <UniqueIdentifier>{691d8ee3-3387-4bcd-b874-77e278706d94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\converters\utils">
+      <UniqueIdentifier>{8fcfd939-841d-4946-b3b7-81767f7373fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\converters\cc">
+      <UniqueIdentifier>{92cf4868-b1a9-42bc-b99e-6e423ac3c6eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\converters\mod">
+      <UniqueIdentifier>{646adf23-587e-4d8c-b00a-e0f8c19ab4f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -162,9 +183,6 @@
       <Filter>source\runtime\editor\components</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\editor\datasources\datasource_memory.cpp">
-      <Filter>source\runtime\editor\datasources</Filter>
-    </ClCompile>
-    <ClCompile Include="source\runtime\editor\datasources\datasource_memory_block.cpp">
       <Filter>source\runtime\editor\datasources</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\editor\driver\driver_info.cpp">
@@ -515,6 +533,57 @@
     <ClCompile Include="source\libraries\residfp\resample\SincResampler.cpp">
       <Filter>source\libraries\residfp\resample</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\null\converter_null.cpp">
+      <Filter>source\runtime\editor\converters\null</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp">
+      <Filter>source\runtime\editor\converters\jch</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\miniz\miniz.c">
+      <Filter>source\libraries\miniz</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\gt\source_sng.cpp">
+      <Filter>source\runtime\editor\converters\gt</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\utils\misc.cpp">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\utils\sf2_interface.cpp">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\utils\source_utils.cpp">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\gt\converter_gt.cpp">
+      <Filter>source\runtime\editor\converters\gt</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\screens\screen_convert.cpp">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\converterbase.cpp">
+      <Filter>source\runtime\editor\converters</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_console.cpp">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\utils\consoleostreambuffer.cpp">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\cc\source_ct.cpp">
+      <Filter>source\runtime\editor\converters\cc</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\cc\converter_cc.cpp">
+      <Filter>source\runtime\editor\converters\cc</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\mod\source_mod.cpp">
+      <Filter>source\runtime\editor\converters\mod</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\converters\mod\converter_mod.cpp">
+      <Filter>source\runtime\editor\converters\mod</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_selection_list.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\utilities.h">
@@ -581,9 +650,6 @@
       <Filter>source\runtime\editor\components</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\editor\datasources\datasource_memory.h">
-      <Filter>source\runtime\editor\datasources</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\editor\datasources\datasource_memory_block.h">
       <Filter>source\runtime\editor\datasources</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\editor\driver\driver_info.h">
@@ -1009,8 +1075,53 @@
     <ClInclude Include="source\libraries\residfp\resample\ZeroOrderResampler.h">
       <Filter>source\libraries\residfp\resample</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\editor\converters\iconverter.h">
+    <ClInclude Include="source\runtime\editor\converters\null\converter_null.h">
+      <Filter>source\runtime\editor\converters\null</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\jch\converter_jch.h">
+      <Filter>source\runtime\editor\converters\jch</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\gt\source_sng.h">
+      <Filter>source\runtime\editor\converters\gt</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\utils\misc.h">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\utils\sf2_interface.h">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\utils\source_utils.h">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\gt\converter_gt.h">
+      <Filter>source\runtime\editor\converters\gt</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\screens\screen_convert.h">
+      <Filter>source\runtime\editor\screens</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\converterbase.h">
       <Filter>source\runtime\editor\converters</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_console.h">
+      <Filter>source\runtime\editor\components</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\utils\consoleostreambuffer.h">
+      <Filter>source\runtime\editor\converters\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\cc\source_ct.h">
+      <Filter>source\runtime\editor\converters\cc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\cc\converter_cc.h">
+      <Filter>source\runtime\editor\converters\cc</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\mod\source_mod.h">
+      <Filter>source\runtime\editor\converters\mod</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\converters\mod\converter_mod.h">
+      <Filter>source\runtime\editor\converters\mod</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_selection_list.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

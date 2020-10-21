@@ -32,6 +32,15 @@ namespace Utility
 		}
 
 
+		void ConfigValueCharacter::AddValues(const IConfigValue& inValuesToAdd)
+		{
+			const ConfigValueCharacter& my_type = reinterpret_cast<const ConfigValueCharacter&>(inValuesToAdd);
+
+			for (const auto& value : my_type.GetValues())
+				m_Values.push_back(value);
+		}
+
+
 		const ConfigValueCharacter::DATATYPE& ConfigValueCharacter::GetValue(size_t inIndex) const
 		{
 			assert(inIndex >= 0 && inIndex < m_Values.size());
@@ -109,6 +118,15 @@ namespace Utility
 		}
 
 
+		void ConfigValueInt::AddValues(const IConfigValue& inValuesToAdd)
+		{
+			const ConfigValueInt& my_type = reinterpret_cast<const ConfigValueInt&>(inValuesToAdd);
+
+			for (const auto& value : my_type.GetValues())
+				m_Values.push_back(value);
+		}
+
+
 		const ConfigValueInt::DATATYPE& ConfigValueInt::GetValue(size_t inIndex) const
 		{
 			assert(inIndex >= 0 && inIndex < m_Values.size());
@@ -178,15 +196,27 @@ namespace Utility
 			}
 		}
 		
+
 		ValueType ConfigValueString::GetType() const
 		{
 			return GetMyType();
 		}
 
+		
 		size_t ConfigValueString::GetValueCount() const
 		{
 			return m_Values.size();
 		}
+
+
+		void ConfigValueString::AddValues(const IConfigValue& inValuesToAdd)
+		{
+			const ConfigValueString& my_type = reinterpret_cast<const ConfigValueString&>(inValuesToAdd);
+
+			for (const auto& value : my_type.GetValues())
+				m_Values.push_back(value);
+		}
+
 
 		const ConfigValueString::DATATYPE& ConfigValueString::GetValue(size_t inIndex) const
 		{
@@ -205,6 +235,7 @@ namespace Utility
 		{
 			return ValueType::String;
 		}
+
 
 		bool ConfigValueString::IsMyType(const std::string& inValue)
 		{
@@ -252,6 +283,15 @@ namespace Utility
 		size_t ConfigValueKey::GetValueCount() const
 		{
 			return m_Values.size();
+		}
+
+
+		void ConfigValueKey::AddValues(const IConfigValue& inValuesToAdd)
+		{
+			const ConfigValueKey& my_type = reinterpret_cast<const ConfigValueKey&>(inValuesToAdd);
+
+			for (const auto& value : my_type.GetValues())
+				m_Values.push_back(value);
 		}
 
 
@@ -303,15 +343,27 @@ namespace Utility
 			}
 		}
 
+
 		ValueType ConfigValueRedirect::GetType() const
 		{
 			return GetMyType();
 		}
 
+
 		size_t ConfigValueRedirect::GetValueCount() const
 		{
 			return m_Values.size();
 		}
+
+
+		void ConfigValueRedirect::AddValues(const IConfigValue& inValuesToAdd)
+		{
+			const ConfigValueRedirect& my_type = reinterpret_cast<const ConfigValueRedirect&>(inValuesToAdd);
+
+			for (const auto& value : my_type.GetValues())
+				m_Values.push_back(value);
+		}
+
 
 		const ConfigValueRedirect::DATATYPE& ConfigValueRedirect::GetValue(size_t inIndex) const
 		{
@@ -331,6 +383,7 @@ namespace Utility
 			return ValueType::Redirect;
 		}
 
+	
 		bool ConfigValueRedirect::IsMyType(const std::string& inValue)
 		{
 			const size_t length = inValue.length();

@@ -1,1 +1,0 @@
-@..\Debug\sf2converter %1

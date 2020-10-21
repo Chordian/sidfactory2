@@ -152,6 +152,8 @@ namespace Editor
 			if (directory_entry.m_Type != DirectoryEntry::Drive)
 				return directory_entry.m_Path.filename().string();
 
+			if (directory_entry.m_DisplayName.size() > 0)
+				return "[" + directory_entry.m_DisplayName + "]";
 			return directory_entry.m_Path.string();
 		}();
 

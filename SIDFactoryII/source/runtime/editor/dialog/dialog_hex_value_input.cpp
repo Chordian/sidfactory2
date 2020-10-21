@@ -7,7 +7,7 @@
 namespace Editor
 {
 	DialogHexValueInput::DialogHexValueInput(const std::string& inCaption, const std::string& inMessage, int inWidth, int inDigitCount, unsigned int inInitialValue, unsigned int inMaxValue, std::function<void(unsigned int)>&& inDone, std::function<void(void)>&& inCancel)
-		: DialogMessage(inCaption, inMessage, inWidth)
+		: DialogMessage(inCaption, inMessage, inWidth, true)
 		, m_DigitCount(inDigitCount)
 		, m_InitialValue(inInitialValue)
 		, m_MaxValue(inMaxValue)
