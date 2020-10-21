@@ -94,7 +94,18 @@ namespace Editor
 		{
 			const auto& descriptor = inDriverInfo.GetDescriptor();
 
-			std::string version = std::to_string(descriptor.m_DriverVersionMajor) + "_" + std::to_string(descriptor.m_DriverVersionMinor / 10) + std::to_string(descriptor.m_DriverVersionMinor % 10);
+			const bool non_standard_driver = (descriptor.m_DriverVersionMajor & 0x80) != 0;
+
+			const unsigned char major_version = descriptor.m_DriverVersionMajor & 0x7f;
+			const unsigned char minor_version = descriptor.m_DriverVersionMinor;
+
+			std::string version = std::to_string(major_version) + "_" + std::to_string(minor_version / 10) + std::to_string(minor_version % 10);
+
+			if (non_standard_driver)
+			{
+				if (descriptor.m_DriverName.find("NP") != std::string::npos)
+					version = "np" + version;
+			}
 
 			for (const std::string& filename : m_OverlayFileList)
 			{
