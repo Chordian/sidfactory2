@@ -86,7 +86,6 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 	bool is_dragging_window = false;
 	Point mouse_position_at_start_drag;
 
-
 	// Ticking test
 	unsigned int last_tick = SDL_GetTicks();
 
@@ -138,6 +137,9 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 				{
 				case SDL_WINDOWEVENT_SIZE_CHANGED:
 					editor.OnWindowResized();
+					break;
+				case SDL_WINDOWEVENT_FOCUS_LOST:
+					keyboard.Flush();
 					break;
 				}
 			}

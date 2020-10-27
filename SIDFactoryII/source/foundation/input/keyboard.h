@@ -34,6 +34,8 @@ namespace Foundation
 		void BeginCollect();
 		void EndCollect();
 
+		void Flush();
+
 		void KeyDown(SDL_Keycode inKey);
 		void KeyUp(SDL_Keycode inKey);
 		void KeyText(char* inText);

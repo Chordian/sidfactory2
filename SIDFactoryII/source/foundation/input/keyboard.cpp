@@ -73,6 +73,22 @@ namespace Foundation
 
 	//------------------------------------------------------------------------------------------------------------------------------
 
+	void Keyboard::Flush()
+	{
+		// Clear all keys registered to the timer for repeat
+		m_KeyTimer.clear();
+
+		// Clear all event lists
+		m_KeyEventList.clear();
+		m_KeyPressList.clear();
+		m_KeyReleaseList.clear();
+		m_KeyDownList.clear();
+		m_KeyTextList.clear();
+
+		// Clear modifiers
+		m_ModifierMask = 0;
+	}
+
 	void Keyboard::KeyDown(SDL_Keycode inKey)
 	{
 		assert(m_Collecting);
