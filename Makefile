@@ -48,7 +48,7 @@ endif
 
 ifneq ($(TARGET),DEBUG)
   # optimizations, don't play well with debugging
-	CC_FLAGS := $(CC_FLAGS) -O2 -flto
+	CC_FLAGS := $(CC_FLAGS) -O2 -flto -DNDEBUG
 endif
 
 .PHONY: clean

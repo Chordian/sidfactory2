@@ -26,11 +26,11 @@ CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
 CC_FLAGS= \
   -I$(SOURCE) \
 	-I./App/Contents/Frameworks/SDL2.framework/Headers \
-	-D_THREAD_SAFE \
 	-D_BUILD_NR=\"$(BUILD_NR)\" \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \
+	-DNDEBUG \
 	-flto
 
 LINKER_FLAGS=\
