@@ -54,6 +54,7 @@ namespace Editor
 			unsigned short m_DriverCodeSize;
 			unsigned char m_DriverVersionMajor;
 			unsigned char m_DriverVersionMinor;
+			unsigned char m_DriverVersionRevision;
 		};
 
 

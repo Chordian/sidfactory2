@@ -179,6 +179,27 @@ namespace Emulation
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
+	// Error
+	//----------------------------------------------------------------------------------------------------------------
+
+	bool ExecutionHandler::IsInErrorState() const
+	{
+		return m_ErrorState;
+	}
+	
+	std::string ExecutionHandler::GetErrorMessage() const
+	{
+		return m_ErrorMessage;
+	}
+
+	void ExecutionHandler::ClearErrorState()
+	{
+		m_ErrorState = false;
+	}
+
+
+
+	//----------------------------------------------------------------------------------------------------------------
 	// Emulation update
 	//----------------------------------------------------------------------------------------------------------------
 
@@ -353,7 +374,7 @@ namespace Emulation
 		m_CPU->SetMemory(m_Memory);
 
 		// Capture the frame (this will run the CPU )
-		CPUFrameCapture frameCapture(m_CPU, 0xd400, 0xd418);
+		CPUFrameCapture frameCapture(m_CPU, 0xd400, 0xd418, m_CyclesPerFrame);
 
 		// Execute queued actions
 		for (const Action& action : m_ActionQueue)
@@ -373,8 +394,9 @@ namespace Emulation
 				break;
 			case ActionType::Init:
 			case ActionType::Stop:
-			case ActionType::Update:
 				frameCapture.Capture(GetAddressFromActionType(action.m_ActionType), action.m_ActionArgument);
+				break;
+			default:
 				break;
 			}
 
@@ -385,21 +407,39 @@ namespace Emulation
 		m_ActionQueue.clear();
 
 		// Execute driver update, if enabled
-		if (m_UpdateEnabled)
+		if (m_UpdateEnabled && !m_ErrorState)
 		{
+			bool error = false;
+
 			frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0);
+			error = frameCapture.IsMaxCycleCountReached();
+
 			if (m_PostUpdateCallback)
 				m_PostUpdateCallback(m_Memory);
 
-			for (unsigned int i = 0; i < m_FastForwardUpdateCount; ++i)
+			if (!error)
 			{
-				// Break out if less than a quater of the cycles of a frame remains
-				if (m_CyclesPerFrame - frameCapture.GetCyclesSpend() < m_CyclesPerFrame >> 2)
-					break;
+				for (unsigned int i = 0; i < m_FastForwardUpdateCount; ++i)
+				{
+					// Break out if less than a quater of the cycles of a frame remains
+					if (m_CyclesPerFrame - frameCapture.GetCyclesSpend() < m_CyclesPerFrame >> 2)
+						break;
 
-				frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0);
-				if (m_PostUpdateCallback)
-					m_PostUpdateCallback(m_Memory);
+					frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0);
+					if (m_PostUpdateCallback)
+						m_PostUpdateCallback(m_Memory);
+
+					error = frameCapture.IsMaxCycleCountReached();
+
+					if (error)
+						break;
+				}
+			}
+
+			if (error)
+			{
+				m_ErrorState = true;
+				m_ErrorMessage = "Emulation of 6510 code exceeded cycle window!";
 			}
 		}
 

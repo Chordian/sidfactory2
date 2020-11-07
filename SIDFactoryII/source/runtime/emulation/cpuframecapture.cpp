@@ -3,12 +3,14 @@
 
 namespace Emulation
 {
-	CPUFrameCapture::CPUFrameCapture(CPUmos6510* pCPU, unsigned short usCaptureRangeBegin, unsigned short usCaptureRangeEnd)
+	CPUFrameCapture::CPUFrameCapture(CPUmos6510* pCPU, unsigned short usCaptureRangeBegin, unsigned short usCaptureRangeEnd, unsigned int inMaxCycles)
 		: m_CPU(pCPU)
 		, m_usCaptureRangeBegin(usCaptureRangeBegin)
 		, m_usCaptureRangeEnd(usCaptureRangeEnd)
+		, m_uiMaxCycles(inMaxCycles)
 		, m_uiCurrentRead(0)
 		, m_uiCyclesSpend(0)
+		, m_ReachedMaxCycleCount(false)
 	{
 		// Reset the CPU
 		m_CPU->Reset();
@@ -36,11 +38,14 @@ namespace Emulation
 		m_CPU->SetSuspended(false);
 
 		// Execute instructions until suspending!
-		while (!m_CPU->IsSuspended())
+		while (!m_CPU->IsSuspended() && static_cast<unsigned int>(m_CPU->CycleCounterGetCurrent()) < m_uiMaxCycles)
 			m_CPU->ExecuteInstruction();
 
 		// Record the number of cycles spend on the executing code before the CPU was suspended!
-		m_uiCyclesSpend = (unsigned int)m_CPU->CycleCounterGetCurrent();
+		m_uiCyclesSpend = static_cast<unsigned int>(m_CPU->CycleCounterGetCurrent());
+
+		// Error state
+		m_ReachedMaxCycleCount = m_uiCyclesSpend >= m_uiMaxCycles;
 	}
 
 	void CPUFrameCapture::Write(unsigned short usAddress, unsigned char ucVal, int iCycle)

@@ -48,6 +48,11 @@ namespace Emulation
 		void Lock();
 		void Unlock();
 
+		// Error
+		bool IsInErrorState() const;
+		std::string GetErrorMessage() const;
+		void ClearErrorState();
+
 		// Emulation update
 		void SetEnableUpdate(bool inEnableUpdate);
 		void SetFastForward(unsigned int inFastForwardUpdateCount);
@@ -114,6 +119,10 @@ namespace Emulation
 		unsigned int m_SampleBufferWriteCursor;
 
 		bool m_IsStarted;
+
+		// Error state
+		bool m_ErrorState;
+		std::string m_ErrorMessage;
 
 		// Action
 		std::vector<Action> m_ActionQueue;

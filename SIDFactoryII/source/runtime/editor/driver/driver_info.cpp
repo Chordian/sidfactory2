@@ -282,6 +282,11 @@ namespace Editor
 		m_Descriptor.m_DriverVersionMajor = inReader.ReadByte();
 		m_Descriptor.m_DriverVersionMinor = inReader.ReadByte();
 
+		if (!inReader.IsAtEndAddress())
+			m_Descriptor.m_DriverVersionRevision = inReader.ReadByte();
+		else
+			m_Descriptor.m_DriverVersionRevision = 0;
+
 		m_DriverArchitecture = [driver_type = m_Descriptor.m_DriverType]()
 		{
 			if (driver_type == DriverArchitectureSidFactory2::GetDescriptorType())

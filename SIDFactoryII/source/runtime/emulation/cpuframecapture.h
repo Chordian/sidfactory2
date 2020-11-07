@@ -34,7 +34,7 @@ namespace Emulation
 		};
 
 		// Note: Capture range begin and end values are included 
-		CPUFrameCapture(CPUmos6510* pCPU, unsigned short usCaptureRangeBegin, unsigned short usCaptureRangeEnd);
+		CPUFrameCapture(CPUmos6510* pCPU, unsigned short usCaptureAddressRangeBegin, unsigned short usCaptureAddressRangeEnd, unsigned int inMaxCycles);
 		~CPUFrameCapture();
 
 		void Capture(unsigned short inStartAddress, unsigned char inAccumulatorValue);
@@ -44,17 +44,22 @@ namespace Emulation
 		unsigned int GetCyclesSpend() const { return m_uiCyclesSpend; }
 
 		const WriteCapture& GetNext();
+
+		bool IsMaxCycleCountReached() const { return m_ReachedMaxCycleCount; }
 		bool HasNext() const { return m_aWrites.size() > m_uiCurrentRead; }
 		bool IsEmpty() const { return m_aWrites.size() == 0; }
 
 	private:
 		CPUmos6510* m_CPU;
 
+		bool m_ReachedMaxCycleCount;
+
 		unsigned short m_usCaptureRangeBegin;
 		unsigned short m_usCaptureRangeEnd;
 
 		unsigned int m_uiCurrentRead;
 
+		unsigned int m_uiMaxCycles;
 		unsigned int m_uiCyclesSpend;
 
 		std::vector<WriteCapture> m_aWrites;

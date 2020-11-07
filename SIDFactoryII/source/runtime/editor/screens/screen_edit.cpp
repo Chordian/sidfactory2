@@ -335,6 +335,17 @@ namespace Editor
 		m_TracksComponent->TellPlaybackEventPosition(m_PlaybackCurrentEventPos);
 		m_OrderListOverviewComponent->TellPlaybackEventPosition(m_PlaybackCurrentEventPos);
 
+		m_ExecutionHandler->Lock();
+		if (m_ExecutionHandler->IsInErrorState())
+		{
+			std::string error_message = m_ExecutionHandler->GetErrorMessage();
+			DoStop();
+			m_ExecutionHandler->ClearErrorState();
+
+			m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Emulation error!", error_message, 60, true, []() {}));
+		}
+		m_ExecutionHandler->Unlock();
+
 		m_ComponentsManager->Update(inDeltaTick, m_CPUMemory);
 
 		// Update play timer
