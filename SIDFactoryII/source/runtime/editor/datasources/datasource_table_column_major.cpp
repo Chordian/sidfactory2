@@ -1,7 +1,7 @@
 #include "datasource_table_column_major.h"
 #include "runtime/emulation/cpumemory.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -22,10 +22,10 @@ namespace Editor
 
 	bool DataSourceTableColumnMajor::PushDataToSource()
 	{
-		assert(m_CPUMemory != nullptr);
-		assert(m_CPUMemory->IsLocked());
-		assert(m_Data != nullptr);
-		assert(m_RawDataBuffer != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory->IsLocked());
+		FOUNDATION_ASSERT(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_RawDataBuffer != nullptr);
 
 		int i = 0;
 
@@ -50,9 +50,9 @@ namespace Editor
 
 	void DataSourceTableColumnMajor::PullDataFromSource()
 	{
-		assert(m_CPUMemory != nullptr);
-		assert(m_Data != nullptr);
-		assert(m_RawDataBuffer != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_RawDataBuffer != nullptr);
 
 		m_CPUMemory->Lock();
 		m_CPUMemory->GetData(m_SourceAddress, m_RawDataBuffer, m_DataSize);

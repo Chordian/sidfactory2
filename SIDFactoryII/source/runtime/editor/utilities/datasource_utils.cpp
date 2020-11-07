@@ -1,7 +1,7 @@
 #include "runtime/editor/utilities/datasource_utils.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -29,10 +29,10 @@ namespace Editor
 
 		void CopySequence(const std::shared_ptr<DataSourceSequence>& inSource, unsigned int inOffset, unsigned int inLength, const std::shared_ptr<DataSourceSequence>& inDestination)
 		{
-			assert(inSource != nullptr);
-			assert(inDestination != nullptr);
-			assert(inSource->GetLength() <= inOffset + inLength);
-			assert(inDestination->GetLength() <= inLength);
+			FOUNDATION_ASSERT(inSource != nullptr);
+			FOUNDATION_ASSERT(inDestination != nullptr);
+			FOUNDATION_ASSERT(inSource->GetLength() <= inOffset + inLength);
+			FOUNDATION_ASSERT(inDestination->GetLength() <= inLength);
 
 			for (unsigned int i = 0; i < inLength; ++i)
 				(*inDestination)[i] = (*inSource)[i + inOffset];

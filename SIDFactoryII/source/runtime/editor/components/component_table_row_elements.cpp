@@ -13,7 +13,7 @@
 #include "utils/usercolors.h"
 
 #include "SDL_keycode.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 
@@ -49,8 +49,8 @@ namespace Editor
 		, m_SpaceBarPressed(false)
 		, m_IndexAsContinuousMemory(inIndexAsContinuousMemory)
 	{
-		assert(inDataSource != nullptr);
-		assert(inTextField != nullptr);
+		FOUNDATION_ASSERT(inDataSource != nullptr);
+		FOUNDATION_ASSERT(inTextField != nullptr);
 	}
 
 	ComponentTableRowElements::~ComponentTableRowElements()
@@ -388,9 +388,9 @@ namespace Editor
 
 	void ComponentTableRowElements::ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost)
 	{
-		assert(inRule.m_TargetTableID == m_ComponentID);
-		assert(inRule.m_EvaluationCellIndex < m_DataSource->GetColumnCount());
-		assert(inRule.m_TargetCellIndex < m_DataSource->GetColumnCount());
+		FOUNDATION_ASSERT(inRule.m_TargetTableID == m_ComponentID);
+		FOUNDATION_ASSERT(inRule.m_EvaluationCellIndex < m_DataSource->GetColumnCount());
+		FOUNDATION_ASSERT(inRule.m_TargetCellIndex < m_DataSource->GetColumnCount());
 
 		const int add_value = inIndexPost - inIndexPre;
 
@@ -497,7 +497,7 @@ namespace Editor
 
 	void ComponentTableRowElements::ApplyValueKey(char inValueKey)
 	{
-		assert(m_DataSource != nullptr);
+		FOUNDATION_ASSERT(m_DataSource != nullptr);
 
 		unsigned char value = [&inValueKey]()
 		{

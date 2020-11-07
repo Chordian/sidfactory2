@@ -1,7 +1,7 @@
 #include "auxilary_data_play_markers.h"
 #include "auxilary_data_utils.h"
 #include "utils/c64file.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -28,13 +28,13 @@ namespace Editor
 
 	const int AuxilaryDataPlayMarkers::GetPlayMarkerEventPosition(int inMarkerIndex) const
 	{
-		assert(inMarkerIndex >= 0 && inMarkerIndex < MaxPlayMarkers);
+		FOUNDATION_ASSERT(inMarkerIndex >= 0 && inMarkerIndex < MaxPlayMarkers);
 		return m_PlayMarkerEventPositionList[inMarkerIndex];
 	}
 
 	void AuxilaryDataPlayMarkers::SetPlayMarkerEventPosition(int inMarkerIndex, int inEventPosition)
 	{
-		assert(inMarkerIndex >= 0 && inMarkerIndex < MaxPlayMarkers);
+		FOUNDATION_ASSERT(inMarkerIndex >= 0 && inMarkerIndex < MaxPlayMarkers);
 		m_PlayMarkerEventPositionList[inMarkerIndex] = inEventPosition;
 	}
 

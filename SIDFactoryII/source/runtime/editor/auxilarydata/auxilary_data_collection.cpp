@@ -7,7 +7,7 @@
 
 #include "utils/c64file.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -111,7 +111,7 @@ namespace Editor
 
 		while (true)
 		{
-			assert(inReader.IsAtReadableAddress());
+			FOUNDATION_ASSERT(inReader.IsAtReadableAddress());
 			AuxilaryData::FileHeader header = AuxilaryData::FileHeader::Read(inReader);
 
 			if (end_mark.Read(header, inReader))

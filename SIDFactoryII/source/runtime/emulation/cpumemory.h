@@ -1,7 +1,7 @@
 #if !defined(__MEMORY_H__)
 #define __MEMORY_H__
 
-#include "assert.h"
+#include "foundation/base/assert.h"
 #include "foundation/platform/iplatform.h"
 #include "foundation/platform/imutex.h"
 #include "runtime/emulation/imemoryrandomreadaccess.h"
@@ -18,18 +18,18 @@ namespace Emulation
 
 		const unsigned char& operator[](int inAddress) const override
 		{
-			assert(inAddress >= 0);
-			assert(inAddress < (int)m_nSize);
-			assert(m_IsLocked);
+			FOUNDATION_ASSERT(inAddress >= 0);
+			FOUNDATION_ASSERT(inAddress < (int)m_nSize);
+			FOUNDATION_ASSERT(m_IsLocked);
 
 			return m_Memory[inAddress];
 		}
 
 		unsigned char& operator[](int inAddress)
 		{
-			assert(inAddress >= 0);
-			assert(inAddress < (int)m_nSize);
-			assert(m_IsLocked);
+			FOUNDATION_ASSERT(inAddress >= 0);
+			FOUNDATION_ASSERT(inAddress < (int)m_nSize);
+			FOUNDATION_ASSERT(m_IsLocked);
 
 			return m_Memory[inAddress];
 		}
@@ -58,8 +58,8 @@ namespace Emulation
 		{
 			unsigned int iAddress = static_cast<unsigned int>(static_cast<unsigned char*>(inMemoryOffsetPointer) - m_Memory);
 
-			assert(iAddress < m_nSize);
-			assert(m_IsLocked);
+			FOUNDATION_ASSERT(iAddress < m_nSize);
+			FOUNDATION_ASSERT(m_IsLocked);
 
 			return iAddress;
 		};

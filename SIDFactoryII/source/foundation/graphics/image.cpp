@@ -3,7 +3,7 @@
 #include "resources/data_char.h"
 
 #include "SDL.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Foundation
 {
@@ -12,7 +12,7 @@ namespace Foundation
 		, m_Renderer(inRenderer)
 		, m_Position({ 0, 0 })
 	{
-		assert(inSurface != nullptr);
+		FOUNDATION_ASSERT(inSurface != nullptr);
 		m_Image = SDL_CreateTextureFromSurface(inRenderer, inSurface);
 		
 		m_Width = inSurface->w;

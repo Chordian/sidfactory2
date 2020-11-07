@@ -8,7 +8,7 @@
 #include "runtime/editor/components/component_table_row_elements.h"
 #include "runtime/editor/components_manager.h"
 #include "runtime/emulation/cpumemory.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -34,7 +34,7 @@ namespace Editor
 
 		unsigned char GetTableID(DriverInfo::TableType inTableType, const Editor::DriverInfo& inDriverInfo)
 		{
-			assert(inTableType != DriverInfo::TableType::Generic);
+			FOUNDATION_ASSERT(inTableType != DriverInfo::TableType::Generic);
 
 			const auto& table_definitions = inDriverInfo.GetTableDefinitions();
 
@@ -56,9 +56,9 @@ namespace Editor
 		// Get the instrument table from the cpu memory
 		int instruments_table_id = static_cast<int>(Details::GetTableID(DriverInfo::TableType::Instruments, inDriverInfo));
 		const ComponentTableRowElements* component_instruments = static_cast<const ComponentTableRowElements*>(inComponentManager.GetComponent(instruments_table_id));
-		assert(component_instruments != nullptr);
+		FOUNDATION_ASSERT(component_instruments != nullptr);
 		const DataSourceTable* instruments_table = component_instruments->GetDataSource();
-		assert(instruments_table != nullptr);
+		FOUNDATION_ASSERT(instruments_table != nullptr);
 
 		// Push the instrument values to the instrument data array
 		for (unsigned int i = 0; i < instruments_table->GetColumnCount(); ++i)
@@ -75,10 +75,10 @@ namespace Editor
 			if ((conditional_value & table_pointer_description.m_ConditionValueAndValue) == table_pointer_description.m_ConditionEqualityValue)
 			{
 				const ComponentTableRowElements* component = static_cast<const ComponentTableRowElements*>(inComponentManager.GetComponent(table_pointer_description.m_TableID));
-				assert(component != nullptr);
+				FOUNDATION_ASSERT(component != nullptr);
 
 				const DataSourceTable* table = component->GetDataSource();
-				assert(table != nullptr);
+				FOUNDATION_ASSERT(table != nullptr);
 
 				unsigned char start_index = instrument_data->m_InstrumentData[table_pointer_description.m_InstrumentDataPointerPosition];
 				start_index &= table_pointer_description.m_PointerAndValue;
@@ -87,7 +87,7 @@ namespace Editor
 				tableMapping.BuildFrom(start_index);
 
 				std::shared_ptr<InstrumentDataTable> instrument_data_table = Details::CreateInstrumentDataTable(start_index, table, table_pointer_description);
-				//assert(instrument_data_table != nullptr);
+				//FOUNDATION_ASSERT(instrument_data_table != nullptr);
 				if(instrument_data_table != nullptr)
 					instrument_data->m_InstrumentTableData.push_back(instrument_data_table);
 			}

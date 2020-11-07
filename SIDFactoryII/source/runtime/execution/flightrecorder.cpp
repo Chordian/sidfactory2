@@ -4,7 +4,7 @@
 #include "foundation/platform/imutex.h"
 #include "runtime/emulation/cpumemory.h"
 #include <memory>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Emulation
 {
@@ -71,7 +71,7 @@ namespace Emulation
 
 	void FlightRecorder::Reset()
 	{
-		assert(m_Locked);
+		FOUNDATION_ASSERT(m_Locked);
 
 		m_TopIndex = 0;
 		m_RecordedFrameCount = 0;
@@ -84,22 +84,22 @@ namespace Emulation
 
 	void FlightRecorder::Record(unsigned int inFrame, CPUMemory* inMemory, unsigned int inCyclesSpend)
 	{
-		assert(m_Locked);
-		assert(m_IsRecording);
+		FOUNDATION_ASSERT(m_Locked);
+		FOUNDATION_ASSERT(m_IsRecording);
 
 		if (inMemory != nullptr)
 		{
 			if (m_RecordedFrameCount < m_FrameCapacity)
 			{
-				assert(m_TopIndex == 0);
+				FOUNDATION_ASSERT(m_TopIndex == 0);
 
 				RecordFrame(inFrame, inMemory, inCyclesSpend, m_Frames[m_RecordedFrameCount]);
 				m_RecordedFrameCount++;
 			}
 			else
 			{
-				assert(m_RecordedFrameCount == m_FrameCapacity);
-				assert(m_TopIndex < m_FrameCapacity);
+				FOUNDATION_ASSERT(m_RecordedFrameCount == m_FrameCapacity);
+				FOUNDATION_ASSERT(m_TopIndex < m_FrameCapacity);
 
 				RecordFrame(inFrame, inMemory, inCyclesSpend, m_Frames[m_TopIndex]);
 				m_TopIndex++;
@@ -112,7 +112,7 @@ namespace Emulation
 
 	unsigned int FlightRecorder::RecordedFrameCount() const
 	{
-		assert(m_Locked);
+		FOUNDATION_ASSERT(m_Locked);
 		return m_RecordedFrameCount;
 	}
 
@@ -120,14 +120,14 @@ namespace Emulation
 
 	const FlightRecorder::Frame& FlightRecorder::GetFrame(unsigned int inIndex) const
 	{
-		assert(m_Locked);
+		FOUNDATION_ASSERT(m_Locked);
 
 		inIndex += m_TopIndex;
 
 		if (inIndex >= m_FrameCapacity)
 			inIndex -= m_FrameCapacity;
 
-		assert(inIndex >= 0 && inIndex < m_FrameCapacity);
+		FOUNDATION_ASSERT(inIndex >= 0 && inIndex < m_FrameCapacity);
 
 		return m_Frames[inIndex];
 	}
@@ -136,7 +136,7 @@ namespace Emulation
 
 	void FlightRecorder::RecordFrame(unsigned int inFrame, CPUMemory* inMemory, unsigned int inCyclesSpend, Frame& inFrameData)
 	{
-		assert(m_Locked);
+		FOUNDATION_ASSERT(m_Locked);
 
 		inFrameData.m_nFrameNumber = inFrame;
 		inFrameData.m_nCyclesSpend = inCyclesSpend;

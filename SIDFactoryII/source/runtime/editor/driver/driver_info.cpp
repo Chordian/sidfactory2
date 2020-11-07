@@ -5,7 +5,7 @@
 
 #include "utils/c64file.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -30,8 +30,8 @@ namespace Editor
 
 	void DriverInfo::Parse(const Utility::C64File& inFile)
 	{
-		assert(!m_IsValid);
-		assert(m_ParsedDescriptorBlocks == 0);
+		FOUNDATION_ASSERT(!m_IsValid);
+		FOUNDATION_ASSERT(m_ParsedDescriptorBlocks == 0);
 
 		// Search for start address
 		unsigned short top_address = inFile.GetTopAddress();
@@ -70,28 +70,28 @@ namespace Editor
 
 	const DriverInfo::Descriptor& DriverInfo::GetDescriptor() const
 	{
-		assert(HasParsedHeaderBlock(HeaderBlockID::ID_Descriptor));
+		FOUNDATION_ASSERT(HasParsedHeaderBlock(HeaderBlockID::ID_Descriptor));
 		return m_Descriptor;
 	}
 
 
 	const DriverInfo::DriverCommon& DriverInfo::GetDriverCommon() const
 	{
-		assert(HasParsedHeaderBlock(HeaderBlockID::ID_DriverCommon));
+		FOUNDATION_ASSERT(HasParsedHeaderBlock(HeaderBlockID::ID_DriverCommon));
 		return m_DriverCommon;
 	}
 
 
 	const DriverInfo::MusicData& DriverInfo::GetMusicData() const
 	{
-		assert(HasParsedHeaderBlock(HeaderBlockID::ID_MusicData));
+		FOUNDATION_ASSERT(HasParsedHeaderBlock(HeaderBlockID::ID_MusicData));
 		return m_MusicData;
 	}
 
 
 	const std::vector<DriverInfo::TableDefinition>& DriverInfo::GetTableDefinitions() const
 	{
-		assert(HasParsedHeaderBlock(HeaderBlockID::ID_DriverTables));
+		FOUNDATION_ASSERT(HasParsedHeaderBlock(HeaderBlockID::ID_DriverTables));
 		return m_TableDefinitions;
 	}
 
@@ -128,7 +128,7 @@ namespace Editor
 
 	IDriverArchitecture* const DriverInfo::GetDriverArchitecture() const
 	{
-		assert(m_DriverArchitecture != nullptr);
+		FOUNDATION_ASSERT(m_DriverArchitecture != nullptr);
 		return m_DriverArchitecture.get();
 	}
 

@@ -4,7 +4,7 @@
 #ifdef _SF2_WINDOWS
 #include "libraries/ghc/fs_std.h"
 #include <windows.h>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Foundation
 {
@@ -43,7 +43,7 @@ namespace Foundation
 
 	std::string PlatformSDLWindows::Storage_GetLogicalDriveName(unsigned int inLogicalDrive) const
 	{
-		assert(inLogicalDrive < m_LogicalDrivesList.size());
+		FOUNDATION_ASSERT(inLogicalDrive < m_LogicalDrivesList.size());
 		return m_LogicalDrivesList[inLogicalDrive];
 	}
 

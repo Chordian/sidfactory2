@@ -9,7 +9,7 @@
 #include "runtime/emulation/cpumemory.h"
 
 #include <algorithm>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {

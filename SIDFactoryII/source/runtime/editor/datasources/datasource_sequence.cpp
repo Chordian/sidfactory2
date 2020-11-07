@@ -3,7 +3,7 @@
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/driver/driver_state.h"
 #include <cstring>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -67,16 +67,16 @@ namespace Editor
 
 	DataSourceSequence::Event& DataSourceSequence::operator[](int inIndex)
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < MaxEventCount);
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < MaxEventCount);
 
 		return m_Events[inIndex];
 	}
 
 	const DataSourceSequence::Event& DataSourceSequence::operator[](int inIndex) const
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < MaxEventCount);
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < MaxEventCount);
 
 		return m_Events[inIndex];
 	}
@@ -85,9 +85,9 @@ namespace Editor
 
 	bool DataSourceSequence::PushDataToSource()
 	{
-		assert(m_CPUMemory != nullptr);
-		assert(m_CPUMemory->IsLocked());
-		assert(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory->IsLocked());
+		FOUNDATION_ASSERT(m_Data != nullptr);
 
 		const bool may_push_sequence_data = [&]()
 		{
@@ -150,7 +150,7 @@ namespace Editor
 
 	void DataSourceSequence::SetLength(unsigned int inLength)
 	{
-		assert(inLength <= MaxEventCount);
+		FOUNDATION_ASSERT(inLength <= MaxEventCount);
 		m_Length = inLength;
 	}
 
@@ -159,8 +159,8 @@ namespace Editor
 
 	void DataSourceSequence::PullDataFromSource()
 	{
-		assert(m_CPUMemory != nullptr);
-		assert(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_Data != nullptr);
 
 		m_CPUMemory->Lock();
 		m_CPUMemory->GetData(m_SourceAddress, m_Data, m_DataSize);
@@ -218,7 +218,7 @@ namespace Editor
 				m_LastCommandSet = value & 0x3f;
 				value = m_Data[i++];
 
-				assert(i < 0x100);
+				FOUNDATION_ASSERT(i < 0x100);
 			}
 			else
 				m_Events[event_index].m_Command = 0x80;
@@ -229,7 +229,7 @@ namespace Editor
 				m_LastInstrumentSet = value & 0x1f;
 				value = m_Data[i++];
 
-				assert(i < 0x100);
+				FOUNDATION_ASSERT(i < 0x100);
 			}
 			else
 				m_Events[event_index].m_Instrument = 0x80;
@@ -245,10 +245,10 @@ namespace Editor
 
 				value = m_Data[i++];
 
-				assert(i < 0x100);
+				FOUNDATION_ASSERT(i < 0x100);
 			}
 
-			assert(value < 0x80);
+			FOUNDATION_ASSERT(value < 0x80);
 
 			m_Events[event_index++].m_Note = value;
 
@@ -365,7 +365,7 @@ namespace Editor
 
 	void DataSourceSequence::SendPackedDataToBuffer(const PackResult& inPackResult)
 	{
-		assert(inPackResult.m_DataLength <= m_DataSize);
+		FOUNDATION_ASSERT(inPackResult.m_DataLength <= m_DataSize);
 
 		memset(m_Data, 0, m_DataSize);
 		memcpy(m_Data, &*inPackResult.m_Data, inPackResult.m_DataLength);

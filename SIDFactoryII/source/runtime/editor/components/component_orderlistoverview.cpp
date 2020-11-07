@@ -11,7 +11,7 @@
 
 #include "utils/usercolors.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 using namespace Utility;

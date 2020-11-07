@@ -2,7 +2,7 @@
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/components_manager.h"
 #include "utils/c64file.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -19,8 +19,8 @@ namespace Editor
 	bool ConverterNull::CanConvert(const void* inData, unsigned int inDataSize) const
 	{
 		// Assert that there's is some data in the first place
-		assert(inData != nullptr);
-		assert(inDataSize > 0);
+		FOUNDATION_ASSERT(inData != nullptr);
+		FOUNDATION_ASSERT(inDataSize > 0);
 
 		return false;
 	}
@@ -34,7 +34,7 @@ namespace Editor
 
 	bool ConverterNull::Update() 
 	{
-		assert(GetState() != State::Uninitialized);
+		FOUNDATION_ASSERT(GetState() != State::Uninitialized);
 
 		if (GetState() == State::Initialized)
 		{

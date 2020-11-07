@@ -27,7 +27,7 @@
 #include "utils/usercolors.h"
 
 #include <string>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 using namespace Utility;
@@ -523,7 +523,7 @@ namespace Editor
 
 	void ComponentTrack::SetEventPosition(int inEventPos)
 	{
-		assert(inEventPos >= 0);
+		FOUNDATION_ASSERT(inEventPos >= 0);
 
 		m_EventPos = inEventPos;
 		m_TopEventPos = inEventPos - m_FocusRow.m_RowsAbove;
@@ -670,7 +670,7 @@ namespace Editor
 			EventPosDetails event_pos_details = GetEventPosDetails(m_EventPos);
 			if (event_pos_details.m_OrderListIndex >= 0)
 			{
-				assert(event_pos_details.m_OrderListIndex < 0x100);
+				FOUNDATION_ASSERT(event_pos_details.m_OrderListIndex < 0x100);
 
 				m_DataSourceOrderList->SetLoopIndex(static_cast<unsigned char>(event_pos_details.m_OrderListIndex));
 
@@ -695,7 +695,7 @@ namespace Editor
 		for (int i = 0; i < loop_index; ++i)
 		{
 			const auto& entry = (*m_DataSourceOrderList)[i];
-			assert(entry.m_Transposition < 0xfe);
+			FOUNDATION_ASSERT(entry.m_Transposition < 0xfe);
 			const int sequence_length = m_DataSourceSequenceList[entry.m_SequenceIndex]->GetLength();
 			event_position += sequence_length;
 		}
@@ -789,9 +789,9 @@ namespace Editor
 
 	bool ComponentTrack::BeginOrderListInput()
 	{
-		assert(m_DataSourceOrderList != nullptr);
-		assert(m_DataSourceSequenceList.size() > 0);
-		assert(!m_TakingOrderListInput);
+		FOUNDATION_ASSERT(m_DataSourceOrderList != nullptr);
+		FOUNDATION_ASSERT(m_DataSourceSequenceList.size() > 0);
+		FOUNDATION_ASSERT(!m_TakingOrderListInput);
 
 		const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
 
@@ -837,9 +837,9 @@ namespace Editor
 
 	void ComponentTrack::ApplyOrderListInputValue()
 	{
-		assert(m_DataSourceOrderList != nullptr);
-		assert(m_DataSourceSequenceList.size() > 0);
-		assert(m_TakingOrderListInput);
+		FOUNDATION_ASSERT(m_DataSourceOrderList != nullptr);
+		FOUNDATION_ASSERT(m_DataSourceSequenceList.size() > 0);
+		FOUNDATION_ASSERT(m_TakingOrderListInput);
 
 		AddUndoStep();
 
@@ -1017,7 +1017,7 @@ namespace Editor
 
 	int ComponentTrack::ApplySequenceValueKey(char inValueKey)
 	{
-		assert(!IsCursorAtSequenceNote());
+		FOUNDATION_ASSERT(!IsCursorAtSequenceNote());
 
 		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
 
@@ -1093,7 +1093,7 @@ namespace Editor
 
 	int ComponentTrack::ApplySequenceNoteValue(int inNoteValue)
 	{
-		assert(IsCursorAtSequenceNote());
+		FOUNDATION_ASSERT(IsCursorAtSequenceNote());
 
 		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
 
@@ -1507,7 +1507,7 @@ namespace Editor
 
 				int dest_index = sequence_data_source_length + inLineCount - 1;
 
-				assert(sequence_data_source_length > 0);
+				FOUNDATION_ASSERT(sequence_data_source_length > 0);
 				for (unsigned int i = sequence_data_source_length - 1; i > m_EventPosDetails.m_SequenceIndex; --i, --dest_index)
 				{
 					DataSourceSequence::Event& event = (*sequence_data_source)[i];
@@ -2078,7 +2078,7 @@ namespace Editor
 
 	void ComponentTrack::DoSetInstrumentIndexValue(unsigned char inValue)
 	{
-		assert(inValue >= 0 && inValue < 0x20);
+		FOUNDATION_ASSERT(inValue >= 0 && inValue < 0x20);
 
 		if (!m_FocusModeOrderList)
 		{
@@ -2105,7 +2105,7 @@ namespace Editor
 
 	void ComponentTrack::DoSetCommandIndexValue(unsigned char inValue)
 	{
-		assert(inValue >= 0 && inValue < 0x40);
+		FOUNDATION_ASSERT(inValue >= 0 && inValue < 0x40);
 
 		if (!m_FocusModeOrderList)
 		{

@@ -1,7 +1,7 @@
 #include "auxilary_data_table_text.h"
 #include "auxilary_data_utils.h"
 #include "utils/c64file.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -89,7 +89,7 @@ namespace Editor
 
 		for (const auto& table_text_list : m_TableTextLists)
 		{
-			assert(table_text_list.m_TextEntries.size() < 65536);
+			FOUNDATION_ASSERT(table_text_list.m_TextEntries.size() < 65536);
 
 			AuxilaryDataUtils::SaveDataPushInt(output, table_text_list.m_TableID);
 			AuxilaryDataUtils::SaveDataPushWord(output, static_cast<unsigned short>(table_text_list.m_TextEntries.size()));

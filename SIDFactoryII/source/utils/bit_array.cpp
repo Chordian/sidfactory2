@@ -1,5 +1,5 @@
 #include "bit_array.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Utility
 {
@@ -58,7 +58,7 @@ namespace Utility
 
 	bool BitArray::IsSet(unsigned int inBit) const
 	{
-		assert(inBit < m_Size);
+		FOUNDATION_ASSERT(inBit < m_Size);
 
 		unsigned int buffer_index = inBit >> 5;
 		unsigned int buffer_slot_mask = 1 << (inBit & 0x1f);
@@ -68,7 +68,7 @@ namespace Utility
 
 	void BitArray::Set(unsigned int inBit)
 	{
-		assert(inBit < m_Size);
+		FOUNDATION_ASSERT(inBit < m_Size);
 
 		unsigned int buffer_index = inBit >> 5;
 		unsigned int buffer_slot_mask = 1 << (inBit & 0x1f);
@@ -78,7 +78,7 @@ namespace Utility
 
 	void BitArray::Clear(unsigned int inBit)
 	{
-		assert(inBit < m_Size);
+		FOUNDATION_ASSERT(inBit < m_Size);
 
 		unsigned int buffer_index = inBit >> 5;
 		unsigned int buffer_slot_mask = 1 << (inBit & 0x1f);

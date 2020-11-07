@@ -7,7 +7,7 @@
 #include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/emulation/cpumemory.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -15,7 +15,7 @@ namespace Editor
 	{
 		void PrepareSequenceData(const Editor::DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
 		{
-			assert(inCPUMemory.IsLocked());
+			FOUNDATION_ASSERT(inCPUMemory.IsLocked());
 
 			if (inDriverInfo.IsValid())
 			{
@@ -39,7 +39,7 @@ namespace Editor
 
 		void PrepareSequencePointers(const Editor::DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
 		{
-			assert(inCPUMemory.IsLocked());
+			FOUNDATION_ASSERT(inCPUMemory.IsLocked());
 
 			if (inDriverInfo.IsValid())
 			{

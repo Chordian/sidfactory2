@@ -9,6 +9,7 @@
 
 #include "foundation/platform/iplatform.h"
 #include "foundation/platform/imutex.h"
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 
@@ -136,7 +137,7 @@ namespace Emulation
 
 			while (uiRemainingSamples > 0)
 			{
-				assert(m_SampleBufferReadCursor <= m_SampleBufferWriteCursor);
+				FOUNDATION_ASSERT(m_SampleBufferReadCursor <= m_SampleBufferWriteCursor);
 
 				if (m_SampleBufferReadCursor >= m_SampleBufferWriteCursor)
 				{
@@ -265,7 +266,7 @@ namespace Emulation
 
 	void ExecutionHandler::StartWriteOutputToFile(const std::string& inFilename)
 	{
-		assert(m_SIDProxy != nullptr);
+		FOUNDATION_ASSERT(m_SIDProxy != nullptr);
 		Lock();
 		m_SIDProxy->StartRecordToFile(inFilename);
 		Unlock();
@@ -273,7 +274,7 @@ namespace Emulation
 
 	void ExecutionHandler::StopWriteOutputToFile()
 	{
-		assert(m_SIDProxy != nullptr);
+		FOUNDATION_ASSERT(m_SIDProxy != nullptr);
 		Lock();
 		m_SIDProxy->StopRecordToFile();
 		Unlock();
@@ -281,7 +282,7 @@ namespace Emulation
 
 	bool ExecutionHandler::IsWritingOutputToFile() const
 	{
-		assert(m_SIDProxy != nullptr);
+		FOUNDATION_ASSERT(m_SIDProxy != nullptr);
 		return m_SIDProxy->IsRecordingToFile();
 	}
 
@@ -301,7 +302,7 @@ namespace Emulation
             break;
 		}
 
-		assert(false);
+		FOUNDATION_ASSERT(false);
 
 		return 0x0000;
 	}
@@ -324,19 +325,19 @@ namespace Emulation
 			const int nSamplesWritten = m_SIDProxy->Clock(inDeltaCycles, sample_buffer_write_location, uiRemaningSamplesInBuffer);
 
 			// Negative sample count written is invalid!
-			assert(nSamplesWritten >= 0);
+			FOUNDATION_ASSERT(nSamplesWritten >= 0);
 
 			// Move the write cursor 
 			m_SampleBufferWriteCursor += static_cast<unsigned int>(nSamplesWritten);
 
 			// Make sure there's no overflow
-			assert(m_SampleBufferWriteCursor <= m_SampleBufferSize);
+			FOUNDATION_ASSERT(m_SampleBufferWriteCursor <= m_SampleBufferSize);
 		}
 	}
 
 	void ExecutionHandler::CaptureNewFrame()
 	{
-		assert(m_CPU != nullptr);
+		FOUNDATION_ASSERT(m_CPU != nullptr);
 
 		// Lock execution handler
 		Lock();
@@ -426,7 +427,7 @@ namespace Emulation
 		{
 			const CPUFrameCapture::WriteCapture& capture = frameCapture.GetNext();
 
-			assert(nCycle <= capture.m_iCycle);
+			FOUNDATION_ASSERT(nCycle <= capture.m_iCycle);
 
 			const int deltaCycles = capture.m_iCycle - nCycle;
 			SimulateSID(deltaCycles);

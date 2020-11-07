@@ -13,7 +13,7 @@
 #include "libraries/ghc/fs_std.h"
 #include "foundation/platform/iplatform.h"
 #include "foundation/graphics/textfield.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace fs;
 
@@ -49,8 +49,8 @@ namespace Editor
 	bool ConverterJCH::CanConvert(const void* inData, unsigned int inDataSize) const
 	{
 		// Assert that there's is some data in the first place exists. If there isn't, this should have been caught earlier
-		assert(inData != nullptr);
-		assert(inDataSize > 0);
+		FOUNDATION_ASSERT(inData != nullptr);
+		FOUNDATION_ASSERT(inDataSize > 0);
 
 		const unsigned short address_version = 0x0fee;
 
@@ -95,9 +95,9 @@ namespace Editor
 
 	bool ConverterJCH::Update()
 	{
-		assert(GetState() != State::Uninitialized);
-		assert(m_CPUMemory == nullptr);
-		assert(m_Platform != nullptr);
+		FOUNDATION_ASSERT(GetState() != State::Uninitialized);
+		FOUNDATION_ASSERT(m_CPUMemory == nullptr);
+		FOUNDATION_ASSERT(m_Platform != nullptr);
 
 		if (GetState() == State::Initialized)
 		{
@@ -222,8 +222,8 @@ namespace Editor
 
 	void ConverterJCH::GatherInputInfo()
 	{
-		assert(m_InputData != nullptr);
-		assert(m_InputData->GetTopAddress() == 0x0f00);
+		FOUNDATION_ASSERT(m_InputData != nullptr);
+		FOUNDATION_ASSERT(m_InputData->GetTopAddress() == 0x0f00);
 
 		const unsigned short address_fine_tune = 0x0fba;
 		const unsigned short address_pointer_wave_table = 0x0fbc;

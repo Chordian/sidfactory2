@@ -1,7 +1,7 @@
 #include "datasource_memory.h"
 #include "runtime/emulation/cpumemory.h"
 #include <cstring>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {

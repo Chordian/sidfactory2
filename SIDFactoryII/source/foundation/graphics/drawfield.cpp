@@ -1,7 +1,7 @@
 #include "drawfield.h"
 #include "viewport.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Foundation
 {
@@ -13,10 +13,10 @@ namespace Foundation
 		, m_Enabled(false)
 	{
 		m_Surface = SDL_CreateRGBSurface(0, inWidth, inHeight, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-		assert(m_Surface);
+		FOUNDATION_ASSERT(m_Surface);
 
 		m_Texture = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, inWidth, inHeight);
-		assert(m_Texture);
+		FOUNDATION_ASSERT(m_Texture);
 	}
 
 
@@ -83,7 +83,7 @@ namespace Foundation
 
 	void DrawField::Clear(const Color& inColor)
 	{
-		assert(m_Surface != nullptr);
+		FOUNDATION_ASSERT(m_Surface != nullptr);
 
 		const unsigned int color = m_Viewport.GetPalette().GetColorARGB(inColor);
 		unsigned char* buffer = static_cast<unsigned char*>(m_Surface->pixels);
@@ -100,7 +100,7 @@ namespace Foundation
 
 	void DrawField::DrawDot(const Color& inColor, int inX, int inY)
 	{
-		assert(m_Surface != nullptr);
+		FOUNDATION_ASSERT(m_Surface != nullptr);
 
 		if (m_Dimensions.Contains({ inX, inY }))
 		{
@@ -115,7 +115,7 @@ namespace Foundation
 
 	void DrawField::DrawLine(const Color& inColor, int inX1, int inY1, int inX2, int inY2)
 	{
-		assert(m_Surface != nullptr);
+		FOUNDATION_ASSERT(m_Surface != nullptr);
 
 		const int lenX = abs(inX1 - inX2);
 		const int lenY = abs(inY1 - inY2);

@@ -1,5 +1,5 @@
 #include "runtime/editor/undo/undostep.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -8,7 +8,7 @@ namespace Editor
 		, m_ComponentData(inComponentUndoData)
 		, m_RestorePostExecution(inRestorePostFunction)
 	{
-		assert(inData != nullptr);
+		FOUNDATION_ASSERT(inData != nullptr);
 	}
 
 	UndoStep::~UndoStep()
@@ -18,7 +18,7 @@ namespace Editor
 
 	const unsigned char* UndoStep::GetData() const
 	{
-		assert(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_Data != nullptr);
 		return m_Data;
 	}
 

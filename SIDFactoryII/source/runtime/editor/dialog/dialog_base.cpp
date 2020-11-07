@@ -3,7 +3,7 @@
 #include "runtime/editor/components_manager.h"
 #include "runtime/emulation/cpumemory.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {

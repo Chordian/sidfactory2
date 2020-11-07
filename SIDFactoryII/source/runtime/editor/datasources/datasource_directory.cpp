@@ -43,8 +43,8 @@ namespace Editor
 
 	DataSourceDirectory::SelectResult DataSourceDirectory::Select(int inIndex)
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < static_cast<int>(m_List.size()));
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < static_cast<int>(m_List.size()));
 
 		const DirectoryEntry& entry = (*this)[inIndex];
         std::error_code error_code;
@@ -70,7 +70,7 @@ namespace Editor
 
 			return SelectResult::SelectFileSucceeded;
 		default:
-			assert(false);
+			FOUNDATION_ASSERT(false);
 			break;
 		}
 
@@ -118,8 +118,8 @@ namespace Editor
 
 	const DirectoryEntry& DataSourceDirectory::GetFileSelection() const
 	{
-		assert(m_HasFileSelection);
-		assert(m_SelectedFileIndex >= 0 && m_SelectedFileIndex < static_cast<int>(m_List.size()));
+		FOUNDATION_ASSERT(m_HasFileSelection);
+		FOUNDATION_ASSERT(m_SelectedFileIndex >= 0 && m_SelectedFileIndex < static_cast<int>(m_List.size()));
 
 		return m_List[m_SelectedFileIndex];
 	}

@@ -12,7 +12,7 @@
 #include "runtime/emulation/cpumemory.h"
 
 #include <vector>
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <algorithm>
 
 using namespace Foundation;
@@ -85,7 +85,7 @@ namespace Editor
 	{
 		if (!m_Suspended)
 		{
-			assert(m_ActiveDialog == nullptr);
+			FOUNDATION_ASSERT(m_ActiveDialog == nullptr);
 			Suspend();
 
 			m_ActiveDialog = inDialog;
@@ -95,7 +95,7 @@ namespace Editor
 		{
 			if (m_ActiveDialog != nullptr)
 			{
-				assert(m_ActiveDialog->IsDone());
+				FOUNDATION_ASSERT(m_ActiveDialog->IsDone());
 
 				m_ActiveDialog->Deactivate(m_Viewport);
 				m_ActiveDialog = inDialog;
@@ -113,9 +113,9 @@ namespace Editor
 
 	void ComponentsManager::CancelDialog()
 	{
-		assert(m_ActiveDialog != nullptr);
-		assert(m_Suspended);
-		assert(!m_ActiveDialog->IsDone());
+		FOUNDATION_ASSERT(m_ActiveDialog != nullptr);
+		FOUNDATION_ASSERT(m_Suspended);
+		FOUNDATION_ASSERT(!m_ActiveDialog->IsDone());
 
 		m_ActiveDialog->Cancel();
 		m_ActiveDialog->Deactivate(m_Viewport);
@@ -140,7 +140,7 @@ namespace Editor
 
 	void ComponentsManager::AddComponent(std::shared_ptr<ComponentBase> inComponent)
 	{
-		assert(inComponent != nullptr);
+		FOUNDATION_ASSERT(inComponent != nullptr);
 
 		// Get incoming component id
 		const int incoming_component_id = inComponent->GetComponentID();
@@ -148,8 +148,8 @@ namespace Editor
 		// Check if the component or a component with the same id is already in the list of components
 		for (const auto& component : m_Components)
 		{
-			assert(component != inComponent);
-			assert(component->GetComponentID() != incoming_component_id);
+			FOUNDATION_ASSERT(component != inComponent);
+			FOUNDATION_ASSERT(component->GetComponentID() != incoming_component_id);
 		}
 
 		m_Components.push_back(inComponent);
@@ -204,7 +204,7 @@ namespace Editor
 
 	void ComponentsManager::SetGroupEnabledForInput(unsigned int inGroup, bool inEnable)
 	{
-		assert(inGroup < sizeof(m_EnabledInputGroups) * 8);
+		FOUNDATION_ASSERT(inGroup < sizeof(m_EnabledInputGroups) * 8);
 
 		if (inEnable)
 			m_EnabledInputGroups |= 1 << inGroup;
@@ -215,14 +215,14 @@ namespace Editor
 
 	bool ComponentsManager::IsGroupEnabledForInput(unsigned int inGroup) const
 	{
-		assert(inGroup < sizeof(m_EnabledInputGroups) * 8);
+		FOUNDATION_ASSERT(inGroup < sizeof(m_EnabledInputGroups) * 8);
 		return (m_EnabledInputGroups & (1 << inGroup)) != 0;
 	}
 
 
 	void ComponentsManager::SetGroupEnabledForTabbing(unsigned int inGroup)
 	{
-		assert(inGroup < MAX_TAB_GROUP_COUNT);
+		FOUNDATION_ASSERT(inGroup < MAX_TAB_GROUP_COUNT);
 
 		if (m_EnabledTabGroup != inGroup && IsGroupEnabledForInput(inGroup))
 		{
@@ -242,7 +242,7 @@ namespace Editor
 
 	bool ComponentsManager::IsTabGroupEnabled(unsigned int inGroup) const
 	{
-		assert(inGroup < MAX_TAB_GROUP_COUNT);
+		FOUNDATION_ASSERT(inGroup < MAX_TAB_GROUP_COUNT);
 		return (m_EnabledTabGroup == inGroup && IsGroupEnabledForInput(inGroup));
 	}
 

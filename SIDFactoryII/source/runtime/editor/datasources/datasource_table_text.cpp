@@ -1,6 +1,6 @@
 #include "runtime/editor/datasources/datasource_table_text.h"
 #include "runtime/editor/auxilarydata/auxilary_data_table_text.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {

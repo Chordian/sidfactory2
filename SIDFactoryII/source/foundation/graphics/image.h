@@ -3,9 +3,9 @@
 #include <string>
 #include "SDL.h"
 
-#include "color.h"
-#include "types.h"
-#include "imanaged.h"
+#include "foundation/graphics/color.h"
+#include "foundation/graphics/imanaged.h"
+#include "foundation/base/types.h"
 
 namespace Foundation
 {

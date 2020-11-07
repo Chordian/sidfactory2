@@ -3,7 +3,7 @@
 
 #include "libraries/residfp/SID.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <cmath>
 
 namespace Emulation
@@ -113,13 +113,13 @@ namespace Emulation
 
 	void SIDProxy::StartRecordToFile(const std::string& inFileName)
 	{
-		assert(m_FileName.empty());
+		FOUNDATION_ASSERT(m_FileName.empty());
 		m_FileName = inFileName;
 	}
 
 	void SIDProxy::StopRecordToFile()
 	{
-		assert(!m_FileName.empty());
+		FOUNDATION_ASSERT(!m_FileName.empty());
 
 		if (m_FileOutput.size() > 0)
 		{
@@ -168,14 +168,14 @@ namespace Emulation
 
 	void SIDProxy::Reset()
 	{
-		assert(m_pSID != nullptr);
+		FOUNDATION_ASSERT(m_pSID != nullptr);
 
 		m_pSID->reset();
 	}
 
 	int SIDProxy::Clock(int& nDeltaCycles, short* pBuffer, int nBufferSize)
 	{
-		assert(m_pSID != nullptr);
+		FOUNDATION_ASSERT(m_pSID != nullptr);
 
 		// Cast to reSid type
 		unsigned int nInternalDeltaCycles = static_cast<unsigned int>(nDeltaCycles);
@@ -210,7 +210,7 @@ namespace Emulation
 
 	void SIDProxy::Write(unsigned char ucReg, unsigned char ucValue)
 	{
-		assert(m_pSID != nullptr);
+		FOUNDATION_ASSERT(m_pSID != nullptr);
 		m_pSID->write(static_cast<int>(ucReg), static_cast<unsigned char>(ucValue));
 	}
 }

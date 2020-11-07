@@ -95,7 +95,7 @@ namespace Emulation
 			inline void AddCycles(int iCycles) { m_iCycle += iCycles; }
 
 			// Memory
-			inline CPUMemory& GetMemory() { assert(m_Memory); return *m_Memory; }
+			inline CPUMemory& GetMemory() { FOUNDATION_ASSERT(m_Memory); return *m_Memory; }
 			inline void MemoryWrite(void* pAddress, unsigned char ucVal)
 			{
 				if(m_pWriteCallback != nullptr)

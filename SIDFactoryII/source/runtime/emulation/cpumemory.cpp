@@ -1,6 +1,6 @@
 #include "cpumemory.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <string.h>
 
 namespace Emulation
@@ -10,7 +10,7 @@ namespace Emulation
 		, m_IsLocked(false)
 		, m_MemorySnapshot(nullptr)
 	{
-		assert(inPlatform != nullptr);
+		FOUNDATION_ASSERT(inPlatform != nullptr);
 
 		m_Memory = new unsigned char[nSize];
 		m_Mutex = inPlatform->CreateMutex();
@@ -49,7 +49,7 @@ namespace Emulation
 
 	void CPUMemory::Clear()
 	{
-		assert(m_Memory != nullptr);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
 		memset(m_Memory, 0, m_nSize);
 	}
 
@@ -57,9 +57,9 @@ namespace Emulation
 
 	void CPUMemory::TakeSnapshot()
 	{
-		assert(m_Memory != nullptr);
-		assert(m_MemorySnapshot == nullptr);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
+		FOUNDATION_ASSERT(m_MemorySnapshot == nullptr);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		m_MemorySnapshot = new unsigned char[m_nSize];
 		memcpy(m_MemorySnapshot, m_Memory, m_nSize);
@@ -67,17 +67,17 @@ namespace Emulation
 
 	void CPUMemory::RestoreFromSnapshot()
 	{
-		assert(m_Memory != nullptr);
-		assert(m_MemorySnapshot != nullptr);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
+		FOUNDATION_ASSERT(m_MemorySnapshot != nullptr);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		memcpy(m_Memory, m_MemorySnapshot, m_nSize);
 	}
 
 	void CPUMemory::FlushSnapshot()
 	{
-		assert(m_MemorySnapshot != nullptr);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(m_MemorySnapshot != nullptr);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		delete[] m_MemorySnapshot;
 		m_MemorySnapshot = nullptr;
@@ -87,28 +87,28 @@ namespace Emulation
 
 	unsigned char CPUMemory::GetByte(unsigned int nAddress) const
 	{
-		assert(m_Memory != nullptr);
-		assert(nAddress < m_nSize);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
+		FOUNDATION_ASSERT(nAddress < m_nSize);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		return m_Memory[nAddress];
 	}
 
 	unsigned short CPUMemory::GetWord(unsigned int nAddress) const
 	{
-		assert(m_Memory != nullptr);
-		assert(nAddress < m_nSize - 1);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
+		FOUNDATION_ASSERT(nAddress < m_nSize - 1);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		return (unsigned short)m_Memory[nAddress] | (((unsigned short)m_Memory[nAddress + 1]) << 8);
 	}
 
 	void CPUMemory::GetData(unsigned int inAddress, void* inDestinationBuffer, unsigned int inDestinationBufferByteCount) const
 	{
-		assert(inDestinationBuffer != nullptr);
-		assert(m_Memory != nullptr);
-		assert(inAddress < m_nSize + inDestinationBufferByteCount);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(inDestinationBuffer != nullptr);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
+		FOUNDATION_ASSERT(inAddress < m_nSize + inDestinationBufferByteCount);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		unsigned char* pDest = (unsigned char*)inDestinationBuffer;
 
@@ -120,18 +120,18 @@ namespace Emulation
 
 	void CPUMemory::SetByte(unsigned int nAddress, unsigned char ucByte)
 	{
-		assert(m_Memory != nullptr);
-		assert(nAddress < m_nSize);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
+		FOUNDATION_ASSERT(nAddress < m_nSize);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		m_Memory[nAddress] = ucByte;
 	}
 
 	void CPUMemory::SetWord(unsigned int nAddress, unsigned short usWord)
 	{
-		assert(m_Memory != nullptr);
-		assert(nAddress < m_nSize - 1);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
+		FOUNDATION_ASSERT(nAddress < m_nSize - 1);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		m_Memory[nAddress] = (unsigned char)(usWord & 0x00ff);
 		m_Memory[nAddress + 1] = (unsigned char)((usWord & 0xff00) >> 8);
@@ -139,10 +139,10 @@ namespace Emulation
 
 	void CPUMemory::SetData(unsigned int nAddress, const void* pSourceBuffer, unsigned int nSourceBufferByteCount)
 	{
-		assert(pSourceBuffer != nullptr);
-		assert(m_Memory != nullptr);
-		assert(nAddress < m_nSize + nSourceBufferByteCount);
-		assert(m_IsLocked);
+		FOUNDATION_ASSERT(pSourceBuffer != nullptr);
+		FOUNDATION_ASSERT(m_Memory != nullptr);
+		FOUNDATION_ASSERT(nAddress < m_nSize + nSourceBufferByteCount);
+		FOUNDATION_ASSERT(m_IsLocked);
 
 		unsigned char* pSrc = (unsigned char*)pSourceBuffer;
 

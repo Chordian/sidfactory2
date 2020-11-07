@@ -6,7 +6,7 @@
 #include "libraries/ghc/fs_std.h"
 #include "foundation/platform/iplatform.h"
 #include "foundation/graphics/viewport.h"
-#include "foundation/graphics/types.h"
+#include "foundation/base/types.h"
 #include <algorithm>
 
 

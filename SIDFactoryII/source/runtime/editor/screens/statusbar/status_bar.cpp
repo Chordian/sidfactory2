@@ -4,7 +4,7 @@
 #include "foundation/input/mouse.h"
 #include "foundation/graphics/color.h"
 #include "utils/usercolors.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Utility;
 using namespace Foundation;
@@ -212,7 +212,7 @@ namespace Editor
 
 	void StatusBar::TextSection::SetText(const std::string& inText)
 	{
-		assert(static_cast<int>(inText.length()) < m_Width);
+		FOUNDATION_ASSERT(static_cast<int>(inText.length()) < m_Width);
 		m_Text = inText;
 	}
 
@@ -240,7 +240,7 @@ namespace Editor
 
 	void StatusBar::TextSection::MouseButtonPressed(Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers) const
 	{
-		assert(m_MouseButtonCallback);
+		FOUNDATION_ASSERT(m_MouseButtonCallback);
 		m_MouseButtonCallback(inMouseButton, inKeyboardModifiers);
 	}
 }

@@ -9,7 +9,7 @@
 #include "runtime/editor/driver/driver_info.h"
 #include "utils/utilities.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <string>
 
 namespace Editor
@@ -33,7 +33,7 @@ namespace Editor
 
 	void ScreenIntro::Activate()
 	{
-		assert(m_DriverInfo != nullptr);
+		FOUNDATION_ASSERT(m_DriverInfo != nullptr);
 		ScreenBase::Activate();
 
 // Build string

@@ -1,5 +1,5 @@
 #include "runtime/editor/converters/converterbase.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -26,7 +26,7 @@ namespace Editor
 		ComponentsManager* inComponentsManager
 	)
 	{
-		assert(GetState() == State::Uninitialized);
+		FOUNDATION_ASSERT(GetState() == State::Uninitialized);
 
 		m_Data = inData;
 		m_DataSize = inDataSize;
@@ -42,7 +42,7 @@ namespace Editor
 
 	std::shared_ptr<Utility::C64File> ConverterBase::GetResult()
 	{
-		assert(m_State == State::Completed);
+		FOUNDATION_ASSERT(m_State == State::Completed);
 
 		return m_Result;
 	}

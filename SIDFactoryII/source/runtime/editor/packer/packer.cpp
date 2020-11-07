@@ -31,7 +31,7 @@ namespace Editor
 		, m_SequencePointersDataSectionLowID(0)
 		, m_SequencePointersDataSectionHighID(0)
 	{
-		assert(inDriverInfo.IsValid());
+		FOUNDATION_ASSERT(inDriverInfo.IsValid());
 
 		// Compute the destination address delta. The driver and data are processed for the destination address at address 0x1000 in the data container, but the load 
 		// address of the file generated is altered to the destination address before saving it to disk.
@@ -197,7 +197,7 @@ namespace Editor
 
 	unsigned short Packer::ComputeDestinationAddresses()
 	{
-		assert(m_DataSectionList.size() > 0);
+		FOUNDATION_ASSERT(m_DataSectionList.size() > 0);
 
 		unsigned short address = m_DataSectionList[0].m_SourceAddress;
 
@@ -225,7 +225,7 @@ namespace Editor
 
 	void Packer::CopyDataToOutputContainer()
 	{
-		assert(m_OutputData != nullptr);
+		FOUNDATION_ASSERT(m_OutputData != nullptr);
 		
 		const unsigned short driver_top_address = m_DriverInfo.GetDescriptor().m_DriverCodeTop;
 		const unsigned short driver_size = m_DriverInfo.GetDescriptor().m_DriverSize;
@@ -236,7 +236,7 @@ namespace Editor
 
 		for (const DataSection& data_section : m_DataSectionList)
 		{
-			assert(data_address == data_section.m_DestinationAddress);
+			FOUNDATION_ASSERT(data_address == data_section.m_DestinationAddress);
 			CopyData(m_CPUMemory, *m_OutputData, data_section.m_SourceAddress, data_section.m_DestinationAddress, data_section.m_SourceSize);
 
 			data_address += data_section.m_SourceSize;
@@ -345,7 +345,7 @@ namespace Editor
 
 			if (requires_relocation(opcode_addressing_mode))
 			{
-				assert(opcode_size == 3);
+				FOUNDATION_ASSERT(opcode_size == 3);
 
 				const unsigned short code_vector = m_OutputData->GetWord(address + 1);
 				const unsigned short relocated_code_vector = [&]() -> const unsigned short
@@ -366,7 +366,7 @@ namespace Editor
             // Relocate zp addresses
 			//if (requires_zeropage_check(opcode_addressing_mode))
 			//{
-			//	assert(opcode_size == 2);
+			//	FOUNDATION_ASSERT(opcode_size == 2);
             //
 			//	const unsigned short zero_page_address = m_OutputData->GetByte(address + 1);
 			//}

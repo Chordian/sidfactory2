@@ -8,7 +8,7 @@
 #include "utils/usercolors.h"
 
 #include "SDL_keycode.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 using namespace Utility;
@@ -24,8 +24,8 @@ namespace Editor
 		, m_TextColor(ToColor(UserColor::ButtonText))
 		, m_BackgroundColor(ToColor(UserColor::ButtonDefault)) 
 	{
-		assert(inTextField != nullptr);
-		assert(inButtonText.length() <= static_cast<size_t>(inWidth));
+		FOUNDATION_ASSERT(inTextField != nullptr);
+		FOUNDATION_ASSERT(inButtonText.length() <= static_cast<size_t>(inWidth));
 	}
 
 	ComponentCheckButton::~ComponentCheckButton()

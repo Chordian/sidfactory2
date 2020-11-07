@@ -1,7 +1,7 @@
 #include "mouse.h"
 #include "SDL.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Foundation
 {
@@ -22,7 +22,7 @@ namespace Foundation
 
 	void Mouse::BeginCollect(const Rect& inClientRect)
 	{
-		assert(!m_IsCollecting);
+		FOUNDATION_ASSERT(!m_IsCollecting);
 
 		m_ClientRect = inClientRect;
 
@@ -34,7 +34,7 @@ namespace Foundation
 
 	void Mouse::EndCollect()
 	{
-		assert(m_IsCollecting);
+		FOUNDATION_ASSERT(m_IsCollecting);
 
 		m_IsCollecting = false;
 	}

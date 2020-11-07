@@ -145,21 +145,21 @@ namespace Utility
 	template<typename CONTEXT>
 	bool KeyHook<CONTEXT>::RequireShiftDown(int inKeyIndex) const
 	{
-		assert(inKeyIndex < static_cast<int>(m_Keys.size()));
+		FOUNDATION_ASSERT(inKeyIndex < static_cast<int>(m_Keys.size()));
 		return (m_Keys[inKeyIndex].m_Modifiers & Foundation::Keyboard::Shift) != 0;
 	}
 
 	template<typename CONTEXT>
 	bool KeyHook<CONTEXT>::RequireControlDown(int inKeyIndex) const
 	{
-		assert(inKeyIndex < static_cast<int>(m_Keys.size()));
+		FOUNDATION_ASSERT(inKeyIndex < static_cast<int>(m_Keys.size()));
 		return (m_Keys[inKeyIndex].m_Modifiers & Foundation::Keyboard::Control) != 0;
 	}
 
 	template<typename CONTEXT>
 	bool KeyHook<CONTEXT>::RequireAltDown(int inKeyIndex) const
 	{
-		assert(inKeyIndex < static_cast<int>(m_Keys.size()));
+		FOUNDATION_ASSERT(inKeyIndex < static_cast<int>(m_Keys.size()));
 		return (m_Keys[inKeyIndex].m_Modifiers & Foundation::Keyboard::Alt) != 0;
 	}
 

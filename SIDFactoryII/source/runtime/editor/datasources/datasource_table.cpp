@@ -1,6 +1,6 @@
 #include "datasource_table.h"
 #include "runtime/emulation/cpumemory.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -19,8 +19,8 @@ namespace Editor
 
 	const unsigned char DataSourceTable::operator[](int inIndex) const
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < m_DataSize);
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < m_DataSize);
 
 		return m_Data[inIndex];
 	}
@@ -28,8 +28,8 @@ namespace Editor
 
 	unsigned char& DataSourceTable::operator[](int inIndex)
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < m_DataSize);
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < m_DataSize);
 
 		return m_Data[inIndex];
 	}

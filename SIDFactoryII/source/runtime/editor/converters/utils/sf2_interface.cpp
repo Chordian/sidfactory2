@@ -13,7 +13,7 @@
 #include "utils/utilities.h"
 #include "utils/c64file.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -177,7 +177,7 @@ namespace SF2
 	 */
 	unsigned char* Interface::GetAllMemory() const
 	{
-		assert(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
 
 		if (m_DriverInfo->IsValid())
 		{
@@ -194,7 +194,7 @@ namespace SF2
 	 */
 	Interface::Range Interface::GetRangeSF2()
 	{
-		assert(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
 
 		if (m_DriverInfo->IsValid())
 		{
@@ -216,8 +216,8 @@ namespace SF2
 	 */
 	void Interface::InitData()
 	{
-		assert(m_DriverInfo != nullptr);
-		assert(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_DriverInfo != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
 
 		m_CPUMemory->Lock();
 		ScreenEditUtils::PrepareSequenceData(*m_DriverInfo, *m_CPUMemory);
@@ -409,12 +409,12 @@ namespace SF2
 	 */
 	bool Interface::AppendToOrderList(int inTrack, std::vector<unsigned char> inBytes)
 	{
-		assert(inBytes.size() == 2);
+		FOUNDATION_ASSERT(inBytes.size() == 2);
 
 		unsigned char transpose = inBytes[0], sequence_index = inBytes[1];
 
-		assert(inTrack < m_DriverDetails.m_TrackCount);
-		assert(sequence_index < 0x80);
+		FOUNDATION_ASSERT(inTrack < m_DriverDetails.m_TrackCount);
+		FOUNDATION_ASSERT(sequence_index < 0x80);
 
 		const std::shared_ptr<DataSourceOrderList>& orderlist_track = m_OrderListDataSources[inTrack];
 		const DataSourceOrderList::Entry orderlist_entry = { transpose, sequence_index };
@@ -445,13 +445,13 @@ namespace SF2
 	 */
 	bool Interface::AppendToSequence(int inSequenceIndex, std::vector<unsigned char> inBytes)
 	{
-		assert(inBytes.size() == 3);
+		FOUNDATION_ASSERT(inBytes.size() == 3);
 
 		unsigned char instrument = inBytes[0], command = inBytes[1], note = inBytes[2];
 
-		assert(instrument < 0x20 || instrument == 0x80 || instrument == 0x90);
-		assert(command < 0x40 || command == 0x80);
-		assert(note < 0x70 || note == 0x7e);
+		FOUNDATION_ASSERT(instrument < 0x20 || instrument == 0x80 || instrument == 0x90);
+		FOUNDATION_ASSERT(command < 0x40 || command == 0x80);
+		FOUNDATION_ASSERT(note < 0x70 || note == 0x7e);
 
 		const std::shared_ptr<DataSourceSequence>& sequence_source = m_SequenceDataSources[inSequenceIndex];
 		const DataSourceSequence::Event sequence_event = { (unsigned char)(instrument < 0x20 ? instrument + 0xa0 : instrument), (unsigned char)(command < 0x40 ? command + 0xc0 : command), note };
@@ -790,7 +790,7 @@ namespace SF2
 		int column_count = table_data.m_TableDefinition.m_ColumnCount;
 
 		// The number of vector bytes must fit a row in this table
-		assert(inBytes.size() == column_count);
+		FOUNDATION_ASSERT(inBytes.size() == column_count);
 
 		int data_index = inRow * column_count;
 		for (unsigned char byte : inBytes)

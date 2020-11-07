@@ -3,7 +3,7 @@
 #include "utils/utilities.h"
 #include "libraries/ghc/fs_std.h"
 #include "foundation/platform/iplatform.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory>
@@ -83,7 +83,7 @@ namespace Utility
 
 	const Config::IConfigValue& ConfigFile::GetValue(const std::string& inKey) const
 	{
-		assert(HasKey(inKey));
+		FOUNDATION_ASSERT(HasKey(inKey));
 		return *(m_Map.find(inKey)->second);
 	}
 

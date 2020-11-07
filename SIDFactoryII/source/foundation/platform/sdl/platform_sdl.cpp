@@ -1,7 +1,7 @@
 #include "platform_sdl.h"
 #include "mutex_sdl.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 #include "libraries/ghc/fs_std.h"
 #include <system_error>

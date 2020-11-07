@@ -10,7 +10,7 @@
 #include "runtime/environmentdefines.h"
 
 #include "SDL_keycode.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 
@@ -22,7 +22,7 @@ namespace Editor
 		, m_CursorPos(0)
 		, m_MaxCursorPos(static_cast<unsigned int>(m_DataSource->GetSize()) - inHeight)
 	{
-		assert(inTextField != nullptr);
+		FOUNDATION_ASSERT(inTextField != nullptr);
 	}
 
 

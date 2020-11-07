@@ -1,6 +1,6 @@
 #pragma once
 
-#include "foundation/graphics/types.h"
+#include "foundation/base/types.h"
 #include "runtime/editor/cursor_control.h"
 #include <memory>
 #include <vector>

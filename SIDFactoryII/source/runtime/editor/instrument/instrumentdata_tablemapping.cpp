@@ -1,6 +1,6 @@
 #include "runtime/editor/instrument/instrumentdata_tablemapping.h"
 #include "runtime/editor/datasources/datasource_table.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -9,7 +9,7 @@ namespace Editor
 		, m_TablePointerDescription(inTablePointerDescription)
 		, m_HighestIndex(-1)
 	{
-		assert(m_TableData != nullptr);
+		FOUNDATION_ASSERT(m_TableData != nullptr);
 		
 		m_Indices.clear();
 
@@ -26,7 +26,7 @@ namespace Editor
 
 	bool InstrumentDataTableMapping::BuildFrom(unsigned int inIndex)
 	{
-		assert(inIndex < m_TableData->GetRowCount());
+		FOUNDATION_ASSERT(inIndex < m_TableData->GetRowCount());
 
 		unsigned int current_index = inIndex;
 

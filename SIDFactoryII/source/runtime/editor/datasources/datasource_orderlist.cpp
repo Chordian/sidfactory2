@@ -1,7 +1,7 @@
 #include "datasource_orderlist.h"
 #include "runtime/emulation/cpumemory.h"
 #include <cstring>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -27,8 +27,8 @@ namespace Editor
 
 	DataSourceOrderList::Entry& DataSourceOrderList::operator[](int inIndex)
 	{
-		assert(inIndex < MaxEntryCount);
-		assert(m_Events != nullptr);
+		FOUNDATION_ASSERT(inIndex < MaxEntryCount);
+		FOUNDATION_ASSERT(m_Events != nullptr);
 
 		return m_Events[inIndex];
 	}
@@ -36,9 +36,9 @@ namespace Editor
 
 	bool DataSourceOrderList::PushDataToSource()
 	{
-		assert(m_CPUMemory != nullptr);
-		assert(m_CPUMemory->IsLocked());
-		assert(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory->IsLocked());
+		FOUNDATION_ASSERT(m_Data != nullptr);
 
 		m_CPUMemory->SetData(m_SourceAddress, m_Data, m_DataSize);
 
@@ -66,14 +66,14 @@ namespace Editor
 
 	void DataSourceOrderList::IncreaseSize()
 	{
-		assert(CanIncreaseSize());
+		FOUNDATION_ASSERT(CanIncreaseSize());
 
 		++m_Length;
 	}
 
 	void DataSourceOrderList::DecreaseSize()
 	{
-		assert(m_Length > 2);
+		FOUNDATION_ASSERT(m_Length > 2);
 
 		--m_Length;
 	}
@@ -161,13 +161,13 @@ namespace Editor
 		}
 
 		// Append the end marker
-		assert(end_marker >= 0 && end_marker < 0x100);
+		FOUNDATION_ASSERT(end_marker >= 0 && end_marker < 0x100);
 		m_InternalBuffer[index++] = static_cast<unsigned char>(end_marker);
 
 		// .. and the loop point if the end marker is a loop mark
 		if (end_marker == 0xff)
 		{
-			assert(packed_loop_index >= 0 && packed_loop_index < 0x100);
+			FOUNDATION_ASSERT(packed_loop_index >= 0 && packed_loop_index < 0x100);
 			m_InternalBuffer[index++] = static_cast<unsigned char>(packed_loop_index);
 		}
 
@@ -190,7 +190,7 @@ namespace Editor
 
 	void DataSourceOrderList::SendPackedDataToBuffer(const PackResult& inPackResult)
 	{
-		assert(inPackResult.m_DataLength <= m_DataSize);
+		FOUNDATION_ASSERT(inPackResult.m_DataLength <= m_DataSize);
 
 		memset(m_Data, 0, m_DataSize);
 		memcpy(m_Data, &*inPackResult.m_Data, inPackResult.m_DataLength);
@@ -234,8 +234,8 @@ namespace Editor
 
 	void DataSourceOrderList::PullDataFromSource()
 	{
-		assert(m_CPUMemory != nullptr);
-		assert(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_Data != nullptr);
 
 		m_CPUMemory->Lock();
 		m_CPUMemory->GetData(m_SourceAddress, m_Data, m_DataSize);
@@ -330,7 +330,7 @@ namespace Editor
 		}
 
 		// Append endmarker, and loop index
-		assert(unpacked_loop_index >= 0 && unpacked_loop_index < 0x100);
+		FOUNDATION_ASSERT(unpacked_loop_index >= 0 && unpacked_loop_index < 0x100);
 
 		m_Events[index].m_Transposition = end_marker;
 		m_Events[index].m_SequenceIndex = static_cast<unsigned char>(unpacked_loop_index);

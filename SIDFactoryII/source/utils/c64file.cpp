@@ -1,7 +1,7 @@
 #include "c64file.h"
 #include <memory>
 #include <cstring>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Utility
 {
@@ -10,7 +10,7 @@ namespace Utility
 		, m_BottomAddress(0)
 		, m_TopAddress(0)
 	{
-		assert(inPRGData != nullptr);
+		FOUNDATION_ASSERT(inPRGData != nullptr);
 
 		if (inDataSize > 2)
 		{
@@ -18,7 +18,7 @@ namespace Utility
 			const unsigned int top_addres = static_cast<unsigned short>(data_bytes[0]) | (static_cast<unsigned short>(data_bytes[1]) << 8);
 			const unsigned int bottom_address = top_addres + inDataSize - 2;
 
-			assert(bottom_address < 0x10000);
+			FOUNDATION_ASSERT(bottom_address < 0x10000);
 
 			m_TopAddress = static_cast<unsigned short>(top_addres);
 			m_BottomAddress = static_cast<unsigned short>(bottom_address);
@@ -167,7 +167,7 @@ namespace Utility
 
 	void C64File::MoveBottomAddress(unsigned short inBottomAddress)
 	{
-		assert(inBottomAddress > GetTopAddress());
+		FOUNDATION_ASSERT(inBottomAddress > GetTopAddress());
 
 		m_BottomAddress = inBottomAddress;
 	}
@@ -176,8 +176,8 @@ namespace Utility
 
 	unsigned char& C64File::operator[](int inAddress) 
 	{
-		assert(m_Data != nullptr);
-		assert(inAddress >= m_TopAddress && inAddress < m_BottomAddress);
+		FOUNDATION_ASSERT(m_Data != nullptr);
+		FOUNDATION_ASSERT(inAddress >= m_TopAddress && inAddress < m_BottomAddress);
 
 		return m_Data[inAddress];
 	}
@@ -185,8 +185,8 @@ namespace Utility
 
 	const unsigned char& C64File::operator[](int inAddress) const
 	{
-		assert(m_Data != nullptr);
-		assert(inAddress >= m_TopAddress && inAddress < m_BottomAddress);
+		FOUNDATION_ASSERT(m_Data != nullptr);
+		FOUNDATION_ASSERT(inAddress >= m_TopAddress && inAddress < m_BottomAddress);
 
 		return m_Data[inAddress];
 	}
@@ -194,8 +194,8 @@ namespace Utility
 
 	unsigned char C64File::GetByte(unsigned int inAddress) const
 	{
-		assert(m_Data != nullptr);
-		assert(inAddress >= m_TopAddress && inAddress < m_BottomAddress);
+		FOUNDATION_ASSERT(m_Data != nullptr);
+		FOUNDATION_ASSERT(inAddress >= m_TopAddress && inAddress < m_BottomAddress);
 
 		return static_cast<unsigned char>(m_Data[inAddress]);
 	}
@@ -203,8 +203,8 @@ namespace Utility
 
 	unsigned short C64File::GetWord(unsigned int inAddress) const
 	{
-		assert(m_Data != nullptr);
-		assert(inAddress >= m_TopAddress && inAddress + 1 < m_BottomAddress);
+		FOUNDATION_ASSERT(m_Data != nullptr);
+		FOUNDATION_ASSERT(inAddress >= m_TopAddress && inAddress + 1 < m_BottomAddress);
 
 		return static_cast<unsigned short>(m_Data[inAddress]) | (static_cast<unsigned short>(m_Data[inAddress + 1]) << 8);
 	}
@@ -212,13 +212,13 @@ namespace Utility
 
 	void C64File::GetData(unsigned int nAddress, void* pDestinationBuffer, unsigned int nDestinationBufferByteCount) const
 	{
-		assert(pDestinationBuffer != nullptr);
+		FOUNDATION_ASSERT(pDestinationBuffer != nullptr);
 
 		unsigned int top = nAddress;
 		unsigned int bottom = nDestinationBufferByteCount;
 
-		assert(top >= m_TopAddress && top < m_BottomAddress);
-		assert(bottom >= m_TopAddress && bottom < m_BottomAddress);
+		FOUNDATION_ASSERT(top >= m_TopAddress && top < m_BottomAddress);
+		FOUNDATION_ASSERT(bottom >= m_TopAddress && bottom < m_BottomAddress);
 
 		memcpy(pDestinationBuffer, &m_Data[top], nDestinationBufferByteCount);
 	}
@@ -242,7 +242,7 @@ namespace Utility
 		, m_Address(inAddress)
 		, m_EndAddress(inEndAddress)
 	{
-		assert(inEndAddress <= inFile.GetBottomAddress());
+		FOUNDATION_ASSERT(inEndAddress <= inFile.GetBottomAddress());
 	}
 
 
@@ -412,9 +412,9 @@ namespace Utility
 	
 	const bool C64FileWriter::WriteByte(unsigned char inByte)
 	{
-		assert(!HasPassedEnd());
-		assert(m_MayExtendFileSize || !IsAtEndAddress());
-		assert(m_Address < 0Xffff);
+		FOUNDATION_ASSERT(!HasPassedEnd());
+		FOUNDATION_ASSERT(m_MayExtendFileSize || !IsAtEndAddress());
+		FOUNDATION_ASSERT(m_Address < 0Xffff);
 		
 		unsigned short new_address = m_Address + 1;
 		if (new_address >= m_File.GetBottomAddress())
@@ -429,9 +429,9 @@ namespace Utility
 	
 	const bool C64FileWriter::WriteWord(unsigned short inWord)
 	{
-		assert(!HasPassedEnd());
-		assert(m_MayExtendFileSize || !IsAtEndAddress());
-		assert(m_Address < 0Xfffe);
+		FOUNDATION_ASSERT(!HasPassedEnd());
+		FOUNDATION_ASSERT(m_MayExtendFileSize || !IsAtEndAddress());
+		FOUNDATION_ASSERT(m_Address < 0Xfffe);
 
 		unsigned short new_address = m_Address + 2;
 		if (new_address >= m_File.GetBottomAddress())
@@ -448,9 +448,9 @@ namespace Utility
 	
 	const bool C64FileWriter::WriteUInt(unsigned int inUInt)
 	{
-		assert(!HasPassedEnd());
-		assert(m_MayExtendFileSize || !IsAtEndAddress());
-		assert(m_Address < 0Xfffc);
+		FOUNDATION_ASSERT(!HasPassedEnd());
+		FOUNDATION_ASSERT(m_MayExtendFileSize || !IsAtEndAddress());
+		FOUNDATION_ASSERT(m_Address < 0Xfffc);
 
 		unsigned short new_address = m_Address + 4;
 		if (new_address >= m_File.GetBottomAddress())
@@ -499,7 +499,7 @@ namespace Utility
 
 	const bool C64FileWriter::WriteBytes(const unsigned char* inBytes, unsigned short inByteCount)
 	{
-		assert(inBytes != nullptr);
+		FOUNDATION_ASSERT(inBytes != nullptr);
 
 		for (int i = 0; i < inByteCount; ++i)
 			WriteByte(inBytes[i]);

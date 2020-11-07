@@ -1,7 +1,7 @@
 #include "auxilary_data.h"
 #include "utils/c64file.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 
 namespace Editor
@@ -68,7 +68,7 @@ namespace Editor
 
 	void AuxilaryData::Reset()
 	{
-		assert(false);
+		FOUNDATION_ASSERT(false);
 	}
 
 
@@ -121,7 +121,7 @@ namespace Editor
 
 	bool AuxilaryData::RestoreFromSaveData(unsigned short inDataVersion, std::vector<unsigned char> inData)
 	{
-		assert(inDataVersion == 0);
+		FOUNDATION_ASSERT(inDataVersion == 0);
 		return true;
 	}
 }

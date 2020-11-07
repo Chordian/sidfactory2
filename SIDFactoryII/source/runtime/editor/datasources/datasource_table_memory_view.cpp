@@ -1,7 +1,7 @@
 #include "datasource_table_memory_view.h"
 #include "runtime/emulation/cpumemory.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -32,8 +32,8 @@ namespace Editor
 
 	void DataSourceTableMemoryView::PullDataFromSource()
 	{
-		assert(m_CPUMemory != nullptr);
-		assert(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_Data != nullptr);
 
 		unsigned int end_address = static_cast<unsigned int>(m_SourceAddress) + static_cast<unsigned int>(m_DataSize);
 

@@ -10,7 +10,7 @@
 #include "runtime/editor/display_state.h"
 
 #include "SDL_keycode.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 
@@ -29,8 +29,8 @@ namespace Editor
 		, m_DataSource(inDataSource)
 		, m_MemoryAddress(0x1000)
 	{
-		assert(inDataSource != nullptr);
-		assert(inTextField != nullptr);
+		FOUNDATION_ASSERT(inDataSource != nullptr);
+		FOUNDATION_ASSERT(inTextField != nullptr);
 	}
 
 	ComponentMemoryView::~ComponentMemoryView()

@@ -2,7 +2,7 @@
 
 #include "idatasource.h"
 #include <vector>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -37,8 +37,8 @@ namespace Editor
 	template<typename LIST_ITEM_TYPE>
 	LIST_ITEM_TYPE& DataSourceTList<LIST_ITEM_TYPE>::operator[](int inIndex)
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < static_cast<int>(m_List.size()));
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < static_cast<int>(m_List.size()));
 
 		return m_List[inIndex];
 	}

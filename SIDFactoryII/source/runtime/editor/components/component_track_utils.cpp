@@ -3,7 +3,7 @@
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -23,8 +23,8 @@ namespace Editor
 
 		unsigned int GetMaxEventPosition(const std::shared_ptr<DataSourceOrderList>& inOrderList, const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList)
 		{
-			assert(inOrderList != nullptr);
-			assert(inSequenceList.size() > 0);
+			FOUNDATION_ASSERT(inOrderList != nullptr);
+			FOUNDATION_ASSERT(inSequenceList.size() > 0);
 
 			unsigned int max_event_position = 0;
 
@@ -45,9 +45,9 @@ namespace Editor
 
 		unsigned int GetEventPosOf(unsigned int inOrderListIndex, unsigned int inSequencePosition, const std::shared_ptr<DataSourceOrderList>& inOrderList, const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList)
 		{
-			assert(inOrderList != nullptr);
-			assert(inOrderListIndex < inOrderList->GetLength());
-			assert(inSequenceList.size() > 0);
+			FOUNDATION_ASSERT(inOrderList != nullptr);
+			FOUNDATION_ASSERT(inOrderListIndex < inOrderList->GetLength());
+			FOUNDATION_ASSERT(inSequenceList.size() > 0);
 
 			unsigned int max_event_position = 0;
 

@@ -1,7 +1,7 @@
 #include "utils/config/configtypes.h"
 #include "utils/config/configutils.h"
 #include "utils/utilities.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Utility
 {
@@ -12,7 +12,7 @@ namespace Utility
 		{
 			for (const auto& value : inValues)
 			{
-				assert(IsMyType(value));
+				FOUNDATION_ASSERT(IsMyType(value));
 
 				// TODO: Implement conversion
 				m_Values.push_back(static_cast<ConfigValueCharacter::DATATYPE>(value[1]));
@@ -43,7 +43,7 @@ namespace Utility
 
 		const ConfigValueCharacter::DATATYPE& ConfigValueCharacter::GetValue(size_t inIndex) const
 		{
-			assert(inIndex >= 0 && inIndex < m_Values.size());
+			FOUNDATION_ASSERT(inIndex >= 0 && inIndex < m_Values.size());
 			return m_Values[inIndex];
 		}
 
@@ -81,7 +81,7 @@ namespace Utility
 		{
 			for (const auto& value : inValues)
 			{
-				assert(IsMyType(value));
+				FOUNDATION_ASSERT(IsMyType(value));
 
 				if (value[0] != '0' || value[1] != 'x')
 					m_Values.push_back(std::stoi(value));
@@ -129,7 +129,7 @@ namespace Utility
 
 		const ConfigValueInt::DATATYPE& ConfigValueInt::GetValue(size_t inIndex) const
 		{
-			assert(inIndex >= 0 && inIndex < m_Values.size());
+			FOUNDATION_ASSERT(inIndex >= 0 && inIndex < m_Values.size());
 			return m_Values[inIndex];
 		}
 
@@ -191,7 +191,7 @@ namespace Utility
 		{
 			for (const auto& value : inValues)
 			{
-				assert(IsMyType(value));
+				FOUNDATION_ASSERT(IsMyType(value));
 				m_Values.push_back(value.substr(1, value.length() - 2));
 			}
 		}
@@ -220,7 +220,7 @@ namespace Utility
 
 		const ConfigValueString::DATATYPE& ConfigValueString::GetValue(size_t inIndex) const
 		{
-			assert(inIndex >= 0 && inIndex < m_Values.size());
+			FOUNDATION_ASSERT(inIndex >= 0 && inIndex < m_Values.size());
 			return m_Values[inIndex];
 		}
 
@@ -253,7 +253,7 @@ namespace Utility
 		{
 			for (const auto& value : inValues)
 			{
-				assert(IsMyType(value));
+				FOUNDATION_ASSERT(IsMyType(value));
 
 				std::string value_lower_case = StringToLowerCase(value);
 				size_t index = value_lower_case.find(':');
@@ -297,7 +297,7 @@ namespace Utility
 
 		const ConfigValueKey::Value& ConfigValueKey::GetValue(size_t inIndex) const
 		{
-			assert(inIndex >= 0 && inIndex < m_Values.size());
+			FOUNDATION_ASSERT(inIndex >= 0 && inIndex < m_Values.size());
 			return m_Values[inIndex];
 		}
 
@@ -338,7 +338,7 @@ namespace Utility
 			{
 				const auto& value = inValues[0];
 				
-				assert(IsMyType(value));
+				FOUNDATION_ASSERT(IsMyType(value));
 				m_Values.push_back(value.substr(1, value.length() - 1));
 			}
 		}
@@ -367,7 +367,7 @@ namespace Utility
 
 		const ConfigValueRedirect::DATATYPE& ConfigValueRedirect::GetValue(size_t inIndex) const
 		{
-			assert(inIndex >= 0 && inIndex < m_Values.size());
+			FOUNDATION_ASSERT(inIndex >= 0 && inIndex < m_Values.size());
 			return m_Values[inIndex];
 		}
 

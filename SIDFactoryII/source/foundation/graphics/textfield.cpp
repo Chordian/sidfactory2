@@ -4,7 +4,7 @@
 #include "resources/data_char.h"
 
 #include "SDL.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Foundation
 {
@@ -112,10 +112,10 @@ namespace Foundation
 		, m_Enabled(false)
 	{
 		m_Surface = SDL_CreateRGBSurface(0, m_ResolutionX, m_ResolutionY, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
-		assert(m_Surface);
+		FOUNDATION_ASSERT(m_Surface);
 
 		m_Texture = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, m_ResolutionX, m_ResolutionY);
-		assert(m_Texture);
+		FOUNDATION_ASSERT(m_Texture);
 
 		const int cell_buffer_size = m_Dimensions.m_Width * m_Dimensions.m_Height;
 

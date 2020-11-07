@@ -2,7 +2,7 @@
 
 #include "foundation/graphics/viewport.h"
 #include "foundation/graphics/textfield.h"
-#include "foundation/graphics/types.h"
+#include "foundation/base/types.h"
 #include "foundation/graphics/color.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/mouse.h"

@@ -3,7 +3,7 @@
 #include "foundation/graphics/drawfield.h"
 #include "foundation/input/mouse.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {

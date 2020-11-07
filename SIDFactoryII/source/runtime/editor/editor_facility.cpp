@@ -46,7 +46,7 @@
 #include "runtime/editor/converters/null/converter_null.h"
 
 // System
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 using namespace Emulation;
@@ -194,8 +194,8 @@ namespace Editor
 
 	void EditorFacility::Start(const char* inFileToLoad)
 	{
-		assert(m_ExecutionHandler != nullptr);
-		assert(m_AudioStream != nullptr);
+		FOUNDATION_ASSERT(m_ExecutionHandler != nullptr);
+		FOUNDATION_ASSERT(m_AudioStream != nullptr);
 
 		const bool file_loaded_successfully = [&]()
 		{
@@ -211,7 +211,7 @@ namespace Editor
 		// Try to load the driver directly
 		if (!file_loaded_successfully)
 		{
-			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(m_ConfigFile, "Editor.Driver.Default", std::string("sf2driver11_00.prg"));
+			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(m_ConfigFile, "Editor.Driver.Default", std::string("sf2driver11_03.prg"));
 			std::string drivers_folder = m_Platform->Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}
@@ -240,7 +240,7 @@ namespace Editor
 
 	void EditorFacility::Stop()
 	{
-		assert(m_AudioStream != nullptr);
+		FOUNDATION_ASSERT(m_AudioStream != nullptr);
 
 		m_AudioStream->Stop();
 	}
@@ -363,7 +363,7 @@ namespace Editor
 	{
 		if (m_FlipOverlayState)
 		{
-			assert(m_OverlayControl != nullptr);
+			FOUNDATION_ASSERT(m_OverlayControl != nullptr);
 			m_OverlayControl->SetOverlayEnabled(!m_OverlayControl->GetOverlayEnabled());
 
 			m_FlipOverlayState = false;
@@ -376,7 +376,7 @@ namespace Editor
 
 	void EditorFacility::RequestScreen(ScreenBase* inRequestedScreen)
 	{
-		assert(m_RequestedScreen == nullptr);
+		FOUNDATION_ASSERT(m_RequestedScreen == nullptr);
 
 		if(m_CurrentScreen != inRequestedScreen)
 			m_RequestedScreen = inRequestedScreen;
@@ -384,7 +384,7 @@ namespace Editor
 
 	void EditorFacility::ForceRequestScreen(ScreenBase* inRequestedScreen)
 	{
-		assert(m_RequestedScreen == nullptr);
+		FOUNDATION_ASSERT(m_RequestedScreen == nullptr);
 		m_RequestedScreen = inRequestedScreen;
 	}
 
@@ -730,35 +730,35 @@ namespace Editor
 			// Handle loading
 			if (m_DiskScreen->GetMode() == ScreenDisk::Load)
 			{
-				assert(inFileType == FileType::SF2);
+				FOUNDATION_ASSERT(inFileType == FileType::SF2);
 				DoLoad(inCallerScreen, inSelectedFilename);
 			}
 
 			// Handle saving
 			if (m_DiskScreen->GetMode() == ScreenDisk::Save)
 			{
-				assert(inFileType == FileType::SF2);
+				FOUNDATION_ASSERT(inFileType == FileType::SF2);
 				DoSave(inCallerScreen, inSelectedFilename);
 			}
 
 			// Handle importing
 			if (m_DiskScreen->GetMode() == ScreenDisk::Import)
 			{
-				assert(inFileType == FileType::SF2);
+				FOUNDATION_ASSERT(inFileType == FileType::SF2);
 				DoImport(inCallerScreen, inSelectedFilename);
 			}
 
 			// Handle loading
 			if (m_DiskScreen->GetMode() == ScreenDisk::LoadInstrument)
 			{
-				assert(inFileType == FileType::SI2);
+				FOUNDATION_ASSERT(inFileType == FileType::SI2);
 				DoLoadInstrument(inCallerScreen, inSelectedFilename);
 			}
 
 			// Handle saving
 			if (m_DiskScreen->GetMode() == ScreenDisk::SaveInstrument)
 			{
-				assert(inFileType == FileType::SI2);
+				FOUNDATION_ASSERT(inFileType == FileType::SI2);
 				DoSaveInstrument(inCallerScreen, inSelectedFilename);
 			}
 
@@ -769,7 +769,7 @@ namespace Editor
 					DoSavePacked(inCallerScreen, inSelectedFilename);
 				else
 				{
-					assert(inFileType == FileType::SID);
+					FOUNDATION_ASSERT(inFileType == FileType::SID);
 					DoSavePackedToSID(inCallerScreen, inSelectedFilename);
 				}
 			}
@@ -779,7 +779,7 @@ namespace Editor
 
 	void EditorFacility::OnExitIntroScreen()
 	{
-		assert(m_DriverInfo != nullptr);
+		FOUNDATION_ASSERT(m_DriverInfo != nullptr);
 
 		if (m_DriverInfo->IsValid())
 			SetCurrentScreen(m_EditScreen.get());

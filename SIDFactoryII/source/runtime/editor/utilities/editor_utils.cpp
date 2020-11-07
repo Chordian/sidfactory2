@@ -1,6 +1,6 @@
 #include "runtime/editor/utilities/editor_utils.h"
 #include "foundation/input/keyboard_utils.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -148,7 +148,7 @@ namespace Editor
 			if (inKeyCharacter >= 'A' && inKeyCharacter <= 'F')
 				return static_cast<unsigned char>(0x0a + inKeyCharacter - 'A');
 
-			assert(true);
+			FOUNDATION_ASSERT(true);
 
 			return static_cast<unsigned char>(0);
 		};
@@ -166,7 +166,7 @@ namespace Editor
 					return 'a' + (inValue - 0x0a);
 			}
 
-			assert(true);
+			FOUNDATION_ASSERT(true);
 
 			return '?';
 		}

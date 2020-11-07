@@ -9,7 +9,7 @@
 #include "utils/usercolors.h"
 
 #include "SDL_keycode.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Foundation;
 using namespace Utility;
@@ -22,7 +22,7 @@ namespace Editor
 		, m_BackgroundColor(ToColor(UserColor::ConsoleBackground))
 		, m_TextLines({""})
 	{
-		assert(inTextField != nullptr);
+		FOUNDATION_ASSERT(inTextField != nullptr);
 	}
 
 	ComponentConsole::~ComponentConsole()

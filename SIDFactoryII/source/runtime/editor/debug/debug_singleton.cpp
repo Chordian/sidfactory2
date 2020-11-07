@@ -1,5 +1,5 @@
 #include "debug_singleton.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 DebugSingleton* DebugSingleton::m_Instance = nullptr;
 
@@ -27,7 +27,7 @@ bool DebugSingleton::HasDebugAddress() const
 
 unsigned short DebugSingleton::ConsumeDebugAddress()
 {
-	assert(m_HasDebugAddress);
+	FOUNDATION_ASSERT(m_HasDebugAddress);
 
 	unsigned short return_address = m_DebugAddress;
 

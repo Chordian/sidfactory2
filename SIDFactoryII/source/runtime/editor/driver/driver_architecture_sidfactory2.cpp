@@ -3,14 +3,14 @@
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/editor/driver/driver_info.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
 	void DriverArchitectureSidFactory2::SetEmptySequence(Emulation::CPUMemory* inCPUMemory, unsigned short inAddress)
 	{
-		assert(inCPUMemory != nullptr);
-		assert(inCPUMemory->IsLocked());
+		FOUNDATION_ASSERT(inCPUMemory != nullptr);
+		FOUNDATION_ASSERT(inCPUMemory->IsLocked());
 
 		unsigned char empty_sequence_data[] = { 0x80, 0x00, 0x7f };
 		inCPUMemory->SetData(inAddress, empty_sequence_data, sizeof(empty_sequence_data));
@@ -19,8 +19,8 @@ namespace Editor
 
 	void DriverArchitectureSidFactory2::SetEmptyOrderList(Emulation::CPUMemory* inCPUMemory, unsigned short inAddress)
 	{
-		assert(inCPUMemory != nullptr);
-		assert(inCPUMemory->IsLocked());
+		FOUNDATION_ASSERT(inCPUMemory != nullptr);
+		FOUNDATION_ASSERT(inCPUMemory->IsLocked());
 
 		unsigned char empty_orderlist_data[] = { 0xa0, 0x00, 0xff };
 		inCPUMemory->SetData(inAddress, empty_orderlist_data, sizeof(empty_orderlist_data));

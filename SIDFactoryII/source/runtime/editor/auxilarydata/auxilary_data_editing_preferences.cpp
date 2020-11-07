@@ -1,7 +1,7 @@
 #include "auxilary_data_editing_preferences.h"
 #include "auxilary_data_utils.h"
 #include "utils/c64file.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {

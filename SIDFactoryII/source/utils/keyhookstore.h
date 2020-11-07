@@ -1,6 +1,6 @@
 #pragma once
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <functional>
 #include <vector>
 #include <string>

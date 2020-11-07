@@ -4,7 +4,7 @@
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/emulation/cpumemory.h"
 #include <memory>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -53,7 +53,7 @@ namespace Editor
 
 	void Undo::AddMostRecentEdit(bool inLockCPU, const std::shared_ptr<UndoComponentData>& inComponentUndoData, std::function<void(const UndoComponentData&, CursorControl&)> inRestorePostFunction)
 	{
-		assert(m_End < m_UndoSteps.size());
+		FOUNDATION_ASSERT(m_End < m_UndoSteps.size());
 
 		unsigned char* data = new unsigned char[m_DataSnapshotSize];
 
@@ -86,7 +86,7 @@ namespace Editor
 
 	void Undo::AddUndo(const std::shared_ptr<UndoComponentData>& inComponentUndoData, std::function<void(const UndoComponentData&, CursorControl&)> inRestorePostFunction)
 	{
-		assert(m_End < m_UndoSteps.size());
+		FOUNDATION_ASSERT(m_End < m_UndoSteps.size());
 
 		unsigned char* data = new unsigned char[m_DataSnapshotSize];
 
@@ -111,14 +111,14 @@ namespace Editor
 
 	void Undo::DoUndo(CursorControl& inCursorControl)
 	{
-		assert(HasUndoStep());
+		FOUNDATION_ASSERT(HasUndoStep());
 
 		int new_end = static_cast<int>(m_End) - 1;
 
 		if (new_end < 0)
 			new_end = static_cast<int>(m_UndoSteps.size() - 1);
 
-		assert(m_UndoSteps[new_end] != nullptr);
+		FOUNDATION_ASSERT(m_UndoSteps[new_end] != nullptr);
 
 		const unsigned char* restore_data = m_UndoSteps[new_end]->GetData();
 
@@ -143,14 +143,14 @@ namespace Editor
 
 	void Undo::DoRedo(CursorControl& inCursorControl)
 	{
-		assert(HasRedoStep());
+		FOUNDATION_ASSERT(HasRedoStep());
 
 		unsigned int new_end = m_End + 1;
 
 		if (new_end >= m_UndoSteps.size())
 			new_end = 0;
 
-		assert(m_UndoSteps[new_end] != nullptr);
+		FOUNDATION_ASSERT(m_UndoSteps[new_end] != nullptr);
 
 		const unsigned char* restore_data = m_UndoSteps[new_end]->GetData();
 

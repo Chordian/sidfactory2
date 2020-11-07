@@ -2,7 +2,7 @@
 
 #include <string>
 #include <cstring>
-#include "assert.h"
+#include "foundation/base/assert.h"
 
 namespace Utility
 {
@@ -25,8 +25,8 @@ namespace Utility
 	{
 		memset(&m_Header, 0, sizeof(Header));
 
-		assert(inPRGFormatedData != nullptr);
-		assert(inDataSize > 2);
+		FOUNDATION_ASSERT(inPRGFormatedData != nullptr);
+		FOUNDATION_ASSERT(inDataSize > 2);
 
 		unsigned short data_offset = 0x7c;
 		unsigned short driver_address = static_cast<unsigned short>(inPRGFormatedData[0]) | (static_cast<unsigned short>(inPRGFormatedData[1]) << 8);
@@ -53,7 +53,7 @@ namespace Utility
 
 		unsigned short header_size = sizeof(Header);
 
-		assert(header_size == data_offset);
+		FOUNDATION_ASSERT(header_size == data_offset);
 
 		m_DataSize = header_size + inDataSize;
 		m_Data = new unsigned char[m_DataSize];

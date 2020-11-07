@@ -1,6 +1,6 @@
 #pragma once
 
-#include "foundation/graphics/types.h"
+#include "foundation/base/types.h"
 #include "runtime/editor/driver/driver_info.h"
 
 #include <functional>

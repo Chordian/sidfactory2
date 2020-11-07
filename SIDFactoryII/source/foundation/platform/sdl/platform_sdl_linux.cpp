@@ -3,7 +3,7 @@
 
 #ifdef _SF2_LINUX
 #include "libraries/ghc/fs_std.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <system_error>
 #include <pwd.h>
 #include <libgen.h>
@@ -63,7 +63,7 @@ namespace Foundation
 
 		std::string PlatformSDLLinux::Storage_GetLogicalDriveName(unsigned int inLogicalDrive) const
 		{
-				assert(inLogicalDrive < m_LogicalDrivesList.size());
+				FOUNDATION_ASSERT(inLogicalDrive < m_LogicalDrivesList.size());
 				return m_LogicalDrivesList[inLogicalDrive];
 		}
 

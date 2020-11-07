@@ -11,7 +11,7 @@
 
 #include <string>
 #include <memory>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace Utility;
 
@@ -56,11 +56,11 @@ namespace Editor
 		ScreenBase::Activate();
 
 		// A converter must have been passed along before this screen may activate
-		assert(m_Converter != nullptr);
+		FOUNDATION_ASSERT(m_Converter != nullptr);
 		// Data must exist
-		assert(m_Data != nullptr);
+		FOUNDATION_ASSERT(m_Data != nullptr);
 		// Data must have a size
-		assert(m_DataSize > 0);
+		FOUNDATION_ASSERT(m_DataSize > 0);
 
 		// Clear the text field
 		ClearTextField();

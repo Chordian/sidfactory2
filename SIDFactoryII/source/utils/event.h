@@ -4,7 +4,7 @@
 
 #include <map>
 #include <functional>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Utility
 {
@@ -21,14 +21,14 @@ namespace Utility
 
 		void Add(void* inContext, TDelegate<FUNCTION_DESCRIPTION>&& inDelegate)
 		{
-			assert(m_Delegates.find(inContext) == m_Delegates.end());
+			FOUNDATION_ASSERT(m_Delegates.find(inContext) == m_Delegates.end());
 			m_Delegates[inContext] = inDelegate;
 		}
 
 		void Remove(void* inContext)
 		{
 			auto it = m_Delegates.find(inContext);
-			assert(it != m_Delegates.end());
+			FOUNDATION_ASSERT(it != m_Delegates.end());
 
 			m_Delegates.erase(it);
 		}

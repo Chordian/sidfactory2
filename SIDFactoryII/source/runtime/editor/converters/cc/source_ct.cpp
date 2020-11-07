@@ -1,4 +1,4 @@
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -690,9 +690,9 @@ namespace Converter
 				sbyte_command		= m_RawData[seq_pos + 3];
 
 				// If there is more than what I have researched I want to know about it
-				assert(sbyte_instrument >= 0xbf && sbyte_instrument <= 0xf0);
-				assert(sbyte_tienote == 0x5f || sbyte_tienote == 0xf0 || (sbyte_instrument == 0xbf && sbyte_tienote == 0x00));
-				assert(sbyte_note >= 0x60 && sbyte_note <= 0xbe || (sbyte_instrument == 0xbf && sbyte_note == 0x00));
+				FOUNDATION_ASSERT(sbyte_instrument >= 0xbf && sbyte_instrument <= 0xf0);
+				FOUNDATION_ASSERT(sbyte_tienote == 0x5f || sbyte_tienote == 0xf0 || (sbyte_instrument == 0xbf && sbyte_tienote == 0x00));
+				FOUNDATION_ASSERT(sbyte_note >= 0x60 && sbyte_note <= 0xbe || (sbyte_instrument == 0xbf && sbyte_note == 0x00));
 
 				// Instrument
 				if (sbyte_instrument >= 0xc0 && sbyte_instrument <= 0xef) // Set instrument

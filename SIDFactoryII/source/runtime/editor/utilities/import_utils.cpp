@@ -7,7 +7,7 @@
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 
 #include <map>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -82,7 +82,7 @@ namespace Editor
 					ClearTableRowMajor(inCPUMemory, table_definition.m_Address, table_definition.m_ColumnCount, table_definition.m_RowCount);
 					break;
 				default:
-					assert(false);
+					FOUNDATION_ASSERT(false);
 					break;
 				}
 			}
@@ -147,7 +147,7 @@ namespace Editor
 						case DriverInfo::TableDefinition::ColumnMajor:
 							return ReadTableValueColumnMajor(inSourceData, inSourceTableDefinition, column, row);
 						default:
-							assert(false);
+							FOUNDATION_ASSERT(false);
 							return static_cast<unsigned char>(0);
 						}
 					}();
@@ -161,7 +161,7 @@ namespace Editor
 						WriteTableValueColumnMajor(inCPUMemory, value, inTargetTableDefinition, column, row);
 						break;
 					default:
-						assert(false);
+						FOUNDATION_ASSERT(false);
 						break;
 					}
 				}

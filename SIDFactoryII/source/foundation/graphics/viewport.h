@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "color.h"
+#include "foundation/graphics/color.h"
+#include "foundation/base/types.h"
 #include "utils/bit_array.h"
-#include "types.h"
 
 namespace Foundation
 {

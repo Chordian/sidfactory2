@@ -1,12 +1,12 @@
 #include "audiostream.h"
 #include "SDL.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Foundation
 {
 	void AudioStream::AudioCallback(void* inUserData, unsigned char* inStream, int inByteCount)
 	{
-		assert(inUserData != nullptr);
+		FOUNDATION_ASSERT(inUserData != nullptr);
 
 		AudioStream* audio_stream_instance = static_cast<AudioStream*>(inUserData);
 

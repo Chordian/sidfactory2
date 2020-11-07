@@ -296,13 +296,14 @@
     <ClCompile Include="source\utils\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\foundation\base\assert.h" />
+    <ClInclude Include="source\foundation\base\types.h" />
     <ClInclude Include="source\foundation\graphics\drawfield.h" />
     <ClInclude Include="source\foundation\graphics\image.h" />
     <ClInclude Include="source\foundation\graphics\imanaged.h" />
     <ClInclude Include="source\foundation\graphics\viewport.h" />
     <ClInclude Include="source\foundation\graphics\color.h" />
     <ClInclude Include="source\foundation\graphics\textfield.h" />
-    <ClInclude Include="source\foundation\graphics\types.h" />
     <ClInclude Include="source\foundation\graphics\wrapped_string.h" />
     <ClInclude Include="source\foundation\input\keyboard.h" />
     <ClInclude Include="source\foundation\input\keyboard_utils.h" />

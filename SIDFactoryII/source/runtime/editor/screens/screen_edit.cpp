@@ -49,7 +49,7 @@
 
 #include "SDL.h"
 #include <cctype>
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <algorithm>
 
 
@@ -222,6 +222,11 @@ namespace Editor
 
 	void ScreenEdit::Deactivate()
 	{
+		// Push instruments data to emulation memory
+		m_CPUMemory->Lock();
+		m_InstrumentTableDataSource->PushDataToSource();
+		m_CPUMemory->Unlock();
+
 		// Dereference flight recorder overlay
 		m_OverlayFlightRecorder = nullptr;
 
@@ -237,10 +242,11 @@ namespace Editor
 		// Dereference the status bar
 		m_StatusBar = nullptr;
 
-		// Clear / dereference data sourvce
+		// Clear / dereference data sources
 		m_OrderListDataSources.clear();
 		m_SequenceDataSources.clear();
-
+		m_InstrumentTableDataSource = nullptr;
+		m_CommandTableDataSource = nullptr;
 		m_TracksDataSource = nullptr;
 
 		// Components
@@ -458,6 +464,11 @@ namespace Editor
 	{
 		DoRestoreMuteState();
 
+		// Push instruments data to emulation memory
+		m_CPUMemory->Lock();
+		m_InstrumentTableDataSource->PushDataToSource();
+		m_CPUMemory->Unlock();
+
 		m_ExecutionHandler->QueueInit(0);
 		SetStatusPlaying(true);
 
@@ -472,6 +483,11 @@ namespace Editor
 	void ScreenEdit::DoPlay(unsigned int inEventPos)
 	{
 		DoRestoreMuteState();
+
+		// Push instruments data to emulation memory
+		m_CPUMemory->Lock();
+		m_InstrumentTableDataSource->PushDataToSource();
+		m_CPUMemory->Unlock();
 
 		m_ExecutionHandler->QueueInit(0, [&, inEventPos](Emulation::CPUMemory* inCPUMemory) { OnDriverPostInitPlayFromEventPos(inCPUMemory, inEventPos); });
 		SetStatusPlaying(true);
@@ -501,6 +517,11 @@ namespace Editor
 
 	void ScreenEdit::DoStop()
 	{
+		// Push instruments data to emulation memory
+		m_CPUMemory->Lock();
+		m_InstrumentTableDataSource->PushDataToSource();
+		m_CPUMemory->Unlock();
+
 		m_ExecutionHandler->QueueStop();
 		SetStatusPlaying(false);
 		DoClearAllMuteState();
@@ -513,7 +534,7 @@ namespace Editor
 
 	void ScreenEdit::DoToggleMute(unsigned int inChannel)
 	{
-		bool muted = m_TracksComponent->IsMuted(inChannel);
+		const bool muted = m_TracksComponent->IsMuted(inChannel);
 		m_TracksComponent->SetMuted(inChannel, !muted);
 
 		if (IsPlaying())
@@ -895,8 +916,8 @@ namespace Editor
 
 	void ScreenEdit::PrepareMusicData()
 	{
-		assert(m_DriverInfo != nullptr);
-		assert(m_CPUMemory != nullptr);
+		FOUNDATION_ASSERT(m_DriverInfo != nullptr);
+		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
 
 		Undo* undo = &(*m_Undo);
 
@@ -1295,7 +1316,7 @@ namespace Editor
 
 	void ScreenEdit::OnDriverPostInitPlayFromEventPos(Emulation::CPUMemory* inCPUMemory, int inEventPosition)
 	{
-		assert(m_DriverInfo != nullptr);
+		FOUNDATION_ASSERT(m_DriverInfo != nullptr);
 
 		std::vector<IDriverArchitecture::PlayMarkerInfo> play_marker_info;
 
@@ -1688,6 +1709,9 @@ namespace Editor
 			SetStatusPlaying(false);
 
 			m_PlaybackCurrentEventPos = -1;
+			m_CPUMemory->Lock();
+			m_InstrumentTableDataSource->PushDataToSource();
+			m_CPUMemory->Unlock();
 
 			m_QuickSaveCallback();
 

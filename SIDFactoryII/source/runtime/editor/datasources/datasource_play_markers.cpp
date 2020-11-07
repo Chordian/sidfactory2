@@ -15,8 +15,8 @@ namespace Editor
 
 	std::string& DataSourcePlayMarkers::operator[](int inIndex)
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < AuxilaryDataPlayMarkers::MaxPlayMarkers);
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < AuxilaryDataPlayMarkers::MaxPlayMarkers);
 
 		const int event_pos = m_AuxilaryDataPlayMarkers.GetPlayMarkerEventPosition(inIndex);
 		const bool is_uppercase = m_DisplayState.IsHexUppercase();

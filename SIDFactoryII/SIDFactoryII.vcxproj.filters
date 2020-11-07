@@ -137,6 +137,9 @@
     <Filter Include="source\runtime\editor\converters\mod">
       <UniqueIdentifier>{646adf23-587e-4d8c-b00a-e0f8c19ab4f9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\foundation\base">
+      <UniqueIdentifier>{33ab8f9f-a192-4917-8a86-cad12dd4cbb4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -775,9 +778,6 @@
     <ClInclude Include="source\foundation\graphics\textfield.h">
       <Filter>source\foundation\graphics</Filter>
     </ClInclude>
-    <ClInclude Include="source\foundation\graphics\types.h">
-      <Filter>source\foundation\graphics</Filter>
-    </ClInclude>
     <ClInclude Include="source\foundation\graphics\wrapped_string.h">
       <Filter>source\foundation\graphics</Filter>
     </ClInclude>
@@ -1122,6 +1122,12 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\dialog\dialog_selection_list.h">
       <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\base\assert.h">
+      <Filter>source\foundation\base</Filter>
+    </ClInclude>
+    <ClInclude Include="source\foundation\base\types.h">
+      <Filter>source\foundation\base</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

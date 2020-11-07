@@ -8,7 +8,7 @@
 #include "foundation/graphics/textfield.h"
 #include "utils/c64file.h"
 #include "libraries/ghc/fs_std.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 using namespace fs;
 
@@ -27,8 +27,8 @@ namespace Editor
 	bool ConverterCC::CanConvert(const void* inData, unsigned int inDataSize) const
 	{
 		// Assert that there's is some data in the first place
-		assert(inData != nullptr);
-		assert(inDataSize > 0);
+		FOUNDATION_ASSERT(inData != nullptr);
+		FOUNDATION_ASSERT(inDataSize > 0);
 
 		if (inDataSize >= 3)
 		{
@@ -48,7 +48,7 @@ namespace Editor
 
 	bool ConverterCC::Update() 
 	{
-		assert(GetState() != State::Uninitialized);
+		FOUNDATION_ASSERT(GetState() != State::Uninitialized);
 
 		if (GetState() == State::Initialized)
 		{
@@ -56,7 +56,7 @@ namespace Editor
 
 			SF2::Interface sf2(m_Platform, *m_Console);
 			const path driver_path = m_Platform->Storage_GetDriversHomePath();
-			const path driver_path_and_filename = driver_path / "sf2driver11_02.prg";
+			const path driver_path_and_filename = driver_path / "sf2driver11_03.prg";
 			const bool driver_loaded = sf2.LoadFile(driver_path_and_filename.string());
 
 			if (!driver_loaded)

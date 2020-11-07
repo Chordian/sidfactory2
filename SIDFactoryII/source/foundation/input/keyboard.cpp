@@ -1,5 +1,5 @@
 #include "keyboard.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Foundation
 {
@@ -31,7 +31,7 @@ namespace Foundation
 
 	void Keyboard::BeginCollect()
 	{
-		assert(!m_Collecting);
+		FOUNDATION_ASSERT(!m_Collecting);
 
 		// Clear list of key presses
 		m_KeyEventList.clear();
@@ -91,7 +91,7 @@ namespace Foundation
 
 	void Keyboard::KeyDown(SDL_Keycode inKey)
 	{
-		assert(m_Collecting);
+		FOUNDATION_ASSERT(m_Collecting);
 
 		if (HandleModifier(inKey, true))
 			return;
@@ -106,7 +106,7 @@ namespace Foundation
 
 	void Keyboard::KeyUp(SDL_Keycode inKey)
 	{
-		assert(m_Collecting);
+		FOUNDATION_ASSERT(m_Collecting);
 
 		if (HandleModifier(inKey, false))
 			return;
@@ -120,7 +120,7 @@ namespace Foundation
 
 	void Keyboard::KeyText(char* inText)
 	{
-		assert(m_Collecting);
+		FOUNDATION_ASSERT(m_Collecting);
 
 		for (int i = 0; i < 32; ++i)
 		{

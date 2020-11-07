@@ -1,7 +1,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <vector>
 
 #include "misc.h"

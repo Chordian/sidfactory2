@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -39,7 +39,7 @@ namespace Editor
 
 		inline void SaveDataPushStdString256(std::vector<unsigned char>& ioSaveData, const std::string& inString)
 		{
-			assert(inString.size() < 256);
+			FOUNDATION_ASSERT(inString.size() < 256);
 			
 			const unsigned char string_length = static_cast<unsigned char>(inString.size());
 

@@ -2,9 +2,9 @@
 
 #include "SDL.h"
 
-#include "color.h"
-#include "types.h"
-#include "imanaged.h"
+#include "foundation/graphics/color.h"
+#include "foundation/graphics/imanaged.h"
+#include "foundation/base/types.h"
 #include "utils/bit_array.h"
 
 namespace Foundation

@@ -6,7 +6,7 @@
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/imemoryrandomreadaccess.h"
 #include "utils/c64file.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -252,7 +252,7 @@ namespace Editor
 				}
 			}
 
-			assert(highest_used_index < 0x100);
+			FOUNDATION_ASSERT(highest_used_index < 0x100);
 			return static_cast<unsigned char>(highest_used_index);
 		}
 
@@ -291,7 +291,7 @@ namespace Editor
 
 		unsigned short GetSequenceLength(unsigned short inSequenceIndex, const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader)
 		{
-			assert(inSequenceIndex < 0x7f);
+			FOUNDATION_ASSERT(inSequenceIndex < 0x7f);
 
 			const unsigned short sequence_0_address = inDriverInfo.GetMusicData().m_Sequence00Address;
 			const unsigned short sequence_address = sequence_0_address + inSequenceIndex * inDriverInfo.GetMusicData().m_SequenceSize;
@@ -308,7 +308,7 @@ namespace Editor
 
 		unsigned short GetEndOfMusicDataAddress(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& InMemoryReader)
 		{
-			assert(inDriverInfo.IsValid());
+			FOUNDATION_ASSERT(inDriverInfo.IsValid());
 			const unsigned char highest_sequence_index = GetHighestSequenceIndexUsed(inDriverInfo, InMemoryReader);
 
 			// Get Music data descriptor

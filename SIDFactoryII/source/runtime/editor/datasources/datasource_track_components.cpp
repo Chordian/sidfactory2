@@ -1,5 +1,5 @@
 #include "datasource_track_components.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 //------------------------------------------------------------------------------------------------
 
@@ -19,8 +19,8 @@ namespace Editor
 
 	std::shared_ptr<ComponentTrack>& DataSourceTrackComponents::operator[](int inIndex)
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < static_cast<int>(m_Tracks.size()));
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < static_cast<int>(m_Tracks.size()));
 
 		return m_Tracks[inIndex];
 	}

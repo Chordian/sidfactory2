@@ -17,7 +17,7 @@
 #include <algorithm>
 #include <cctype>
 #include <memory>
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include "libraries/ghc/fs_std.h"
 
 
@@ -54,7 +54,7 @@ namespace Editor
 
 	void ScreenDisk::Activate()
 	{
-		assert(m_Platform != nullptr);
+		FOUNDATION_ASSERT(m_Platform != nullptr);
 		ScreenBase::Activate();
 
 		// Clear the text field

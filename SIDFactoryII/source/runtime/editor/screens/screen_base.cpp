@@ -7,7 +7,7 @@
 #include "runtime/editor/dialog/dialog_message_yesno.h"
 #include "utils/keyhook.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 #include <memory>
 
 using namespace Foundation;
@@ -105,7 +105,7 @@ namespace Editor
 
 	void ScreenBase::ClearTextField()
 	{
-		assert(m_MainTextField != nullptr);
+		FOUNDATION_ASSERT(m_MainTextField != nullptr);
 
 		// Clear the text from the top line (but keep coloring)
 		m_MainTextField->Clear();

@@ -13,7 +13,7 @@
 
 #include "utils/usercolors.h"
 
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 //---------------------------------------------------------------------------------------------------------
 
@@ -421,14 +421,14 @@ namespace Editor
 
 	const bool ComponentTracks::IsMuted(int inTrack) const
 	{
-		assert(inTrack >= 0 && inTrack < m_DataSource->GetSize());
+		FOUNDATION_ASSERT(inTrack >= 0 && inTrack < m_DataSource->GetSize());
 		return (*m_DataSource)[inTrack]->IsMuted();
 	}
 
 
 	void ComponentTracks::SetMuted(int inTrack, bool inMuted)
 	{
-		assert(inTrack >= 0 && inTrack < m_DataSource->GetSize());
+		FOUNDATION_ASSERT(inTrack >= 0 && inTrack < m_DataSource->GetSize());
 		(*m_DataSource)[inTrack]->SetMuted(inMuted);
 	}
 
@@ -453,7 +453,7 @@ namespace Editor
 
 	void ComponentTracks::SetEventPosition(int inEventPos, bool inCancelOrderlistFocus)
 	{
-		assert(inEventPos >= 0);
+		FOUNDATION_ASSERT(inEventPos >= 0);
 		m_EventPos = inEventPos < m_MaxEventPos ? inEventPos : m_MaxEventPos;
 
 		// Set the event position on each track
@@ -563,7 +563,7 @@ namespace Editor
 
 	void ComponentTracks::HandleSequenceSplit(unsigned char inSequence, unsigned char inSequenceToAdd)
 	{
-		assert(inSequenceToAdd >= 0 && inSequenceToAdd < 0x80);
+		FOUNDATION_ASSERT(inSequenceToAdd >= 0 && inSequenceToAdd < 0x80);
 
 		m_RequireRefresh = true;
 

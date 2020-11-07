@@ -11,7 +11,7 @@ namespace Utility
 
 	void KeyHookStore::PassBaseDefinitions(const std::vector<KeyHookStore::HookDefinition>& inDefinitionList)
 	{
-		assert(m_HookDefinitions.empty());
+		FOUNDATION_ASSERT(m_HookDefinitions.empty());
 		for (const auto& definition : inDefinitionList)
 			m_HookDefinitions.insert({ definition.m_HookName, definition.m_HookKey });
 	}
@@ -19,7 +19,7 @@ namespace Utility
 	void KeyHookStore::OverrideDefinition(const KeyHookStore::HookDefinition& inDefinition)
 	{
 		auto it = m_HookDefinitions.find(inDefinition.m_HookName);
-		assert(it != m_HookDefinitions.end());
+		FOUNDATION_ASSERT(it != m_HookDefinitions.end());
 
 		it->second = inDefinition.m_HookKey;
 	}
@@ -28,7 +28,7 @@ namespace Utility
 	const std::vector<KeyHookStore::Key>& KeyHookStore::GetKey(const std::string inHookName) const
 	{
 		auto it = m_HookDefinitions.find(inHookName);
-		assert(it != m_HookDefinitions.end());
+		FOUNDATION_ASSERT(it != m_HookDefinitions.end());
 
 		return it->second;
 	}

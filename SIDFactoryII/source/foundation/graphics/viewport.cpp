@@ -2,10 +2,10 @@
 #include "foundation/graphics/imanaged.h"
 #include "foundation/graphics/textfield.h"
 #include "foundation/graphics/drawfield.h"
-#include "foundation/graphics/types.h"
+#include "foundation/base/types.h"
 #include "foundation/graphics/image.h"
 #include "resources/data_char.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Foundation
 {
@@ -22,13 +22,13 @@ namespace Foundation
 		, m_FadeValue(0.0f)
 	{
 		m_Window = SDL_CreateWindow(inCaption.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_ClientResolutionX, m_ClientResolutionY, SDL_WINDOW_SHOWN);
-		assert(m_Window != nullptr);
+		FOUNDATION_ASSERT(m_Window != nullptr);
 
 		m_Renderer = SDL_CreateRenderer(m_Window, -1, 0);
-		assert(m_Renderer != nullptr);
+		FOUNDATION_ASSERT(m_Renderer != nullptr);
 
 		m_RenderTarget = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, m_ClientResolutionX, m_ClientResolutionY);
-		assert(m_RenderTarget != nullptr);
+		FOUNDATION_ASSERT(m_RenderTarget != nullptr);
 	}
 
 

@@ -1,5 +1,5 @@
 #include "datacopy_sequence.h"
-#include <assert.h>
+#include "foundation/base/assert.h"
 
 namespace Editor
 {
@@ -34,8 +34,8 @@ namespace Editor
 
 	const DataSourceSequence::Event& DataCopySequence::operator[](unsigned int inIndex) const
 	{
-		assert(inIndex >= 0);
-		assert(inIndex < m_EventCount);
+		FOUNDATION_ASSERT(inIndex >= 0);
+		FOUNDATION_ASSERT(inIndex < m_EventCount);
 
 		return m_Events[inIndex];
 	}

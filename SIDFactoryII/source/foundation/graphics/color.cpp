@@ -1,6 +1,6 @@
-#include "color.h"
-#include "memory.h"
-#include <assert.h>
+#include "foundation/graphics/color.h"
+#include "foundation/base/assert.h"
+//#include "memory.h"
 
 namespace Foundation
 {
@@ -36,7 +36,7 @@ namespace Foundation
 
 	void Palette::SetUserColor(unsigned char inUserColorIndex, unsigned int inARGB)
 	{
-		assert(inUserColorIndex < 0x80);
+		FOUNDATION_ASSERT(inUserColorIndex < 0x80);
 
 		if(inUserColorIndex < 0x80)
 			m_Colors[0x80 + inUserColorIndex] = inARGB;
