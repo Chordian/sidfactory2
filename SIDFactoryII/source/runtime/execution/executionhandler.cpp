@@ -396,6 +396,9 @@ namespace Emulation
 			case ActionType::Stop:
 				frameCapture.Capture(GetAddressFromActionType(action.m_ActionType), action.m_ActionArgument);
 				break;
+			case ActionType::Update:
+				if(!m_ErrorState)
+					frameCapture.Capture(GetAddressFromActionType(action.m_ActionType), action.m_ActionArgument);
 			default:
 				break;
 			}
@@ -409,13 +412,16 @@ namespace Emulation
 		// Execute driver update, if enabled
 		if (m_UpdateEnabled && !m_ErrorState)
 		{
-			bool error = false;
+			bool error = frameCapture.IsMaxCycleCountReached();
 
-			frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0);
-			error = frameCapture.IsMaxCycleCountReached();
+			if (!error)
+			{
+				frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0);
+				error = frameCapture.IsMaxCycleCountReached();
 
-			if (m_PostUpdateCallback)
-				m_PostUpdateCallback(m_Memory);
+				if (m_PostUpdateCallback)
+					m_PostUpdateCallback(m_Memory);
+			}
 
 			if (!error)
 			{
