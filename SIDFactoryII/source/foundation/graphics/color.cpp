@@ -1,5 +1,7 @@
 #include "foundation/graphics/color.h"
 #include "foundation/base/assert.h"
+#include <cstring>
+
 //#include "memory.h"
 
 namespace Foundation
