@@ -38,10 +38,10 @@ namespace Foundation
 
 	void Palette::SetUserColor(unsigned char inUserColorIndex, unsigned int inARGB)
 	{
-		FOUNDATION_ASSERT(inUserColorIndex < 0x80);
+		FOUNDATION_ASSERT(inUserColorIndex < 0xc0);
 
-		if(inUserColorIndex < 0x80)
-			m_Colors[0x80 + inUserColorIndex] = inARGB;
+		if(inUserColorIndex < 0xc0)
+			m_Colors[0x40 + inUserColorIndex] = inARGB;
 	}
 
 	unsigned int Palette::GetColorARGB(Color inColor) const

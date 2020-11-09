@@ -8,9 +8,11 @@
 #include "runtime/editor/datasources/datasource_flightrecorder.h"
 #include "runtime/execution/executionhandler.h"
 #include "runtime/editor/visualizer_components/vizualizer_component_emulation_state.h"
+#include "utils/usercolors.h"
 
 
 using namespace Foundation;
+using namespace Utility;
 
 namespace Editor
 {
@@ -35,7 +37,7 @@ namespace Editor
 		m_TextField = m_Viewport->CreateTextField(width, height, x, y);
 		m_TextField->SetEnable(false);
 
-		m_TextField->ColorAreaBackground(Foundation::Color::DarkerBlue);
+		m_TextField->ColorAreaBackground(ToColor(UserColor::FlightRecorderBackground));
 
 		AddComponents();
 	}

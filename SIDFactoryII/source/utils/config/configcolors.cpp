@@ -117,6 +117,22 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.Console.Background", UserColor::ConsoleBackground, ioViewport, Color::Black);
 			Details::SetUserColor(inConfigFile, "Color.Console.Text", UserColor::ConsoleText, ioViewport, Color::LightGreen);
 
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.Background", UserColor::FlightRecorderBackground, ioViewport, Color::DarkerGrey);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.Description", UserColor::FlightRecorderDesc, ioViewport, Color::White);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.GateOn", UserColor::FlightRecorderGateOn, ioViewport, Color::White);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.GateOff", UserColor::FlightRecorderGateOff, ioViewport, Color::LighterGrey);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.FilterAndVolume", UserColor::FlightRecorderFilterAndVolume, ioViewport, Color::LightBlue);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.CPUUsageLow", UserColor::FlightRecorderCPUUsageLow, ioViewport, Color::White);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.CPUUsageMedium", UserColor::FlightRecorderCPUUsageMedium, ioViewport, Color::LightYellow);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.CPUUsageHigh", UserColor::FlightRecorderCPUUsageHigh, ioViewport, Color::LightRed);
+
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.Visualizer.Background", UserColor::FlightRecorderVisualizerBackground, ioViewport, Color::DarkGrey);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.Visualizer.CPUUsageLow", UserColor::FlightRecorderVisualizerCPUUsageLow, ioViewport, Color::White);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.Visualizer.CPUUsageMedium", UserColor::FlightRecorderVisualizerCPUUsageMedium, ioViewport, Color::LightYellow);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.Visualizer.CPUUsageHigh", UserColor::FlightRecorderVisualizerCPUUsageHigh, ioViewport, Color::LightRed);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.Visualizer.HorizontalLine1", UserColor::FlightRecorderVisualizerHorizontalLine1, ioViewport, Color::White);
+			Details::SetUserColor(inConfigFile, "Color.FlightRecorder.Visualizer.HorizontalLine2", UserColor::FlightRecorderVisualizerHorizontalLine2, ioViewport, Color::Grey);
+
 			Details::SetUserColor(inConfigFile, "Color.DriverTableColor.Set", UserColor::DriverColorSet, ioViewport, Color::LightGreen);
 			Details::SetUserColor(inConfigFile, "Color.DriverTableColor.Jump", UserColor::DriverColorJump, ioViewport, Color::LightYellow);
 

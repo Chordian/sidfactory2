@@ -1184,10 +1184,10 @@ namespace Editor
 						switch (static_cast<Color>(color_rule.m_BackgroundColor))
 						{
 						case Color::LightGreen:
-							color_rule.m_BackgroundColor = static_cast<unsigned char>(UserColor::DriverColorSet) + 0x80;
+							color_rule.m_BackgroundColor = static_cast<unsigned char>(UserColor::DriverColorSet) + 0x40;
 							break;
 						case Color::LightYellow:
-							color_rule.m_BackgroundColor = static_cast<unsigned char>(UserColor::DriverColorJump) + 0x80;
+							color_rule.m_BackgroundColor = static_cast<unsigned char>(UserColor::DriverColorJump) + 0x40;
 							break;
 						default:
 							break;

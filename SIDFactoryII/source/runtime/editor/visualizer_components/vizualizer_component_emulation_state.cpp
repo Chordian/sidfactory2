@@ -3,8 +3,10 @@
 #include "foundation/graphics/drawfield.h"
 #include "runtime/editor/datasources/datasource_flightrecorder.h"
 #include "runtime/environmentdefines.h"
+#include "utils/usercolors.h"
 
 using namespace Foundation;
+using namespace Utility;
 
 namespace Editor
 {
@@ -40,7 +42,14 @@ namespace Editor
 	{
 		if (m_Enabled)
 		{
-			m_DrawField->DrawBox(Color::DarkGrey, 0, 0, m_Dimensions.m_Width, m_Dimensions.m_Height);
+			const Color color_cpu_usage_background = ToColor(UserColor::FlightRecorderVisualizerBackground);
+			const Color color_cpu_usage_horizontal_line_1 = ToColor(UserColor::FlightRecorderVisualizerHorizontalLine1);
+			const Color color_cpu_usage_horizontal_line_2 = ToColor(UserColor::FlightRecorderVisualizerHorizontalLine2);
+			const Color color_cpu_usage_low = ToColor(UserColor::FlightRecorderVisualizerCPUUsageLow);
+			const Color color_cpu_usage_medium = ToColor(UserColor::FlightRecorderVisualizerCPUUsageMedium);
+			const Color color_cpu_usage_high = ToColor(UserColor::FlightRecorderVisualizerCPUUsageHigh);
+
+			m_DrawField->DrawBox(color_cpu_usage_background, 0, 0, m_Dimensions.m_Width, m_Dimensions.m_Height);
 
 			m_DataSource->Lock();
 
@@ -48,38 +57,25 @@ namespace Editor
 			{
 				const int cycle_count = (*m_DataSource)[inIndex].m_nCyclesSpend;
 				const int scan_lines = cycle_count / EMULATION_CYCLES_PER_SCANLINE_PAL;
-				return 4 * scan_lines;
+				return scan_lines;
 			};
 
-			const auto fetch_cycle_color = [](const int inValue) -> Foundation::Color
+			const auto fetch_cycle_color = [&](const int inValue) -> const Color
 			{
-				if (inValue < 16 * 4)
-					return Color::Green;
-				if (inValue < 24 * 4)
-					return Color::Yellow;
+				if (inValue < 0x10)
+					return color_cpu_usage_low;
+				if (inValue < 0x18)
+					return color_cpu_usage_medium;
 
-				return Color::Red;
+				return color_cpu_usage_high;
 			};
 
 			DrawColoredFilled(fetch_cycle_value, fetch_cycle_color);
-/*
-			const auto fetch_pulse_value = [&](int inIndex) -> const int
-			{
-				const int pulse_width = (static_cast<int>((*m_DataSource)[inIndex].m_SIDData[0x03]) << 8) + static_cast<int>((*m_DataSource)[inIndex].m_SIDData[0x02]);
-				return (pulse_width & 0xfff) >> 5;
-			};
 
-			const auto fetch_pulse_color = [&](int inValue)
-			{
-				return Color::Green;
-			};
-
-			DrawColoredFilled(fetch_pulse_value, fetch_pulse_color);
-*/
 			for (int i = 0; i < 8; ++i)
 			{
 				int y = (1 + i) * 16;
-				m_DrawField->DrawHorizontalLine((i & 1) == 1 ? Color::White : Color::DarkGrey, 0, m_Dimensions.m_Width, m_Dimensions.m_Height - y);
+				m_DrawField->DrawHorizontalLine((i & 1) == 1 ? color_cpu_usage_horizontal_line_1 : color_cpu_usage_horizontal_line_2, 0, m_Dimensions.m_Width, m_Dimensions.m_Height - y);
 			}
 
 			m_DataSource->Unlock();
@@ -96,8 +92,9 @@ namespace Editor
 
 		for (int i = 0; i < m_Dimensions.m_Width; ++i)
 		{
-			const int value = inValueFunction(index);
-			const Color color = inColorFunction(value);
+			const int scan_lines = inValueFunction(index);
+			const Color color = inColorFunction(scan_lines);
+			const int value = scan_lines * 4;
 
 			m_DrawField->DrawVerticalLine(color, m_Dimensions.m_Width - 1 - i, m_Dimensions.m_Height - 1 - value, m_Dimensions.m_Height - 1);
 

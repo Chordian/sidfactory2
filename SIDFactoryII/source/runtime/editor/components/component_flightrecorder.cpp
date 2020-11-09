@@ -8,21 +8,24 @@
 #include "foundation/input/keyboard_utils.h"
 #include "runtime/editor/cursor_control.h"
 #include "runtime/environmentdefines.h"
+#include "utils/usercolors.h"
 
 #include "SDL_keycode.h"
 #include "foundation/base/assert.h"
 
 using namespace Foundation;
+using namespace Utility;
 
 namespace Editor
 {
-	ComponentFlightRecorder::ComponentFlightRecorder(int inID, int inGroupID, Undo* inUndo, Foundation::TextField* inTextField, int inX, int inY, int inHeight, std::shared_ptr<DataSourceFlightRecorder>& inDataSource)
+	ComponentFlightRecorder::ComponentFlightRecorder(int inID, int inGroupID, Undo* inUndo, TextField* inTextField, int inX, int inY, int inHeight, std::shared_ptr<DataSourceFlightRecorder>& inDataSource)
 		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, 40, inHeight)
 		, m_DataSource(inDataSource)
 		, m_CursorPos(0)
 		, m_MaxCursorPos(static_cast<unsigned int>(m_DataSource->GetSize()) - inHeight)
 	{
 		FOUNDATION_ASSERT(inTextField != nullptr);
+		m_RequireRefresh = true;
 	}
 
 
@@ -36,17 +39,14 @@ namespace Editor
 	{
 		m_HasControl = true;
 		inCursorControl.SetEnabled(false);
-		m_RequireRefresh = true;
 	}
 
 
-	bool ComponentFlightRecorder::ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
+	bool ComponentFlightRecorder::ConsumeInput(const Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
 		if (m_HasControl && !inKeyboard.GetKeyEventList().empty())
 		{
 			bool consume_input = false;
-
-			m_DataSource->Lock();
 
 			// Get key events
 			for (const auto& key_event : inKeyboard.GetKeyEventList())
@@ -58,7 +58,6 @@ namespace Editor
 					if (m_CursorPos > m_MaxCursorPos)
 						m_CursorPos = 0;
 
-					m_RequireRefresh = true;
 					consume_input = true;
 					break;
 
@@ -67,7 +66,6 @@ namespace Editor
 					if (m_CursorPos > m_MaxCursorPos)
 						m_CursorPos = m_MaxCursorPos;
 
-					m_RequireRefresh = true;
 					consume_input = true;
 					break;
 				case SDLK_PAGEUP:
@@ -75,7 +73,6 @@ namespace Editor
 					if (m_CursorPos > m_MaxCursorPos)
 						m_CursorPos = 0;
 
-					m_RequireRefresh = true;
 					consume_input = true;
 					break;
 				case SDLK_PAGEDOWN:
@@ -83,27 +80,22 @@ namespace Editor
 					if (m_CursorPos > m_MaxCursorPos)
 						m_CursorPos = m_MaxCursorPos;
 
-					m_RequireRefresh = true;
 					consume_input = true;
 					break;
 				case SDLK_HOME:
 					m_CursorPos = 0;
 
-					m_RequireRefresh = true;
 					consume_input = true;
 					break;
 				case SDLK_END:
 					m_CursorPos = m_MaxCursorPos;
 
-					m_RequireRefresh = true;
 					consume_input = true;
 					break;
 				default:
 					break;
 				}
 			}
-
-			m_DataSource->Unlock();
 
 			return consume_input;
 		}
@@ -112,19 +104,19 @@ namespace Editor
 	}
 
 
-	bool ComponentFlightRecorder::ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
+	bool ComponentFlightRecorder::ConsumeInput(const Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
 		return false;
 	}
 
 
-	void ComponentFlightRecorder::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	void ComponentFlightRecorder::ConsumeNonExclusiveInput(const Mouse& inMouse)
 	{
 		Point scroll_wheel = inMouse.GetWheelDelta();
 
 		if (scroll_wheel.m_Y != 0)
 		{
-			Foundation::Point screen_position = inMouse.GetPosition();
+			Point screen_position = inMouse.GetPosition();
 			if (ContainsPosition(screen_position))
 			{
 				int cursor_pos = static_cast<int>(m_CursorPos);
@@ -138,10 +130,7 @@ namespace Editor
 					cursor_pos = static_cast<int>(m_MaxCursorPos);
 
 				if (change != 0)
-				{
 					m_CursorPos = static_cast<unsigned int>(cursor_pos);
-					m_RequireRefresh = true;
-				}
 			}
 		}
 	}
@@ -152,6 +141,14 @@ namespace Editor
 		if (m_RequireRefresh && m_TextField->IsEnabled())
 		{
 			const bool is_uppercase = inDisplayState.IsHexUppercase();
+
+			const Color color_gate_off = ToColor(UserColor::FlightRecorderGateOff);
+			const Color color_gate_on = ToColor(UserColor::FlightRecorderGateOn);
+			const Color color_filter_and_volume = ToColor(UserColor::FlightRecorderFilterAndVolume);
+			const Color color_cpu_usage_low = ToColor(UserColor::FlightRecorderCPUUsageLow);
+			const Color color_cpu_usage_medium = ToColor(UserColor::FlightRecorderCPUUsageMedium);
+			const Color color_cpu_usage_high = ToColor(UserColor::FlightRecorderCPUUsageHigh);
+			const Color color_desc = ToColor(UserColor::FlightRecorderDesc);
 
 			m_DataSource->Lock();
 
@@ -165,7 +162,7 @@ namespace Editor
 				unsigned short PLSW = (static_cast<unsigned short>(frame_data.m_SIDData[sid_index + 3]) << 8) | frame_data.m_SIDData[sid_index + 2];
 				unsigned short ADSR = (static_cast<unsigned short>(frame_data.m_SIDData[sid_index + 5]) << 8) | frame_data.m_SIDData[sid_index + 6];
 				
-				Foundation::Color color = (frame_data.m_SIDData[sid_index + 4] & 1) == 0 ? Foundation::Color::LighterGrey : Foundation::Color::White;
+				Color color = (frame_data.m_SIDData[sid_index + 4] & 1) == 0 ? color_gate_off : color_gate_on;
 
 				m_TextField->PrintHexValue(x + 3, y, color, is_uppercase, FREQ);
 				m_TextField->PrintHexValue(x + 8, y, color, is_uppercase, PLSW);
@@ -179,17 +176,20 @@ namespace Editor
 				unsigned char RES_SEL = frame_data.m_SIDData[0x17];
 				unsigned char BANDPASS_VOL = frame_data.m_SIDData[0x18];
 
-				Foundation::Color color = Foundation::Color::LightBlue;
+				Color color = color_filter_and_volume;
 
 				m_TextField->PrintHexValue(x, y, color, is_uppercase, CUTOFF);
 				m_TextField->PrintHexValue(x + 5, y, color, is_uppercase, RES_SEL);
 				m_TextField->PrintHexValue(x + 8, y, color, is_uppercase, BANDPASS_VOL);
 			};
 
-			for (int i = 0; i < m_Dimensions.m_Height - 2; ++i)
+			m_TextField->Print(2, 1, color_desc, "Frame Cycl SL  SC  Sy Freq Puls Wf ADSR  Sy Freq Puls Wf ADSR  Sy Freq Puls Wf ADSR  CutO RS BV");
+
+			const int x = 2;
+
+			for (int i = 0; i < m_Dimensions.m_Height - 4; ++i)
 			{
-				const int x = 1;
-				const int y = i + 1;
+				const int y = i + 3;
 
 				const int index = m_CursorPos + i;
 
@@ -200,24 +200,23 @@ namespace Editor
 
 					const unsigned char scan_lines = static_cast<unsigned char>(frame_data.m_nCyclesSpend / EMULATION_CYCLES_PER_SCANLINE_PAL);
 
-					Foundation::Color cycle_color = scan_lines < 0x10 ? Foundation::Color::White : (scan_lines >= 0x18 ? Foundation::Color::LightRed : Foundation::Color::LightYellow);
+					Color cycle_color = scan_lines < 0x10 ? color_cpu_usage_low : (scan_lines < 0x18 ? color_cpu_usage_medium : color_cpu_usage_high);
 
 					m_TextField->PrintHexValue(x, y, is_uppercase, frame_number);
 					m_TextField->PrintChar(x + 4, y, ':');
 					m_TextField->PrintHexValue(x + 6, y, cycle_color, is_uppercase, static_cast<unsigned short>(frame_data.m_nCyclesSpend));
 					m_TextField->PrintHexValue(x + 11, y, cycle_color, is_uppercase, scan_lines);
-					m_TextField->PrintHexValue(x + 14, y, is_uppercase, frame_data.m_TempoCounter);
+					m_TextField->PrintHexValue(x + 15, y, is_uppercase, frame_data.m_TempoCounter);
 
-					print_channel(x + 17, y, 0, frame_data);
-					print_channel(x + 39, y, 1, frame_data);
-					print_channel(x + 61, y, 2, frame_data);
+					print_channel(x + 19, y, 0, frame_data);
+					print_channel(x + 41, y, 1, frame_data);
+					print_channel(x + 63, y, 2, frame_data);
 
-					print_filter(x + 83, y, frame_data);
+					print_filter(x + 85, y, frame_data);
 				}
 			}
 
 			m_DataSource->Unlock();
-			m_RequireRefresh = false;
 		}
 	}
 

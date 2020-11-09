@@ -7,7 +7,7 @@ namespace Utility
 {	
 	Foundation::Color ToColor(UserColor inColor) 
 	{ 
-		return Foundation::Color(static_cast<unsigned short>(inColor) + 0x80); 
+		return Foundation::Color(static_cast<unsigned short>(inColor) + static_cast<unsigned short>(Foundation::Color::UserColor00)); 
 	}
 
 	void SetUserColor(Foundation::Viewport& inViewport, UserColor inUserColor, Foundation::Color inColor)

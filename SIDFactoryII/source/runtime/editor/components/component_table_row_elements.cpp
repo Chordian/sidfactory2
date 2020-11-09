@@ -767,7 +767,7 @@ namespace Editor
 				if (color_rule.m_BackgroundColor < 0x80)
 					return TextColoring(static_cast<Color>(color_rule.m_BackgroundColor));
 
-				return TextColoring(ToColor(static_cast<UserColor>(static_cast<unsigned short>(color_rule.m_BackgroundColor) - 0x80)));
+				return TextColoring(ToColor(static_cast<UserColor>(static_cast<unsigned short>(color_rule.m_BackgroundColor) - 0x40)));
 			}
 		}
 

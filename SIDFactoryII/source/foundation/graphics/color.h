@@ -30,7 +30,7 @@ namespace Foundation
 		DarkerBlue,			// 21
 		DarkerYellow,		// 22
 
-		UserColor00 = 0x80,
+		UserColor00 = 0x40,
 	};
 
 
