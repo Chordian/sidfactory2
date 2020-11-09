@@ -172,15 +172,23 @@ namespace Editor
 				// If the types are the same, lets check the filenames against eachother (and ignore case .. which means a transformation per comparasin, not fast.. but who cares! This is disk operation stuff)
 				if (inEntry1.m_Type == inEntry2.m_Type)
 				{
-					std::string name1 = inEntry1.m_Path.string();
-					std::string name2 = inEntry2.m_Path.string();
+					if (!(inEntry1.m_DisplayName.empty() ^ inEntry2.m_DisplayName.empty()))
+					{
+						std::string name1 = inEntry1.m_DisplayName.empty() ? inEntry1.m_Path.string() : inEntry1.m_DisplayName;
+						std::string name2 = inEntry2.m_DisplayName.empty() ? inEntry2.m_Path.string() : inEntry2.m_DisplayName;
 
-					std::transform(name1.begin(), name1.end(), name1.begin(),
-						[](char c) { return std::tolower(c); });
-					std::transform(name2.begin(), name2.end(), name2.begin(),
-						[](char c) { return std::tolower(c); });
+						std::transform(name1.begin(), name1.end(), name1.begin(),
+							[](char c) { return std::tolower(c); });
+						std::transform(name2.begin(), name2.end(), name2.begin(),
+							[](char c) { return std::tolower(c); });
 
-					return name1 < name2;
+						return name1 < name2;
+					}
+					else
+					{
+						// If inEntry2 is not using the display name, entry 1 is and vice versa!
+						return inEntry2.m_DisplayName.empty();
+					}
 				}
 
 				// Otherwise just prefer one type over the other
