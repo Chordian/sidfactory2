@@ -16,8 +16,6 @@ IF ERRORLEVEL 1 EXIT 1
 
 copy /Y release\SIDFactoryII.exe artifacts\
 IF ERRORLEVEL 1 EXIT 1
-copy /Y release\SF2Converter.exe artifacts\
-IF ERRORLEVEL 1 EXIT 1
 
 copy /Y SIDFactoryII\config.ini artifacts\
 IF ERRORLEVEL 1 EXIT 1
