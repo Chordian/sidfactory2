@@ -36,14 +36,14 @@ namespace Editor
 		FOUNDATION_ASSERT(m_DriverInfo != nullptr);
 		ScreenBase::Activate();
 
-// Build string
-		#ifndef _SF2_WINDOWS
-			const std::string build_number = _BUILD_NR;
-		#else
-			const std::string build_number = std::string(__DATE__);
-		#endif
+		// Build string
+#ifdef _BUILD_NR
+		const std::string build_number = _BUILD_NR;
+#else
+		const std::string build_number = std::string(__DATE__);
+#endif
 
-		const std::string build_string = "Development build: " +  build_number + " ";
+		const std::string build_string = "Development build: " + build_number + " ";
 
 		// Load bmp
 		void* file_buffer;
