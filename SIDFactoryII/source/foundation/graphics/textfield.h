@@ -112,7 +112,7 @@ namespace Foundation
 		void ReflectToRenderSurface();
 
 		static const int font_width = 8;
-		static const int font_height = 16;
+		static const int font_height = 8;
 		static const int font_pitch = 1;
 
 	private:
