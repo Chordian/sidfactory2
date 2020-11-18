@@ -381,7 +381,7 @@ namespace Editor
 		const int minutes = m_PlayTimerSeconds / 60;
 		const int seconds = m_PlayTimerSeconds % 60;
 
-		m_MainTextField->Print(x + 1, y + 1, ToColor(IsPlaying() ? UserColor::ScreenEditInfoRectTextTimePlaybackState : UserColor::ScreenEditInfoRectText), "Playing time: " + std::to_string(minutes) + ((seconds < 10) ? ":0" : ":") + std::to_string(seconds));
+		m_MainTextField->Print(x + 1, y + 1, ToColor(IsPlaying() ? UserColor::ScreenEditInfoRectTextTimePlaybackState : UserColor::ScreenEditInfoRectText), "Playing time: " + std::to_string(minutes) + ((seconds < 10) ? ":0" : ":") + std::to_string(seconds) + "      ");
 		m_MainTextField->Print(x + 1, y + 2, ToColor(UserColor::ScreenEditInfoRectText), m_DriverInfo->GetDescriptor().m_DriverName);
 	}
 

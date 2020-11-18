@@ -16,7 +16,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
-### Build 202010??
+### Build 202011??
 
 #### Editor
 
@@ -31,6 +31,10 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - `macOS` Fixed [#67](https://github.com/Chordian/sidfactory2/issues/67) crash when run from a path with spaces
   (Thanks to Arjen
   Bokhoven for reporting)
+
+#### Drivers
+
+- Driver update 11.03 adds a filter enable flag bit in the instruments
 
 #### Converter
 

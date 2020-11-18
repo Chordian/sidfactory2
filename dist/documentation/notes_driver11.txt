@@ -7,8 +7,7 @@ Versions
   o  11.00: The original default driver
   o  11.01: Also includes the fret slide command
   o  11.02: Also includes the pulse table index, tempo table index and main volume commands
-
-  o  11.50: Also includes additional filter enable flag (this driver has not been released)
+  o  11.03: Also includes additional filter enable flag
 
 
 Instruments
@@ -25,7 +24,7 @@ Flags:
 
       80 - Enable hard restart
       40 - Start filter program (filter table index in byte 3 is then used)
-      20 - [11.50] Enable filter on channel (combined with bitmask set in filter program)
+      20 - [11.03] Enable filter on channel (combined with bitmask set in filter program)
       10 - Oscillator reset (waveform 09 is used in the first frame of a note)
       0X - Hard restart table index
 
