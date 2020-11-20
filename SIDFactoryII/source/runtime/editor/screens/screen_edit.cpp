@@ -222,11 +222,6 @@ namespace Editor
 
 	void ScreenEdit::Deactivate()
 	{
-		// Push instruments data to emulation memory
-		m_CPUMemory->Lock();
-		m_InstrumentTableDataSource->PushDataToSource();
-		m_CPUMemory->Unlock();
-
 		// Dereference flight recorder overlay
 		m_OverlayFlightRecorder = nullptr;
 
