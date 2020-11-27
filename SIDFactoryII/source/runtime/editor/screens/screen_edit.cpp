@@ -478,9 +478,6 @@ namespace Editor
 		m_ExecutionHandler->QueueInit(0);
 		SetStatusPlaying(true);
 
-		m_TracksComponent->CancelFocusModeOrderList();
-		m_EditState.SetPreventSequenceEdit(m_EditState.IsFollowPlayMode());
-
 		m_LastPlaybackStartEventPos = 0;
 		m_PlaybackCurrentEventPos = -1;
 	}
@@ -497,9 +494,6 @@ namespace Editor
 
 		m_ExecutionHandler->QueueInit(0, [&, inEventPos](Emulation::CPUMemory* inCPUMemory) { OnDriverPostInitPlayFromEventPos(inCPUMemory, inEventPos); });
 		SetStatusPlaying(true);
-
-		m_TracksComponent->CancelFocusModeOrderList();
-		m_EditState.SetPreventSequenceEdit(m_EditState.IsFollowPlayMode());
 
 		m_LastPlaybackStartEventPos = inEventPos;
 		m_PlaybackCurrentEventPos = inEventPos - 1;
@@ -531,8 +525,6 @@ namespace Editor
 		m_ExecutionHandler->QueueStop();
 		SetStatusPlaying(false);
 		DoClearAllMuteState();
-
-		m_EditState.SetPreventSequenceEdit(false);
 
 		m_PlaybackCurrentEventPos = -1;
 	}
@@ -1457,6 +1449,9 @@ namespace Editor
 				flight_recorder->Reset();
 				flight_recorder->SetRecording(true);
 
+				m_TracksComponent->CancelFocusModeOrderList();
+				m_EditState.SetPreventSequenceEdit(m_EditState.IsFollowPlayMode());
+
 				m_ExecutionHandler->GetFlightRecorder()->Reset();
 				m_ExecutionHandler->GetFlightRecorder()->SetRecording(true);
 
@@ -1467,6 +1462,7 @@ namespace Editor
 			else
 			{
 				flight_recorder->SetRecording(false);
+				m_EditState.SetPreventSequenceEdit(false);
 
 				m_DriverState.SetPlayState(Editor::DriverState::PlayState::Stopped);
 				m_ComponentsManager->Update(0, m_CPUMemory);
