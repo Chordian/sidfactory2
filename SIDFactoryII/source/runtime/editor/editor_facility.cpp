@@ -94,7 +94,7 @@ namespace Editor
 		m_CPUMemory = new CPUMemory(0x10000, m_Platform);
 		m_CPU = new CPUmos6510();
 		m_FlightRecorder = new FlightRecorder(m_Platform, 0x800);
-		m_ExecutionHandler = new ExecutionHandler(m_Platform, m_CPU, m_CPUMemory, m_SIDProxy, m_FlightRecorder);
+		m_ExecutionHandler = new ExecutionHandler(m_Platform, m_CPU, m_CPUMemory, m_SIDProxy, m_FlightRecorder, inConfigFile);
 
 		// Create audio stream
 		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Sound.Buffer.Size", 256);
