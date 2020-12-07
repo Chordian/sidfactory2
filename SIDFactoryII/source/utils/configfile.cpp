@@ -340,6 +340,9 @@ namespace Utility
 			config_value = TryBuildConfigValue<Utility::Config::ConfigValueInt>(inValues);
 			if (config_value != nullptr)
 				return config_value;
+			config_value = TryBuildConfigValue<Utility::Config::ConfigValueFloat>(inValues);
+			if (config_value != nullptr)
+				return config_value;
 			config_value = TryBuildConfigValue<Utility::Config::ConfigValueString>(inValues);
 			if (config_value != nullptr)
 				return config_value;
