@@ -105,7 +105,7 @@ namespace Editor
 		for (unsigned char i = 0; i < inNumberCount; ++i)
 		{
 			Foundation::Color color = 
-				ToColor(std::find(inUsedArray.begin(), inUsedArray.end(), i) != inUsedArray.end() ? UserColor::DialogOptimzerUsed : UserColor::DialogOptimzerUnused);
+				ToColor(std::find(inUsedArray.begin(), inUsedArray.end(), i) != inUsedArray.end() ? UserColor::DialogOptimizerUsed : UserColor::DialogOptimizerUnused);
 			m_TextField->PrintHexValue(x, y, color, inUppercase, i);
 
 			++counter;

@@ -99,8 +99,8 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.Dialog.Text", UserColor::DialogText, ioViewport, Color::White);
 			Details::SetUserColor(inConfigFile, "Color.Dialog.ListSelector.Cursor", UserColor::DialogListSelectorCursor, ioViewport, Color::DarkGrey);
 			Details::SetUserColor(inConfigFile, "Color.Dialog.ListSelector.Cursor.Focus", UserColor::DialogListSelectorCursorFocus, ioViewport, Color::DarkBlue);
-			Details::SetUserColor(inConfigFile, "Color.Dialog.Optimizer.Used", UserColor::DialogOptimzerUsed, ioViewport, Color::White);
-			Details::SetUserColor(inConfigFile, "Color.Dialog.Optimizer.Unused", UserColor::DialogOptimzerUnused, ioViewport, Color::LighterGrey);
+			Details::SetUserColor(inConfigFile, "Color.Dialog.Optimizer.Used", UserColor::DialogOptimizerUsed, ioViewport, Color::White);
+			Details::SetUserColor(inConfigFile, "Color.Dialog.Optimizer.Unused", UserColor::DialogOptimizerUnused, ioViewport, Color::LighterGrey);
 			Details::SetUserColor(inConfigFile, "Color.StatusBar.Text", UserColor::StatusBarText, ioViewport, Color::White);
 			Details::SetUserColor(inConfigFile, "Color.StatusBar.Background.Stopped", UserColor::StatusBarBackgroundStopped, ioViewport, Color::Blue);
 			Details::SetUserColor(inConfigFile, "Color.StatusBar.Background.Stopped.MouseOver", UserColor::StatusBarBackgroundStoppedMouseOverRegion, ioViewport, Color::LightBlue);
