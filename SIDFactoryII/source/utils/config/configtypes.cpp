@@ -186,6 +186,94 @@ namespace Utility
 		}
 
 
+		// ConfigValueFloat 
+		ConfigValueFloat::ConfigValueFloat()
+		{
+		}
+
+
+		ConfigValueFloat::ConfigValueFloat(const std::vector<std::string>& inValues)
+		{
+			for (const auto& value : inValues)
+			{
+				FOUNDATION_ASSERT(IsMyType(value));
+
+				const std::string value_to_parse = value.back() == 'f' ? value.substr(0, value.size() - 1) : value;
+				m_Values.push_back(std::stof(value_to_parse));
+			}
+		}
+
+
+		ValueType ConfigValueFloat::GetType() const
+		{
+			return GetMyType();
+		}
+
+
+		size_t ConfigValueFloat::GetValueCount() const
+		{
+			return m_Values.size();
+		}
+
+
+		void ConfigValueFloat::AddValues(const IConfigValue& inValuesToAdd)
+		{
+			const ConfigValueFloat& my_type = reinterpret_cast<const ConfigValueFloat&>(inValuesToAdd);
+
+			for (const auto& value : my_type.GetValues())
+				m_Values.push_back(value);
+		}
+
+
+		const ConfigValueFloat::DATATYPE& ConfigValueFloat::GetValue(size_t inIndex) const
+		{
+			FOUNDATION_ASSERT(inIndex >= 0 && inIndex < m_Values.size());
+			return m_Values[inIndex];
+		}
+
+
+		const std::vector<ConfigValueFloat::DATATYPE>& ConfigValueFloat::GetValues() const
+		{
+			return m_Values;
+		}
+
+
+		ValueType ConfigValueFloat::GetMyType()
+		{
+			return ValueType::Float;
+		}
+
+
+		bool ConfigValueFloat::IsMyType(const std::string& inValue)
+		{
+			const size_t length = inValue.length();
+
+			if (length < 2)
+				return false;
+
+			// Check if decimal
+			bool has_digits = false;
+			bool has_dot = false;
+			bool has_float_indicator = false;
+
+			for (size_t i = 0; i < length; ++i)
+			{
+				if (inValue[i] == '-' && i == 0)
+					continue;
+				if (inValue[i] >= '0' && inValue[i] <= '9')
+					has_digits = true;
+				else if (inValue[i] == '.' && !has_dot)
+					has_dot = true;
+				else if (inValue[i] == 'f' && i == length - 1)
+					has_float_indicator = true;
+				else
+					return false;
+			}
+
+			return has_digits && (has_dot || has_float_indicator);
+		}
+
+
 		// ConfigValueString 
 		ConfigValueString::ConfigValueString(const std::vector<std::string>& inValues)
 		{

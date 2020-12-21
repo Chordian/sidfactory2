@@ -340,10 +340,10 @@ namespace Emulation
 			short* sample_buffer_write_location = pSampleBuffer + m_SampleBufferWriteCursor;
 
 			// Calculate remaining samples in the buffer, so that we do not overflow it!
-			const int uiRemaningSamplesInBuffer = m_SampleBufferSize - m_SampleBufferWriteCursor;
+			const int uiRemainingSamplesInBuffer = m_SampleBufferSize - m_SampleBufferWriteCursor;
 
 			// Clock the sid
-			const int nSamplesWritten = m_SIDProxy->Clock(inDeltaCycles, sample_buffer_write_location, uiRemaningSamplesInBuffer);
+			const int nSamplesWritten = m_SIDProxy->Clock(inDeltaCycles, sample_buffer_write_location, uiRemainingSamplesInBuffer);
 
 			// Negative sample count written is invalid!
 			FOUNDATION_ASSERT(nSamplesWritten >= 0);

@@ -18,7 +18,7 @@ namespace Editor
 	void CursorControl::SetEnabled(bool inEnabled)
 	{
 		if (inEnabled)
-			m_Tick = 0;										// If enabled, reset the tick count, so that the cursor will become visiblie on next update.
+			m_Tick = 0;										// If enabled, reset the tick count, so that the cursor will become visible on next update.
 		else if (m_TextField != nullptr)
 			m_TextField->GetCursor().SetEnabled(false);		// If disabled, makes sure the cursor is turned of in the text field
 

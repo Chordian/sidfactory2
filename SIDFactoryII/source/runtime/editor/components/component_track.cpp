@@ -743,7 +743,7 @@ namespace Editor
 								order_list_event_position.m_CurrentTranspose,
 								event_position.m_Index,
 								event_position.m_CurrentDurationValue,
-								event_position.m_RemaningTicks,
+								event_position.m_RemainingTicks,
 								event_position.m_NextInstrumentAddress,
 								!event_position.m_NextIsEndOfSequence
 							} );

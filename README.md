@@ -20,15 +20,20 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 #### Editor
 
-- The converter has now been embedded into the editor; just load MOD, SNG or CT directly with **F10** as usual
-- Converting from MOD will show a dialog for choosing which of the four channels to ignore
-- Added **Ctrl-Shift-F** for inserting the first _empty_ unused sequence
-- Added **Ctrl-D** for duplicating and replacing the currently edited sequence
-- Added **Ctrl-Shift-D** for duplicating and appending sequence after the currently edited sequence
-- Splitting a sequence with **Ctrl-B** now splits to the first _empty_ unused sequence
-- `macOS` Fixed [#71](https://github.com/Chordian/sidfactory2/issues/71) switch instrument/command while in a table (Thanks to Adam Davidovics
+- Added: The converter has now been embedded into the editor; just load MOD, SNG or CT directly with **F10** as usual
+- Added: Converting from MOD will show a dialog for choosing which of the four channels to ignore
+- Added: **Ctrl-Shift-F** for inserting the first _empty_ unused sequence
+- Added: **Ctrl-D** for duplicating and replacing the currently edited sequence
+- Added: **Ctrl-Shift-D** for duplicating and appending sequence after the currently edited sequence
+- Changed: Splitting a sequence with **Ctrl-B** now splits to the first _empty_ unused sequence
+- Changed: `macOS` Copy/Paste/Undo/Redo are now under the standard macOS key combinations
+  (Cmd-c, Cmd-v, Cmd-z, Shift-Cmd-z) (Thanks to Bastiaan Winde for reporting)
+- Fixed: [#91](https://github.com/Chordian/sidfactory2/issues/91) cannot edit
+  tracks anymore after dialog has been shown. (Thanks to Arjen Bokhoven for
+  reporting)
+- Fixed: `macOS` [#71](https://github.com/Chordian/sidfactory2/issues/71) switch instrument/command while in a table (Thanks to Adam Davidovics
   for reporting)
-- `macOS` Fixed [#67](https://github.com/Chordian/sidfactory2/issues/67) crash when run from a path with spaces
+- Fixed: `macOS` [#67](https://github.com/Chordian/sidfactory2/issues/67) crash when run from a path with spaces
   (Thanks to Arjen
   Bokhoven for reporting)
 
