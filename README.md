@@ -27,7 +27,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Added: **Ctrl-Shift-D** for duplicating and appending sequence after the currently edited sequence
 - Changed: Splitting a sequence with **Ctrl-B** now splits to the first _empty_ unused sequence
 - Changed: `macOS` Copy/Paste/Undo/Redo are now under the standard macOS key combinations
-  (Cmd-c, Cmd-v, Cmd-z, Shift-Cmd-z) (Thanks to Bastiaan Winde for reporting)
+  (**Cmd-C**, **Cmd-V**, **Cmd-Z**, **Shift-Cmd-Z**) (Thanks to Bastiaan Winde for reporting)
 - Fixed: [#91](https://github.com/Chordian/sidfactory2/issues/91) cannot edit
   tracks anymore after dialog has been shown. (Thanks to Arjen Bokhoven for
   reporting)
