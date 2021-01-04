@@ -16,7 +16,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
-### Build 202101??
+### Build 20210104
 
 #### Editor
 
