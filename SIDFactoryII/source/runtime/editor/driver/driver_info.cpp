@@ -156,7 +156,7 @@ namespace Editor
 			return false;
 		if (!HasParsedHeaderBlock(HeaderBlockID::ID_DriverTables))
 			return false;
-		if (!HasParsedHeaderBlock(HeaderBlockID::ID_DriverInstrumentDesciptor))
+		if (!HasParsedHeaderBlock(HeaderBlockID::ID_DriverInstrumentDescriptor))
 			return false;
 		if (!HasParsedHeaderBlock(HeaderBlockID::ID_MusicData))
 			return false;
@@ -240,7 +240,7 @@ namespace Editor
 			case HeaderBlockID::ID_DriverTables:
 				ParseDriverTables(block_reader);
 				break;
-			case HeaderBlockID::ID_DriverInstrumentDesciptor:
+			case HeaderBlockID::ID_DriverInstrumentDescriptor:
 				ParseDriverInstrumentDescriptor(block_reader);
 				break;
 			case HeaderBlockID::ID_MusicData:
@@ -344,7 +344,7 @@ namespace Editor
 			const unsigned char properties = inReader.ReadByte();
 			table_definition.m_PropertyEnabledInsertDelete = (properties & TableDefinition::Properties::EnableInsertDelete) != 0;
 			table_definition.m_PropertyLayoutVertically = (properties & TableDefinition::Properties::LayoutAddVertically) != 0;
-			table_definition.m_PropertyIndexAsContinuousMemory = (properties & TableDefinition::Properties::IndexAsContiuousMemory) != 0;
+			table_definition.m_PropertyIndexAsContinuousMemory = (properties & TableDefinition::Properties::IndexAsContinuousMemory) != 0;
 
 			table_definition.m_InsertDeleteRuleID = inReader.ReadByte();
 			table_definition.m_EnterActionRuleID = inReader.ReadByte();
@@ -496,20 +496,20 @@ namespace Editor
 
 		for (int i = 0; i < instrument_pointer_count; ++i)
 		{
-			InstrumentDataPointerDescription table_pointer_desciption;
+			InstrumentDataPointerDescription table_pointer_description;
 
-			table_pointer_desciption.m_TableID = inReader.ReadByte();
-			table_pointer_desciption.m_InstrumentDataPointerPosition = inReader.ReadByte();
-			table_pointer_desciption.m_PointerAndValue = inReader.ReadByte();
-			table_pointer_desciption.m_InstrumentDataConditionalValuePosition = inReader.ReadByte();
-			table_pointer_desciption.m_ConditionValueAndValue = inReader.ReadByte();
-			table_pointer_desciption.m_ConditionEqualityValue = inReader.ReadByte();
-			table_pointer_desciption.m_TableDataType = inReader.ReadByte();
-			table_pointer_desciption.m_TableJumpMarkerValuePosition = inReader.ReadByte();
-			table_pointer_desciption.m_TableJumpMarkerValue = inReader.ReadByte();
-			table_pointer_desciption.m_TableJumpDestinationIndexPosition = inReader.ReadByte();
+			table_pointer_description.m_TableID = inReader.ReadByte();
+			table_pointer_description.m_InstrumentDataPointerPosition = inReader.ReadByte();
+			table_pointer_description.m_PointerAndValue = inReader.ReadByte();
+			table_pointer_description.m_InstrumentDataConditionalValuePosition = inReader.ReadByte();
+			table_pointer_description.m_ConditionValueAndValue = inReader.ReadByte();
+			table_pointer_description.m_ConditionEqualityValue = inReader.ReadByte();
+			table_pointer_description.m_TableDataType = inReader.ReadByte();
+			table_pointer_description.m_TableJumpMarkerValuePosition = inReader.ReadByte();
+			table_pointer_description.m_TableJumpMarkerValue = inReader.ReadByte();
+			table_pointer_description.m_TableJumpDestinationIndexPosition = inReader.ReadByte();
 
-			m_InstrumentDataDescription.m_InstrumentDataPointerDescriptions.push_back(table_pointer_desciption);
+			m_InstrumentDataDescription.m_InstrumentDataPointerDescriptions.push_back(table_pointer_description);
 		}
 	}
 

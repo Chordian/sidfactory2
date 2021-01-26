@@ -16,18 +16,18 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
-### Build 202011??
+### Build 20210104
 
 #### Editor
 
-- Added: The converter has now been embedded into the editor; just load MOD, SNG or CT directly with **F10** as usual
+- Added: The converter has now been embedded into the editor; just load MOD, SNG or CT directly
 - Added: Converting from MOD will show a dialog for choosing which of the four channels to ignore
 - Added: **Ctrl-Shift-F** for inserting the first _empty_ unused sequence
 - Added: **Ctrl-D** for duplicating and replacing the currently edited sequence
 - Added: **Ctrl-Shift-D** for duplicating and appending sequence after the currently edited sequence
 - Changed: Splitting a sequence with **Ctrl-B** now splits to the first _empty_ unused sequence
 - Changed: `macOS` Copy/Paste/Undo/Redo are now under the standard macOS key combinations
-  (Cmd-c, Cmd-v, Cmd-z, Shift-Cmd-z) (Thanks to Bastiaan Winde for reporting)
+  (**Cmd-C**, **Cmd-V**, **Cmd-Z**, **Shift-Cmd-Z**) (Thanks to Bastiaan Winde for reporting)
 - Fixed: [#91](https://github.com/Chordian/sidfactory2/issues/91) cannot edit
   tracks anymore after dialog has been shown. (Thanks to Arjen Bokhoven for
   reporting)

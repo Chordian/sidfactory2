@@ -73,7 +73,6 @@
 		E9089BF92495717A008B147D /* datasource_emulation_memory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9089AED24957179008B147D /* datasource_emulation_memory.cpp */; };
 		E9089BFA2495717A008B147D /* datasource_play_markers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9089AF024957179008B147D /* datasource_play_markers.cpp */; };
 		E9089BFB2495717A008B147D /* datasource_table_memory_view.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9089AF124957179008B147D /* datasource_table_memory_view.cpp */; };
-		E9089BFC2495717A008B147D /* datasource_memory_block.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9089AF524957179008B147D /* datasource_memory_block.cpp */; };
 		E9089BFD2495717A008B147D /* datasource_table.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9089AF624957179008B147D /* datasource_table.cpp */; };
 		E9089BFE2495717A008B147D /* datasource_sequence.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9089AFB24957179008B147D /* datasource_sequence.cpp */; };
 		E9089BFF2495717A008B147D /* cursor_control.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9089AFD24957179008B147D /* cursor_control.cpp */; };
@@ -307,12 +306,10 @@
 		E9089AF224957179008B147D /* datasource_sequence.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = datasource_sequence.h; sourceTree = "<group>"; };
 		E9089AF324957179008B147D /* datasource_tlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = datasource_tlist.h; sourceTree = "<group>"; };
 		E9089AF424957179008B147D /* datasource_memory_buffer_string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = datasource_memory_buffer_string.h; sourceTree = "<group>"; };
-		E9089AF524957179008B147D /* datasource_memory_block.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = datasource_memory_block.cpp; sourceTree = "<group>"; };
 		E9089AF624957179008B147D /* datasource_table.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = datasource_table.cpp; sourceTree = "<group>"; };
 		E9089AF724957179008B147D /* datasource_table_memory_view.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = datasource_table_memory_view.h; sourceTree = "<group>"; };
 		E9089AF824957179008B147D /* datasource_play_markers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = datasource_play_markers.h; sourceTree = "<group>"; };
 		E9089AF924957179008B147D /* datasource_emulation_memory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = datasource_emulation_memory.h; sourceTree = "<group>"; };
-		E9089AFA24957179008B147D /* datasource_memory_block.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = datasource_memory_block.h; sourceTree = "<group>"; };
 		E9089AFB24957179008B147D /* datasource_sequence.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = datasource_sequence.cpp; sourceTree = "<group>"; };
 		E9089AFC24957179008B147D /* edit_state.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = edit_state.h; sourceTree = "<group>"; };
 		E9089AFD24957179008B147D /* cursor_control.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cursor_control.cpp; sourceTree = "<group>"; };
@@ -835,8 +832,6 @@
 				E9089AF924957179008B147D /* datasource_emulation_memory.h */,
 				E9089AEB24957179008B147D /* datasource_flightrecorder.cpp */,
 				E9089ADD24957179008B147D /* datasource_flightrecorder.h */,
-				E9089AF524957179008B147D /* datasource_memory_block.cpp */,
-				E9089AFA24957179008B147D /* datasource_memory_block.h */,
 				E9089AE624957179008B147D /* datasource_memory_buffer_string.cpp */,
 				E9089AF424957179008B147D /* datasource_memory_buffer_string.h */,
 				E9089AE424957179008B147D /* datasource_memory_buffer.cpp */,
@@ -1423,7 +1418,6 @@
 				E9089BF72495717A008B147D /* datasource_table_row_major.cpp in Sources */,
 				E9089C422495717A008B147D /* drawfield.cpp in Sources */,
 				E9089BEA2495717A008B147D /* cpumemory.cpp in Sources */,
-				E9089BFC2495717A008B147D /* datasource_memory_block.cpp in Sources */,
 				E9089C312495717A008B147D /* component_list_selector.cpp in Sources */,
 				E9089C332495717A008B147D /* component_text_input.cpp in Sources */,
 				E9089C412495717A008B147D /* image.cpp in Sources */,

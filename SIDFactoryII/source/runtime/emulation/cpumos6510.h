@@ -47,28 +47,25 @@ namespace Emulation
 			State();
 			~State();
 
-			void SetWriteCallback(ICPUWriteCallback* pCallback) { m_pWriteCallback = pCallback; }
+			void SetWriteCallback(ICPUWriteCallback* pCallback) { m_WriteCallback = pCallback; }
 
 			void Reset();
 			void SetMemory(CPUMemory* pMemory) { m_Memory = pMemory; }
 			
-			inline bool IsOk() const { return m_Memory != nullptr; }
+			inline bool IsValid() const { return m_Memory != nullptr; }
 
-			inline void Lock() const { m_Memory->Lock(); }
-			inline void Unlock() const { m_Memory->Unlock(); }
+			inline void SetStatusFlag(StatusFlag flag) { m_Status |= (1 << flag); };
+			inline void ClearStatusFlag(StatusFlag flag) { m_Status &= ~(1 << flag); };
 
-			inline void SetStatusFlag(StatusFlag flag) { m_ucStatusReg |= (1 << flag); };
-			inline void ClearStatusFlag(StatusFlag flag) { m_ucStatusReg &= ~(1 << flag); };
-
-			inline bool IsStatusFlagSet(StatusFlag flag) const { return ((m_ucStatusReg & (1 << flag)) != 0); };
+			inline bool IsStatusFlagSet(StatusFlag flag) const { return ((m_Status & (1 << flag)) != 0); };
 
 			// Stack
 			inline void StackPush(unsigned char ucVal)
 			{
 				if(m_Memory != nullptr) 
 				{ 
-					(*m_Memory)[0x0100 + m_ucSP] = ucVal; 
-					m_ucSP--; 
+					(*m_Memory)[0x0100 + m_SP] = ucVal; 
+					m_SP--; 
 				} 
 
 			}
@@ -77,67 +74,67 @@ namespace Emulation
 			{
 				if(m_Memory != nullptr)
 				{
-					m_ucSP++;
-					return (*m_Memory)[0x0100 + m_ucSP];
+					m_SP++;
+					return (*m_Memory)[0x0100 + m_SP];
 				}
 
 				return 0;
 			}
 
 			// Suspended
-			inline void SetSuspended(bool bSuspended) { m_bSuspended = bSuspended; }
-			inline bool IsSuspended() const { return m_bSuspended; }
+			inline void SetSuspended(bool bSuspended) { m_IsSuspended = bSuspended; }
+			inline bool IsSuspended() const { return m_IsSuspended; }
 
 			// Cycle counter
-			inline void ResetCycleCounter() { m_iCycle = 0; }
-			inline void SetCycle(int iCycle) { m_iCycle = iCycle; }
-			inline int GetCycle() const { return m_iCycle; }
-			inline void AddCycles(int iCycles) { m_iCycle += iCycles; }
+			inline void ResetCycleCounter() { m_Cycle = 0; }
+			inline void SetCycle(int iCycle) { m_Cycle = iCycle; }
+			inline int GetCycle() const { return m_Cycle; }
+			inline void AddCycles(int iCycles) { m_Cycle += iCycles; }
 
 			// Memory
 			inline CPUMemory& GetMemory() { FOUNDATION_ASSERT(m_Memory); return *m_Memory; }
-			inline void MemoryWrite(void* pAddress, unsigned char ucVal)
+			inline void MemoryWrite(const void* pAddress, unsigned char ucVal)
 			{
-				if(m_pWriteCallback != nullptr)
+				if(m_WriteCallback != nullptr)
 				{
 					const unsigned int address = m_Memory->GetAddress(pAddress);
-					m_pWriteCallback->Write(static_cast<unsigned short>(address), ucVal, m_iCycle);
+					m_WriteCallback->Write(static_cast<unsigned short>(address), ucVal, m_Cycle);
 				}
 			}
 
 			// Registers
-			unsigned char m_ucRegA;
-			unsigned char m_ucRegX;
-			unsigned char m_ucRegY;
+			unsigned char m_RegA;
+			unsigned char m_RegX;
+			unsigned char m_RegY;
 
 			// Program pointer
-			unsigned short m_usPC;
+			unsigned short m_PC;
 
 			// Stack pointer
-			unsigned char m_ucSP;
+			unsigned char m_SP;
 
 			// Flags
-			unsigned char m_ucStatusReg;
+			unsigned char m_Status;
 
 		private:
 			// Suspended
-			bool m_bSuspended;
+			bool m_IsSuspended;
 
 			// Memory
 			CPUMemory* m_Memory;
-			ICPUWriteCallback* m_pWriteCallback;
+			ICPUWriteCallback* m_WriteCallback;
 
 			// Cycle counter
-			int m_iCycle;
+			int m_Cycle;
 		};
 
 		struct Instruction
 		{
-			bool (*m_pmInstruction)(State *state, void *address);
-			void *(*m_pmAdressingMode)(State *state, int& outAddedCycles);
+			bool (*m_pmInstruction)(State& inState, const void* inAddress);
+			void* (*m_pmAdressingMode)(State& inState, int& outAddedCycles);
 
-			unsigned char m_ucSize;
-			unsigned char m_ucBaseCycles;
+			const unsigned char m_ucSize;
+			const unsigned char m_ucBaseCycles;
 			const char* m_acOpcode;
 			const AddressingMode m_eMode;
 		};
@@ -150,171 +147,140 @@ namespace Emulation
 	public:
 
 		// Addressing modes
-		static void* imp(State* pData, int& outAddedCycles);	// Implicit
-		static void* imm(State* pData, int& outAddedCycles);	// Immediate
-		static void* zp(State* pData, int& outAddedCycles);	// Zeropage
-		static void* zpx(State* pData, int& outAddedCycles);	// Zeropage,x
-		static void* zpy(State* pData, int& outAddedCycles);	// Zeropage,y
-		static void* izx(State* pData, int& outAddedCycles);	// Indirect - (Zeropage,x)
-		static void* izy(State* pData, int& outAddedCycles);	// Indirect - (Zeropage),y
-		static void* abs(State* pData, int& outAddedCycles);	// Absolute
-		static void* abx(State* pData, int& outAddedCycles);	// Absolute,x
-		static void* aby(State* pData, int& outAddedCycles);	// Absolute,y
-		static void* ind(State* pData, int& outAddedCycles);	// Indirect
-		static void* rel(State* pData, int& outAddedCycles);	// Relative
+		static void* imp(State& ioState, int& outAddedCycles);	// Implicit
+		static void* imm(State& ioState, int& outAddedCycles);	// Immediate
+		static void* zp(State& ioState, int& outAddedCycles);	// Zeropage
+		static void* zpx(State& ioState, int& outAddedCycles);	// Zeropage,x
+		static void* zpy(State& ioState, int& outAddedCycles);	// Zeropage,y
+		static void* izx(State& ioState, int& outAddedCycles);	// Indirect - (Zeropage,x)
+		static void* izy(State& ioState, int& outAddedCycles);	// Indirect - (Zeropage),y
+		static void* abs(State& ioState, int& outAddedCycles);	// Absolute
+		static void* abx(State& ioState, int& outAddedCycles);	// Absolute,x
+		static void* aby(State& ioState, int& outAddedCycles);	// Absolute,y
+		static void* ind(State& ioState, int& outAddedCycles);	// Indirect
+		static void* rel(State& ioState, int& outAddedCycles);	// Relative
 
 		// Logical and arithmetic commands
-		static bool ORA(State* pData, void* pAddress);
-		static bool AND(State* pData, void* pAddress);
-		static bool EOR(State* pData, void* pAddress);
-		static bool ADC(State* pData, void* pAddress);
-		static bool SBC(State* pData, void* pAddress);
-		static bool CMP(State* pData, void* pAddress);
-		static bool CPX(State* pData, void* pAddress);
-		static bool CPY(State* pData, void* pAddress);
-		static bool DEC(State* pData, void* pAddress);
-		static bool DEX(State* pData, void* pAddress);
-		static bool DEY(State* pData, void* pAddress);
-		static bool INC(State* pData, void* pAddress);
-		static bool INX(State* pData, void* pAddress);
-		static bool INY(State* pData, void* pAddress);
-		static bool ASL(State* pData, void* pAddress);
-		static bool ROL(State* pData, void* pAddress);
-		static bool LSR(State* pData, void* pAddress);
-		static bool ROR(State* pData, void* pAddress);
+		static bool ORA(State& ioState, const void* inAddress);
+		static bool AND(State& ioState, const void* inAddress);
+		static bool EOR(State& ioState, const void* inAddress);
+		static bool ADC(State& ioState, const void* inAddress);
+		static bool SBC(State& ioState, const void* inAddress);
+		static bool CMP(State& ioState, const void* inAddress);
+		static bool CPX(State& ioState, const void* inAddress);
+		static bool CPY(State& ioState, const void* inAddress);
+		static bool DEC(State& ioState, const void* inAddress);
+		static bool DEX(State& ioState, const void* inAddress);
+		static bool DEY(State& ioState, const void* inAddress);
+		static bool INC(State& ioState, const void* inAddress);
+		static bool INX(State& ioState, const void* inAddress);
+		static bool INY(State& ioState, const void* inAddress);
+		static bool ASL(State& ioState, const void* inAddress);
+		static bool ROL(State& ioState, const void* inAddress);
+		static bool LSR(State& ioState, const void* inAddress);
+		static bool ROR(State& ioState, const void* inAddress);
 
 		// Move commands
-		static bool LDA(State* pData, void* pAddress);
-		static bool STA(State* pData, void* pAddress);
-		static bool LDX(State* pData, void* pAddress);
-		static bool STX(State* pData, void* pAddress);
-		static bool LDY(State* pData, void* pAddress);
-		static bool STY(State* pData, void* pAddress);
-		static bool TAX(State* pData, void* pAddress);
-		static bool TXA(State* pData, void* pAddress);
-		static bool TAY(State* pData, void* pAddress);
-		static bool TYA(State* pData, void* pAddress);
-		static bool TSX(State* pData, void* pAddress);
-		static bool TXS(State* pData, void* pAddress);
-		static bool PLA(State* pData, void* pAddress);
-		static bool PHA(State* pData, void* pAddress);
-		static bool PLP(State* pData, void* pAddress);
-		static bool PHP(State* pData, void* pAddress);
+		static bool LDA(State& ioState, const void* inAddress);
+		static bool STA(State& ioState, const void* inAddress);
+		static bool LDX(State& ioState, const void* inAddress);
+		static bool STX(State& ioState, const void* inAddress);
+		static bool LDY(State& ioState, const void* inAddress);
+		static bool STY(State& ioState, const void* inAddress);
+		static bool TAX(State& ioState, const void* inAddress);
+		static bool TXA(State& ioState, const void* inAddress);
+		static bool TAY(State& ioState, const void* inAddress);
+		static bool TYA(State& ioState, const void* inAddress);
+		static bool TSX(State& ioState, const void* inAddress);
+		static bool TXS(State& ioState, const void* inAddress);
+		static bool PLA(State& ioState, const void* inAddress);
+		static bool PHA(State& ioState, const void* inAddress);
+		static bool PLP(State& ioState, const void* inAddress);
+		static bool PHP(State& ioState, const void* inAddress);
 
 		// Jump/Flag commands
-		static bool BPL(State* pData, void* pAddress);
-		static bool BMI(State* pData, void* pAddress);
-		static bool BVC(State* pData, void* pAddress);
-		static bool BVS(State* pData, void* pAddress);
-		static bool BCC(State* pData, void* pAddress);
-		static bool BCS(State* pData, void* pAddress);
-		static bool BNE(State* pData, void* pAddress);
-		static bool BEQ(State* pData, void* pAddress);
-		static bool BRK(State* pData, void* pAddress);
-		static bool RTI(State* pData, void* pAddress);
-		static bool JSR(State* pData, void* pAddress);
-		static bool RTS(State* pData, void* pAddress);
-		static bool JMP(State* pData, void* pAddress);
-		static bool BIT(State* pData, void* pAddress);
-		static bool CLC(State* pData, void* pAddress);
-		static bool SEC(State* pData, void* pAddress);
-		static bool CLD(State* pData, void* pAddress);
-		static bool SED(State* pData, void* pAddress);
-		static bool CLI(State* pData, void* pAddress);
-		static bool SEI(State* pData, void* pAddress);
-		static bool CLV(State* pData, void* pAddress);
-		static bool NOP(State* pData, void* pAddress);
+		static bool BPL(State& ioState, const void* inAddress);
+		static bool BMI(State& ioState, const void* inAddress);
+		static bool BVC(State& ioState, const void* inAddress);
+		static bool BVS(State& ioState, const void* inAddress);
+		static bool BCC(State& ioState, const void* inAddress);
+		static bool BCS(State& ioState, const void* inAddress);
+		static bool BNE(State& ioState, const void* inAddress);
+		static bool BEQ(State& ioState, const void* inAddress);
+		static bool BRK(State& ioState, const void* inAddress);
+		static bool RTI(State& ioState, const void* inAddress);
+		static bool JSR(State& ioState, const void* inAddress);
+		static bool RTS(State& ioState, const void* inAddress);
+		static bool JMP(State& ioState, const void* inAddress);
+		static bool BIT(State& ioState, const void* inAddress);
+		static bool CLC(State& ioState, const void* inAddress);
+		static bool SEC(State& ioState, const void* inAddress);
+		static bool CLD(State& ioState, const void* inAddress);
+		static bool SED(State& ioState, const void* inAddress);
+		static bool CLI(State& ioState, const void* inAddress);
+		static bool SEI(State& ioState, const void* inAddress);
+		static bool CLV(State& ioState, const void* inAddress);
+		static bool NOP(State& ioState, const void* inAddress);
 
 		CPUmos6510();
 		~CPUmos6510();
 
 		void Reset();
 
-		// Lock and unlock
-		inline void Lock() const
-		{
-			if (m_pState != nullptr)
-				m_pState->Lock();
-		}
-
-		inline void Unlock() const
-		{
-			if (m_pState != nullptr)
-				m_pState->Unlock();
-		}
-
 		// Suspend
 		inline bool IsSuspended() const
 		{ 
-			if(m_pState != nullptr && m_pState->IsOk())
-				return m_pState->IsSuspended(); 
-
-			return true;
+			return m_State.IsSuspended() || !m_State.IsValid();
 		}
 
 		inline void SetSuspended(bool bSuspend) 
 		{
-			if(m_pState != nullptr)
-				m_pState->SetSuspended(bSuspend); 
+			m_State.SetSuspended(bSuspend); 
 		}
 
 		// Memory
 		inline void SetMemory(CPUMemory* pMemory)
 		{
-			if(m_pState != nullptr)
-				m_pState->SetMemory(pMemory);
+			m_State.SetMemory(pMemory);
 		}
 
 		// Cycle counter
 		inline void CycleCounterReset()
 		{
-			if(m_pState != nullptr)
-				m_pState->ResetCycleCounter();
+			m_State.ResetCycleCounter();
 		}
 
 		inline void CycleCounterSetCurrent(int iCycle)
 		{
-			if(m_pState != nullptr)
-				m_pState->SetCycle(iCycle);
+			m_State.SetCycle(iCycle);
 		}
 
 		inline int CycleCounterGetCurrent()
 		{
-			if(m_pState != nullptr)
-				return m_pState->GetCycle();
-
-			return -1;
+			return m_State.GetCycle();
 		}
 
 		// Program counter
 		inline void SetPC(unsigned short usAddress) 
 		{ 
-			if(m_pState != nullptr) 
-			{
-				m_pState->m_usPC = usAddress;
-				m_pState->SetSuspended(false);
-			}
+			m_State.m_PC = usAddress;
+			m_State.SetSuspended(false);
 		}
 
 		inline void SetAccumulator(unsigned char inValue)
 		{
-			if (m_pState != nullptr)
-				m_pState->m_ucRegA = inValue;
+			m_State.m_RegA = inValue;
 		}
 
 		inline unsigned short GetPC()
 		{
-			if(m_pState != nullptr)
-				return m_pState->m_usPC;
-
-			return 0;
+			return m_State.m_PC;
 		}
 
 		// Write callback
 		inline void SetWriteCallback(ICPUWriteCallback* pCallback)
 		{
-			if(m_pState != nullptr)
-				m_pState->SetWriteCallback(pCallback);
+			m_State.SetWriteCallback(pCallback);
 		}
 
 		// Execution
@@ -326,7 +292,7 @@ namespace Emulation
 
 	private:
 		// CPU State
-		State* m_pState;
+		State m_State;
 	};
 }
 

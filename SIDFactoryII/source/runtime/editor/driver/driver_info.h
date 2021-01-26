@@ -33,7 +33,7 @@ namespace Editor
 			ID_Descriptor = 1,
 			ID_DriverCommon = 2,
 			ID_DriverTables = 3,
-			ID_DriverInstrumentDesciptor = 4,
+			ID_DriverInstrumentDescriptor = 4,
 			ID_MusicData = 5,
 			ID_TableColorRules = 6,
 			ID_TableInsertDeleteRules = 7,
@@ -118,7 +118,7 @@ namespace Editor
 			{
 				EnableInsertDelete = 0x01,
 				LayoutAddVertically = 0x02,
-				IndexAsContiuousMemory = 0x04
+				IndexAsContinuousMemory = 0x04
 			};
 
 			unsigned char m_Type;						// Type of table

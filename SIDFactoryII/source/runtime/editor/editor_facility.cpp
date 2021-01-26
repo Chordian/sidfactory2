@@ -86,8 +86,8 @@ namespace Editor
 		// Create emulation environment
 		SIDConfiguration sid_configuration;										// Default settings are applicable
 
-		const bool sid_use_resamble = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Sound.Emulation.Resample", 1) != 0;
-		sid_configuration.m_eSampleMethod = sid_use_resamble ? SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE : SID_SAMPLE_METHOD_INTERPOLATE;
+		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Sound.Emulation.Resample", 1) != 0;
+		sid_configuration.m_eSampleMethod = sid_use_resample ? SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE : SID_SAMPLE_METHOD_INTERPOLATE;
 		sid_configuration.m_eModel = SID_MODEL_8580;
 
 		m_SIDProxy = new SIDProxy(sid_configuration);
@@ -842,11 +842,11 @@ namespace Editor
 	}
 
 
-	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAdress)
+	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress)
 	{
 		const bool is_uppercase = m_DisplayState.IsHexUppercase();
 
-		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAdress);
+		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress);
 		m_PackedData = packer.GetResult();
 
 		std::string packing_info;
@@ -929,7 +929,7 @@ namespace Editor
 		}
 		else
 		{
-			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "You are trying to overwrite a file, which cannot be idenitified as belonging to SID Factory II.\nPlease choose another name!", DefaultDialogWidth, true, []() {}));
+			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "You are trying to overwrite a file, which cannot be identified as belonging to SID Factory II.\nPlease choose another name!", DefaultDialogWidth, true, []() {}));
 		}
 	}
 
@@ -955,7 +955,7 @@ namespace Editor
 		if (!exists(save_path_and_filename))
 			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "The quick save file does not exist!", DefaultDialogWidth, true, []() {}));
 		else if (!IsFileSF2(save_path_and_filename.string()))
-			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "You are trying to quick save to a file, which cannot be idenitified as belonging to SID Factory II.\nPlease save through the save disk menu!", DefaultDialogWidth, true, []() {}));
+			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "You are trying to quick save to a file, which cannot be identified as belonging to SID Factory II.\nPlease save through the save disk menu!", DefaultDialogWidth, true, []() {}));
 		else if (!sf2_extension)
 			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "You are trying to quick save to a file, with an extension other than .sf2.\nPlease save through the save disk menu!", DefaultDialogWidth, true, []() {}));
 		else

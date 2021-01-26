@@ -25,13 +25,13 @@ namespace Editor
 				// Get Music data descriptor
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 
-				// Reset contents of any subsequenct sequences
-				IDriverArchitecture* driver_achitecture = inDriverInfo.GetDriverArchitecture();
+				// Reset contents of any subsequent sequences
+				IDriverArchitecture* driver_architecture = inDriverInfo.GetDriverArchitecture();
 				
 				for (int i = highest_sequence_index + 1; i < music_data.m_SequenceCount; ++i)
 				{
 					const unsigned short sequence_address = music_data.m_Sequence00Address + i * music_data.m_SequenceSize;
-					driver_achitecture->SetEmptySequence(&inCPUMemory, sequence_address);
+					driver_architecture->SetEmptySequence(&inCPUMemory, sequence_address);
 				}
 			}
 		}

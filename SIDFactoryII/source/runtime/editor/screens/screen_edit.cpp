@@ -190,7 +190,7 @@ namespace Editor
 			DoToggleFollowPlay();
 		};
 
-		// Reset the driver status structe
+		// Reset the driver status struct
 		m_DriverState = DriverState();
 
 		// Create the status bar
@@ -1321,7 +1321,7 @@ namespace Editor
 		// Get the driver architecture instance
 		IDriverArchitecture* driver_architecture = m_DriverInfo->GetDriverArchitecture();
 
-		// Post init only if valid data was computet for the playback state
+		// Post init only if valid data was computed for the playback state
 		if (m_TracksComponent->ComputePlaybackStateFromEventPosition(inEventPosition, play_marker_info))
 			driver_architecture->PostInitSetPlaybackIndices(play_marker_info, inCPUMemory, *m_DriverInfo);
 	}

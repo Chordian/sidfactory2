@@ -296,7 +296,7 @@ namespace Editor
 			const unsigned short sequence_0_address = inDriverInfo.GetMusicData().m_Sequence00Address;
 			const unsigned short sequence_address = sequence_0_address + inSequenceIndex * inDriverInfo.GetMusicData().m_SequenceSize;
 
-			for (unsigned char i = 0; i < inDriverInfo.GetMusicData().m_SequenceSize; ++i)
+			for (unsigned short i = 0; i < inDriverInfo.GetMusicData().m_SequenceSize; ++i)
 			{
 				if (inMemoryReader[sequence_address + static_cast<unsigned short>(i)] == 0x7f)
 					return i + 1;

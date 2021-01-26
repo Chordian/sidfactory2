@@ -191,7 +191,7 @@ namespace Editor
 			cout << "\nConversion complete!";
 		}
 
-		// Return true, to indicate that the convertion has finished consumed the input
+		// Return true, to indicate that the conversion has finished consumed the input
 		return true;
 	}
 
