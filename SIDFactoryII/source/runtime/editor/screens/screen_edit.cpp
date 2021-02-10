@@ -998,10 +998,17 @@ namespace Editor
 		const int player_markers_list_top = order_list_overview_bottom + 1;
 
 		// Create orderlist overview component
+		std::shared_ptr<DataSourceTableText> song_view_text_buffer = std::make_shared<DataSourceTableText>(
+			OrderListOverviewID,
+			256,
+			m_DriverInfo->GetAuxilaryDataCollection().GetTableText()
+		);
+
 		m_OrderListOverviewComponent = std::make_shared<ComponentOrderListOverview>(
 			OrderListOverviewID, 0, 
 			undo,
 			m_MainTextField, 
+			song_view_text_buffer,
 			m_OrderListDataSources, 
 			m_SequenceDataSources, 
 			1, 
@@ -1021,8 +1028,8 @@ namespace Editor
 
 		// Play markers component
 		const int play_markers_width = orderlist_overview_rect.m_Dimensions.m_Width;
-		std::vector<std::string> test_strings;
 		auto play_markers_data_source = std::make_shared<DataSourcePlayMarkers>(m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers(), m_DisplayState);
+
 		m_PlayMarkerListComponent = std::make_shared<ComponentStringListSelector>(
 			PlayMarkerListID, 0,
 			undo, 
@@ -1033,7 +1040,8 @@ namespace Editor
 			play_markers_width, 
 			bottom - player_markers_list_top, 
 			1, 
-			0);
+			0
+		);
 		m_PlayMarkerListComponent->SetColors(ToColor(UserColor::MarkerListBackground), ToColor(UserColor::MarkerListCursorFocus), ToColor(UserColor::MarkerListCursorNoFocus));
 		m_PlayMarkerListComponent->SetColors(ToColor(UserColor::MarkerListText));
 		m_PlayMarkerListComponent->SetSelectionCallback([&](bool inOnDoubleClick)

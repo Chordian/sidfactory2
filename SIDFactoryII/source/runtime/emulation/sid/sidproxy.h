@@ -23,6 +23,7 @@ namespace Emulation
 		void SetSampleMethod(SIDSampleMethod eSampleMethod);
 		void SetSampleFrequency(int nSampleFrequency);
 
+		const SIDConfiguration& GetConfiguration() const;
 		SIDEnvironment GetEnvironment() const;
 		SIDModel GetModel() const;
 		SIDSampleMethod GetSampleMethod() const;

@@ -8,6 +8,7 @@
 #include "runtime/editor/display_state.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
+#include "runtime/editor/datasources/datasource_table_text.h"
 
 #include "utils/usercolors.h"
 
@@ -18,10 +19,13 @@ using namespace Utility;
 
 namespace Editor
 {
+	const int ComponentOrderListOverview::m_MarginWidth = 1;
+	const int ComponentOrderListOverview::m_TextWidth = 16;
+
 	int ComponentOrderListOverview::GetWidthFromChannelCount(int inChannelCount)
 	{
-		// Example, 3 rows: " xxxx 01 02 03 abcdef0123456789 "
-		return 6 + 3 * (inChannelCount + 1) + 16 + 1;
+		// Example, 3 rows: " xxxx: 01 02 03 abcdef0123456789 "
+		return m_MarginWidth + 6 + 3 * inChannelCount + m_TextWidth;
 	}
 
 
@@ -30,6 +34,7 @@ namespace Editor
 		int inGroupID, 
 		Undo* inUndo,
 		TextField* inTextField,
+		std::shared_ptr<DataSourceTableText> inTableText,
 		const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 		const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 		int inX,
@@ -38,6 +43,7 @@ namespace Editor
 		std::function<void(int, bool)> inSetTrackEventPosFunction
 	)
 		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, ComponentOrderListOverview::GetWidthFromChannelCount(static_cast<int>(inOrderLists.size())), inHeight)
+		, m_TableText(inTableText)
 		, m_OrderLists(inOrderLists)
 		, m_SequenceList(inSequenceList)
 		, m_PlaybackEventPosition(-1)
@@ -45,7 +51,6 @@ namespace Editor
 		, m_MaxCursorPosition(0)
 		, m_TopPosition(0)
 		, m_SetTrackEventPosFunction(inSetTrackEventPosFunction)
-
 	{
 
 	}
@@ -69,6 +74,8 @@ namespace Editor
 	bool ComponentOrderListOverview::ConsumeInput(const Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
 		bool consume = false;
+		const bool isNoModifierDown = inKeyboard.IsModifierEmpty();
+		const bool isOnlyShiftDown = inKeyboard.IsModifierDownExclusive(Keyboard::Shift);
 
 		for (const auto& key_event : inKeyboard.GetKeyEventList())
 		{
@@ -117,10 +124,17 @@ namespace Editor
 				}
 				break;
 			case SDLK_RETURN:
-				if (m_CursorPosition >= 0 && m_CursorPosition < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
+				if (isOnlyShiftDown)
 				{
-					m_SetTrackEventPosFunction(m_Overview[m_CursorPosition].m_EventPos, inKeyboard.IsModifierDownExclusive(Keyboard::Control));
-					consume = true;
+					if (m_CursorPosition >= 0 && m_CursorPosition < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
+					{
+						m_SetTrackEventPosFunction(m_Overview[m_CursorPosition].m_EventPos, inKeyboard.IsModifierDownExclusive(Keyboard::Control));
+						consume = true;
+					}
+				}
+				else if (isNoModifierDown)
+				{
+					m_HasDataChange = true;
 				}
 				break;
 			}
@@ -185,7 +199,16 @@ namespace Editor
 			RebuildOverview();
 
 			m_TextField->Clear(m_Rect);
-			m_TextField->ColorAreaBackground(ToColor(UserColor::SongListBackground), m_Rect);
+			
+			Rect ListRect = m_Rect;
+			ListRect.m_Dimensions.m_Width -= m_TextWidth;
+
+			Rect TextRect = m_Rect;
+			TextRect.m_Position.m_X += ListRect.m_Dimensions.m_Width;
+			TextRect.m_Dimensions.m_Width -= ListRect.m_Dimensions.m_Width;
+			
+			m_TextField->ColorAreaBackground(ToColor(UserColor::SongListBackground), ListRect);
+			m_TextField->ColorAreaBackground(ToColor(UserColor::SongListBackgroundText), TextRect);
 
 			const bool is_uppercase = inDisplayState.IsHexUppercase();
 			const int cursor_position = m_CursorPosition - m_TopPosition;
@@ -227,6 +250,11 @@ namespace Editor
 					x += 3;
 				}
 
+				int text_x = m_Position.m_X + m_MarginWidth + 5 + 3 * m_OrderLists.size() + 1;
+
+				if(i < m_TableText->GetSize())
+					m_TextField->Print(text_x, y, ToColor(UserColor::ConsoleText), (*m_TableText)[i], m_TextWidth);
+
 				++local_y;
 			}
 
@@ -235,15 +263,20 @@ namespace Editor
 	}
 
 
+
 	void ComponentOrderListOverview::HandleDataChange()
 	{
-
+		if (m_HasDataChange)
+		{
+			m_TableText->PushDataToSource();
+			m_HasDataChange = false;
+		}
 	}
 
 	
 	void ComponentOrderListOverview::PullDataFromSource()
 	{
-
+		m_TableText->PullDataFromSource();
 	}
 
 

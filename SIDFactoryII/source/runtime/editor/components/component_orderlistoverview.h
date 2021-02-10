@@ -17,6 +17,7 @@ namespace Editor
 	class ScreenBase;
 	class DataSourceOrderList;
 	class DataSourceSequence;
+	class DataSourceTableText;
 
 	class ComponentOrderListOverview final : public ComponentBase
 	{
@@ -26,6 +27,7 @@ namespace Editor
 			int inGroupID, 
 			Undo* inUndo,
 			Foundation::TextField* inTextField, 
+			std::shared_ptr<DataSourceTableText> inTableText,
 			const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 			const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 			int inX,
@@ -67,8 +69,10 @@ namespace Editor
 
 		std::vector<OverviewEntry> m_Overview;
 
-		std::vector<std::shared_ptr<DataSourceOrderList>> m_OrderLists;
-		std::vector<std::shared_ptr<DataSourceSequence>> m_SequenceList;
+		std::shared_ptr<DataSourceTableText> m_TableText;
+
+		const std::vector<std::shared_ptr<DataSourceOrderList>>& m_OrderLists;
+		const std::vector<std::shared_ptr<DataSourceSequence>>& m_SequenceList;
 
 		std::function<void(int, bool)> m_SetTrackEventPosFunction;
 
@@ -78,5 +82,8 @@ namespace Editor
 		int m_MaxCursorPosition;
 		int m_TopPosition;
 		int m_PlaybackEventPosition;
+
+		static const int m_MarginWidth;
+		static const int m_TextWidth;
 	};
 }
