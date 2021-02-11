@@ -34,7 +34,7 @@ namespace Editor
 		, m_HasDataChangeText(false)
 		, m_EditingText(false)
 		, m_TextWidth(inTextWidth)
-		, m_CursorPos(0)
+		, m_TextEditCursorPos(0)
 	{
 	}
 
@@ -128,12 +128,12 @@ namespace Editor
 					consume = true;
 					break;
 				case SDLK_HOME:
-					m_CursorPos = 0;
+					m_TextEditCursorPos = 0;
 					m_RequireRefresh = true;
 					consume = true;
 					break;
 				case SDLK_END:
-					m_CursorPos = GetMaxPossibleCursorPosition();
+					m_TextEditCursorPos = GetMaxPossibleCursorPosition();
 					m_RequireRefresh = true;
 					consume = true;
 					break;
@@ -191,7 +191,7 @@ namespace Editor
 
 				const int cursor_pos = local_cell_position.m_X - text_x;
 
-				m_CursorPos = cursor_pos < GetMaxPossibleCursorPosition() ? cursor_pos : GetMaxPossibleCursorPosition();
+				m_TextEditCursorPos = cursor_pos < GetMaxPossibleCursorPosition() ? cursor_pos : GetMaxPossibleCursorPosition();
 				m_RequireRefresh = true;
 
 				ApplyCursorPosition(inCursorControl);
@@ -267,9 +267,9 @@ namespace Editor
 		std::string& text = (*m_DataSourceTableText)[m_CursorY];
 		const int text_length = static_cast<int>(text.length());
 
-		if (m_CursorPos < text_length)
-			text[m_CursorPos] = inCharacter;
-		else if (m_CursorPos == text_length && text_length < m_TextWidth)
+		if (m_TextEditCursorPos < text_length)
+			text[m_TextEditCursorPos] = inCharacter;
+		else if (m_TextEditCursorPos == text_length && text_length < m_TextWidth)
 			text += inCharacter;
 
 		DoCursorForward();
@@ -280,7 +280,7 @@ namespace Editor
 
 	void ComponentTableRowElementsWithText::ApplyCursorPosition(CursorControl& inCursorControl)
 	{
-		int actual_cursor_x = m_Position.m_X + m_Rect.m_Dimensions.m_Width + 1 + m_CursorPos;
+		int actual_cursor_x = m_Position.m_X + m_Rect.m_Dimensions.m_Width + 1 + m_TextEditCursorPos;
 		int actual_cursor_y = m_Position.m_Y + m_CursorY - m_TopRow;
 
 		inCursorControl.SetPosition(CursorControl::Position({ actual_cursor_x, actual_cursor_y }));
@@ -293,7 +293,7 @@ namespace Editor
 		if (!m_EditingText)
 		{
 			m_EditingText = true;
-			m_CursorPos = 0;
+			m_TextEditCursorPos = 0;
 			m_PreEditTextValue = (*m_DataSourceTableText)[m_CursorY];
 		}
 	}
@@ -311,14 +311,14 @@ namespace Editor
 
 	void ComponentTableRowElementsWithText::DoCursorForward()
 	{
-		if (m_CursorPos < GetMaxPossibleCursorPosition() )
-			++m_CursorPos;
+		if (m_TextEditCursorPos < GetMaxPossibleCursorPosition() )
+			++m_TextEditCursorPos;
 	}
 
 	void ComponentTableRowElementsWithText::DoCursorBackwards()
 	{
-		if (m_CursorPos > 0)
-			--m_CursorPos;
+		if (m_TextEditCursorPos > 0)
+			--m_TextEditCursorPos;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
@@ -330,10 +330,10 @@ namespace Editor
 
 		const auto last_character = text[text_length - 1];
 
-		for (int i = text_length - 2; i >= m_CursorPos; --i)
+		for (int i = text_length - 2; i >= m_TextEditCursorPos; --i)
 			text[i + 1] = text[i];
 
-		text[m_CursorPos] = ' ';
+		text[m_TextEditCursorPos] = ' ';
 
 		if (text_length < m_TextWidth)
 			text += last_character;
@@ -346,9 +346,9 @@ namespace Editor
 		std::string& text = (*m_DataSourceTableText)[m_CursorY];
 		const int text_length = static_cast<int>(text.length());
 
-		std::string new_text = text.substr(0, m_CursorPos);
-		if (m_CursorPos < text_length)
-			new_text += text.substr(m_CursorPos + 1, text_length - m_CursorPos);
+		std::string new_text = text.substr(0, m_TextEditCursorPos);
+		if (m_TextEditCursorPos < text_length)
+			new_text += text.substr(m_TextEditCursorPos + 1, text_length - m_TextEditCursorPos);
 
 		text = new_text;
 
@@ -359,7 +359,7 @@ namespace Editor
 	{
 		if (inIsShiftDown)
 			DoInsert();
-		else if (m_CursorPos > 0)
+		else if (m_TextEditCursorPos > 0)
 		{
 			DoCursorBackwards();
 			DoDelete();

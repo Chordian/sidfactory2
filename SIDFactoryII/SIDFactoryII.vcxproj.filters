@@ -140,6 +140,9 @@
     <Filter Include="source\foundation\base">
       <UniqueIdentifier>{33ab8f9f-a192-4917-8a86-cad12dd4cbb4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\editor\components\utils">
+      <UniqueIdentifier>{e3e78e09-410e-45dd-8a3b-5fb2575d838a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -586,6 +589,9 @@
     </ClCompile>
     <ClCompile Include="source\runtime\editor\dialog\dialog_selection_list.cpp">
       <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.cpp">
+      <Filter>source\runtime\editor\components\utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1128,6 +1134,9 @@
     </ClInclude>
     <ClInclude Include="source\foundation\base\types.h">
       <Filter>source\foundation\base</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.h">
+      <Filter>source\runtime\editor\components\utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

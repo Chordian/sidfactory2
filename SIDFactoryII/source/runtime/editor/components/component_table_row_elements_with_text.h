@@ -67,13 +67,12 @@ namespace Editor
 
 		const int GetMaxPossibleCursorPosition() const;
 
-		int m_CursorPos;
+		int m_TextEditCursorPos;
 		int m_TextWidth;
 		bool m_EditingText;
 		bool m_HasDataChangeText;
 
 		std::string m_PreEditTextValue;
-
 		std::shared_ptr<DataSourceTableText> m_DataSourceTableText;
 	};
 }
