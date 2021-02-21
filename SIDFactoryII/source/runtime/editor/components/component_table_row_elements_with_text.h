@@ -17,6 +17,7 @@ namespace Editor
 {
 	class CursorControl;
 	class DataSourceTableText;
+	class TextEditingDataSourceTableText;
 	struct UndoComponentData;
 
 	class ComponentTableRowElementsWithText final : public ComponentTableRowElements
@@ -52,27 +53,17 @@ namespace Editor
 		void PullDataFromSource() override;
 
 		bool ContainsPosition(const Foundation::Point& inPixelPosition) const override;
-	private:
-		void ApplyCharacter(char inCharacter);
-		void ApplyCursorPosition(CursorControl& inCursorControl);
 
+	private:
+		bool IsEditingText() const;
 		void DoStartEditText();
 		void DoStopEditText(bool inCancel);
 
-		void DoCursorForward();
-		void DoCursorBackwards();
-		void DoInsert();
-		void DoDelete();
-		void DoBackspace(bool inIsShiftDown);
+		Foundation::Point GetEditingTextScreenPosition();
 
-		const int GetMaxPossibleCursorPosition() const;
-
-		int m_TextEditCursorPos;
 		int m_TextWidth;
-		bool m_EditingText;
-		bool m_HasDataChangeText;
 
-		std::string m_PreEditTextValue;
 		std::shared_ptr<DataSourceTableText> m_DataSourceTableText;
+		std::shared_ptr<TextEditingDataSourceTableText> m_TextEditingDataSourceTableText;
 	};
 }
