@@ -85,6 +85,9 @@ namespace Utility
 					{ "numcomma", SDLK_KP_COMMA },
 					{ "minus", SDLK_MINUS },
 					{ "plus", SDLK_PLUS },
+					{ "slash", SDLK_SLASH },
+					{ "backslash", SDLK_BACKSLASH },
+
 					{ "half", 189 },
 
 					{ nullptr, 0 }

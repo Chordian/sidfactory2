@@ -20,7 +20,7 @@ using namespace Utility;
 namespace Editor
 {
 	const int ComponentOrderListOverview::m_MarginWidth = 1;
-	const int ComponentOrderListOverview::m_TextWidth = 16;
+	const int ComponentOrderListOverview::m_TextWidth = 19;
 
 	int ComponentOrderListOverview::GetWidthFromChannelCount(int inChannelCount)
 	{

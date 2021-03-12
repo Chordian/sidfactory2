@@ -76,10 +76,7 @@ namespace Editor
 		FOUNDATION_ASSERT(m_IsEditingText);
 
 		if (inCancel)
-		{
-			if (inCancel)
-				(*m_DataSourceTableText)[m_TextLineEditIndex] = m_TextSaved;
-		}
+			(*m_DataSourceTableText)[m_TextLineEditIndex] = m_TextSaved;
 
 		m_IsEditingText = false;
 		m_HasDataChange |= !inCancel;
