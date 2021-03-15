@@ -52,7 +52,7 @@ LINKER_FLAGS=\
 
 # Rule to compile .o from .c
 %.o: %.c
-	gcc -c $< -o $@
+	$(CC) -c $< -o $@
 
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
