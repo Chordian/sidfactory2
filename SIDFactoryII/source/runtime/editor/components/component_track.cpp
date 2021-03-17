@@ -271,39 +271,41 @@ namespace Editor
 			{
 				Point cell_position = GetCellPosition(screen_position);
 
-				int event_pos_at_cursor_y = (cell_position.m_Y - m_Position.m_Y) + m_TopEventPos;
+				const int event_pos_at_cursor = (cell_position.m_Y - m_Position.m_Y) + m_TopEventPos;
+				const bool event_pos_at_cursor_outside_range = event_pos_at_cursor < 0 || event_pos_at_cursor >= m_MaxEventPos;
 
-				int sequence_cursor_position_x = GetCursorPositionXFromSequenceCellX(cell_position.m_X);
-				if (sequence_cursor_position_x >= 0)
+				if (!event_pos_at_cursor_outside_range)
 				{
-					if (m_FocusModeOrderList)
-						SetFocusModeOrderList(false);
-
-					m_CursorPos = sequence_cursor_position_x;
-
-					if(!m_EditState.IsPreventingSequenceEdit())
-						m_EventPos = event_pos_at_cursor_y;
-
-					ApplyCursorPosition(inCursorControl);
-				}
-				else if(IsEventPosStartOfSequence(event_pos_at_cursor_y))
-				{
-					if (m_EditState.IsPreventingSequenceEdit())
-						return false;
-
-					int orderlist_cursor_position_x = GetCursorPositionXFromOrderListCellX(cell_position.m_X);
-
-					if (orderlist_cursor_position_x >= 0)
+					int sequence_cursor_position_x = GetCursorPositionXFromSequenceCellX(cell_position.m_X);
+					if (sequence_cursor_position_x >= 0)
 					{
-						m_EventPos = event_pos_at_cursor_y;
+						if (m_FocusModeOrderList)
+							SetFocusModeOrderList(false);
 
-						if (!m_FocusModeOrderList)
-							SetFocusModeOrderList(true);
+						m_CursorPos = sequence_cursor_position_x;
 
-						m_CursorPos = orderlist_cursor_position_x;
 						ApplyCursorPosition(inCursorControl);
 					}
+					else if (IsEventPosStartOfSequence(event_pos_at_cursor))
+					{
+						if (m_EditState.IsPreventingSequenceEdit())
+							return false;
+
+						int orderlist_cursor_position_x = GetCursorPositionXFromOrderListCellX(cell_position.m_X);
+
+						if (orderlist_cursor_position_x >= 0)
+						{
+							if (!m_FocusModeOrderList)
+								SetFocusModeOrderList(true);
+
+							m_CursorPos = orderlist_cursor_position_x;
+							ApplyCursorPosition(inCursorControl);
+						}
+					}
 				}
+
+				if (!m_EditState.IsPreventingSequenceEdit())
+					SetEventPosition(std::min(m_MaxEventPos, std::max(0, event_pos_at_cursor)));
 
 				return true;
 			}
@@ -326,8 +328,16 @@ namespace Editor
 
 			const Color background_color = ToColor(UserColor::TrackBackground);
 			const Color background_color_muted = ToColor(UserColor::TrackBackgroundMuted);
+			const Color focus_line_background_color = ToColor(UserColor::TrackBackgroundFocusLine);
+			const Color focus_line_background_color_muted = ToColor(UserColor::TrackBackgroundMutedFocusLine);
+
+			Rect focus_line_rect = m_Rect;
+
+			focus_line_rect.m_Position.m_Y += m_Rect.m_Dimensions.m_Height >> 1;
+			focus_line_rect.m_Dimensions.m_Height = 1;
 
 			m_TextField->ColorAreaBackground(m_IsMuted ? background_color_muted : background_color, m_Rect);
+			m_TextField->ColorAreaBackground(m_IsMuted ? focus_line_background_color_muted : focus_line_background_color, focus_line_rect);
 			m_TextField->ClearText(m_Rect);
 
 			if (m_HasFirstValid)
