@@ -232,8 +232,12 @@ namespace Editor
 				if (m_FocusTrackIndex != index)
 				{
 					(*m_DataSource)[m_FocusTrackIndex]->ClearHasControl(inCursorControl);
+					const auto previous_track_cursor_position = (*m_DataSource)[m_FocusTrackIndex]->GetCursorPosition();
+					
 					m_FocusTrackIndex = index;
+					
 					(*m_DataSource)[m_FocusTrackIndex]->SetHasControl(GetControlType::Tabbed_Forward, inCursorControl);
+					(*m_DataSource)[m_FocusTrackIndex]->SetCursorPosition(previous_track_cursor_position);
 
 					if (m_FocusModeOrderList != (*m_DataSource)[m_FocusTrackIndex]->GetFocusModeOrderList())
 						(*m_DataSource)[m_FocusTrackIndex]->SetFocusModeOrderList(m_FocusModeOrderList);
