@@ -58,12 +58,11 @@ namespace Editor
 		bool IsEditingText() const;
 		void DoStartEditText();
 		void DoStopEditText(bool inCancel);
-
-		Foundation::Point GetEditingTextScreenPosition();
+		Foundation::Point GetEditingTextScreenPosition() const;
 
 		int m_TextWidth;
 
 		std::shared_ptr<DataSourceTableText> m_DataSourceTableText;
-		std::shared_ptr<TextEditingDataSourceTableText> m_TextEditingDataSourceTableText;
+		std::unique_ptr<TextEditingDataSourceTableText> m_TextEditingDataSourceTableText;
 	};
 }

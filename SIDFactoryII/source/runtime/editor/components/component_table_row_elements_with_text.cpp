@@ -34,7 +34,7 @@ namespace Editor
 		, m_DataSourceTableText(inDataSourceTableText)
 		, m_TextWidth(inTextWidth)
 	{
-		m_TextEditingDataSourceTableText = std::make_shared<TextEditingDataSourceTableText>(inDataSourceTableText, inTextWidth);
+		m_TextEditingDataSourceTableText = std::make_unique<TextEditingDataSourceTableText>(inDataSourceTableText, inTextWidth);
 	}
 
 	ComponentTableRowElementsWithText::~ComponentTableRowElementsWithText()
@@ -241,7 +241,7 @@ namespace Editor
 	}
 
 
-	Foundation::Point ComponentTableRowElementsWithText::GetEditingTextScreenPosition()
+	Foundation::Point ComponentTableRowElementsWithText::GetEditingTextScreenPosition() const
 	{
 		return Foundation::Point(m_Position.m_X + m_Rect.m_Dimensions.m_Width + 1, m_Position.m_Y + m_CursorY - m_TopRow);
 	}

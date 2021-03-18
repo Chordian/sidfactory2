@@ -1,18 +1,15 @@
-#include "component_orderlistoverview.h"
-
-#include "foundation/graphics/textfield.h"
-#include "foundation/input/keyboard.h"
-#include "foundation/input/mouse.h"
-
+#include "runtime/editor/components/component_orderlistoverview.h"
+#include "runtime/editor/components/utils/text_editing_data_source_table_text.h"
 #include "runtime/editor/cursor_control.h"
 #include "runtime/editor/display_state.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/editor/datasources/datasource_table_text.h"
-
-#include "utils/usercolors.h"
-
+#include "foundation/graphics/textfield.h"
+#include "foundation/input/keyboard.h"
+#include "foundation/input/mouse.h"
 #include "foundation/base/assert.h"
+#include "utils/usercolors.h"
 
 using namespace Foundation;
 using namespace Utility;
@@ -34,7 +31,7 @@ namespace Editor
 		int inGroupID, 
 		Undo* inUndo,
 		TextField* inTextField,
-		std::shared_ptr<DataSourceTableText> inTableText,
+		std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 		const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 		const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 		int inX,
@@ -43,7 +40,7 @@ namespace Editor
 		std::function<void(int, bool)> inSetTrackEventPosFunction
 	)
 		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, ComponentOrderListOverview::GetWidthFromChannelCount(static_cast<int>(inOrderLists.size())), inHeight)
-		, m_TableText(inTableText)
+		, m_TableText(inDataSourceTableText)
 		, m_OrderLists(inOrderLists)
 		, m_SequenceList(inSequenceList)
 		, m_PlaybackEventPosition(-1)
@@ -52,7 +49,7 @@ namespace Editor
 		, m_TopPosition(0)
 		, m_SetTrackEventPosFunction(inSetTrackEventPosFunction)
 	{
-
+		m_TextEditingDataSourceTableText = std::make_unique<TextEditingDataSourceTableText>(inDataSourceTableText, m_TextWidth);
 	}
 
 
@@ -74,70 +71,84 @@ namespace Editor
 	bool ComponentOrderListOverview::ConsumeInput(const Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
 		bool consume = false;
-		const bool isNoModifierDown = inKeyboard.IsModifierEmpty();
-		const bool isOnlyShiftDown = inKeyboard.IsModifierDownExclusive(Keyboard::Shift);
 
-		for (const auto& key_event : inKeyboard.GetKeyEventList())
+		if (IsEditingText())
+			consume = m_TextEditingDataSourceTableText->ConsumeKeyboardInput(inKeyboard, inCursorControl);
+		else
 		{
-			switch(key_event)
+			const bool isNoModifierDown = inKeyboard.IsModifierEmpty();
+			const bool isOnlyShiftDown = inKeyboard.IsModifierDownExclusive(Keyboard::Shift);
+
+			for (const auto& key_event : inKeyboard.GetKeyEventList())
 			{
-			case SDLK_DOWN:
-				if (inKeyboard.IsModifierEmpty() && DoCursorDown(1))
+				switch (key_event)
 				{
-					m_RequireRefresh = true;
-					consume = true;
-				}
-				break;
-			case SDLK_UP:
-				if (inKeyboard.IsModifierEmpty() && DoCursorUp(1))
-				{
-					m_RequireRefresh = true;
-					consume = true;
-				}
-				break;
-			case SDLK_PAGEDOWN:
-				if (DoCursorDown(20))
-				{
-					m_RequireRefresh = true;
-					consume = true;
-				}
-				break;
-			case SDLK_PAGEUP:
-				if (DoCursorUp(20))
-				{
-					m_RequireRefresh = true;
-					consume = true;
-				}
-				break;
-			case SDLK_HOME:
-				if (DoHome())
-				{
-					m_RequireRefresh = true;
-					consume = true;
-				}
-				break;
-			case SDLK_END:
-				if (DoEnd())
-				{
-					m_RequireRefresh = true;
-					consume = true;
-				}
-				break;
-			case SDLK_RETURN:
-				if (isOnlyShiftDown)
-				{
-					if (m_CursorPosition >= 0 && m_CursorPosition < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
+				case SDLK_DOWN:
+					if (inKeyboard.IsModifierEmpty() && DoCursorDown(1))
 					{
-						m_SetTrackEventPosFunction(m_Overview[m_CursorPosition].m_EventPos, inKeyboard.IsModifierDownExclusive(Keyboard::Control));
+						m_RequireRefresh = true;
 						consume = true;
 					}
+					break;
+				case SDLK_UP:
+					if (inKeyboard.IsModifierEmpty() && DoCursorUp(1))
+					{
+						m_RequireRefresh = true;
+						consume = true;
+					}
+					break;
+				case SDLK_PAGEDOWN:
+					if (DoCursorDown(20))
+					{
+						m_RequireRefresh = true;
+						consume = true;
+					}
+					break;
+				case SDLK_PAGEUP:
+					if (DoCursorUp(20))
+					{
+						m_RequireRefresh = true;
+						consume = true;
+					}
+					break;
+				case SDLK_HOME:
+					if (DoHome())
+					{
+						m_RequireRefresh = true;
+						consume = true;
+					}
+					break;
+				case SDLK_END:
+					if (DoEnd())
+					{
+						m_RequireRefresh = true;
+						consume = true;
+					}
+					break;
+				case SDLK_RETURN:
+					if (isOnlyShiftDown)
+					{
+						if (m_CursorPosition >= 0 && m_CursorPosition < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
+						{
+							m_SetTrackEventPosFunction(m_Overview[m_CursorPosition].m_EventPos, inKeyboard.IsModifierDownExclusive(Keyboard::Control));
+							consume = true;
+						}
+					}
+					else if (isNoModifierDown)
+					{
+						DoStartEditText(inCursorControl);
+						m_RequireRefresh = true;
+						consume = true;
+					}
+					break;
 				}
-				else if (isNoModifierDown)
-				{
-					m_HasDataChange = true;
-				}
-				break;
 			}
+		}
+
+		if (m_TextEditingDataSourceTableText->RequireRefresh())
+		{
+			m_RequireRefresh = true;
+			m_TextEditingDataSourceTableText->ResetRequireRefresh();
 		}
 
 		return consume;
@@ -164,13 +175,33 @@ namespace Editor
 			}
 			else if (inMouse.IsButtonPressed(Mouse::Left))
 			{
-				Point cell_position = GetLocalCellPosition(inMouse.GetPosition());
-				m_CursorPosition = cell_position.m_Y + m_TopPosition;
+				Point local_cell_position = GetLocalCellPosition(inMouse.GetPosition());
+				m_CursorPosition = local_cell_position.m_Y + m_TopPosition;
 
 				if (m_CursorPosition >= 0 && m_CursorPosition < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
 					m_SetTrackEventPosFunction(m_Overview[m_CursorPosition].m_EventPos, false);
 
 				m_RequireRefresh = true;
+
+				const int text_x = m_Dimensions.m_Width - m_TextWidth;
+				const int text_x_right = m_Dimensions.m_Width;
+
+				if (local_cell_position.m_X >= text_x && local_cell_position.m_X <= text_x_right)
+				{
+					if (IsEditingText() && m_CursorPosition != m_TextEditingDataSourceTableText->GetTextLineIndex())
+						DoStopEditText(inCursorControl, false);
+					if (!IsEditingText())
+						DoStartEditText(inCursorControl);
+
+					const int cursor_pos = local_cell_position.m_X - text_x;
+
+					m_TextEditingDataSourceTableText->TrySetCursorPosition(cursor_pos);
+				}
+				else
+				{
+					if (IsEditingText())
+						DoStopEditText(inCursorControl, false);
+				}
 
 				consume = true;
 			}
@@ -263,20 +294,33 @@ namespace Editor
 	}
 
 
+	bool ComponentOrderListOverview::HasDataChange() const
+	{
+		if (m_TextEditingDataSourceTableText->HasDataChange())
+			return true;
+
+		return ComponentBase::HasDataChange();
+	}
+
 
 	void ComponentOrderListOverview::HandleDataChange()
 	{
-		if (m_HasDataChange)
-		{
-			m_TableText->PushDataToSource();
-			m_HasDataChange = false;
-		}
+		if (m_TextEditingDataSourceTableText->HasDataChange())
+			m_TextEditingDataSourceTableText->ApplyDataChange();
+
+		m_HasDataChange = false;
 	}
 
 	
 	void ComponentOrderListOverview::PullDataFromSource()
 	{
 		m_TableText->PullDataFromSource();
+	}
+
+
+	bool ComponentOrderListOverview::IsNoteInputSilenced() const
+	{
+		return IsEditingText();
 	}
 
 
@@ -424,6 +468,40 @@ namespace Editor
 		}
 
 		return false;
+	}
+
+
+	bool ComponentOrderListOverview::IsEditingText() const
+	{
+		return m_TextEditingDataSourceTableText->IsEditing();
+	}
+
+
+	void ComponentOrderListOverview::DoStartEditText(CursorControl& inCursorControl)
+	{
+		auto GetEditingRowIndex = [&]() -> unsigned int
+		{
+			return static_cast<unsigned int>(m_CursorPosition);
+		};
+
+		if (!IsEditingText())
+		{
+			m_TextEditingDataSourceTableText->StartEditing(GetEditingRowIndex(), GetEditingTextScreenPosition());
+			inCursorControl.SetEnabled(true);
+		}
+	}
+
+
+	void ComponentOrderListOverview::DoStopEditText(CursorControl& inCursorControl, bool inCancel)
+	{
+		m_TextEditingDataSourceTableText->StopEditing(inCancel);
+		inCursorControl.SetEnabled(false);
+	}
+
+
+	Foundation::Point ComponentOrderListOverview::GetEditingTextScreenPosition() const
+	{
+		return Foundation::Point(m_Position.m_X + m_Rect.m_Dimensions.m_Width - m_TextWidth, m_Position.m_Y + m_CursorPosition - m_TopPosition);
 	}
 
 	void ComponentOrderListOverview::RebuildOverview()

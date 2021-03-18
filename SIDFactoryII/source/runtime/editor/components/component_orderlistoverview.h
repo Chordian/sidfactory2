@@ -18,6 +18,7 @@ namespace Editor
 	class DataSourceOrderList;
 	class DataSourceSequence;
 	class DataSourceTableText;
+	class TextEditingDataSourceTableText;
 
 	class ComponentOrderListOverview final : public ComponentBase
 	{
@@ -27,7 +28,7 @@ namespace Editor
 			int inGroupID, 
 			Undo* inUndo,
 			Foundation::TextField* inTextField, 
-			std::shared_ptr<DataSourceTableText> inTableText,
+			std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 			const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 			const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 			int inX,
@@ -44,8 +45,11 @@ namespace Editor
 		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 		
 		void Refresh(const DisplayState& inDisplayState) override;
+		bool HasDataChange() const override;
 		void HandleDataChange() override;
 		void PullDataFromSource() override;
+
+		bool IsNoteInputSilenced() const override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;
@@ -58,6 +62,12 @@ namespace Editor
 		bool DoCursorDown(unsigned int inSteps);
 		bool DoHome();
 		bool DoEnd();
+
+		bool IsEditingText() const;
+		void DoStartEditText(CursorControl& inCursorControl);
+		void DoStopEditText(CursorControl& inCursorControl, bool inCancel);
+		Foundation::Point GetEditingTextScreenPosition() const;
+
 		void RebuildOverview();
 
 		struct OverviewEntry
@@ -69,6 +79,7 @@ namespace Editor
 
 		std::vector<OverviewEntry> m_Overview;
 
+		std::unique_ptr<TextEditingDataSourceTableText> m_TextEditingDataSourceTableText;
 		std::shared_ptr<DataSourceTableText> m_TableText;
 
 		const std::vector<std::shared_ptr<DataSourceOrderList>>& m_OrderLists;
