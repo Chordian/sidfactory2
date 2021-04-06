@@ -2,18 +2,18 @@
 #include <iostream>
 #include <string>
 
-#include "foundation/platform/platform_factory.h"
 #include "foundation/graphics/viewport.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/mouse.h"
+#include "foundation/platform/platform_factory.h"
 #include "libraries/picopng/picopng.h"
 #include "runtime/editor/editor_facility.h"
-#include "utils/event.h"
-#include "utils/delegate.h"
-#include "utils/utilities.h"
-#include "utils/keyhookstore.h"
-#include "utils/configfile.h"
 #include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/delegate.h"
+#include "utils/event.h"
+#include "utils/keyhookstore.h"
+#include "utils/utilities.h"
 
 using namespace Foundation;
 using namespace Editor;
@@ -26,7 +26,7 @@ void BuildResource();
 int main(int inArgc, char* inArgv[])
 {
 	//BuildResource();
-    
+
 	// Initialize SDL
 	const int sdl_init_result = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
 	if (sdl_init_result < 0)
@@ -45,13 +45,12 @@ int main(int inArgc, char* inArgv[])
 
 	// Destroy the platform
 	delete platform;
-	
+
 	// Close down SDL
 	SDL_Quit();
 
 	return 0;
 }
-
 
 
 void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
@@ -70,10 +69,10 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 	// Create viewport (client view size)
 	const int width = 1280;
 	const int height = 720;
+	const float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0);
+	Viewport viewport(width, height, window_scaling, std::string("SID Factory II"));
 
-	Viewport viewport(width, height, std::string("SID Factory II"));
-
-	Mouse mouse;
+	Mouse mouse(window_scaling);
 	Keyboard keyboard;
 
 	// Editor facility
@@ -188,8 +187,6 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 	// Stop editor
 	editor.Stop();
 }
-
-
 
 
 void BuildResource()

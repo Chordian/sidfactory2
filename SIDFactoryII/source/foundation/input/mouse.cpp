@@ -5,7 +5,7 @@
 
 namespace Foundation
 {
-	Mouse::Mouse()
+	Mouse::Mouse(float inScaling)
 		: m_ButtonState(0)
 		, m_ButtonStateLast(0)
 		, m_ButtonStateDoublePress(0)
@@ -14,6 +14,7 @@ namespace Foundation
 		, m_IsInsideScreenRect(false)
 		, m_WheelDeltaX(0)
 		, m_WheelDeltaY(0)
+		, m_Scaling(inScaling)
 	{
 		for (int i = 0; i < Mouse::_Count; ++i)
 			m_LastButtonPressedTime[i] = 0;
@@ -52,10 +53,11 @@ namespace Foundation
 
 		m_ButtonStateLast = m_ButtonState;
 		m_ButtonState = SDL_GetMouseState(&m_Position.m_X, &m_Position.m_Y);
+		m_Position.m_X = m_Position.m_X / m_Scaling;
+		m_Position.m_Y = m_Position.m_Y / m_Scaling;
 		m_IsInsideScreenRect = m_ClientRect.Contains(m_Position);
 		m_Position -= m_ClientRect.m_Position;
-		
-	
+
 		m_ButtonStateDoublePress = 0;
 
 		for (int i = 0; i < Button::_Count; ++i)
@@ -68,7 +70,6 @@ namespace Foundation
 				m_LastButtonPressedTime[i] = m_TickCounter;
 			}
 		}
-
 	}
 
 
