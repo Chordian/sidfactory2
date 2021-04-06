@@ -171,7 +171,7 @@ namespace Utility
 				if (length <= 2)
 					return false;
 
-				if (inValue[0] != '0' && inValue[1] != 'x')
+				if (!(inValue[0] == '0' && inValue[1] == 'x'))
 					return false;
 
 				for (size_t i = 2; i < length; ++i)
