@@ -69,7 +69,19 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 	// Create viewport (client view size)
 	const int width = 1280;
 	const int height = 720;
-	const float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0);
+	float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0);
+
+	if (window_scaling > 2.0)
+	{
+		window_scaling = 2.0;
+		std::cout << "Warning: Window.Scaling is higher than 2.0. Limiting to 2.0";
+	}
+	else if (window_scaling < 0.5)
+	{
+		window_scaling = 0.5;
+		std::cout << "Warning: Window.Scaling is lower than 0.5. Limiting to 0.5";
+	}
+
 	Viewport viewport(width, height, window_scaling, std::string("SID Factory II"));
 
 	Mouse mouse(window_scaling);
