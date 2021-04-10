@@ -18,7 +18,7 @@ namespace Editor
 	class CursorControl;
 	class DataSourceTableText;
 	class TextEditingDataSourceTableText;
-	struct UndoComponentData;
+	class UndoComponentData;
 
 	class ComponentTableRowElementsWithText final : public ComponentTableRowElements
 	{
@@ -50,14 +50,14 @@ namespace Editor
 		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 
 		void Refresh(const DisplayState& inDisplayState) override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
 		bool ContainsPosition(const Foundation::Point& inPixelPosition) const override;
 
 	private:
 		bool IsEditingText() const;
 		void DoStartEditText();
-		void DoStopEditText(bool inCancel);
+		void DoStopEditText(bool inCancel, CursorControl& inCursorControl);
 		Foundation::Point GetEditingTextScreenPosition() const;
 
 		int m_TextWidth;

@@ -8,7 +8,7 @@
 
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_editing_preferences.h"
-#include "runtime/editor/undo/undo_componentdata_tracks.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_tracks.h"
 #include "runtime/editor/display_state.h"
 
 #include "utils/usercolors.h"
@@ -398,10 +398,10 @@ namespace Editor
 	}
 
 
-	void ComponentTracks::PullDataFromSource()
+	void ComponentTracks::PullDataFromSource(const bool inFromUndo)
 	{
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
-			(*m_DataSource)[i]->PullDataFromSource();
+			(*m_DataSource)[i]->PullDataFromSource(inFromUndo);
 	}
 
 

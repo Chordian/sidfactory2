@@ -19,7 +19,7 @@ namespace Editor
 	class DataCopySequence;
 	class AuxilaryDataCollection;
 
-	struct UndoComponentDataTableTracks;
+	class UndoComponentDataTableTracks;
 
 	struct TrackCopyPasteData
 	{
@@ -55,7 +55,7 @@ namespace Editor
 		
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;

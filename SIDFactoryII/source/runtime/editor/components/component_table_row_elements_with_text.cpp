@@ -34,7 +34,12 @@ namespace Editor
 		, m_DataSourceTableText(inDataSourceTableText)
 		, m_TextWidth(inTextWidth)
 	{
-		m_TextEditingDataSourceTableText = std::make_unique<TextEditingDataSourceTableText>(inDataSourceTableText, inTextWidth);
+		m_TextEditingDataSourceTableText = std::make_unique<TextEditingDataSourceTableText>(
+			inUndo, 
+			inID,
+			inGroupID,
+			inDataSourceTableText, 
+			inTextWidth);
 	}
 
 	ComponentTableRowElementsWithText::~ComponentTableRowElementsWithText()
@@ -53,8 +58,13 @@ namespace Editor
 
 	void ComponentTableRowElementsWithText::HandleDataChange()
 	{
-		if (m_TextEditingDataSourceTableText->HasDataChange()) 
+		if (m_TextEditingDataSourceTableText->HasDataChange())
+		{
+			// Asserting that there's no data changed to the table at the same time.
+			// This is a bit shitty, but would be a conflict for the undo mechanism.
+			FOUNDATION_ASSERT(!m_HasDataChange);
 			m_TextEditingDataSourceTableText->ApplyDataChange();
+		}
 
 		ComponentTableRowElements::HandleDataChange();
 	}
@@ -69,7 +79,7 @@ namespace Editor
 	void ComponentTableRowElementsWithText::ClearHasControl(CursorControl& inCursorControl)
 	{
 		if(IsEditingText())
-			DoStopEditText(false);
+			DoStopEditText(false, inCursorControl);
 
 		m_RequireRefresh = true;
 
@@ -133,7 +143,7 @@ namespace Editor
 			if (local_cell_position.m_X >= text_x && local_cell_position.m_X <= text_x_right)
 			{
 				if (IsEditingText() && m_CursorY != m_TextEditingDataSourceTableText->GetTextLineIndex())
-					DoStopEditText(false);
+					DoStopEditText(false, inCursorControl);
 				if (!IsEditingText())
 					DoStartEditText();
 
@@ -144,7 +154,7 @@ namespace Editor
 			else
 			{
 				if (IsEditingText())
-					DoStopEditText(false);
+					DoStopEditText(false, inCursorControl);
 			}
 
 			return true;
@@ -155,7 +165,7 @@ namespace Editor
 			{
 				if (m_CursorY != m_TextEditingDataSourceTableText->GetTextLineIndex())
 				{
-					DoStopEditText(false);
+					DoStopEditText(false, inCursorControl);
 					DoStartEditText();
 				}
 				else if (top_row != m_TopRow)
@@ -200,10 +210,10 @@ namespace Editor
 	}
 
 
-	void ComponentTableRowElementsWithText::PullDataFromSource()
+	void ComponentTableRowElementsWithText::PullDataFromSource(const bool inFromUndo)
 	{
 		m_DataSourceTableText->PullDataFromSource();
-		ComponentTableRowElements::PullDataFromSource();
+		ComponentTableRowElements::PullDataFromSource(inFromUndo);
 	}
 
 
@@ -235,9 +245,9 @@ namespace Editor
 	}
 
 
-	void ComponentTableRowElementsWithText::DoStopEditText(bool inCancel)
+	void ComponentTableRowElementsWithText::DoStopEditText(bool inCancel, CursorControl& inCursorControl)
 	{
-		m_TextEditingDataSourceTableText->StopEditing(inCancel);
+		m_TextEditingDataSourceTableText->StopEditing(inCancel, inCursorControl);
 	}
 
 

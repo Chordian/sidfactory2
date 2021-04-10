@@ -67,7 +67,7 @@ namespace Editor
 
 		virtual void Refresh(const DisplayState& inDisplayState) = 0;
 		virtual void HandleDataChange() = 0;
-		virtual void PullDataFromSource() = 0;
+		virtual void PullDataFromSource(const bool inFromUndo) = 0;
 
 		virtual void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) = 0;
 		virtual void ExecuteAction(int inActionInput) = 0;

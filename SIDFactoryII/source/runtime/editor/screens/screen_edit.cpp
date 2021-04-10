@@ -131,6 +131,9 @@ namespace Editor
 	{
 		ScreenBase::Activate();
 
+		// Clear undo
+		FlushUndo();
+
 		// Prepare data (tracks and sequences)
 		PrepareMusicData();
 
@@ -378,6 +381,8 @@ namespace Editor
 
 		m_MainTextField->Print(x + 1, y + 1, ToColor(IsPlaying() ? UserColor::ScreenEditInfoRectTextTimePlaybackState : UserColor::ScreenEditInfoRectText), "Playing time: " + std::to_string(minutes) + ((seconds < 10) ? ":0" : ":") + std::to_string(seconds) + "      ");
 		m_MainTextField->Print(x + 1, y + 2, ToColor(UserColor::ScreenEditInfoRectText), m_DriverInfo->GetDescriptor().m_DriverName);
+
+		// m_Undo->PrintDebug(*m_MainTextField);
 	}
 
 	//------------------------------------------------------------------------------------------------------------
@@ -809,8 +814,8 @@ namespace Editor
 						m_CPUMemory,
 						[&]() 
 						{
-							m_InstrumentTableComponent->PullDataFromSource();
-							m_CommandTableComponent->PullDataFromSource();
+							m_InstrumentTableComponent->PullDataFromSource(false);
+							m_CommandTableComponent->PullDataFromSource(false);
 
 							m_ComponentsManager->ForceRefresh(); 
 						}
@@ -1732,8 +1737,9 @@ namespace Editor
 		{
 			if (m_Undo->HasUndoStep())
 			{
-				m_Undo->DoUndo(*m_CursorControl);
-				m_ComponentsManager->OnUndoOrRedo();
+				const int target_component_id = m_Undo->DoUndo(*m_CursorControl);
+				if (target_component_id >= 0)
+					m_ComponentsManager->PullDataFromAllSources(true);
 			}
 
 			return true;
@@ -1743,8 +1749,9 @@ namespace Editor
 		{
 			if (m_Undo->HasRedoStep())
 			{
-				m_Undo->DoRedo(*m_CursorControl);
-				m_ComponentsManager->OnUndoOrRedo();
+				const int target_component_id = m_Undo->DoRedo(*m_CursorControl);
+				if (target_component_id >= 0)
+					m_ComponentsManager->PullDataFromAllSources(true);
 			}
 
 			return true;

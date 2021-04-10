@@ -45,6 +45,8 @@ namespace Editor
 		void CancelDialog();
 		bool IsNoteInputSilenced() const;
 
+		void PullDataFromAllSources(const bool inFromUndo);
+
 		void AddComponent(std::shared_ptr<ComponentBase> inComponent);
 		void RemoveComponent(std::shared_ptr<ComponentBase> inComponent);
 
@@ -73,8 +75,6 @@ namespace Editor
 		void SetTabPreviousComponentFocus();
 		void ForceRefresh();
 
-		void OnUndoOrRedo();
-
 	private:
 		void SetComponentInFocus(ComponentBase* inFocusComponent);
 		void SetComponentInFocusByTabbing(ComponentBase* inFocusComponent, bool inWasForwardTab);
@@ -85,7 +85,6 @@ namespace Editor
 		ComponentBase* GetComponentAt(const Foundation::Point& inPosition) const;
 
 		bool m_Suspended;
-		bool m_SignalDataPull;
 
 		Foundation::Viewport* m_Viewport;
 

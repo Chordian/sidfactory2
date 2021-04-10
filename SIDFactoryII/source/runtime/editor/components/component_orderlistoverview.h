@@ -47,7 +47,7 @@ namespace Editor
 		void Refresh(const DisplayState& inDisplayState) override;
 		bool HasDataChange() const override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
 		bool IsNoteInputSilenced() const override;
 

@@ -11,8 +11,7 @@
 #include "runtime/editor/datacopy/datacopy_sequence.h"
 #include "runtime/editor/dialog/dialog_hex_value_input.h"
 #include "runtime/editor/undo/undo.h"
-#include "runtime/editor/undo/undo_componentdata.h"
-#include "runtime/editor/undo/undo_componentdata_tracks.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_tracks.h"
 
 #include "foundation/input/mouse.h"
 #include "foundation/input/keyboard.h"
@@ -521,7 +520,7 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::PullDataFromSource()
+	void ComponentTrack::PullDataFromSource(const bool inFromUndo)
 	{
 		m_DataSourceOrderList->PullDataFromSource();
 	}

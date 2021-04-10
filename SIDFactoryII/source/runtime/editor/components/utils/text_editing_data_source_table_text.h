@@ -20,12 +20,16 @@ namespace Editor
 	class CursorControl;
 	class ComponentsManager;
 	class DataSourceTableText;
-	struct UndoComponentData;
+	class Undo;
+	class UndoComponentData;
 
 	class TextEditingDataSourceTableText
 	{
 	public:
 		TextEditingDataSourceTableText(
+			Undo* inUndo,
+			int inOwningComponentID,
+			int inOwningComponentGroupID,
 			const std::shared_ptr<DataSourceTableText>& inDataSourceTableText,
 			const unsigned int inMaxTextLength
 		);
@@ -38,10 +42,8 @@ namespace Editor
 
 		void TrySetCursorPosition(int inCursorPosition);
 
-		const std::string& GetText() const;
-
 		void StartEditing(unsigned int inLineIndex, const Foundation::Point& inScreenPosition);
-		void StopEditing(bool inCancel);
+		void StopEditing(bool inCancel, CursorControl& inCursorControl);
 		void UpdateScreenPosition(const Foundation::Point& inScreenPosition, CursorControl& inCursorControl);
 
 		bool ConsumeKeyboardInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl);
@@ -53,7 +55,7 @@ namespace Editor
 		void ApplyCharacter(char inCharacter);
 		void ApplyCursorPosition(CursorControl& inCursorControl);
 
-		void DoStopEditText(bool inCancel);
+		void DoStopEditText(bool inCancel, CursorControl& inCursorControl);
 
 		void DoCursorForward();
 		void DoCursorBackwards();
@@ -61,9 +63,17 @@ namespace Editor
 		void DoDelete();
 		void DoBackspace(bool inIsShiftDown);
 
+		void OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl);
+		void AddUndo();
+		void AddMostRecentEdit();
+
 		const int GetMaxPossibleCursorPosition() const;
 
 		Foundation::Point m_ScreenPosition;
+
+		int m_OwningComponentID;
+		int m_OwningComponentGroupID;
+
 		int m_TextLineEditIndex;
 		int m_TextEditCursorPos;
 		int m_MaxTextLength;
@@ -71,8 +81,9 @@ namespace Editor
 		bool m_HasDataChange;
 		bool m_RequireRefresh;
 
+		Undo* m_Undo;
+
 		std::string m_TextSaved;
-		std::string m_Text;
 		std::shared_ptr<DataSourceTableText> m_DataSourceTableText;
 	};
 }

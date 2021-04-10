@@ -49,7 +49,12 @@ namespace Editor
 		, m_TopPosition(0)
 		, m_SetTrackEventPosFunction(inSetTrackEventPosFunction)
 	{
-		m_TextEditingDataSourceTableText = std::make_unique<TextEditingDataSourceTableText>(inDataSourceTableText, m_TextWidth);
+		m_TextEditingDataSourceTableText = std::make_unique<TextEditingDataSourceTableText>(
+			inUndo, 
+			inID,
+			inGroupID,
+			inDataSourceTableText, 
+			m_TextWidth);
 	}
 
 
@@ -312,7 +317,7 @@ namespace Editor
 	}
 
 	
-	void ComponentOrderListOverview::PullDataFromSource()
+	void ComponentOrderListOverview::PullDataFromSource(const bool inFromUndo)
 	{
 		m_TableText->PullDataFromSource();
 	}
@@ -494,7 +499,7 @@ namespace Editor
 
 	void ComponentOrderListOverview::DoStopEditText(CursorControl& inCursorControl, bool inCancel)
 	{
-		m_TextEditingDataSourceTableText->StopEditing(inCancel);
+		m_TextEditingDataSourceTableText->StopEditing(inCancel, inCursorControl);
 		inCursorControl.SetEnabled(false);
 	}
 

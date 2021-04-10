@@ -1,5 +1,7 @@
 #include "runtime/editor/components/utils/text_editing_data_source_table_text.h"
 #include "runtime/editor/cursor_control.h"
+#include "runtime/editor/undo/undo.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_table_text.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/keyboard_utils.h"
 
@@ -8,9 +10,15 @@ using namespace Foundation;
 namespace Editor
 {
 	TextEditingDataSourceTableText::TextEditingDataSourceTableText(
+		Undo* inUndo,
+		int inOwningComponentID,
+		int inOwningComponentGroupID,
 		const std::shared_ptr<DataSourceTableText>& inDataSourceTableText,
 		const unsigned int inMaxTextLength)
-		: m_DataSourceTableText(inDataSourceTableText)
+		: m_Undo(inUndo)
+		, m_OwningComponentID(inOwningComponentID)
+		, m_OwningComponentGroupID(inOwningComponentGroupID)
+		, m_DataSourceTableText(inDataSourceTableText)
 		, m_MaxTextLength(inMaxTextLength)
 		, m_TextEditCursorPos(0)
 		, m_HasDataChange(false)
@@ -53,12 +61,6 @@ namespace Editor
 	}
 
 
-	const std::string& TextEditingDataSourceTableText::GetText() const
-	{
-		return m_Text;
-	}
-
-
 	void TextEditingDataSourceTableText::StartEditing(unsigned int inLineIndex, const Point& inScreenPosition)
 	{
 		FOUNDATION_ASSERT(!m_IsEditingText);
@@ -67,19 +69,27 @@ namespace Editor
 		m_TextLineEditIndex = inLineIndex;
 		m_TextEditCursorPos = 0;
 
+		m_TextSaved = (*m_DataSourceTableText)[m_TextLineEditIndex];
+
 		m_IsEditingText = true;
+
+		AddUndo();
 	}
 
 
-	void TextEditingDataSourceTableText::StopEditing(bool inCancel)
+	void TextEditingDataSourceTableText::StopEditing(bool inCancel, CursorControl& inCursorControl)
 	{
 		FOUNDATION_ASSERT(m_IsEditingText);
 
-		if (inCancel)
-			(*m_DataSourceTableText)[m_TextLineEditIndex] = m_TextSaved;
+		if (inCancel || (*m_DataSourceTableText)[m_TextLineEditIndex] == m_TextSaved)
+		{
+			m_Undo->DoUndo(inCursorControl);
+			m_Undo->FlushForwardUndoSteps();
+		}
+		else
+			AddMostRecentEdit();
 
 		m_IsEditingText = false;
-		m_HasDataChange |= !inCancel;
 	}
 
 
@@ -148,7 +158,7 @@ namespace Editor
 				consume = true;
 				break;
 			case SDLK_RETURN:
-				DoStopEditText(false);
+				DoStopEditText(false, inCursorControl);
 				m_RequireRefresh = true;
 				consume = true;
 				break;
@@ -163,7 +173,7 @@ namespace Editor
 				consume = true;
 				break;
 			case SDLK_ESCAPE:
-				DoStopEditText(true);
+				DoStopEditText(true, inCursorControl);
 				m_RequireRefresh = true;
 				consume = true;
 				break;
@@ -202,9 +212,9 @@ namespace Editor
 	}
 
 
-	void TextEditingDataSourceTableText::DoStopEditText(bool inCancel)
+	void TextEditingDataSourceTableText::DoStopEditText(bool inCancel, CursorControl& inCursorControl)
 	{
-		StopEditing(inCancel);
+		StopEditing(inCancel, inCursorControl);
 	}
 
 
@@ -265,6 +275,61 @@ namespace Editor
 			DoCursorBackwards();
 			DoDelete();
 		}
+	}
+
+
+	void TextEditingDataSourceTableText::OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl)
+	{
+		const UndoComponentDataTableText& undo_data = static_cast<const UndoComponentDataTableText&>(inData);
+
+		FOUNDATION_ASSERT(undo_data.m_TextLines.size() == m_DataSourceTableText->GetSize());
+
+		const int count = m_DataSourceTableText->GetSize();
+		for (int i = 0; i < count; ++i)
+		{
+			auto& dest = (*m_DataSourceTableText)[i];
+			dest = undo_data.m_TextLines[i];
+		}
+
+		m_IsEditingText = false;
+		m_HasDataChange = true;
+		m_RequireRefresh = true;
+	}
+
+
+	void TextEditingDataSourceTableText::AddUndo()
+	{
+		const int count = m_DataSourceTableText->GetSize();
+
+		std::vector<std::string> text_lines;
+		for (int i = 0; i < count; ++i)
+			text_lines.push_back((*m_DataSourceTableText)[i]);
+
+		auto undo_data = std::make_shared<UndoComponentDataTableText>();
+
+		undo_data->m_ComponentID = m_OwningComponentID;
+		undo_data->m_ComponentGroupID = m_OwningComponentGroupID;
+		undo_data->m_TextLines = text_lines;
+
+		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
+	}
+
+
+	void TextEditingDataSourceTableText::AddMostRecentEdit()
+	{
+		const int count = m_DataSourceTableText->GetSize();
+
+		std::vector<std::string> text_lines;
+		for (int i = 0; i < count; ++i)
+			text_lines.push_back((*m_DataSourceTableText)[i]);
+
+		auto undo_data = std::make_shared<UndoComponentDataTableText>();
+
+		undo_data->m_ComponentID = m_OwningComponentID;
+		undo_data->m_ComponentGroupID = m_OwningComponentGroupID;
+		undo_data->m_TextLines = text_lines;
+
+		m_Undo->AddMostRecentEdit(true, undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
 	}
 
 

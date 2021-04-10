@@ -35,8 +35,9 @@ namespace Utility
 namespace Editor
 {
 	struct TrackCopyPasteData;
-	struct UndoComponentData;
-	struct UndoComponentDataTableTracks;
+	
+	class UndoComponentData;
+	class UndoComponentDataTableTracks;
 
 	class DataSourceOrderList;
 	class DataSourceSequence;
@@ -128,7 +129,7 @@ namespace Editor
 
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 		void PullSequenceDataFromSource();
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;

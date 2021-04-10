@@ -17,7 +17,7 @@ namespace Editor
 	using namespace Utility::Config;
 
 	OverlayControl::OverlayControl(const Utility::ConfigFile& inConfigFile, Foundation::Viewport* inViewport, const Foundation::IPlatform* inPlatform)
-		: m_Enabled(false)
+		: m_Enabled(GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Show.Overlay", 0) != 0)
 		, m_OverlayEnabledState(false)
 		, m_Viewport(inViewport)
 		, m_IsFading(true)
@@ -27,7 +27,6 @@ namespace Editor
 		EnumeratePlatformFiles(inPlatform);
 		path overlays_path = inPlatform->Storage_GetOverlaysHomePath();
 		LoadOverlay(true, (overlays_path / (inPlatform->GetName() + "_editor.png")).string());
-		SetOverlayEnabled(GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Show.Overlay", 0) != 0);
 	}
 
 
