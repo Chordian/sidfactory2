@@ -23,7 +23,6 @@ namespace Foundation
 		, m_Caption(inCaption)
 		, m_FadeValue(0.0f)
 	{
-
 		const int window_width = static_cast<int>(m_ClientResolutionX * m_Scaling);
 		const int window_height = static_cast<int>(m_ClientResolutionY * m_Scaling);
 
