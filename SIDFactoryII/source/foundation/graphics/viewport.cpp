@@ -6,6 +6,7 @@
 #include "foundation/graphics/imanaged.h"
 #include "foundation/graphics/textfield.h"
 #include "resources/data_char.h"
+#include <iostream>
 
 namespace Foundation
 {
@@ -22,7 +23,11 @@ namespace Foundation
 		, m_Caption(inCaption)
 		, m_FadeValue(0.0f)
 	{
-		m_Window = SDL_CreateWindow(inCaption.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_ClientResolutionX * m_Scaling, m_ClientResolutionY * m_Scaling, SDL_WINDOW_SHOWN);
+
+		const int window_width = m_ClientResolutionX * m_Scaling;
+		const int window_height = window_width * ((float)m_ClientResolutionY / (float)m_ClientResolutionX);
+
+		m_Window = SDL_CreateWindow(inCaption.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width, window_height, SDL_WINDOW_SHOWN);
 		FOUNDATION_ASSERT(m_Window != nullptr);
 
 		m_Renderer = SDL_CreateRenderer(m_Window, -1, 0);
@@ -103,7 +108,9 @@ namespace Foundation
 
 	void Viewport::SetWindowSize(const Extent& inSize)
 	{
-		SDL_SetWindowSize(m_Window, inSize.m_Width * m_Scaling, inSize.m_Height * m_Scaling);
+		const int window_width = inSize.m_Width * m_Scaling;
+		const int window_height = window_width * ((float)inSize.m_Height / (float)inSize.m_Width);
+		SDL_SetWindowSize(m_Window, window_width, window_height);
 		SDL_RenderSetLogicalSize(m_Renderer, inSize.m_Width, inSize.m_Height);
 	}
 
