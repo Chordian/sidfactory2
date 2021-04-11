@@ -1,7 +1,7 @@
 #pragma once
 
-#include "source/runtime/editor/undo/undo_datasource/undo_datasource.h"
-#include "source/runtime/editor/auxilarydata/auxilary_data_table_text.h"
+#include "runtime/editor/undo/undo_datasource/undo_datasource.h"
+#include "runtime/editor/auxilarydata/auxilary_data_table_text.h"
 
 namespace Editor
 {
