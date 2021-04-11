@@ -24,8 +24,8 @@ namespace Foundation
 		, m_FadeValue(0.0f)
 	{
 
-		const int window_width = m_ClientResolutionX * m_Scaling;
-		const int window_height = window_width * ((float)m_ClientResolutionY / (float)m_ClientResolutionX);
+		const int window_width = static_cast<int>(m_ClientResolutionX * m_Scaling);
+		const int window_height = static_cast<int>(m_ClientResolutionY * m_Scaling);
 
 		m_Window = SDL_CreateWindow(inCaption.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width, window_height, SDL_WINDOW_SHOWN);
 		FOUNDATION_ASSERT(m_Window != nullptr);
@@ -108,8 +108,9 @@ namespace Foundation
 
 	void Viewport::SetWindowSize(const Extent& inSize)
 	{
-		const int window_width = inSize.m_Width * m_Scaling;
-		const int window_height = window_width * ((float)inSize.m_Height / (float)inSize.m_Width);
+		const int window_width = static_cast<int>(inSize.m_Width * m_Scaling);
+		const int window_height = static_cast<int>(inSize.m_Height * m_Scaling); 
+
 		SDL_SetWindowSize(m_Window, window_width, window_height);
 		SDL_RenderSetLogicalSize(m_Renderer, inSize.m_Width, inSize.m_Height);
 	}

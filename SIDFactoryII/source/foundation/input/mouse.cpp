@@ -53,8 +53,8 @@ namespace Foundation
 
 		m_ButtonStateLast = m_ButtonState;
 		m_ButtonState = SDL_GetMouseState(&m_Position.m_X, &m_Position.m_Y);
-		m_Position.m_X = m_Position.m_X / m_Scaling;
-		m_Position.m_Y = m_Position.m_Y / m_Scaling;
+		m_Position.m_X = static_cast<int>(m_Position.m_X / m_Scaling);
+		m_Position.m_Y = static_cast<int>(m_Position.m_Y / m_Scaling);
 		m_IsInsideScreenRect = m_ClientRect.Contains(m_Position);
 		m_Position -= m_ClientRect.m_Position;
 
