@@ -54,7 +54,8 @@ namespace Editor
 			inID,
 			inGroupID,
 			inDataSourceTableText, 
-			m_TextWidth);
+			m_TextWidth,
+			true);
 	}
 
 
@@ -245,6 +246,7 @@ namespace Editor
 			
 			m_TextField->ColorAreaBackground(ToColor(UserColor::SongListBackground), ListRect);
 			m_TextField->ColorAreaBackground(ToColor(UserColor::SongListBackgroundText), TextRect);
+			m_TextField->ColorArea(ToColor(UserColor::SongListText), TextRect);
 
 			const bool is_uppercase = inDisplayState.IsHexUppercase();
 			const int cursor_position = m_CursorPosition - m_TopPosition;
@@ -288,8 +290,11 @@ namespace Editor
 
 				int text_x = m_Position.m_X + m_MarginWidth + 5 + 3 * m_OrderLists.size() + 1;
 
-				if(i < m_TableText->GetSize())
-					m_TextField->Print(text_x, y, ToColor(UserColor::ConsoleText), (*m_TableText)[i], m_TextWidth);
+				if (i < m_TableText->GetSize())
+				{
+					const bool is_editing_line = (m_CursorPosition == i) && IsEditingText();
+					m_TextField->Print(text_x, y, is_editing_line ? ToColor(UserColor::SongListTextEditing) : ToColor(UserColor::SongListText), (*m_TableText)[i], m_TextWidth);
+				}
 
 				++local_y;
 			}
@@ -493,6 +498,7 @@ namespace Editor
 		{
 			m_TextEditingDataSourceTableText->StartEditing(GetEditingRowIndex(), GetEditingTextScreenPosition());
 			inCursorControl.SetEnabled(true);
+			m_RequireRefresh = true;
 		}
 	}
 
@@ -500,7 +506,7 @@ namespace Editor
 	void ComponentOrderListOverview::DoStopEditText(CursorControl& inCursorControl, bool inCancel)
 	{
 		m_TextEditingDataSourceTableText->StopEditing(inCancel, inCursorControl);
-		inCursorControl.SetEnabled(false);
+		m_RequireRefresh = true;
 	}
 
 

@@ -37,6 +37,8 @@ namespace Utility
 		MarkerListCursorFocus,
 		SongListBackground,
 		SongListBackgroundText,
+		SongListText,
+		SongListTextEditing,
 		SongListEventPos,
 		SongListValues,
 		SongListCursorDefault,

@@ -14,7 +14,8 @@ namespace Editor
 		int inOwningComponentID,
 		int inOwningComponentGroupID,
 		const std::shared_ptr<DataSourceTableText>& inDataSourceTableText,
-		const unsigned int inMaxTextLength)
+		const unsigned int inMaxTextLength,
+		const bool inDisableCursorOnStopEdit)
 		: m_Undo(inUndo)
 		, m_OwningComponentID(inOwningComponentID)
 		, m_OwningComponentGroupID(inOwningComponentGroupID)
@@ -25,6 +26,7 @@ namespace Editor
 		, m_IsEditingText(false)
 		, m_TextLineEditIndex(0)
 		, m_RequireRefresh(false)
+		, m_DisableCursorOnStopEdit(inDisableCursorOnStopEdit)
 	{
 
 	}
@@ -88,6 +90,9 @@ namespace Editor
 		}
 		else
 			AddMostRecentEdit();
+
+		if (m_DisableCursorOnStopEdit)
+			inCursorControl.SetEnabled(false);
 
 		m_IsEditingText = false;
 	}

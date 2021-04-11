@@ -31,7 +31,8 @@ namespace Editor
 			int inOwningComponentID,
 			int inOwningComponentGroupID,
 			const std::shared_ptr<DataSourceTableText>& inDataSourceTableText,
-			const unsigned int inMaxTextLength
+			const unsigned int inMaxTextLength,
+			const bool inDisableCursorOnStopEdit
 		);
 
 		bool IsEditing() const;
@@ -80,6 +81,7 @@ namespace Editor
 		bool m_IsEditingText;
 		bool m_HasDataChange;
 		bool m_RequireRefresh;
+		bool m_DisableCursorOnStopEdit;
 
 		Undo* m_Undo;
 

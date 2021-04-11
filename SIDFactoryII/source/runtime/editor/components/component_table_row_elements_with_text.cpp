@@ -39,7 +39,8 @@ namespace Editor
 			inID,
 			inGroupID,
 			inDataSourceTableText, 
-			inTextWidth);
+			inTextWidth,
+			false);
 	}
 
 	ComponentTableRowElementsWithText::~ComponentTableRowElementsWithText()
