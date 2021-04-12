@@ -146,7 +146,6 @@ namespace Emulation
 
 			short* pSource = static_cast<short*>(m_SampleBuffer);
 			short* pTarget = static_cast<short*>(inBuffer);
-			bool clipping = false;
 
 			while (uiRemainingSamples > 0)
 			{
@@ -163,10 +162,8 @@ namespace Emulation
 
 				for (int i = 0; i < uiSamplesToCopy; ++i)
 				{
-					float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
-					float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
-
-					clipping = clipping || fSample < sampleFloor || fSample > sampleCeiling;
+					const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
+					const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
 					pTarget[i] = static_cast<short>(fClampedSample);
 				}
 
@@ -178,10 +175,6 @@ namespace Emulation
 
 				// Decrement the remaining number of samples
 				uiRemainingSamples -= uiSamplesToCopy;
-			}
-			if (clipping)
-			{
-				std::cout << "WARNING: Sound output is clipping! Lower Sound.Output.Gain to avoid distortion.\n";
 			}
 		}
 	}
