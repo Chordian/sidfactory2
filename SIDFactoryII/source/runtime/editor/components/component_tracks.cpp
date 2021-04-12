@@ -189,10 +189,7 @@ namespace Editor
 			}
 
 			// Consume input on focus track
-//			if (!m_EditState.IsPreventingSequenceEditing())
-			{
-				consume |= (*m_DataSource)[m_FocusTrackIndex]->ConsumeInput(inKeyboard, inCursorControl, inComponentsManager);
-			}
+			consume |= (*m_DataSource)[m_FocusTrackIndex]->ConsumeInput(inKeyboard, inCursorControl, inComponentsManager);
 
 			// Syncronize event track position
 			int focus_track_event_pos = (*m_DataSource)[m_FocusTrackIndex]->GetEventPosition();
@@ -230,26 +227,37 @@ namespace Editor
 				}
 			}
 
-			if (index != -1 && m_FocusTrackIndex != index)
+			if (index != -1)
 			{
-				const int cursor_position = (*m_DataSource)[m_FocusTrackIndex]->GetCursorPosition();
-				(*m_DataSource)[m_FocusTrackIndex]->ClearHasControl(inCursorControl);
+				if (m_FocusTrackIndex != index)
+				{
+					(*m_DataSource)[m_FocusTrackIndex]->ClearHasControl(inCursorControl);
+					const auto previous_track_cursor_position = (*m_DataSource)[m_FocusTrackIndex]->GetCursorPosition();
+					
+					m_FocusTrackIndex = index;
+					
+					(*m_DataSource)[m_FocusTrackIndex]->SetHasControl(GetControlType::Tabbed_Forward, inCursorControl);
+					(*m_DataSource)[m_FocusTrackIndex]->SetCursorPosition(previous_track_cursor_position);
 
-				// Set next track index
-				m_FocusTrackIndex = index;
+					if (m_FocusModeOrderList != (*m_DataSource)[m_FocusTrackIndex]->GetFocusModeOrderList())
+						(*m_DataSource)[m_FocusTrackIndex]->SetFocusModeOrderList(m_FocusModeOrderList);
 
-				(*m_DataSource)[m_FocusTrackIndex]->SetHasControl(GetControlType::Tabbed_Forward, inCursorControl);
-				(*m_DataSource)[m_FocusTrackIndex]->SetCursorPosition(cursor_position);
-
-				if (m_FocusModeOrderList)
-					(*m_DataSource)[m_FocusTrackIndex]->SetFocusModeOrderList(true);
-
-				m_HasControl = true;
-				m_RequireRefresh = true;
+					m_HasControl = true;
+					m_RequireRefresh = true;
+				}
 			}
 		}
 
-		return (*m_DataSource)[m_FocusTrackIndex]->ConsumeInput(inMouse, inModifierKeyMask, inCursorControl, inComponentsManager);
+		const bool consumed = (*m_DataSource)[m_FocusTrackIndex]->ConsumeInput(inMouse, inModifierKeyMask, inCursorControl, inComponentsManager);
+
+		if (consumed)
+		{
+			SetEventPosition((*m_DataSource)[m_FocusTrackIndex]->GetEventPosition(), false);
+			m_FocusModeOrderList = (*m_DataSource)[m_FocusTrackIndex]->GetFocusModeOrderList();
+		}
+
+
+		return consumed;
 	}
 
 
@@ -585,8 +593,8 @@ namespace Editor
 			(*m_DataSource)[m_FocusTrackIndex]->SetHasControl(GetControlType::Tabbed_Forward, inCursorControl);
 			(*m_DataSource)[m_FocusTrackIndex]->SetCursorPosition(cursor_position);
 
-			if (m_FocusModeOrderList)
-				(*m_DataSource)[m_FocusTrackIndex]->SetFocusModeOrderList(true);
+			if (m_FocusModeOrderList != (*m_DataSource)[m_FocusTrackIndex]->GetFocusModeOrderList())
+				(*m_DataSource)[m_FocusTrackIndex]->SetFocusModeOrderList(m_FocusModeOrderList);
 
 			m_HasControl = true;
 			m_RequireRefresh = true;
@@ -607,8 +615,8 @@ namespace Editor
 			(*m_DataSource)[m_FocusTrackIndex]->SetHasControl(GetControlType::Tabbed_Backward, inCursorControl);
 			(*m_DataSource)[m_FocusTrackIndex]->SetCursorPosition(cursor_position);
 
-			if (m_FocusModeOrderList)
-				(*m_DataSource)[m_FocusTrackIndex]->SetFocusModeOrderList(true);
+			if (m_FocusModeOrderList != (*m_DataSource)[m_FocusTrackIndex]->GetFocusModeOrderList())
+				(*m_DataSource)[m_FocusTrackIndex]->SetFocusModeOrderList(m_FocusModeOrderList);
 
 
 			m_HasControl = true;

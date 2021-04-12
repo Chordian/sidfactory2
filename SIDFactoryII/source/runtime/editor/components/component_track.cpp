@@ -14,6 +14,7 @@
 #include "runtime/editor/undo/undo_componentdata.h"
 #include "runtime/editor/undo/undo_componentdata_tracks.h"
 
+#include "foundation/input/mouse.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/keyboard_utils.h"
 #include "foundation/graphics/textfield.h"
@@ -262,6 +263,54 @@ namespace Editor
 
 	bool ComponentTrack::ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
+		if (inMouse.IsButtonPressed(Foundation::Mouse::Button::Left))
+		{
+			Foundation::Point screen_position = inMouse.GetPosition();
+
+			if (ContainsPosition(screen_position))
+			{
+				Point cell_position = GetCellPosition(screen_position);
+
+				const int event_pos_at_cursor = (cell_position.m_Y - m_Position.m_Y) + m_TopEventPos;
+				const bool event_pos_at_cursor_outside_range = event_pos_at_cursor < 0 || event_pos_at_cursor >= m_MaxEventPos;
+
+				if (!event_pos_at_cursor_outside_range)
+				{
+					int sequence_cursor_position_x = GetCursorPositionXFromSequenceCellX(cell_position.m_X);
+					if (sequence_cursor_position_x >= 0)
+					{
+						if (m_FocusModeOrderList)
+							SetFocusModeOrderList(false);
+
+						m_CursorPos = sequence_cursor_position_x;
+
+						ApplyCursorPosition(inCursorControl);
+					}
+					else if (IsEventPosStartOfSequence(event_pos_at_cursor))
+					{
+						if (m_EditState.IsPreventingSequenceEdit())
+							return false;
+
+						int orderlist_cursor_position_x = GetCursorPositionXFromOrderListCellX(cell_position.m_X);
+
+						if (orderlist_cursor_position_x >= 0)
+						{
+							if (!m_FocusModeOrderList)
+								SetFocusModeOrderList(true);
+
+							m_CursorPos = orderlist_cursor_position_x;
+							ApplyCursorPosition(inCursorControl);
+						}
+					}
+				}
+
+				if (!m_EditState.IsPreventingSequenceEdit())
+					SetEventPosition(std::min(m_MaxEventPos, std::max(0, event_pos_at_cursor)));
+
+				return true;
+			}
+		}
+
 		return false;
 	}
 
@@ -279,8 +328,16 @@ namespace Editor
 
 			const Color background_color = ToColor(UserColor::TrackBackground);
 			const Color background_color_muted = ToColor(UserColor::TrackBackgroundMuted);
+			const Color focus_line_background_color = ToColor(UserColor::TrackBackgroundFocusLine);
+			const Color focus_line_background_color_muted = ToColor(UserColor::TrackBackgroundMutedFocusLine);
+
+			Rect focus_line_rect = m_Rect;
+
+			focus_line_rect.m_Position.m_Y += m_Rect.m_Dimensions.m_Height >> 1;
+			focus_line_rect.m_Dimensions.m_Height = 1;
 
 			m_TextField->ColorAreaBackground(m_IsMuted ? background_color_muted : background_color, m_Rect);
+			m_TextField->ColorAreaBackground(m_IsMuted ? focus_line_background_color_muted : focus_line_background_color, focus_line_rect);
 			m_TextField->ClearText(m_Rect);
 
 			if (m_HasFirstValid)
@@ -640,6 +697,12 @@ namespace Editor
 
 		UpdateOrderListStatusReport();
 		UpdateSequenceStatusReport();
+	}
+
+
+	bool ComponentTrack::GetFocusModeOrderList() const
+	{
+		return m_FocusModeOrderList;
 	}
 
 
@@ -1593,6 +1656,38 @@ namespace Editor
 		inCursorControl.SetPosition(CursorControl::Position({ actual_cursor_x, actual_cursor_y }));
 	}
 
+
+	int ComponentTrack::GetCursorPositionXFromSequenceCellX(int inCellX) const
+	{
+		int local_sequence_cell_left_x = inCellX - (m_Position.m_X + 5);
+		
+		if (local_sequence_cell_left_x < 0)
+			return -1;
+
+		if (local_sequence_cell_left_x < 3)
+			return std::max(0, std::min(1, local_sequence_cell_left_x));
+
+		if (local_sequence_cell_left_x < 6)
+			return std::max(2, std::min(3, local_sequence_cell_left_x - 1));
+
+		return 4;
+	}
+
+
+	int ComponentTrack::GetCursorPositionXFromOrderListCellX(int inCellX) const
+	{
+		int local_order_list_cell_left_x = inCellX - m_Position.m_X;
+
+		if (local_order_list_cell_left_x < 0)
+			return -1;
+
+		if (local_order_list_cell_left_x < 3)
+			return local_order_list_cell_left_x;
+
+		return 3;
+	}
+
+
 	//--------------------------------------------------------------------------------------------------
 	// Key input logic
 	//--------------------------------------------------------------------------------------------------
@@ -2210,6 +2305,18 @@ namespace Editor
 
 		return details;
 	}
+
+
+	bool ComponentTrack::IsEventPosStartOfSequence(int inEventPos) const
+	{
+		if (inEventPos < 0 && inEventPos >= m_MaxEventPos)
+			return false;
+
+		const auto details = GetEventPosDetails(inEventPos);
+
+		return details.m_SequenceIndex == 0;
+	}
+
 
 
 	void ComponentTrack::AddUndoStep()
