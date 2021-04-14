@@ -9,19 +9,32 @@ namespace Utility
 		return instance;
 	}
 
-	void Logging::Info(const std::string& message)
+	Logging::Logging()
 	{
-		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, message.c_str());
 	}
 
-	void Logging::Warning(const std::string& message)
+	void Logging::Info(const char* format, ...)
 	{
-		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, message.c_str());
+		va_list argptr;
+		va_start(argptr, format);
+		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, format, argptr);
+		va_end(argptr);
 	}
 
-	void Logging::Error(const std::string& message)
+	void Logging::Warning(const char* format, ...)
 	{
-		SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, message.c_str());
+		va_list argptr;
+		va_start(argptr, format);
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, format, argptr);
+		va_end(argptr);
+	}
+
+	void Logging::Error(const char* format, ...)
+	{
+		va_list argptr;
+		va_start(argptr, format);
+		SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, format, argptr);
+		va_end(argptr);
 	}
 
 }

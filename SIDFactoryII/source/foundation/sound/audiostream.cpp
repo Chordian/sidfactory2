@@ -1,6 +1,7 @@
 #include "audiostream.h"
 #include "SDL.h"
 #include "foundation/base/assert.h"
+#include "utils/logging.h"
 
 namespace Foundation
 {
@@ -21,8 +22,7 @@ namespace Foundation
 		, m_StreamFeeder(inStreamFeeder)
 	{
 		const unsigned int buffer_size = inBufferDuration;
-		const unsigned int buffer_size_power_of_two = [&buffer_size]()
-		{
+		const unsigned int buffer_size_power_of_two = [&buffer_size]() {
 			unsigned int bits = 0;
 			unsigned int size = buffer_size;
 
@@ -49,7 +49,26 @@ namespace Foundation
 
 		SDL_AudioSpec audio_spec_created;
 
+		const int count = SDL_GetNumAudioDevices(0);
+
+		for (int i = 0; i < count; ++i)
+		{
+			Utility::Logging::instance().Info("Audio device %d: %s", i, SDL_GetAudioDeviceName(i, 0));
+		}
+
 		m_AudioDeviceID = SDL_OpenAudioDevice(nullptr, 0, &audio_spec, &audio_spec_created, 0);
+
+		if (m_AudioDeviceID == 0)
+		{
+			Utility::Logging::instance().Error("Could not open audio device. SDL Error: %s", SDL_GetError());
+		}
+		else
+		{
+			Utility::Logging::instance().Info("Using audio device %d", m_AudioDeviceID);
+			Utility::Logging::instance().Info("Audio channels: %d", audio_spec_created.channels);
+			Utility::Logging::instance().Info("Audio format: %d", audio_spec_created.format);
+			Utility::Logging::instance().Info("Audio frequency: %d", audio_spec_created.freq);
+		}
 	}
 
 

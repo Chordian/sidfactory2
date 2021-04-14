@@ -11,10 +11,9 @@ namespace Utility
 
 	public:
 		static Logging& instance();
-		void Info(const std::string& message);
-		void Warning(const std::string& message);
-		void Error(const std::string& message);
-		~Logging();
+		void Info(const char* format, ...);
+		void Warning(const char* format, ...);
+		void Error(const char* format, ...);
 
 	protected:
 		Logging();

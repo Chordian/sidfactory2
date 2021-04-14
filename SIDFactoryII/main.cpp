@@ -8,13 +8,13 @@
 #include "foundation/platform/platform_factory.h"
 #include "libraries/picopng/picopng.h"
 #include "runtime/editor/editor_facility.h"
-#include "utils/event.h"
-#include "utils/delegate.h"
-#include "utils/utilities.h"
-#include "utils/keyhookstore.h"
-#include "utils/configfile.h"
 #include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/delegate.h"
+#include "utils/event.h"
+#include "utils/keyhookstore.h"
 #include "utils/logging.h"
+#include "utils/utilities.h"
 
 using namespace Foundation;
 using namespace Editor;
@@ -27,12 +27,12 @@ void BuildResource();
 int main(int inArgc, char* inArgv[])
 {
 	//BuildResource();
-    
+
 	// Initialize SDL
 	const int sdl_init_result = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
 	if (sdl_init_result < 0)
 	{
-		Utility::Logging::instance().Error("SDL initialization failed. SDL Error: " + std::string(SDL_GetError()));
+		Utility::Logging::instance().Error("SDL initialization failed. SDL Error: %s", SDL_GetError());
 		SDL_Quit();
 		return -1;
 	}
@@ -45,13 +45,12 @@ int main(int inArgc, char* inArgv[])
 
 	// Destroy the platform
 	delete platform;
-	
+
 	// Close down SDL
 	SDL_Quit();
 
 	return 0;
 }
-
 
 
 void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
@@ -188,8 +187,6 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 	// Stop editor
 	editor.Stop();
 }
-
-
 
 
 void BuildResource()
