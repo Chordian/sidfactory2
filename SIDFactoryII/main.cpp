@@ -2,10 +2,10 @@
 #include <iostream>
 #include <string>
 
-#include "foundation/platform/platform_factory.h"
 #include "foundation/graphics/viewport.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/mouse.h"
+#include "foundation/platform/platform_factory.h"
 #include "libraries/picopng/picopng.h"
 #include "runtime/editor/editor_facility.h"
 #include "utils/event.h"
@@ -14,6 +14,7 @@
 #include "utils/keyhookstore.h"
 #include "utils/configfile.h"
 #include "utils/config/configtypes.h"
+#include "utils/logging.h"
 
 using namespace Foundation;
 using namespace Editor;
@@ -31,8 +32,7 @@ int main(int inArgc, char* inArgv[])
 	const int sdl_init_result = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
 	if (sdl_init_result < 0)
 	{
-		std::cout << "SDL initialization failed. SDL Error: " << SDL_GetError();
-
+		Utility::Logging::instance().Error("SDL initialization failed. SDL Error: " + std::string(SDL_GetError()));
 		SDL_Quit();
 		return -1;
 	}
