@@ -17,7 +17,7 @@ namespace Utility
 	{
 		va_list argptr;
 		va_start(argptr, format);
-		SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, format, argptr);
+		SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, format, argptr);
 		va_end(argptr);
 	}
 
@@ -25,7 +25,7 @@ namespace Utility
 	{
 		va_list argptr;
 		va_start(argptr, format);
-		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, format, argptr);
+		SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_WARN, format, argptr);
 		va_end(argptr);
 	}
 
@@ -33,7 +33,7 @@ namespace Utility
 	{
 		va_list argptr;
 		va_start(argptr, format);
-		SDL_LogWarn(SDL_LOG_CATEGORY_ERROR, format, argptr);
+		SDL_LogMessageV(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_ERROR, format, argptr);
 		va_end(argptr);
 	}
 
