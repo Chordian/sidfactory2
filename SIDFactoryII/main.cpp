@@ -2,18 +2,19 @@
 #include <iostream>
 #include <string>
 
-#include "foundation/platform/platform_factory.h"
 #include "foundation/graphics/viewport.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/mouse.h"
+#include "foundation/platform/platform_factory.h"
 #include "libraries/picopng/picopng.h"
 #include "runtime/editor/editor_facility.h"
-#include "utils/event.h"
-#include "utils/delegate.h"
-#include "utils/utilities.h"
-#include "utils/keyhookstore.h"
-#include "utils/configfile.h"
 #include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/delegate.h"
+#include "utils/event.h"
+#include "utils/keyhookstore.h"
+#include "utils/logging.h"
+#include "utils/utilities.h"
 
 using namespace Foundation;
 using namespace Editor;
@@ -25,17 +26,32 @@ void BuildResource();
 // Functions
 int main(int inArgc, char* inArgv[])
 {
-	//BuildResource();
-    
+#ifdef _BUILD_NR
+	const char* build_number = _BUILD_NR;
+#else
+	const char* build_number = __DATE__;
+#endif
+
+#ifdef _SF2_WINDOWS
+	const char* os = "Windows";
+#else
+#ifdef _SF2_LINUX
+	const char* os = "Linux";
+#else
+	const char* os = "macOS";
+#endif
+#endif
+
 	// Initialize SDL
 	const int sdl_init_result = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
 	if (sdl_init_result < 0)
 	{
 		std::cout << "SDL initialization failed. SDL Error: " << SDL_GetError();
-
 		SDL_Quit();
 		return -1;
 	}
+
+	Utility::Logging::instance().Info("SIDFactoryII %s build %s", os, build_number);
 
 	// Create the platform
 	IPlatform* platform = Foundation::CreatePlatform();
@@ -45,13 +61,12 @@ int main(int inArgc, char* inArgv[])
 
 	// Destroy the platform
 	delete platform;
-	
+
 	// Close down SDL
 	SDL_Quit();
 
 	return 0;
 }
-
 
 
 void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
@@ -188,8 +203,6 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 	// Stop editor
 	editor.Stop();
 }
-
-
 
 
 void BuildResource()
