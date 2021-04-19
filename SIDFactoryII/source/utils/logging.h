@@ -6,6 +6,8 @@
 namespace Utility
 {
 
+	// Singleton used for logging diagnostic messages.
+  // N.B. use only from the main thread!
 	class Logging
 	{
 

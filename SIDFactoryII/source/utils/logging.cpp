@@ -1,6 +1,5 @@
 #include "logging.h"
 
-// Singleton used for logging diagnostic messages.
 namespace Utility
 {
 

@@ -42,16 +42,16 @@ int main(int inArgc, char* inArgv[])
 #endif
 #endif
 
-	Utility::Logging::instance().Info("SIDFactoryII %s build %s", os, build_number);
-
 	// Initialize SDL
 	const int sdl_init_result = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
 	if (sdl_init_result < 0)
 	{
-		std::cout << "SDL initialization failed. SDL Error:" << SDL_GetError();
+		std::cout << "SDL initialization failed. SDL Error: " << SDL_GetError();
 		SDL_Quit();
 		return -1;
 	}
+
+	Utility::Logging::instance().Info("SIDFactoryII %s build %s", os, build_number);
 
 	// Create the platform
 	IPlatform* platform = Foundation::CreatePlatform();
