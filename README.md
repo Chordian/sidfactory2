@@ -16,6 +16,10 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+- Added: Documentation on how to customize configuration using a user.ini file.
+  Including a default template.
+
+
 ### Build 20210104
 
 #### Editor
