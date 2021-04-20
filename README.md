@@ -16,9 +16,10 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
-- Added: Documentation on how to customize configuration using a user.ini file.
+- Added: Documentation on how to customize configuration using a `user.ini` file.
   Including a default template.
-
+- Added: configuration option `Window.Scaling` to scale the contents of the
+  window in `user.ini`.
 
 ### Build 20210104
 
