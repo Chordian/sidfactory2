@@ -12,6 +12,7 @@
 #include "foundation/platform/iplatform.h"
 
 #include "utils/configfile.h"
+#include "utils/logging.h"
 
 #include <algorithm>
 #include <iostream>
@@ -52,6 +53,8 @@ namespace Emulation
 		m_SampleBuffer = new short[m_SampleBufferSize];
 		m_Mutex = inPlatform->CreateMutex();
 		m_OutputGain = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(inConfigFile, "Sound.Output.Gain", 1);
+
+		Utility::Logging::instance().Info("Sound.Output.Gain = %f", m_OutputGain);
 
 		// Set default action vector
 		m_InitVector = 0x1000;
