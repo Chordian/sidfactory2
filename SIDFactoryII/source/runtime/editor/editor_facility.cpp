@@ -71,7 +71,7 @@ namespace Editor
 		// Key setup
 		m_KeyHookSetup.ApplyConfigSettings(inConfigFile);
 
-		// Configure colors
+		// Configure editor
 		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(inConfigFile, "ColorScheme.Name", {});
 		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(inConfigFile, "ColorScheme.Filename", {});
 
@@ -82,6 +82,9 @@ namespace Editor
 
 			ConfigureColorsFromScheme(m_SelectedColorScheme, inConfigFile, *inViewport);
 		}
+
+		const bool follow_play = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Editor.Follow.Play", 0) != 0;
+		m_EditState.SetFollowPlayMode(follow_play);
 
 		// Create emulation environment
 		SIDConfiguration sid_configuration;										// Default settings are applicable
@@ -169,6 +172,7 @@ namespace Editor
 			[&](unsigned int inReconfigureOption) { Reconfigure(inReconfigureOption); }
 		);
 
+		//
 		// Apply additional configuration to the edit screen
 		m_EditScreen->SetAdditionalConfiguration
 		(
