@@ -1,27 +1,39 @@
 #include "executionhandler.h"
 
-#include "runtime/emulation/cpumos6510.h"
 #include "runtime/emulation/cpuframecapture.h"
+#include "runtime/emulation/cpumos6510.h"
 #include "runtime/emulation/sid/sidproxy.h"
 
-#include "runtime/execution/flightrecorder.h"
 #include "runtime/environmentdefines.h"
+#include "runtime/execution/flightrecorder.h"
 
-#include "foundation/platform/iplatform.h"
-#include "foundation/platform/imutex.h"
 #include "foundation/base/assert.h"
+#include "foundation/platform/imutex.h"
+#include "foundation/platform/iplatform.h"
+
+#include "utils/configfile.h"
+#include "utils/logging.h"
+
+#include <algorithm>
+#include <iostream>
+
 
 using namespace Foundation;
 
 namespace Emulation
 {
+
+	// clamp multiplied samples to these limits
+	const float sampleCeiling = 32767.0f;
+	const float sampleFloor = -32767.0f;
+
 	ExecutionHandler::ExecutionHandler(
-		IPlatform* inPlatform, 
-		CPUmos6510* inCPU, 
-		CPUMemory* pMemory, 
+		IPlatform* inPlatform,
+		CPUmos6510* inCPU,
+		CPUMemory* pMemory,
 		SIDProxy* pSIDProxy,
-		FlightRecorder* inFlightRecorder
-	)
+		FlightRecorder* inFlightRecorder,
+		Utility::ConfigFile& inConfigFile)
 		: m_CPU(inCPU)
 		, m_Memory(pMemory)
 		, m_SIDProxy(pSIDProxy)
@@ -40,6 +52,9 @@ namespace Emulation
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
 		m_Mutex = inPlatform->CreateMutex();
+		m_OutputGain = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(inConfigFile, "Sound.Output.Gain", 1);
+
+		Utility::Logging::instance().Info("Sound.Output.Gain = %f", m_OutputGain);
 
 		// Set default action vector
 		m_InitVector = 0x1000;
@@ -148,7 +163,12 @@ namespace Emulation
 				unsigned int uiRemainingSourceSamples = m_SampleBufferWriteCursor - m_SampleBufferReadCursor;
 				unsigned int uiSamplesToCopy = uiRemainingSamples > uiRemainingSourceSamples ? uiRemainingSourceSamples : uiRemainingSamples;
 
-				memcpy(pTarget, pSource + m_SampleBufferReadCursor, uiSamplesToCopy << 1);
+				for (int i = 0; i < uiSamplesToCopy; ++i)
+				{
+					const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
+					const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
+					pTarget[i] = static_cast<short>(fClampedSample);
+				}
 
 				// Forward the read cursor
 				m_SampleBufferReadCursor += uiSamplesToCopy;
@@ -186,7 +206,7 @@ namespace Emulation
 	{
 		return m_ErrorState;
 	}
-	
+
 	std::string ExecutionHandler::GetErrorMessage() const
 	{
 		return m_ErrorMessage;
@@ -196,7 +216,6 @@ namespace Emulation
 	{
 		m_ErrorState = false;
 	}
-
 
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -319,8 +338,8 @@ namespace Emulation
 			return m_StopVector;
 		case ActionType::Update:
 			return m_UpdateVector;
-        default:
-            break;
+		default:
+			break;
 		}
 
 		FOUNDATION_ASSERT(false);
@@ -348,7 +367,7 @@ namespace Emulation
 			// Negative sample count written is invalid!
 			FOUNDATION_ASSERT(nSamplesWritten >= 0);
 
-			// Move the write cursor 
+			// Move the write cursor
 			m_SampleBufferWriteCursor += static_cast<unsigned int>(nSamplesWritten);
 
 			// Make sure there's no overflow
@@ -382,14 +401,14 @@ namespace Emulation
 			switch (action.m_ActionType)
 			{
 			case ActionType::ApplyMuteState:
-				{
-					const unsigned short offset = action.m_ActionArgument * 7;
-					const unsigned short address = 0xd400 + offset;
+			{
+				const unsigned short offset = action.m_ActionArgument * 7;
+				const unsigned short address = 0xd400 + offset;
 
-					for (int i = 0; i < 7; ++i)
-						frameCapture.Write(address + i, 0, 0);
-				}
-				break;
+				for (int i = 0; i < 7; ++i)
+					frameCapture.Write(address + i, 0, 0);
+			}
+			break;
 			case ActionType::ClearMuteAllState:
 				break;
 			case ActionType::Init:
@@ -397,7 +416,7 @@ namespace Emulation
 				frameCapture.Capture(GetAddressFromActionType(action.m_ActionType), action.m_ActionArgument);
 				break;
 			case ActionType::Update:
-				if(!m_ErrorState)
+				if (!m_ErrorState)
 					frameCapture.Capture(GetAddressFromActionType(action.m_ActionType), action.m_ActionArgument);
 			default:
 				break;
