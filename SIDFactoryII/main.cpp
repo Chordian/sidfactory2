@@ -89,14 +89,15 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 
 	if (window_scaling > 2.0)
 	{
+		Utility::Logging::instance().Warning("Window.Scaling %f is higher than 2.0. Limiting to 2.0", window_scaling);
 		window_scaling = 2.0;
-		std::cout << "Warning: Window.Scaling is higher than 2.0. Limiting to 2.0";
 	}
 	else if (window_scaling < 0.5)
 	{
+		Utility::Logging::instance().Warning("Window.Scaling is lower than 0.5. Limiting to 0.5", window_scaling);
 		window_scaling = 0.5;
-		std::cout << "Warning: Window.Scaling is lower than 0.5. Limiting to 0.5";
 	}
+	Utility::Logging::instance().Info("Window.Scaling = %f", window_scaling);
 
 	Viewport viewport(width, height, window_scaling, std::string("SID Factory II"));
 

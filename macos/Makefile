@@ -111,6 +111,7 @@ $(DMG_CONTENTS): $(APP) $(EXE_SF2C) $(ARTIFACTS_FOLDER)/keys.html
 	cp -r Install.txt $(DMG_CONTENTS)
 	cp -r $(PROJECT_ROOT)/music/ ${DMG_CONTENTS}/$(APP_NAME)/music
 	cp -r $(PROJECT_ROOT)/drivers ${DMG_CONTENTS}/$(APP_NAME)/drivers
+	cp -r $(PROJECT_ROOT)/user.default.ini ${DMG_CONTENTS}/$(APP_NAME)/documentation
 	ln -s /Applications $(DMG_CONTENTS)/Applications
 
 # Make a temporary DMG. This needs to be layed out nicely by hand before building the final DMG.
