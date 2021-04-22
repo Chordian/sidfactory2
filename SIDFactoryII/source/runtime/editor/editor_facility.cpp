@@ -83,6 +83,9 @@ namespace Editor
 			ConfigureColorsFromScheme(m_SelectedColorScheme, inConfigFile, *inViewport);
 		}
 
+		const bool sequence_highlighting = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Editor.Sequence.Highlights", 0) != 0;
+		m_EditState.SetSequenceHighlighting(sequence_highlighting);
+
 		// Create emulation environment
 		SIDConfiguration sid_configuration;										// Default settings are applicable
 
