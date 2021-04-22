@@ -32,6 +32,7 @@
 #include "foundation/sound/audiostream.h"
 #include "utils/utilities.h"
 #include "utils/configfile.h"
+#include "utils/logging.h"
 #include "utils/config/configtypes.h"
 #include "utils/config/configcolors.h"
 #include "utils/c64file.h"
@@ -81,6 +82,9 @@ namespace Editor
 			m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "ColorScheme.Selection", 0);
 
 			ConfigureColorsFromScheme(m_SelectedColorScheme, inConfigFile, *inViewport);
+		}
+		else {
+			Utility::Logging::instance().Error("Number of color scheme names (%d) does not match number of color scheme filenames (%d)", color_scheme_names.size(), color_scheme_filenames.size());
 		}
 
 		const bool sequence_highlighting = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Editor.Sequence.Highlights", 0) != 0;
@@ -227,7 +231,8 @@ namespace Editor
         fs::current_path(m_Platform->Storage_GetHomePath(), ec);
         
         // Start the intro screen
-		if(GetSingleConfigurationValue<ConfigValueInt>(m_ConfigFile, "Editor.Skip.Intro", 0) == 0)
+		const bool skip_intro = GetSingleConfigurationValue<ConfigValueInt>(m_ConfigFile, "Editor.Skip.Intro", 0) != 0;
+		if (!skip_intro)
 			SetCurrentScreen(m_IntroScreen.get());
 		else
 		{

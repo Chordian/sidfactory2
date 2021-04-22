@@ -97,7 +97,6 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 		Utility::Logging::instance().Warning("Window.Scaling is lower than 0.5. Limiting to 0.5", window_scaling);
 		window_scaling = 0.5;
 	}
-	Utility::Logging::instance().Info("Window.Scaling = %f", window_scaling);
 
 	Viewport viewport(width, height, window_scaling, std::string("SID Factory II"));
 

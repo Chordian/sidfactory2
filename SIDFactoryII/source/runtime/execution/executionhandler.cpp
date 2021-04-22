@@ -54,8 +54,6 @@ namespace Emulation
 		m_Mutex = inPlatform->CreateMutex();
 		m_OutputGain = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(inConfigFile, "Sound.Output.Gain", 1);
 
-		Utility::Logging::instance().Info("Sound.Output.Gain = %f", m_OutputGain);
-
 		// Set default action vector
 		m_InitVector = 0x1000;
 		m_StopVector = 0x1003;

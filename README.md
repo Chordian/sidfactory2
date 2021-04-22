@@ -19,10 +19,12 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Added: Documentation on how to customize configuration using a `user.ini` file.
   Including a default template.
 - Added: configuration option `Window.Scaling` to scale the contents of the
-  window. (Thanks to Matty Seito for requesting)
+  window. (Thanks to Matty Seito for suggesting)
 - Added: Configuration option `Sound.Output.Gain` for boosting/lowering output volume of the editor.
 - Added: Configuration option `Editor.Follow.Play` to set default follow play
-  on/off in `user.ini`
+  on/off. (Thanks to Laszlo Vincenzo Vincze for suggesting)
+- Added: Configuration option `Editor.Sequence.Highlights` to set default
+  sequence highlights on/off. (Thanks to Laszlo Vincenzo Vincze for suggesting)
 
 ### Build 20210104
 
