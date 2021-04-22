@@ -12,12 +12,14 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20bi
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png 'SID Factory II')
+![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
 ## Changelog
 
-- Added: Documentation on how to customize configuration using a user.ini file.
+- Added: Documentation on how to customize configuration using a `user.ini` file.
   Including a default template.
+- Added: configuration option `Window.Scaling` to scale the contents of the
+  window. (Thanks to Matty Seito for requesting)
 - Added: Configuration option `Sound.Output.Gain` for boosting/lowering output volume of the editor.
 - Added: Configuration option `Editor.Follow.Play` to set default follow play
   on/off in `user.ini`

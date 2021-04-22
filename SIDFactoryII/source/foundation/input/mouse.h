@@ -16,7 +16,7 @@ namespace Foundation
 			_Count
 		};
 
-		Mouse();
+		Mouse(float inScaling);
 
 		void BeginCollect(const Rect& inClientRect);
 		void EndCollect();
@@ -37,6 +37,7 @@ namespace Foundation
 	private:
 		Rect m_ClientRect;
 		Point m_Position;
+		float m_Scaling;
 
 		bool m_IsCollecting;
 		bool m_IsInsideScreenRect;
