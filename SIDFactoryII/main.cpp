@@ -8,6 +8,7 @@
 #include "foundation/platform/platform_factory.h"
 #include "libraries/picopng/picopng.h"
 #include "runtime/editor/editor_facility.h"
+#include "utils/global.h"
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
 #include "utils/delegate.h"
@@ -53,14 +54,18 @@ int main(int inArgc, char* inArgv[])
 
 	Utility::Logging::instance().Info("SIDFactoryII %s build %s", os, build_number);
 
-	// Create the platform
-	IPlatform* platform = Foundation::CreatePlatform();
+	// Create the global config
+	// IPlatform* platform = Foundation::CreatePlatform();
+	Utility::Global config = Utility::Global::instance();
+
+	const IPlatform& platform = *config.m_Platform;
 
 	// Run the editor
-	Run(*platform, inArgc, inArgv);
+	Run(platform, inArgc, inArgv);
 
 	// Destroy the platform
-	delete platform;
+	config.deletePlatform();
+	// delete platform;
 
 	// Close down SDL
 	SDL_Quit();
