@@ -1,8 +1,12 @@
 #pragma once
-
 namespace Foundation
 {
 	class IPlatform;
+}
+
+namespace Utility
+{
+	class ConfigFile;
 }
 
 namespace Utility
@@ -13,11 +17,14 @@ namespace Utility
 
 	public:
 		static Global& instance();
-		Foundation::IPlatform* m_Platform;
 		void deletePlatform();
+		Foundation::IPlatform& GetPlatform() const;
+		Utility::ConfigFile& GetConfig() const;
 
 	private:
 		Global();
+		Foundation::IPlatform* m_Platform;
+		Utility::ConfigFile* m_Config;
 	};
 
 }

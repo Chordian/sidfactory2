@@ -8,20 +8,21 @@
 #include "foundation/platform/platform_factory.h"
 #include "libraries/picopng/picopng.h"
 #include "runtime/editor/editor_facility.h"
-#include "utils/global.h"
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
 #include "utils/delegate.h"
 #include "utils/event.h"
+#include "utils/global.h"
 #include "utils/keyhookstore.h"
 #include "utils/logging.h"
 #include "utils/utilities.h"
 
 using namespace Foundation;
 using namespace Editor;
+using namespace Utility;
 
 // Forward declaration
-void Run(IPlatform& inPlatform, int inArgc, char* inArgv[]);
+void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[]);
 void BuildResource();
 
 // Functions
@@ -58,14 +59,13 @@ int main(int inArgc, char* inArgv[])
 	// IPlatform* platform = Foundation::CreatePlatform();
 	Utility::Global config = Utility::Global::instance();
 
-	const IPlatform& platform = *config.m_Platform;
+	const IPlatform& platform = config.GetPlatform();
 
 	// Run the editor
 	Run(platform, inArgc, inArgv);
 
 	// Destroy the platform
 	config.deletePlatform();
-	// delete platform;
 
 	// Close down SDL
 	SDL_Quit();
@@ -74,22 +74,15 @@ int main(int inArgc, char* inArgv[])
 }
 
 
-void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
+void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 {
-	// Read the config file
-	std::vector<std::string> valid_configuration_sections;
-	valid_configuration_sections.push_back("default");
-	valid_configuration_sections.push_back(inPlatform.GetName());
-#ifdef _DEBUG
-	valid_configuration_sections.push_back("debug");
-#endif //
-
-	std::string config_path = inPlatform.Storage_GetConfigHomePath();
-	Utility::ConfigFile configFile(inPlatform, config_path + "config.ini", valid_configuration_sections);
 
 	// Create viewport (client view size)
 	const int width = 1280;
 	const int height = 720;
+
+	const ConfigFile configFile = Global::instance().GetConfig();
+
 	float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0);
 
 	if (window_scaling > 2.0)
@@ -110,7 +103,7 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 	Keyboard keyboard;
 
 	// Editor facility
-	EditorFacility editor(&inPlatform, &viewport, configFile);
+	EditorFacility editor(&viewport);
 
 	// Start editor
 	editor.Start(inArgc > 1 ? inArgv[1] : nullptr);
