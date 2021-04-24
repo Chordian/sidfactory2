@@ -1,16 +1,34 @@
 #pragma once
 
+#include "source/runtime/editor/auxilarydata/auxilary_data_table_text.h"
+
 namespace Editor
 {
 	class UndoDataSource
 	{
 	public:
-		enum class Type
+		void SetCPUMemoryData(unsigned char* inData)
 		{
-			CPUMemory,
-			AuxilaryDataTableText
-		};
+			m_CPUMemoryData = inData;
+		}
 
-		virtual Type GetType() const = 0;
+		const unsigned char* GetCPUMemoryData() const
+		{
+			return m_CPUMemoryData;
+		}
+
+		void SetAuxilaryDataTableText(const AuxilaryDataTableText& inSource)
+		{
+			m_AuxilaryDataTableTextData = inSource;
+		}
+
+		const AuxilaryDataTableText& GetAuxilaryDataTableText() const
+		{
+			return m_AuxilaryDataTableTextData;
+		}
+
+	private:
+		unsigned char* m_CPUMemoryData;
+		AuxilaryDataTableText m_AuxilaryDataTableTextData;
 	};
 }

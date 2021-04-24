@@ -56,7 +56,7 @@ namespace Editor
 		DriverInfo& m_DriverInfo;
 
 		std::array<std::shared_ptr<UndoStep>, 256> m_UndoSteps;
-		std::array<std::shared_ptr<UndoStep>, 256> m_UndoStepsRecentEdits;
+		//std::array<std::shared_ptr<UndoStep>, 256> m_UndoStepsRecentEdits;
 
 		std::function<void(int, int)> m_RestoredStepComponentHandler;
 	};

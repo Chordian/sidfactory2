@@ -452,8 +452,6 @@
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_table_text.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_tracks.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_datasource\undo_datasource.h" />
-    <ClInclude Include="source\runtime\editor\undo\undo_datasource\undo_datasource_auxilary_data_table_text.h" />
-    <ClInclude Include="source\runtime\editor\undo\undo_datasource\undo_datasource_cpumemory.h" />
     <ClInclude Include="source\runtime\editor\utilities\datasource_utils.h" />
     <ClInclude Include="source\runtime\editor\utilities\editor_utils.h" />
     <ClInclude Include="source\runtime\editor\utilities\import_utils.h" />

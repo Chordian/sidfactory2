@@ -1737,9 +1737,8 @@ namespace Editor
 		{
 			if (m_Undo->HasUndoStep())
 			{
-				const int target_component_id = m_Undo->DoUndo(*m_CursorControl);
-				if (target_component_id >= 0)
-					m_ComponentsManager->PullDataFromAllSources(true);
+				m_Undo->DoUndo(*m_CursorControl);
+				m_ComponentsManager->PullDataFromAllSources(true);
 			}
 
 			return true;
@@ -1749,9 +1748,8 @@ namespace Editor
 		{
 			if (m_Undo->HasRedoStep())
 			{
-				const int target_component_id = m_Undo->DoRedo(*m_CursorControl);
-				if (target_component_id >= 0)
-					m_ComponentsManager->PullDataFromAllSources(true);
+				m_Undo->DoRedo(*m_CursorControl);			
+				m_ComponentsManager->PullDataFromAllSources(true);
 			}
 
 			return true;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "runtime/editor/undo/undo_componentdata/undo_componentdata.h"
-#include "runtime/editor/undo/undo_datasource/undo_datasource_auxilary_data_table_text.h"
+#include "runtime/editor/undo/undo_datasource/undo_datasource.h"
 #include <vector>
 #include <string>
 
@@ -16,6 +16,6 @@ namespace Editor
 		const UndoDataSource& GetDataSource() const override { return m_Data; }
 
 	private:
-		UndoDataSourceAuxilaryDataTableText m_Data;
+		UndoDataSource m_Data;
 	};
 }

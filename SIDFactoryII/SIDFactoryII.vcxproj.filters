@@ -1150,12 +1150,6 @@
     <ClInclude Include="source\runtime\editor\undo\undo_datasource\undo_datasource.h">
       <Filter>source\runtime\editor\undo\undo_datasource</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\editor\undo\undo_datasource\undo_datasource_cpumemory.h">
-      <Filter>source\runtime\editor\undo\undo_datasource</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\editor\undo\undo_datasource\undo_datasource_auxilary_data_table_text.h">
-      <Filter>source\runtime\editor\undo\undo_datasource</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="change_todo.txt" />

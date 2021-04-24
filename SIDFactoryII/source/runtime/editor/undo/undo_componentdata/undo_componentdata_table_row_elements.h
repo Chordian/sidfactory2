@@ -1,7 +1,7 @@
 #pragma once
 
 #include "runtime/editor/undo/undo_componentdata/undo_componentdata.h"
-#include "runtime/editor/undo/undo_datasource/undo_datasource_cpumemory.h"
+#include "runtime/editor/undo/undo_datasource/undo_datasource.h"
 
 namespace Editor
 {
@@ -17,6 +17,6 @@ namespace Editor
 		const UndoDataSource& GetDataSource() const override { return m_Data; }
 
 	private:
-		UndoDataSourceCPUMemory m_Data;
+		UndoDataSource m_Data;
 	};
 }
