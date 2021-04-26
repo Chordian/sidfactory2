@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string>
 
@@ -56,16 +55,16 @@ int main(int inArgc, char* inArgv[])
 	Utility::Logging::instance().Info("SIDFactoryII %s build %s", os, build_number);
 
 	// Create the global config
-	// IPlatform* platform = Foundation::CreatePlatform();
-	Utility::Global config = Utility::Global::instance();
+	Utility::Global& global = Utility::Global::instance();
 
-	const IPlatform& platform = config.GetPlatform();
+	const IPlatform& platform = global.GetPlatform();
 
 	// Run the editor
 	Run(platform, inArgc, inArgv);
 
 	// Destroy the platform
-	config.deletePlatform();
+	// TODO: needed? Or deconstructor needed?
+	global.deletePlatform();
 
 	// Close down SDL
 	SDL_Quit();
@@ -81,7 +80,7 @@ void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 	const int width = 1280;
 	const int height = 720;
 
-	const ConfigFile configFile = Global::instance().GetConfig();
+	const ConfigFile& configFile = Global::instance().GetConfig();
 
 	float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0);
 
@@ -216,7 +215,3 @@ void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 }
 
 
-void BuildResource()
-{
-	//Utility::MakeBinaryResourceIncludeFile("logo_test.png", "data_logo.h", "data_logo", "Resource");
-}

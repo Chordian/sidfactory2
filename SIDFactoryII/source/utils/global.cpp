@@ -43,10 +43,16 @@ namespace Utility
 
 		std::string config_path = m_Platform->Storage_GetConfigHomePath();
 
-		ConfigFile configFile(*m_Platform, config_path + "config.ini", valid_configuration_sections);
-
-		m_Config = &configFile;
+		m_Config = new ConfigFile(*m_Platform, config_path + "config.ini", valid_configuration_sections);
 	};
+
+	Global::~Global()
+	{
+		delete m_Platform;
+		m_Platform = nullptr;
+		delete m_Config;
+		m_Config = nullptr;
+	}
 
 	void Global::deletePlatform()
 	{
