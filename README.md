@@ -12,7 +12,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20bi
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
+![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png 'SID Factory II')
 
 ## Changelog
 
@@ -21,10 +21,12 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Added: configuration option `Window.Scaling` to scale the contents of the
   window. (Thanks to Matty Seito for suggesting)
 - Added: Configuration option `Sound.Output.Gain` for boosting/lowering output volume of the editor.
-- Added: Configuration option `Editor.Follow.Play` to set default follow play
-  on/off. (Thanks to Laszlo Vincenzo Vincze for suggesting)
-- Added: Configuration option `Editor.Sequence.Highlights` to set default
-  sequence highlights on/off. (Thanks to Laszlo Vincenzo Vincze for suggesting)
+- Added: Configuration options (thanks to Laszlo Vincenzo Vincze for suggesting):
+  - `Editor.Follow.Play` to set default follow play on/off.
+  - `Editor.Sequence.Highlights` to set default
+    sequence highlights on/off.
+  - `Sound.Emulation.Default.Model` to set the default SID model (6581/8580) on startup.
+  - `Sound.Emulation.Default.Region` to set default region (PAL/NTSC) on startup.
 
 ### Build 20210104
 

@@ -69,20 +69,20 @@ namespace Editor
 		, m_SelectedColorScheme(0)
 	{
 
-		ConfigFile& configFile = Global::instance().GetConfig();
+		ConfigFile& config = Global::instance().GetConfig();
 		IPlatform& platform = Global::instance().GetPlatform();
 
 		// Key setup
-		m_KeyHookSetup.ApplyConfigSettings(configFile);
+		m_KeyHookSetup.ApplyConfigSettings(config);
 
 		// Configure editor
-		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(configFile, "ColorScheme.Name", {});
-		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(configFile, "ColorScheme.Filename", {});
+		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Name", {});
+		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Filename", {});
 
 		if (color_scheme_names.size() == color_scheme_filenames.size())
 		{
 			m_ColorSchemeCount = color_scheme_names.size();
-			m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(configFile, "ColorScheme.Selection", 0);
+			m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(config, "ColorScheme.Selection", 0);
 
 			ConfigureColorsFromScheme(m_SelectedColorScheme, *inViewport);
 		}
@@ -90,17 +90,17 @@ namespace Editor
 			Utility::Logging::instance().Error("Number of color scheme names (%d) does not match number of color scheme filenames (%d)", color_scheme_names.size(), color_scheme_filenames.size());
 		}
 
-		const bool sequence_highlighting = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Editor.Sequence.Highlights", 0) != 0;
+		const bool sequence_highlighting = GetSingleConfigurationValue<ConfigValueInt>(config, "Editor.Sequence.Highlights", 0) != 0;
 		m_EditState.SetSequenceHighlighting(sequence_highlighting);
-		const bool follow_play = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Editor.Follow.Play", 0) != 0;
+		const bool follow_play = GetSingleConfigurationValue<ConfigValueInt>(config, "Editor.Follow.Play", 0) != 0;
 		m_EditState.SetFollowPlayMode(follow_play);
 
 		// Create emulation environment
 		SIDConfiguration sid_configuration; // Default settings are applicable
 
-		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Sound.Emulation.Resample", 1) != 0;
+		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.Resample", 1) != 0;
 		sid_configuration.m_eSampleMethod = sid_use_resample ? SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE : SID_SAMPLE_METHOD_INTERPOLATE;
-		sid_configuration.m_eModel = SID_MODEL_8580;
+		sid_configuration.m_eModel = SID_MODEL_6581;
 
 
 		m_SIDProxy = new SIDProxy(sid_configuration);
@@ -110,7 +110,7 @@ namespace Editor
 		m_ExecutionHandler = new ExecutionHandler(m_CPU, m_CPUMemory, m_SIDProxy, m_FlightRecorder);
 
 		// Create audio stream
-		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Sound.Buffer.Size", 256);
+		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Buffer.Size", 256);
 		m_AudioStream = new AudioStream(44100, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
 
 		// Create the main text field
@@ -141,7 +141,7 @@ namespace Editor
 			&m_CursorControl,
 			m_DisplayState,
 			m_KeyHookSetup.GetKeyHookStore(),
-			configFile,
+			config,
 			[&](const std::string& inFilenameSelection, FileType inSaveFileType) { OnFilenameSelection(m_DiskScreen.get(), inFilenameSelection, inSaveFileType); },
 			[&]() { OnCancelScreen(m_DiskScreen.get()); });
 
@@ -182,7 +182,7 @@ namespace Editor
 		//
 		// Apply additional configuration to the edit screen
 		m_EditScreen->SetAdditionalConfiguration(
-			GetSingleConfigurationValue<ConfigValueInt>(configFile, "Editor.Driver.ConvertLegacyColors", 0) != 0);
+			GetSingleConfigurationValue<ConfigValueInt>(config, "Editor.Driver.ConvertLegacyColors", 0) != 0);
 	}
 
 	EditorFacility::~EditorFacility()
@@ -233,7 +233,7 @@ namespace Editor
 		fs::current_path(platform.Storage_GetHomePath(), ec);
 
 		// Start the intro screen
-		const bool skip_intro = GetSingleConfigurationValue<ConfigValueInt>(m_ConfigFile, "Editor.Skip.Intro", 0) != 0;
+		const bool skip_intro = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Editor.Skip.Intro", 0) != 0;
 		if (!skip_intro)
 			SetCurrentScreen(m_IntroScreen.get());
 		else
