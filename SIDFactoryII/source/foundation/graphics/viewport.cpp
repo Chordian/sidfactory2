@@ -6,7 +6,13 @@
 #include "foundation/graphics/imanaged.h"
 #include "foundation/graphics/textfield.h"
 #include "resources/data_char.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/global.h"
 #include <iostream>
+
+using namespace Utility;
+using namespace Utility::Config;
 
 namespace Foundation
 {
@@ -26,13 +32,17 @@ namespace Foundation
 		const int window_width = static_cast<int>(m_ClientResolutionX * m_Scaling);
 		const int window_height = static_cast<int>(m_ClientResolutionY * m_Scaling);
 
+		ConfigFile& config = Global::instance().GetConfig();
+
 		m_Window = SDL_CreateWindow(inCaption.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width, window_height, SDL_WINDOW_SHOWN);
 		FOUNDATION_ASSERT(m_Window != nullptr);
 
 		m_Renderer = SDL_CreateRenderer(m_Window, -1, 0);
 		FOUNDATION_ASSERT(m_Renderer != nullptr);
 		SDL_RenderSetLogicalSize(m_Renderer, m_ClientResolutionX, m_ClientResolutionY);
-		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
+		const bool smooth_scaling = GetSingleConfigurationValue<ConfigValueInt>(config, "Window.Scaling.Smooth", 1) != 0;
+		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, smooth_scaling ? "2" : "0");
 
 		m_RenderTarget = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, m_ClientResolutionX, m_ClientResolutionY);
 		FOUNDATION_ASSERT(m_RenderTarget != nullptr);
@@ -108,7 +118,7 @@ namespace Foundation
 	void Viewport::SetWindowSize(const Extent& inSize)
 	{
 		const int window_width = static_cast<int>(inSize.m_Width * m_Scaling);
-		const int window_height = static_cast<int>(inSize.m_Height * m_Scaling); 
+		const int window_height = static_cast<int>(inSize.m_Height * m_Scaling);
 
 		SDL_SetWindowSize(m_Window, window_width, window_height);
 		SDL_RenderSetLogicalSize(m_Renderer, inSize.m_Width, inSize.m_Height);
