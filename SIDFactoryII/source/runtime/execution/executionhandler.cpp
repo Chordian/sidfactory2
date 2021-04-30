@@ -13,12 +13,14 @@
 
 #include "utils/configfile.h"
 #include "utils/logging.h"
+#include "utils/global.h"
 
 #include <algorithm>
 #include <iostream>
 
 
 using namespace Foundation;
+using namespace Utility;
 
 namespace Emulation
 {
@@ -28,12 +30,10 @@ namespace Emulation
 	const float sampleFloor = -32767.0f;
 
 	ExecutionHandler::ExecutionHandler(
-		IPlatform* inPlatform,
 		CPUmos6510* inCPU,
 		CPUMemory* pMemory,
 		SIDProxy* pSIDProxy,
-		FlightRecorder* inFlightRecorder,
-		Utility::ConfigFile& inConfigFile)
+		FlightRecorder* inFlightRecorder)
 		: m_CPU(inCPU)
 		, m_Memory(pMemory)
 		, m_SIDProxy(pSIDProxy)
@@ -51,9 +51,10 @@ namespace Emulation
 		// Create a sample buffer. The sample frequency is used for determining the size, which is probably 50 times the size required.
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
-		m_Mutex = inPlatform->CreateMutex();
-		m_OutputGain = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(inConfigFile, "Sound.Output.Gain", 1);
+		m_Mutex = Global::instance().GetPlatform().CreateMutex();
+		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", -1);
 
+		Logging::instance().Info("Sound.Output.Gain = %f", m_OutputGain);
 		// Set default action vector
 		m_InitVector = 0x1000;
 		m_StopVector = 0x1003;

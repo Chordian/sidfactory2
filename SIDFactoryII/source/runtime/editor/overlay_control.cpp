@@ -6,6 +6,7 @@
 #include "libraries/picopng/picopng.h"
 #include "runtime/editor/driver/driver_info.h"
 #include "utils/configfile.h"
+#include "utils/global.h"
 #include "utils/utilities.h"
 #include <algorithm>
 
@@ -14,19 +15,24 @@ namespace Editor
 {
 	using namespace fs;
 	using namespace Utility;
+	using namespace Foundation;
 	using namespace Utility::Config;
 
-	OverlayControl::OverlayControl(const Utility::ConfigFile& inConfigFile, Foundation::Viewport* inViewport, const Foundation::IPlatform* inPlatform)
-		: m_Enabled(GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Show.Overlay", 0) != 0)
-		, m_OverlayEnabledState(false)
+	OverlayControl::OverlayControl(Foundation::Viewport* inViewport)
+		: m_OverlayEnabledState(false)
 		, m_Viewport(inViewport)
 		, m_IsFading(true)
 		, m_FadeValue(0.0f)
 	{
-		ReadConfigValues(inConfigFile);
-		EnumeratePlatformFiles(inPlatform);
-		path overlays_path = inPlatform->Storage_GetOverlaysHomePath();
-		LoadOverlay(true, (overlays_path / (inPlatform->GetName() + "_editor.png")).string());
+		ConfigFile& configFile = Global::instance().GetConfig();
+		m_Enabled = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Show.Overlay", 0) != 0;
+
+		IPlatform& platform = Global::instance().GetPlatform();
+
+		ReadConfigValues(configFile);
+		EnumeratePlatformFiles(platform);
+		path overlays_path = platform.Storage_GetOverlaysHomePath();
+		LoadOverlay(true, (overlays_path / (platform.GetName() + "_editor.png")).string());
 	}
 
 
@@ -149,10 +155,10 @@ namespace Editor
 	}
 
 
-	void OverlayControl::EnumeratePlatformFiles(const Foundation::IPlatform* inPlatform)
+	void OverlayControl::EnumeratePlatformFiles(const Foundation::IPlatform& inPlatform)
 	{
-		const std::string& platform_name = inPlatform->GetName();
-		directory_iterator directory_iterator(inPlatform->Storage_GetOverlaysHomePath());
+		const std::string& platform_name = inPlatform.GetName();
+		directory_iterator directory_iterator(inPlatform.Storage_GetOverlaysHomePath());
 
 		for (auto& path : directory_iterator)
 		{
