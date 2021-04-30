@@ -33,16 +33,6 @@ int main(int inArgc, char* inArgv[])
 	const char* build_number = __DATE__;
 #endif
 
-#ifdef _SF2_WINDOWS
-	const char* os = "Windows";
-#else
-#ifdef _SF2_LINUX
-	const char* os = "Linux";
-#else
-	const char* os = "macOS";
-#endif
-#endif
-
 	// Initialize SDL
 	const int sdl_init_result = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
 	if (sdl_init_result < 0)
@@ -52,18 +42,16 @@ int main(int inArgc, char* inArgv[])
 		return -1;
 	}
 
-	Utility::Logging::instance().Info("SIDFactoryII %s build %s", os, build_number);
-
-	// Create the global config
-	Utility::Global& global = Utility::Global::instance();
+	Global& global = Utility::Global::instance();
 
 	const IPlatform& platform = global.GetPlatform();
+	Logging::instance().Info("SIDFactoryII %s build %s", platform.GetName().c_str(), build_number);
 
 	// Run the editor
 	Run(platform, inArgc, inArgv);
 
 	// Destroy the platform
-	// TODO: needed? Or deconstructor needed?
+	// TODO: needed? Or use deconstructor?
 	global.deletePlatform();
 
 	// Close down SDL
@@ -213,5 +201,3 @@ void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 	// Stop editor
 	editor.Stop();
 }
-
-

@@ -98,7 +98,7 @@ namespace Editor
 		m_CPUMemory = new CPUMemory(0x10000, &platform);
 		m_CPU = new CPUmos6510();
 		m_FlightRecorder = new FlightRecorder(&platform, 0x800);
-		m_ExecutionHandler = new ExecutionHandler(&platform, m_CPU, m_CPUMemory, m_SIDProxy, m_FlightRecorder, configFile);
+		m_ExecutionHandler = new ExecutionHandler(m_CPU, m_CPUMemory, m_SIDProxy, m_FlightRecorder);
 
 		// Create audio stream
 		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Sound.Buffer.Size", 256);
@@ -112,7 +112,7 @@ namespace Editor
 		m_DriverInfo = std::make_shared<DriverInfo>();
 
 		// Create overlay control
-		m_OverlayControl = std::make_unique<OverlayControl>(configFile, inViewport, &platform);
+		m_OverlayControl = std::make_unique<OverlayControl>(inViewport);
 
 		// Create screens
 		m_IntroScreen = std::make_unique<ScreenIntro>(

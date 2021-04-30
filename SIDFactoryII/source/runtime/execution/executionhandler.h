@@ -29,12 +29,10 @@ namespace Emulation
 	{
 	public:
 		ExecutionHandler(
-			Foundation::IPlatform* pPlatformFactory,
 			CPUmos6510* pCPU,
 			CPUMemory* pMemory,
 			SIDProxy* pSIDProxy,
-			FlightRecorder* inFlightRecorder,
-			Utility::ConfigFile& inConfigFile);
+			FlightRecorder* inFlightRecorder);
 		~ExecutionHandler();
 
 		// IAudioStreamFeeder
