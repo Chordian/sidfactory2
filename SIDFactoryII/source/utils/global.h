@@ -17,9 +17,12 @@ namespace Utility
 
 	public:
 		static Global& instance();
-		Global(Global& inOther) = delete;
+		Global(const Global& inOther) = delete;
+		Global& operator=(const Global& inOther) = delete;
 		Global(Global&& inOther) = delete;
-		Global& operator=(Global&&) = delete;
+		Global& operator=(Global&& inOther) = delete;
+
+		bool IsValid() const;
 
 		// TODO: is this needed?
 		void deletePlatform();

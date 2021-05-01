@@ -19,9 +19,10 @@ namespace Utility
 	public:
 		ConfigFile(const Foundation::IPlatform& inPlatform, const std::string& inFilename, const std::vector<std::string>& inValidSectionTags);
 
-		ConfigFile(ConfigFile& inOther) = delete;
+		ConfigFile(const ConfigFile& inOther) = delete;
+		ConfigFile& operator=(const ConfigFile& inOther) = delete;
 		ConfigFile(ConfigFile&& inOther) = delete;
-		ConfigFile& operator=(ConfigFile&&) = delete;
+		ConfigFile& operator=(ConfigFile&& inOther) = delete;
 
 		bool IsValid() const;
 		const std::vector<std::string>& GetValidSectionTags() const;

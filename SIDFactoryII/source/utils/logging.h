@@ -13,9 +13,10 @@ namespace Utility
 
 	public:
 		static Logging& instance();
-		Logging(Logging& inOther) = delete;
+		Logging(const Logging& inOther) = delete;
+		Logging& operator=(const Logging& inOther) = delete;
 		Logging(Logging&& inOther) = delete;
-		Logging& operator=(Logging&&) = delete;
+		Logging& operator=(Logging&& inOther) = delete;
 
 		void Info(const char* format, ...);
 		void Warning(const char* format, ...);
