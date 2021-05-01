@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string>
 
@@ -12,15 +11,17 @@
 #include "utils/configfile.h"
 #include "utils/delegate.h"
 #include "utils/event.h"
+#include "utils/global.h"
 #include "utils/keyhookstore.h"
 #include "utils/logging.h"
 #include "utils/utilities.h"
 
 using namespace Foundation;
 using namespace Editor;
+using namespace Utility;
 
 // Forward declaration
-void Run(IPlatform& inPlatform, int inArgc, char* inArgv[]);
+void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[]);
 void BuildResource();
 
 // Functions
@@ -32,16 +33,6 @@ int main(int inArgc, char* inArgv[])
 	const char* build_number = __DATE__;
 #endif
 
-#ifdef _SF2_WINDOWS
-	const char* os = "Windows";
-#else
-#ifdef _SF2_LINUX
-	const char* os = "Linux";
-#else
-	const char* os = "macOS";
-#endif
-#endif
-
 	// Initialize SDL
 	const int sdl_init_result = SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO);
 	if (sdl_init_result < 0)
@@ -51,16 +42,17 @@ int main(int inArgc, char* inArgv[])
 		return -1;
 	}
 
-	Utility::Logging::instance().Info("SIDFactoryII %s build %s", os, build_number);
+	Global& global = Utility::Global::instance();
 
-	// Create the platform
-	IPlatform* platform = Foundation::CreatePlatform();
+	const IPlatform& platform = global.GetPlatform();
+	Logging::instance().Info("SIDFactoryII %s build %s", platform.GetName().c_str(), build_number);
 
 	// Run the editor
-	Run(*platform, inArgc, inArgv);
+	Run(platform, inArgc, inArgv);
 
 	// Destroy the platform
-	delete platform;
+	// TODO: needed? Or use deconstructor?
+	global.deletePlatform();
 
 	// Close down SDL
 	SDL_Quit();
@@ -69,22 +61,15 @@ int main(int inArgc, char* inArgv[])
 }
 
 
-void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
+void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 {
-	// Read the config file
-	std::vector<std::string> valid_configuration_sections;
-	valid_configuration_sections.push_back("default");
-	valid_configuration_sections.push_back(inPlatform.GetName());
-#ifdef _DEBUG
-	valid_configuration_sections.push_back("debug");
-#endif //
-
-	std::string config_path = inPlatform.Storage_GetConfigHomePath();
-	Utility::ConfigFile configFile(inPlatform, config_path + "config.ini", valid_configuration_sections);
 
 	// Create viewport (client view size)
 	const int width = 1280;
 	const int height = 720;
+
+	const ConfigFile& configFile = Global::instance().GetConfig();
+
 	float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0);
 
 	if (window_scaling > 2.0)
@@ -97,7 +82,6 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 		Utility::Logging::instance().Warning("Window.Scaling is lower than 0.5. Limiting to 0.5", window_scaling);
 		window_scaling = 0.5;
 	}
-	Utility::Logging::instance().Info("Window.Scaling = %f", window_scaling);
 
 	Viewport viewport(width, height, window_scaling, std::string("SID Factory II"));
 
@@ -105,7 +89,7 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 	Keyboard keyboard;
 
 	// Editor facility
-	EditorFacility editor(&inPlatform, &viewport, configFile);
+	EditorFacility editor(&viewport);
 
 	// Start editor
 	editor.Start(inArgc > 1 ? inArgv[1] : nullptr);
@@ -215,10 +199,4 @@ void Run(IPlatform& inPlatform, int inArgc, char* inArgv[])
 
 	// Stop editor
 	editor.Stop();
-}
-
-
-void BuildResource()
-{
-	//Utility::MakeBinaryResourceIncludeFile("logo_test.png", "data_logo.h", "data_logo", "Resource");
 }

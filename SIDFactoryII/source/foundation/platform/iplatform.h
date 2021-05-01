@@ -14,6 +14,11 @@ namespace Foundation
 		IPlatform() { }
 
 	public: 
+		
+		IPlatform(IPlatform& inOther)  = delete;
+		IPlatform(IPlatform&& inOther)  = delete;
+		IPlatform(const IPlatform& inOther)  = delete;
+
 		virtual ~IPlatform() { }
 
 		virtual std::shared_ptr<IMutex> CreateMutex() = 0;

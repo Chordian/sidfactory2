@@ -1,47 +1,49 @@
 #include "runtime/editor/editor_facility.h"
-#include "runtime/editor/utilities/import_utils.h"
-#include "runtime/environmentdefines.h"
-#include "runtime/emulation/cpumos6510.h"
-#include "runtime/emulation/cpumemory.h"
-#include "runtime/emulation/sid/sidproxy.h"
-#include "runtime/execution/executionhandler.h"
-#include "runtime/execution/flightrecorder.h"
-#include "runtime/editor/converters/converterbase.h"
-#include "runtime/editor/screens/screen_base.h"
-#include "runtime/editor/screens/screen_intro.h"
-#include "runtime/editor/screens/screen_edit.h"
-#include "runtime/editor/screens/screen_disk.h"
-#include "runtime/editor/screens/screen_convert.h"
-#include "runtime/editor/screens/screen_edit_utils.h"
-#include "runtime/editor/utilities/editor_utils.h"
+#include "foundation/graphics/textfield.h"
+#include "foundation/graphics/viewport.h"
+#include "foundation/input/keyboard.h"
+#include "foundation/platform/iplatform.h"
+#include "foundation/sound/audiostream.h"
+#include "libraries/ghc/fs_std.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_hardware_preferences.h"
-#include "runtime/editor/editor_types.h"
+#include "runtime/editor/converters/converterbase.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/dialog/dialog_message_yesno.h"
 #include "runtime/editor/dialog/dialog_sid_file_info.h"
-#include "runtime/editor/driver/driver_utils.h"
 #include "runtime/editor/driver/driver_info.h"
-#include "runtime/editor/packer/packer.h"
-#include "runtime/editor/overlay_control.h"
+#include "runtime/editor/driver/driver_utils.h"
+#include "runtime/editor/editor_types.h"
 #include "runtime/editor/keys/keyhook_setup.h"
-#include "foundation/graphics/viewport.h"
-#include "foundation/graphics/textfield.h"
-#include "foundation/platform/iplatform.h"
-#include "foundation/input/keyboard.h"
-#include "foundation/sound/audiostream.h"
-#include "utils/utilities.h"
-#include "utils/configfile.h"
-#include "utils/config/configtypes.h"
-#include "utils/config/configcolors.h"
+#include "runtime/editor/overlay_control.h"
+#include "runtime/editor/packer/packer.h"
+#include "runtime/editor/screens/screen_base.h"
+#include "runtime/editor/screens/screen_convert.h"
+#include "runtime/editor/screens/screen_disk.h"
+#include "runtime/editor/screens/screen_edit.h"
+#include "runtime/editor/screens/screen_edit_utils.h"
+#include "utils/logging.h"
+#include "runtime/editor/screens/screen_intro.h"
+#include "runtime/editor/utilities/editor_utils.h"
+#include "runtime/editor/utilities/import_utils.h"
+#include "runtime/emulation/cpumemory.h"
+#include "runtime/emulation/cpumos6510.h"
+#include "runtime/emulation/sid/sidproxy.h"
+#include "runtime/environmentdefines.h"
+#include "runtime/execution/executionhandler.h"
+#include "runtime/execution/flightrecorder.h"
 #include "utils/c64file.h"
+#include "utils/config/configcolors.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/global.h"
 #include "utils/psidfile.h"
-#include "libraries/ghc/fs_std.h"
+#include "utils/utilities.h"
 
 // Converter
-#include "runtime/editor/converters/jch/converter_jch.h"
-#include "runtime/editor/converters/gt/converter_gt.h"
 #include "runtime/editor/converters/cc/converter_cc.h"
+#include "runtime/editor/converters/gt/converter_gt.h"
+#include "runtime/editor/converters/jch/converter_jch.h"
 #include "runtime/editor/converters/mod/converter_mod.h"
 #include "runtime/editor/converters/null/converter_null.h"
 
@@ -56,48 +58,59 @@ using namespace fs;
 
 namespace Editor
 {
-    const unsigned int EditorFacility::DefaultDialogWidth = 100;
+	const unsigned int EditorFacility::DefaultDialogWidth = 100;
 
-	EditorFacility::EditorFacility(IPlatform* inPlatform, Viewport* inViewport, Utility::ConfigFile& inConfigFile)
+	EditorFacility::EditorFacility(Viewport* inViewport)
 		: m_Viewport(inViewport)
-		, m_Platform(inPlatform)
-		, m_ConfigFile(inConfigFile)
 		, m_IsDone(false)
 		, m_CurrentScreen(nullptr)
 		, m_RequestedScreen(nullptr)
 		, m_FlipOverlayState(false)
 		, m_SelectedColorScheme(0)
 	{
-		// Key setup
-		m_KeyHookSetup.ApplyConfigSettings(inConfigFile);
 
-		// Configure colors
-		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(inConfigFile, "ColorScheme.Name", {});
-		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(inConfigFile, "ColorScheme.Filename", {});
+		ConfigFile& config = Global::instance().GetConfig();
+		IPlatform& platform = Global::instance().GetPlatform();
+
+		// Key setup
+		m_KeyHookSetup.ApplyConfigSettings(config);
+
+		// Configure editor
+		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Name", {});
+		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Filename", {});
 
 		if (color_scheme_names.size() == color_scheme_filenames.size())
 		{
 			m_ColorSchemeCount = color_scheme_names.size();
-			m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "ColorScheme.Selection", 0);
+			m_SelectedColorScheme = GetSingleConfigurationValue<ConfigValueInt>(config, "ColorScheme.Selection", 0);
 
-			ConfigureColorsFromScheme(m_SelectedColorScheme, inConfigFile, *inViewport);
+			ConfigureColorsFromScheme(m_SelectedColorScheme, *inViewport);
+		}
+		else {
+			Utility::Logging::instance().Error("Number of color scheme names (%d) does not match number of color scheme filenames (%d)", color_scheme_names.size(), color_scheme_filenames.size());
 		}
 
-		// Create emulation environment
-		SIDConfiguration sid_configuration;										// Default settings are applicable
+		const bool sequence_highlighting = GetSingleConfigurationValue<ConfigValueInt>(config, "Editor.Sequence.Highlights", 0) != 0;
+		m_EditState.SetSequenceHighlighting(sequence_highlighting);
+		const bool follow_play = GetSingleConfigurationValue<ConfigValueInt>(config, "Editor.Follow.Play", 0) != 0;
+		m_EditState.SetFollowPlayMode(follow_play);
 
-		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Sound.Emulation.Resample", 1) != 0;
+		// Create emulation environment
+		SIDConfiguration sid_configuration; // Default settings are applicable
+
+		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.Resample", 1) != 0;
 		sid_configuration.m_eSampleMethod = sid_use_resample ? SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE : SID_SAMPLE_METHOD_INTERPOLATE;
-		sid_configuration.m_eModel = SID_MODEL_8580;
+		sid_configuration.m_eModel = SID_MODEL_6581;
+
 
 		m_SIDProxy = new SIDProxy(sid_configuration);
-		m_CPUMemory = new CPUMemory(0x10000, m_Platform);
+		m_CPUMemory = new CPUMemory(0x10000, &platform);
 		m_CPU = new CPUmos6510();
-		m_FlightRecorder = new FlightRecorder(m_Platform, 0x800);
-		m_ExecutionHandler = new ExecutionHandler(m_Platform, m_CPU, m_CPUMemory, m_SIDProxy, m_FlightRecorder, inConfigFile);
+		m_FlightRecorder = new FlightRecorder(&platform, 0x800);
+		m_ExecutionHandler = new ExecutionHandler(m_CPU, m_CPUMemory, m_SIDProxy, m_FlightRecorder);
 
 		// Create audio stream
-		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Sound.Buffer.Size", 256);
+		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Buffer.Size", 256);
 		m_AudioStream = new AudioStream(44100, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
 
 		// Create the main text field
@@ -108,7 +121,7 @@ namespace Editor
 		m_DriverInfo = std::make_shared<DriverInfo>();
 
 		// Create overlay control
-		m_OverlayControl = std::make_unique<OverlayControl>(inConfigFile, inViewport, inPlatform);
+		m_OverlayControl = std::make_unique<OverlayControl>(inViewport);
 
 		// Create screens
 		m_IntroScreen = std::make_unique<ScreenIntro>(
@@ -119,17 +132,16 @@ namespace Editor
 			m_KeyHookSetup.GetKeyHookStore(),
 			m_DriverInfo,
 			[&]() { OnExitIntroScreen(); },
-			[&]() { OnExitIntroScreenToLoad(); }
-		);
+			[&]() { OnExitIntroScreenToLoad(); });
 
 		m_DiskScreen = std::make_unique<ScreenDisk>(
-			m_Platform,
+			&platform,
 			m_Viewport,
 			m_TextField,
 			&m_CursorControl,
 			m_DisplayState,
 			m_KeyHookSetup.GetKeyHookStore(),
-			m_ConfigFile,
+			config,
 			[&](const std::string& inFilenameSelection, FileType inSaveFileType) { OnFilenameSelection(m_DiskScreen.get(), inFilenameSelection, inSaveFileType); },
 			[&]() { OnCancelScreen(m_DiskScreen.get()); });
 
@@ -139,10 +151,9 @@ namespace Editor
 			&m_CursorControl,
 			m_DisplayState,
 			m_KeyHookSetup.GetKeyHookStore(),
-			m_Platform,
+			&platform,
 			[&]() { SetCurrentScreen(m_EditScreen.get()); },
-			[&](ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult) { return OnConversionSuccess(inCallerScreen, inPathAndFilename, inConversionResult); }
-		);
+			[&](ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult) { return OnConversionSuccess(inCallerScreen, inPathAndFilename, inConversionResult); });
 
 		// 	bool EditorFacility::OnConversionSuccess(ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult)
 
@@ -166,14 +177,12 @@ namespace Editor
 			[&]() { OnQuickSave(m_EditScreen.get()); },
 			[&](unsigned short inDestinationAddress) { OnPack(m_EditScreen.get(), inDestinationAddress); },
 			[&]() { m_FlipOverlayState = true; },
-			[&](unsigned int inReconfigureOption) { Reconfigure(inReconfigureOption); }
-		);
+			[&](unsigned int inReconfigureOption) { Reconfigure(inReconfigureOption); });
 
+		//
 		// Apply additional configuration to the edit screen
-		m_EditScreen->SetAdditionalConfiguration
-		(
-			GetSingleConfigurationValue<ConfigValueInt>(m_ConfigFile, "Editor.Driver.ConvertLegacyColors", 0) != 0
-		);
+		m_EditScreen->SetAdditionalConfiguration(
+			GetSingleConfigurationValue<ConfigValueInt>(config, "Editor.Driver.ConvertLegacyColors", 0) != 0);
 	}
 
 	EditorFacility::~EditorFacility()
@@ -197,8 +206,11 @@ namespace Editor
 		FOUNDATION_ASSERT(m_ExecutionHandler != nullptr);
 		FOUNDATION_ASSERT(m_AudioStream != nullptr);
 
-		const bool file_loaded_successfully = [&]()
-		{
+		IPlatform& platform = Global::instance().GetPlatform();
+		ConfigFile& configFile = Global::instance().GetConfig();
+
+
+		const bool file_loaded_successfully = [&]() {
 			if (inFileToLoad != nullptr)
 			{
 				std::string file_to_load(inFileToLoad);
@@ -211,17 +223,18 @@ namespace Editor
 		// Try to load the driver directly
 		if (!file_loaded_successfully)
 		{
-			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(m_ConfigFile, "Editor.Driver.Default", std::string("sf2driver11_03.prg"));
-			std::string drivers_folder = m_Platform->Storage_GetDriversHomePath();
+			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_03.prg"));
+			std::string drivers_folder = platform.Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}
 
-        // After loading, set the current path, so that opening the disk menu will be correct.
-        std::error_code ec;
-        fs::current_path(m_Platform->Storage_GetHomePath(), ec);
-        
-        // Start the intro screen
-		if(GetSingleConfigurationValue<ConfigValueInt>(m_ConfigFile, "Editor.Skip.Intro", 0) == 0)
+		// After loading, set the current path, so that opening the disk menu will be correct.
+		std::error_code ec;
+		fs::current_path(platform.Storage_GetHomePath(), ec);
+
+		// Start the intro screen
+		const bool skip_intro = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Editor.Skip.Intro", 0) != 0;
+		if (!skip_intro)
 			SetCurrentScreen(m_IntroScreen.get());
 		else
 		{
@@ -291,8 +304,7 @@ namespace Editor
 	{
 		if (m_CurrentScreen != nullptr)
 		{
-			m_CurrentScreen->TryQuit([&](bool inQuit)
-			{
+			m_CurrentScreen->TryQuit([&](bool inQuit) {
 				if (inQuit)
 					m_IsDone = true;
 			});
@@ -303,8 +315,7 @@ namespace Editor
 	{
 		if (m_CurrentScreen != nullptr)
 		{
-			m_CurrentScreen->TryLoad(inPathAndFilename, [&, path_and_filename = inPathAndFilename](bool inQuit)
-			{
+			m_CurrentScreen->TryLoad(inPathAndFilename, [&, path_and_filename = inPathAndFilename](bool inQuit) {
 				if (LoadFile(path_and_filename))
 					ForceRequestScreen(m_EditScreen.get());
 				else
@@ -322,12 +333,15 @@ namespace Editor
 
 	void EditorFacility::Reconfigure(unsigned int inReconfigureOption)
 	{
+
+		ConfigFile& configFile = Global::instance().GetConfig();
+
 		if (inReconfigureOption == 0)
 		{
-			m_ConfigFile.Reload();
+			configFile.Reload();
 			m_KeyHookSetup.Reset();
-			m_KeyHookSetup.ApplyConfigSettings(m_ConfigFile);
-			ConfigureColorsFromScheme(m_SelectedColorScheme, m_ConfigFile, *m_Viewport);
+			m_KeyHookSetup.ApplyConfigSettings(configFile);
+			ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
 
 			m_EditScreen->SetActivationMessage("Reloaded config!");
 			ForceRequestScreen(m_EditScreen.get());
@@ -338,7 +352,7 @@ namespace Editor
 			if (m_SelectedColorScheme >= m_ColorSchemeCount)
 				m_SelectedColorScheme = 0;
 
-			std::string selected_color_scheme_name = ConfigureColorsFromScheme(m_SelectedColorScheme, m_ConfigFile, *m_Viewport);
+			std::string selected_color_scheme_name = ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
 
 			if (m_CurrentScreen == m_EditScreen.get())
 			{
@@ -348,7 +362,7 @@ namespace Editor
 		}
 		if (inReconfigureOption == 2)
 		{
-			std::string selected_color_scheme_name = ConfigureColorsFromScheme(m_SelectedColorScheme, m_ConfigFile, *m_Viewport);
+			std::string selected_color_scheme_name = ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
 
 			if (m_CurrentScreen == m_EditScreen.get())
 			{
@@ -371,14 +385,13 @@ namespace Editor
 	}
 
 
-
 	//------------------------------------------------------------------------------------------------------------
 
 	void EditorFacility::RequestScreen(ScreenBase* inRequestedScreen)
 	{
 		FOUNDATION_ASSERT(m_RequestedScreen == nullptr);
 
-		if(m_CurrentScreen != inRequestedScreen)
+		if (m_CurrentScreen != inRequestedScreen)
 			m_RequestedScreen = inRequestedScreen;
 	}
 
@@ -424,7 +437,7 @@ namespace Editor
 			{
 				std::shared_ptr<Utility::C64File> c64_file = Utility::C64File::CreateFromPRGData(data, static_cast<unsigned int>(data_size));
 
-				if(c64_file != nullptr)
+				if (c64_file != nullptr)
 					driver_info->Parse(*c64_file);
 			}
 
@@ -465,7 +478,7 @@ namespace Editor
 				m_CPUMemory->SetData(c64_file->GetTopAddress(), c64_file->GetData(), c64_file->GetDataSize());
 				m_CPUMemory->Unlock();
 
-				// Init the execution handler 
+				// Init the execution handler
 				m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
 				m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 				m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
@@ -523,14 +536,13 @@ namespace Editor
 
 	bool EditorFacility::LoadAndConvertFile(const std::string& inPathAndFilename, ScreenBase* inCallerScreen, std::function<void()> inSuccesfullConversionAction)
 	{
-		const int max_file_size = 16 * 1024 * 1024;		// 16MB
+		const int max_file_size = 16 * 1024 * 1024; // 16MB
 
 		// Read test music data to cpu memory
 		void* data = nullptr;
 		long data_size = 0;
 
-		auto on_successfull_conversion = [this, inPathAndFilename, inCallerScreen, inSuccesfullConversionAction](std::shared_ptr<Utility::C64File> inC64File)
-		{
+		auto on_successfull_conversion = [this, inPathAndFilename, inCallerScreen, inSuccesfullConversionAction](std::shared_ptr<Utility::C64File> inC64File) {
 			std::shared_ptr<DriverInfo> driver_info = std::make_shared<DriverInfo>();
 
 			if (inC64File != nullptr)
@@ -548,7 +560,7 @@ namespace Editor
 					m_CPUMemory->SetData(inC64File->GetTopAddress(), inC64File->GetData(), inC64File->GetDataSize());
 					m_CPUMemory->Unlock();
 
-					// Init the execution handler 
+					// Init the execution handler
 					m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
 					m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 					m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
@@ -662,8 +674,7 @@ namespace Editor
 	{
 		if (m_PackedData != nullptr)
 		{
-			auto do_save = [&, inFileName](std::string inTitle, std::string inAuthor, std::string inCopyright)
-			{
+			auto do_save = [&, inFileName](std::string inTitle, std::string inAuthor, std::string inCopyright) {
 				unsigned short top_of_file_address = m_PackedData->GetTopAddress();
 				unsigned short data_size = static_cast<unsigned short>(m_PackedData->GetDataSize());
 
@@ -818,7 +829,7 @@ namespace Editor
 				m_CPUMemory->SetData(inConversionResult->GetTopAddress(), inConversionResult->GetData(), inConversionResult->GetDataSize());
 				m_CPUMemory->Unlock();
 
-				// Init the execution handler 
+				// Init the execution handler
 				m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
 				m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 				m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
@@ -854,12 +865,10 @@ namespace Editor
 		packing_info += "Size : 0x" + EditorUtils::ConvertToHexValue(static_cast<unsigned short>(m_PackedData->GetDataSize()), is_uppercase);
 
 		inCallerScreen->GetComponentsManager().StartDialog(
-			std::make_shared<DialogMessage>("Packing results", packing_info, 30, false, [&]() 
-			{
+			std::make_shared<DialogMessage>("Packing results", packing_info, 30, false, [&]() {
 				m_DiskScreen->SetMode(ScreenDisk::Mode::SavePacked);
 				SetCurrentScreen(m_DiskScreen.get());
-			})
-		);
+			}));
 	}
 
 
@@ -869,23 +878,21 @@ namespace Editor
 	}
 
 
-    void EditorFacility::OnSaveError(ScreenBase* inCallerScreen)
-    {
-        inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Error", "The file could not be saved to the current destination!", DefaultDialogWidth, true, []() {}));
-    }
+	void EditorFacility::OnSaveError(ScreenBase* inCallerScreen)
+	{
+		inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Error", "The file could not be saved to the current destination!", DefaultDialogWidth, true, []() {}));
+	}
 
 	//-------------------------------------------------------------------------------------------------------------------------
 
 
 	void EditorFacility::DoLoad(ScreenBase* inCallerScreen, const std::string& inSelectedFilename)
 	{
-		auto on_success = [this]()
-		{
+		auto on_success = [this]() {
 			RequestScreen(m_EditScreen.get());
 		};
 
-		auto do_load = [this, on_success, inSelectedFilename, inCallerScreen]()
-		{
+		auto do_load = [this, on_success, inSelectedFilename, inCallerScreen]() {
 			if (LoadFile(inSelectedFilename))
 				on_success();
 			else
@@ -910,19 +917,18 @@ namespace Editor
 
 		if (!exists(save_path_and_filename))
 		{
-			if(SaveFile(save_path_and_filename.string()))
-                RequestScreen(m_EditScreen.get());
-            else
-                OnSaveError(inCallerScreen);
+			if (SaveFile(save_path_and_filename.string()))
+				RequestScreen(m_EditScreen.get());
+			else
+				OnSaveError(inCallerScreen);
 		}
 		else if (IsFileSF2(save_path_and_filename.string()))
 		{
-			auto do_save = [save_path_and_filename, inCallerScreen, this]()
-			{
-				if(SaveFile(save_path_and_filename.string()))
-                    this->RequestScreen(this->m_EditScreen.get());
-                else
-                    OnSaveError(inCallerScreen);
+			auto do_save = [save_path_and_filename, inCallerScreen, this]() {
+				if (SaveFile(save_path_and_filename.string()))
+					this->RequestScreen(this->m_EditScreen.get());
+				else
+					OnSaveError(inCallerScreen);
 			};
 
 			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessageYesNo>("Warning", inSelectedFilename + "\nAlready exists! Are you sure you want to overwrite it?", DefaultDialogWidth, do_save, []() {}));
@@ -959,13 +965,12 @@ namespace Editor
 		else if (!sf2_extension)
 			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "You are trying to quick save to a file, with an extension other than .sf2.\nPlease save through the save disk menu!", DefaultDialogWidth, true, []() {}));
 		else
-		{	
-			auto do_save = [save_path_and_filename, inCallerScreen, this]()
-			{
-				if(SaveFile(save_path_and_filename.string()))
-                    this->m_EditScreen->SetStatusBarMessage(" Quick saved to: " + save_path_and_filename.filename().string(), 5000);
-                else
-                    this->OnSaveError(inCallerScreen);
+		{
+			auto do_save = [save_path_and_filename, inCallerScreen, this]() {
+				if (SaveFile(save_path_and_filename.string()))
+					this->m_EditScreen->SetStatusBarMessage(" Quick saved to: " + save_path_and_filename.filename().string(), 5000);
+				else
+					this->OnSaveError(inCallerScreen);
 			};
 
 			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessageYesNo>("Warning", "Do you want to perform a quick save to:\n" + save_path_and_filename.string() + "?", DefaultDialogWidth, do_save, []() {}));
@@ -975,8 +980,7 @@ namespace Editor
 
 	void EditorFacility::DoImport(ScreenBase* inCallerScreen, const std::string& inSelectedFilename)
 	{
-		auto do_load = [&, inSelectedFilename, inCallerScreen]()
-		{
+		auto do_load = [&, inSelectedFilename, inCallerScreen]() {
 			std::shared_ptr<DriverInfo> import_driver_info = nullptr;
 			std::shared_ptr<Utility::C64File> import_c64_file = nullptr;
 
@@ -987,14 +991,13 @@ namespace Editor
 
 				if (!valid_music_data)
 					inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Import failure", "Unable to import music data!", DefaultDialogWidth, true, []() {}));
-				else if(!valid_tables)
+				else if (!valid_tables)
 					inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Import failure", "Unable to import table definitions!", DefaultDialogWidth, true, []() {}));
-				else 
+				else
 				{
 					ImportUtils::Import(inCallerScreen, *m_DriverInfo, *m_CPUMemory, *import_driver_info, *import_c64_file);
 					this->RequestScreen(this->m_EditScreen.get());
 				}
-
 			}
 			else
 				inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Invalid file", "The selected file is not compatible with SID Factory II import.", DefaultDialogWidth, true, []() {}));
@@ -1015,8 +1018,7 @@ namespace Editor
 		}
 		else
 		{
-			auto do_save = [save_path_and_filename, this]()
-			{
+			auto do_save = [save_path_and_filename, this]() {
 				SavePackedFile(save_path_and_filename.string());
 				this->RequestScreen(this->m_EditScreen.get());
 			};
@@ -1036,8 +1038,7 @@ namespace Editor
 		}
 		else
 		{
-			auto do_save = [inCallerScreen, save_path_and_filename, this]()
-			{
+			auto do_save = [inCallerScreen, save_path_and_filename, this]() {
 				SavePackedFileToSID(inCallerScreen, save_path_and_filename.string());
 			};
 
@@ -1068,15 +1069,18 @@ namespace Editor
 	}
 
 
-	std::string EditorFacility::ConfigureColorsFromScheme(int inSchemeIndex, const Utility::ConfigFile& inMainConfigFile, Foundation::Viewport& inViewport)
+	std::string EditorFacility::ConfigureColorsFromScheme(int inSchemeIndex, Foundation::Viewport& inViewport)
 	{
+		ConfigFile& configFile = Global::instance().GetConfig();
 		if (inSchemeIndex < m_ColorSchemeCount)
 		{
-			auto color_scheme_names = GetConfigurationValues<ConfigValueString>(inMainConfigFile, "ColorScheme.Name", {});
-			auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(inMainConfigFile, "ColorScheme.Filename", {});
 
-			std::string color_config_path_and_filename = m_Platform->Storage_GetColorSchemesHomePath() + color_scheme_filenames[inSchemeIndex];
-			ConfigFile color_config(*m_Platform, color_config_path_and_filename, inMainConfigFile.GetValidSectionTags());
+			IPlatform& platform = Global::instance().GetPlatform();
+			auto color_scheme_names = GetConfigurationValues<ConfigValueString>(configFile, "ColorScheme.Name", {});
+			auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(configFile, "ColorScheme.Filename", {});
+
+			std::string color_config_path_and_filename = platform.Storage_GetColorSchemesHomePath() + color_scheme_filenames[inSchemeIndex];
+			ConfigFile color_config(platform, color_config_path_and_filename, configFile.GetValidSectionTags());
 
 			if (color_config.IsValid())
 			{
@@ -1085,7 +1089,7 @@ namespace Editor
 			}
 		}
 
-		Utility::Config::ConfigureColors(inMainConfigFile, inViewport);
+		Utility::Config::ConfigureColors(configFile, inViewport);
 		return "Default";
 	}
 
@@ -1105,4 +1109,3 @@ namespace Editor
 	}
 
 }
-

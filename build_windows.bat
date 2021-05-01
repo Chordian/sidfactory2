@@ -19,8 +19,6 @@ IF ERRORLEVEL 1 EXIT 1
 
 copy /Y SIDFactoryII\config.ini artifacts\
 IF ERRORLEVEL 1 EXIT 1
-copy /Y SIDFactoryII\user.default.ini artifacts\
-IF ERRORLEVEL 1 EXIT 1
 copy /Y SIDFactoryII\COPYING artifacts\
 IF ERRORLEVEL 1 EXIT 1
 copy /Y SIDFactoryII\SDL2.dll artifacts\

@@ -286,6 +286,7 @@
     <ClCompile Include="source\utils\bit_array.cpp" />
     <ClCompile Include="source\utils\c64file.cpp" />
     <ClCompile Include="source\utils\configfile.cpp" />
+    <ClCompile Include="source\utils\global.cpp" />
     <ClCompile Include="source\utils\config\configcolors.cpp" />
     <ClCompile Include="source\utils\config\configtypes.cpp" />
     <ClCompile Include="source\utils\config\configutils.cpp" />
@@ -467,6 +468,7 @@
     <ClInclude Include="source\utils\bit_array.h" />
     <ClInclude Include="source\utils\c64file.h" />
     <ClInclude Include="source\utils\configfile.h" />
+    <ClInclude Include="source\utils\global.h" />
     <ClInclude Include="source\utils\config\configcolors.h" />
     <ClInclude Include="source\utils\config\configtypes.h" />
     <ClInclude Include="source\utils\config\configutils.h" />

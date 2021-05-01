@@ -1,11 +1,11 @@
 #pragma once
 
 #include "utils/config/configtypes.h"
-#include <string>
-#include <vector>
 #include <map>
 #include <memory>
+#include <string>
 #include <typeinfo>
+#include <vector>
 
 namespace Foundation
 {
@@ -19,6 +19,11 @@ namespace Utility
 	public:
 		ConfigFile(const Foundation::IPlatform& inPlatform, const std::string& inFilename, const std::vector<std::string>& inValidSectionTags);
 
+		ConfigFile(const ConfigFile& inOther) = delete;
+		ConfigFile& operator=(const ConfigFile& inOther) = delete;
+		ConfigFile(ConfigFile&& inOther) = delete;
+		ConfigFile& operator=(ConfigFile&& inOther) = delete;
+
 		bool IsValid() const;
 		const std::vector<std::string>& GetValidSectionTags() const;
 
@@ -27,10 +32,10 @@ namespace Utility
 		bool HasKey(const std::string& inKey) const;
 		const Config::IConfigValue& GetValue(const std::string& inKey) const;
 
-		template<typename T>
+		template <typename T>
 		bool HasKeyOfType(const std::string& inKey) const;
 
-		template<typename T>
+		template <typename T>
 		const T& GetValue(const std::string& inKey) const;
 
 	private:
@@ -45,7 +50,7 @@ namespace Utility
 		std::map<std::string, std::shared_ptr<Config::IConfigValue>> m_Map;
 	};
 
-	template<typename T>
+	template <typename T>
 	inline bool ConfigFile::HasKeyOfType(const std::string& inKey) const
 	{
 		if (HasKey(inKey))
@@ -54,16 +59,16 @@ namespace Utility
 		return false;
 	}
 
-	template<typename T>
+	template <typename T>
 	inline const T& ConfigFile::GetValue(const std::string& inKey) const
 	{
 		const T& value = static_cast<const T&>(GetValue(inKey));
 		return value;
 	}
 
-	
+
 	// Utility functions
-	template<typename T, typename RT = typename T::DATATYPE>
+	template <typename T, typename RT = typename T::DATATYPE>
 	inline RT GetSingleConfigurationValue(const Utility::ConfigFile& inConfigFile, const std::string& inKey, RT inDefault)
 	{
 		if (inConfigFile.HasKeyOfType<Config::ConfigValueRedirect>(inKey))
@@ -83,7 +88,7 @@ namespace Utility
 	}
 
 
-	template<typename T, typename RT = typename T::DATATYPE>
+	template <typename T, typename RT = typename T::DATATYPE>
 	inline std::vector<RT> GetConfigurationValues(const Utility::ConfigFile& inConfigFile, const std::string& inKey, const std::vector<RT> inDefault)
 	{
 		if (inConfigFile.HasKeyOfType<Config::ConfigValueRedirect>(inKey))
