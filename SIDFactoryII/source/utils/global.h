@@ -19,7 +19,7 @@ namespace Utility
 		static Global& instance();
 		Global(Global& inOther) = delete;
 		Global(Global&& inOther) = delete;
-		Global(const Global& inOther) = delete;
+		Global& operator=(Global&&) = delete;
 
 		// TODO: is this needed?
 		void deletePlatform();
