@@ -102,6 +102,9 @@ namespace Editor
 		definitions.push_back({ "Key.ScreenEdit.FastForward", {{ 189, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.FasterForward", {{ 189, Keyboard::Shift }} });
 
+		// TODO: experimental
+		definitions.push_back({ "Key.ScreenEdit.SaveJSON", {{ SDLK_F12, Keyboard::Control }} });
+
 		definitions.push_back({ "Key.Track.CursorUp", {{ SDLK_UP, Keyboard::None }} });
 		definitions.push_back({ "Key.Track.CursorDown", {{ SDLK_DOWN, Keyboard::None }} });
 		definitions.push_back({ "Key.Track.ToggleGateUntilNextEvent", {{ SDLK_DOWN, Keyboard::Shift | Keyboard::Control }} });

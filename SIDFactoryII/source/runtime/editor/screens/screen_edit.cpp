@@ -12,6 +12,7 @@
 #include "runtime/editor/auxilarydata/auxilary_data_play_markers.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/datasource_utils.h"
+#include "runtime/editor/utilities/json_export.h"
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/driver/driver_utils.h"
 #include "runtime/editor/driver/idriver_architecture.h"
@@ -1830,6 +1831,11 @@ namespace Editor
 			m_FastForwardFactor = 100;
 			return true;
 		} });
+
+			m_FastForwardKeyHooks.push_back({ "Key.ScreenEdit.SaveJSON", m_KeyHookStore, [&]() {
+																			 EditorUtils::SaveAsJson(m_InstrumentTableDataSource);
+																			 return true;
+																		 } });
 
 /*		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleRecordOutput", SDLK_r, Keyboard::Control, [&]()
 		{
