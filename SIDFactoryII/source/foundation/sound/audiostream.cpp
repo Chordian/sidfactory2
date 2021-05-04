@@ -58,9 +58,19 @@ namespace Foundation
 
 		m_AudioDeviceID = SDL_OpenAudioDevice(nullptr, 0, &audio_spec, &audio_spec_created, 0);
 
+
+		if (audio_spec.freq != audio_spec_created.freq)
+		{
+			Utility::Logging::instance().Warning("Requested %d Hz, but got %d Hz, sound could be affected by this.", audio_spec.freq, audio_spec_created.freq);
+		}
+
 		if (m_AudioDeviceID == 0)
 		{
 			Utility::Logging::instance().Error("Could not open audio device. SDL Error: %s", SDL_GetError());
+		}
+		else
+		{
+			Utility::Logging::instance().Info("Succesfully opened audio device @ %d Hz", audio_spec_created.freq);
 		}
 	}
 
