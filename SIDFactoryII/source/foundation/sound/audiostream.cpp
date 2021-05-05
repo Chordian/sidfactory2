@@ -28,7 +28,8 @@ namespace Foundation
 		, m_StreamFeeder(inStreamFeeder)
 	{
 		const unsigned int buffer_size = inBufferDuration;
-		const unsigned int buffer_size_power_of_two = [&buffer_size]() {
+		const unsigned int buffer_size_power_of_two = [&buffer_size]()
+		{
 			unsigned int bits = 0;
 			unsigned int size = buffer_size;
 

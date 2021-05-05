@@ -52,6 +52,9 @@ namespace Emulation
 		void Lock();
 		void Unlock();
 
+		// Settings
+		void SetPAL(const bool inPALMode);
+
 		// Error
 		bool IsInErrorState() const;
 		std::string GetErrorMessage() const;
@@ -113,9 +116,9 @@ namespace Emulation
 		unsigned int m_FeedCount;
 		unsigned int m_BytesFedCount;
 
-		unsigned int m_CurrentCycle; // Current cycle being processed
-		unsigned int m_CyclesPerFrame; // Number of cycles per frame
-		unsigned int m_CPUCyclesSpend; // Cycles spend on code during the last update (frame)
+		unsigned int m_CurrentCycle;	// Current cycle being processed
+		unsigned int m_CyclesPerFrame;	// Number of cycles per frame
+		unsigned int m_CPUCyclesSpend;	// Cycles spend on code during the last update (frame)
 
 		unsigned int m_CPUFrameCounter;
 

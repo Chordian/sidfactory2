@@ -46,7 +46,7 @@ namespace Emulation
 		, m_CPUFrameCounter(0)
 		, m_UpdateEnabled(false)
 	{
-		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
+		m_CyclesPerFrame = static_cast<unsigned int>(EMULATION_CYCLES_PER_FRAME_PAL);
 
 		// Create a sample buffer. The sample frequency is used for determining the size, which is probably 50 times the size required.
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
@@ -196,6 +196,14 @@ namespace Emulation
 		if (m_Mutex != nullptr)
 			m_Mutex->Unlock();
 	}
+
+	//----------------------------------------------------------------------------------------------------------------
+
+	void ExecutionHandler::SetPAL(const bool inPALMode)
+	{
+		m_CyclesPerFrame = static_cast<unsigned int>(inPALMode ? EMULATION_CYCLES_PER_FRAME_PAL : EMULATION_CYCLES_PER_FRAME_NTSC);
+	}
+
 
 	//----------------------------------------------------------------------------------------------------------------
 	// Error

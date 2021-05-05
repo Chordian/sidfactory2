@@ -155,8 +155,11 @@ namespace Editor
 		m_SIDProxy->SetModel(sid_model == AuxilaryDataHardwarePreferences::SIDModel::MOS6581 ? SID_MODEL_6581 : SID_MODEL_8580);
 
 		const AuxilaryDataHardwarePreferences::Region hardware_region = hardware_preferences.GetRegion();
-		m_SIDProxy->SetEnvironment(hardware_region == AuxilaryDataHardwarePreferences::Region::PAL ? SID_ENVIRONMENT_PAL : SID_ENVIRONMENT_NTSC);
+		const bool is_pal = hardware_region == AuxilaryDataHardwarePreferences::Region::PAL;
+		m_SIDProxy->SetEnvironment(is_pal ? SID_ENVIRONMENT_PAL : SID_ENVIRONMENT_NTSC);
 		m_SIDProxy->ApplySettings();
+
+		m_ExecutionHandler->SetPAL(is_pal);
 
 		m_ExecutionHandler->Unlock();
 
