@@ -229,8 +229,19 @@ namespace Editor
 		}
 
 		// After loading, set the current path, so that opening the disk menu will be correct.
+
+		std::string default_start_path = platform.Storage_GetHomePath();
+		std::string start_path = platform.OS_ParsePath(GetSingleConfigurationValue<ConfigValueString>(configFile, "Disk.Startup.Folder", default_start_path));
+
+		if (!is_directory(start_path)) {
+			Logging::instance().Warning("%s is not a folder.", start_path.c_str());
+		}
+
 		std::error_code ec;
 		fs::current_path(platform.Storage_GetHomePath(), ec);
+		if (ec) {
+			Logging::instance().Warning("Cannot change folder to %s", start_path.c_str());
+		}
 
 		// Start the intro screen
 		const bool skip_intro = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Editor.Skip.Intro", 0) != 0;
