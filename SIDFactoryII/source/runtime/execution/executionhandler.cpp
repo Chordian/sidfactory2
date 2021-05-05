@@ -52,7 +52,7 @@ namespace Emulation
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
 		m_Mutex = Global::instance().GetPlatform().CreateMutex();
-		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", -1);
+		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", 1.0f);
 
 		Logging::instance().Info("Sound.Output.Gain = %f", m_OutputGain);
 		// Set default action vector
@@ -162,7 +162,7 @@ namespace Emulation
 				unsigned int uiRemainingSourceSamples = m_SampleBufferWriteCursor - m_SampleBufferReadCursor;
 				unsigned int uiSamplesToCopy = uiRemainingSamples > uiRemainingSourceSamples ? uiRemainingSourceSamples : uiRemainingSamples;
 
-				for (int i = 0; i < uiSamplesToCopy; ++i)
+				for (unsigned int i = 0; i < uiSamplesToCopy; ++i)
 				{
 					const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
 					const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
