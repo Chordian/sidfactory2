@@ -1,7 +1,13 @@
 #include "audiostream.h"
 #include "SDL.h"
 #include "foundation/base/assert.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/global.h"
 #include "utils/logging.h"
+
+using namespace Utility;
+using namespace Utility::Config;
 
 namespace Foundation
 {
@@ -49,28 +55,43 @@ namespace Foundation
 
 		SDL_AudioSpec audio_spec_created;
 
-		const int count = SDL_GetNumAudioDevices(0);
+		ConfigFile& config = Global::instance().GetConfig();
+		std::string preferred_device = GetSingleConfigurationValue<ConfigValueString>(config, "Sound.Output.Device", std::string(""));
 
-		for (int i = 0; i < count; ++i)
-		{
-			Utility::Logging::instance().Info("Audio device %d: %s", i, SDL_GetAudioDeviceName(i, 0));
+		const int nr_output_devices = SDL_GetNumAudioDevices(0);
+		if (nr_output_devices == 0) {
+			Logging::instance().Error("No audio output devices found.");
 		}
 
-		m_AudioDeviceID = SDL_OpenAudioDevice(nullptr, 0, &audio_spec, &audio_spec_created, 0);
+		bool unknown_preferred_device = true;
+		for (int i = 0; i < nr_output_devices; ++i)
+		{
+			const std::string audio_device = std::string(SDL_GetAudioDeviceName(i, 0));
+			Logging::instance().Info("Found audio output device \"%s\"", audio_device.c_str());
+			unknown_preferred_device = unknown_preferred_device && audio_device != preferred_device;
+		}
+		if (unknown_preferred_device && preferred_device.length() > 0)
+		{
+			Logging::instance().Warning("Unknown audio output device: %s, falling back to default.", preferred_device.c_str());
+			preferred_device = "";
+		}
 
+		const char * effective_device = preferred_device.length() > 0 ? preferred_device.c_str() : nullptr;
+		m_AudioDeviceID = SDL_OpenAudioDevice(effective_device, 0, &audio_spec, &audio_spec_created, 0);
 
+		// TODO: could this occur at all if we opened audio device without ALLOW flags?
 		if (audio_spec.freq != audio_spec_created.freq)
 		{
-			Utility::Logging::instance().Warning("Requested %d Hz, but got %d Hz, sound could be affected by this.", audio_spec.freq, audio_spec_created.freq);
+			Logging::instance().Warning("Requested %d Hz, but got %d Hz, sound could be affected by this.", audio_spec.freq, audio_spec_created.freq);
 		}
 
 		if (m_AudioDeviceID == 0)
 		{
-			Utility::Logging::instance().Error("Could not open audio device. SDL Error: %s", SDL_GetError());
+			Logging::instance().Error("Could not open audio device. SDL Error: %s", SDL_GetError());
 		}
 		else
 		{
-			Utility::Logging::instance().Info("Succesfully opened audio device @ %d Hz", audio_spec_created.freq);
+			Logging::instance().Info("Succesfully opened audio output device @ %d Hz", audio_spec_created.freq);
 		}
 	}
 
