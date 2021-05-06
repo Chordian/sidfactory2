@@ -234,12 +234,27 @@ namespace Editor
 		std::string start_path = platform.OS_ParsePath(GetSingleConfigurationValue<ConfigValueString>(configFile, "Disk.Startup.Folder", default_start_path));
 
 		if (!is_directory(start_path))
-			Logging::instance().Warning("%s is not a folder.", start_path.c_str());
+		{
+			Logging::instance().Warning("%s is not a folder. Using default path.", start_path.c_str());
+			start_path = default_start_path;
+		}
 
 		std::error_code ec;
 		fs::current_path(start_path, ec);
 		if (ec)
-			Logging::instance().Warning("Cannot change folder to %s", start_path.c_str());
+		{
+			Logging::instance().Warning("Cannot change folder to %s.", start_path.c_str());
+
+			// if this was a custom path, try again with the default
+			if (start_path != default_start_path)
+			{
+				fs::current_path(default_start_path, ec);
+				if (ec)
+				{
+					Logging::instance().Warning("Cannot change folder to %s.", default_start_path.c_str());
+				}
+			}
+		}
 
 		// Start the intro screen
 		const bool skip_intro = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Editor.Skip.Intro", 0) != 0;
