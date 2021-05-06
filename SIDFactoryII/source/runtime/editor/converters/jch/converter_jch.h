@@ -32,6 +32,12 @@ namespace Editor
 			unsigned short m_SpeedSettingAddress;
 		};
 
+		struct TempoCommandInfo
+		{
+			unsigned char command_index;
+			unsigned char tempo_setting;
+		};
+
 	public:
 		ConverterJCH();
 		virtual ~ConverterJCH();
@@ -45,7 +51,7 @@ namespace Editor
 		bool LoadDestinationDriver(Foundation::IPlatform* inPlatform);
 		void GatherInputInfo();
 		bool ImportTables();
-		bool BuildTempoTable();
+		bool BuildTempoTableAndCorrectTempoCommands(const DriverInfo::TableDefinition& inCommandTable);
 		bool BuildInitTable();
 		unsigned int ImportOrderLists();
 		void ImportSequences(unsigned int inMaxSequenceIndex);
@@ -54,6 +60,7 @@ namespace Editor
 		void CopyTable(unsigned short inSourceAddress, unsigned short inDestinationAddress, unsigned short inSize);
 		void CopyTableRowToColumnMajor(unsigned short inSourceAddress, unsigned short inDestinationAddress, unsigned short inRowCount, unsigned short inColumnCount);		
 		void CopyWaveTable(unsigned short inSourceAddress, unsigned short inDestinationAddress, unsigned short inSize);
+		void GatherCommandInfoFromRowMajorDestinationTable(const DriverInfo::TableDefinition& inCommandTable);
 
 		bool CanConvertInput(void* inData, unsigned int inDataSize) const;
 
@@ -74,6 +81,9 @@ namespace Editor
 
 		// Input file info
 		JCH20g4Info m_InputInfo;
+
+		// Tempo command info
+		std::vector<TempoCommandInfo> m_TempoCommandInfoList;
 
 		// Console
 		std::shared_ptr<ComponentConsole> m_Console;

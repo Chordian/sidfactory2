@@ -288,9 +288,9 @@ namespace Emulation
 
 	CPUmos6510::State::State()
 		: m_Memory(nullptr)
-		, m_pWriteCallback(nullptr)
+		, m_WriteCallback(nullptr)
 	{
-
+		Reset();
 	}
 
 	CPUmos6510::State::~State()
@@ -303,22 +303,22 @@ namespace Emulation
 	void CPUmos6510::State::Reset()
 	{
 		// Clear program counter and stack pointer
-		m_usPC = 0;
-		m_ucSP = 0;
+		m_PC = 0;
+		m_SP = 0;
 
 		// Clear status register
-		m_ucStatusReg = 0;
+		m_Status = 0;
 
 		// Clear other register
-		m_ucRegA = 0;
-		m_ucRegX = 0;
-		m_ucRegY = 0;
+		m_RegA = 0;
+		m_RegX = 0;
+		m_RegY = 0;
 
 		// Reset cycle counter
-		m_iCycle = 0;
+		m_Cycle = 0;
 
 		// Suspend the CPU
-		m_bSuspended = true;
+		m_IsSuspended = true;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------------
@@ -327,46 +327,40 @@ namespace Emulation
 
 	CPUmos6510::CPUmos6510()
 	{
-		m_pState = new State();
+		m_State.Reset();
 	}
 
 
 	CPUmos6510::~CPUmos6510()
 	{
-		if(m_pState != nullptr)
-		{
-			delete m_pState;
-			m_pState = nullptr;
-		}
 	}
 
 
 	void CPUmos6510::Reset()
 	{
-		if(m_pState != nullptr)
-			m_pState->Reset();
+		m_State.Reset();
 	}
 
 
 	short CPUmos6510::ExecuteInstruction()
 	{
-		if(m_pState != nullptr && m_pState->IsOk() && !m_pState->IsSuspended())
+		if(m_State.IsValid() && !m_State.IsSuspended())
 		{
 			// Variable holding the number of added cycles
 			int added_cycles = 0;
 
 			// Get the opcode to process
-			unsigned char opcode = m_pState->GetMemory()[m_pState->m_usPC];
+			unsigned char opcode = m_State.GetMemory()[m_State.m_PC];
 
 			// Get the address of the processing if any, according to the opcode addressing mode
-			void* pAddress = ms_aInstructions[opcode].m_pmAdressingMode(m_pState, added_cycles);
+			const void* inAddress = ms_aInstructions[opcode].m_pmAdressingMode(m_State, added_cycles);
 
 			// Execute the instruction
-			if (ms_aInstructions[opcode].m_pmInstruction(m_pState, pAddress))
+			if (ms_aInstructions[opcode].m_pmInstruction(m_State, inAddress))
 				added_cycles++;
 
 			// Bump the cycle counter
-			m_pState->AddCycles((int)ms_aInstructions[opcode].m_ucBaseCycles + added_cycles);
+			m_State.AddCycles((int)ms_aInstructions[opcode].m_ucBaseCycles + added_cycles);
 
 			// Return instruction cycle count
 			return ms_aInstructions[opcode].m_ucBaseCycles;
@@ -394,206 +388,150 @@ namespace Emulation
 	//---------------------------------------------------------------------------
 	// Logical and arithmetic commands
 
-	bool CPUmos6510::ORA(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::ORA(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegA |= *(unsigned char*)pAddress;
+		ioState.m_RegA |= *(unsigned char*)inAddress;
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
 
-	bool CPUmos6510::AND(CPUmos6510::State* pData, void *pAddress)
+	bool CPUmos6510::AND(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegA &= *(unsigned char*)pAddress;
+		ioState.m_RegA &= *(unsigned char*)inAddress;
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
 
-	bool CPUmos6510::EOR(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::EOR(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegA ^= *(unsigned char*)pAddress;
+		ioState.m_RegA ^= *(unsigned char*)inAddress;
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
 
-	bool CPUmos6510::ADC(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::ADC(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short a = (unsigned short)pData->m_ucRegA;
-		unsigned char sign = (unsigned short)pData->m_ucRegA & 0x80;
+		unsigned short a = (unsigned short)ioState.m_RegA;
+		unsigned char sign = (unsigned short)ioState.m_RegA & 0x80;
 
-		a += (unsigned short)(*(unsigned char*)pAddress) + (pData->IsStatusFlagSet(SF_C) ? 1:0);
+		a += (unsigned short)(*(unsigned char*)inAddress) + (ioState.IsStatusFlagSet(SF_C) ? 1:0);
 
 		if((a & 0xff00) != 0)
-		{
-			pData->SetStatusFlag(SF_C);
-		}
+			ioState.SetStatusFlag(SF_C);
 		else
-		{
-			pData->ClearStatusFlag(SF_C);
-		}
+			ioState.ClearStatusFlag(SF_C);
 
 		if((sign ^ (a & 0x80)) != 0)
-		{
-			pData->SetStatusFlag(SF_V);
-		}
+			ioState.SetStatusFlag(SF_V);
 		else
-		{
-			pData->ClearStatusFlag(SF_V);
-		}
+			ioState.ClearStatusFlag(SF_V);
 
-		pData->m_ucRegA = (unsigned char)a;
+		ioState.m_RegA = (unsigned char)a;
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
 
-	bool CPUmos6510::SBC(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::SBC(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short a = (unsigned short)pData->m_ucRegA;
-		unsigned char sign = (unsigned short)pData->m_ucRegA & 0x80;
+		unsigned short a = (unsigned short)ioState.m_RegA;
+		unsigned char sign = (unsigned short)ioState.m_RegA & 0x80;
 
-		a -= ((unsigned short)*((unsigned char*)pAddress) + (pData->IsStatusFlagSet(SF_C) ? 0:1));
+		a -= ((unsigned short)*((unsigned char*)inAddress) + (ioState.IsStatusFlagSet(SF_C) ? 0:1));
 
 		if((a & 0xff00) != 0)
-		{
-			pData->ClearStatusFlag(SF_C);
-		}
+			ioState.ClearStatusFlag(SF_C);
 		else
-		{
-			pData->SetStatusFlag(SF_C);
-		}
+			ioState.SetStatusFlag(SF_C);
 
 		if((sign ^ (a & 0x80)) != 0)
-		{
-			pData->SetStatusFlag(SF_V);
-		}
+			ioState.SetStatusFlag(SF_V);
 		else
-		{
-			pData->ClearStatusFlag(SF_V);
-		}
+			ioState.ClearStatusFlag(SF_V);
 
-		pData->m_ucRegA = (unsigned char)a;
+		ioState.m_RegA = (unsigned char)a;
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
 
-	bool CPUmos6510::CMP(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::CMP(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short a = pData->m_ucRegA;
-		a -= *(unsigned char*)pAddress;
+		unsigned short a = ioState.m_RegA;
+		a -= *(unsigned char*)inAddress;
 
 		if(a == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->SetStatusFlag(SF_C);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.SetStatusFlag(SF_C);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else 
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 
 			if((a & 0x80) == 0)
 			{
-				pData->SetStatusFlag(SF_C);
-				pData->ClearStatusFlag(SF_N);
+				ioState.SetStatusFlag(SF_C);
+				ioState.ClearStatusFlag(SF_N);
 			}
 			else
 			{
-				pData->ClearStatusFlag(SF_C);
-				pData->SetStatusFlag(SF_N);
+				ioState.ClearStatusFlag(SF_C);
+				ioState.SetStatusFlag(SF_N);
 			}
 		}
 
@@ -601,30 +539,30 @@ namespace Emulation
 	}
 
 
-	bool CPUmos6510::CPX(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::CPX(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned char x = pData->m_ucRegX;
-		x -= *(unsigned char*)pAddress;
+		unsigned char x = ioState.m_RegX;
+		x -= *(unsigned char*)inAddress;
 
 		if(x == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->ClearStatusFlag(SF_C);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_C);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else 
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 
 			if((x & 0x80) == 0)
 			{
-				pData->ClearStatusFlag(SF_C);
-				pData->ClearStatusFlag(SF_N);
+				ioState.ClearStatusFlag(SF_C);
+				ioState.ClearStatusFlag(SF_N);
 			}
 			else
 			{
-				pData->SetStatusFlag(SF_C);
-				pData->SetStatusFlag(SF_N);
+				ioState.SetStatusFlag(SF_C);
+				ioState.SetStatusFlag(SF_N);
 			}
 		}
 
@@ -633,30 +571,30 @@ namespace Emulation
 
 
 
-	bool CPUmos6510::CPY(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::CPY(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned char y = pData->m_ucRegY;
-		y -= *(unsigned char*)pAddress;
+		unsigned char y = ioState.m_RegY;
+		y -= *(unsigned char*)inAddress;
 
 		if(y == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->ClearStatusFlag(SF_C);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_C);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else 
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 
 			if((y & 0x80) == 0)
 			{
-				pData->ClearStatusFlag(SF_C);
-				pData->ClearStatusFlag(SF_N);
+				ioState.ClearStatusFlag(SF_C);
+				ioState.ClearStatusFlag(SF_N);
 			}
 			else
 			{
-				pData->SetStatusFlag(SF_C);
-				pData->SetStatusFlag(SF_N);
+				ioState.SetStatusFlag(SF_C);
+				ioState.SetStatusFlag(SF_N);
 			}
 		}
 
@@ -664,312 +602,248 @@ namespace Emulation
 	}
 
 
-	bool CPUmos6510::DEC(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::DEC(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short val = (unsigned short)(*(unsigned char*)pAddress);
+		unsigned short val = (unsigned short)(*(unsigned char*)inAddress);
 		val--;
-		*(unsigned char*)pAddress = (unsigned char)val;
+		*(unsigned char*)inAddress = (unsigned char)val;
 
 		if((val & 0xff) == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 			if((val & 0x80) == 0)
-			{
-				pData->ClearStatusFlag(SF_N);
-			}
+				ioState.ClearStatusFlag(SF_N);
 			else
-			{
-				pData->SetStatusFlag(SF_N);
-			}
+				ioState.SetStatusFlag(SF_N);
 		}
 
-		pData->MemoryWrite(pAddress, (unsigned char)val);
+		ioState.MemoryWrite(inAddress, (unsigned char)val);
 
 		return false;
 	}
 
 
-	bool CPUmos6510::DEX(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::DEX(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short val = (unsigned short)(pData->m_ucRegX);
+		unsigned short val = (unsigned short)(ioState.m_RegX);
 		val--;
-		pData->m_ucRegX = (unsigned char)val;
+		ioState.m_RegX = (unsigned char)val;
 
 		if(val == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 			if((val & 0x80) == 0)
-			{
-				pData->ClearStatusFlag(SF_N);
-			}
+				ioState.ClearStatusFlag(SF_N);
 			else
-			{
-				pData->SetStatusFlag(SF_N);
-			}
+				ioState.SetStatusFlag(SF_N);
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::DEY(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::DEY(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short val = (unsigned short)(pData->m_ucRegY);
+		unsigned short val = (unsigned short)(ioState.m_RegY);
 		val--;
-		pData->m_ucRegY = (unsigned char)val;
+		ioState.m_RegY = (unsigned char)val;
 
 		if(val == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 			if((val & 0x80) == 0)
-			{
-				pData->ClearStatusFlag(SF_N);
-			}
+				ioState.ClearStatusFlag(SF_N);
 			else
-			{
-				pData->SetStatusFlag(SF_N);
-			}
+				ioState.SetStatusFlag(SF_N);
 		}
 
 		return false;
 	}
 
 
-	bool CPUmos6510::INC(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::INC(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short val = (unsigned short)(*(unsigned char*)pAddress);
+		unsigned short val = (unsigned short)(*(unsigned char*)inAddress);
 		val++;
-		*(unsigned char*)pAddress = (unsigned char)val;
+		*(unsigned char*)inAddress = (unsigned char)val;
 
 		if((val & 0xff) == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 			if((val & 0x80) == 0)
-			{
-				pData->ClearStatusFlag(SF_N);
-			}
+				ioState.ClearStatusFlag(SF_N);
 			else
-			{
-				pData->SetStatusFlag(SF_N);
-			}
+				ioState.SetStatusFlag(SF_N);
 		}
 
-		pData->MemoryWrite(pAddress, (unsigned char)val);
+		ioState.MemoryWrite(inAddress, (unsigned char)val);
 
 		return false;
 	}
 
 
-	bool CPUmos6510::INX(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::INX(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short val = (unsigned short)(pData->m_ucRegX);
+		unsigned short val = (unsigned short)(ioState.m_RegX);
 		val++;
-		pData->m_ucRegX = (unsigned char)val;
+		ioState.m_RegX = (unsigned char)val;
 
 		if(val == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 			if((val & 0x80) == 0)
-			{
-				pData->ClearStatusFlag(SF_N);
-			}
+				ioState.ClearStatusFlag(SF_N);
 			else
-			{
-				pData->SetStatusFlag(SF_N);
-			}
+				ioState.SetStatusFlag(SF_N);
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::INY(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::INY(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short val = (unsigned short)(pData->m_ucRegY);
+		unsigned short val = (unsigned short)(ioState.m_RegY);
 		val++;
-		pData->m_ucRegY = (unsigned char)val;
+		ioState.m_RegY = (unsigned char)val;
 
 		if(val == 0)
 		{
-			pData->SetStatusFlag(SF_Z);
-			pData->ClearStatusFlag(SF_N);
+			ioState.SetStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_N);
 		}
 		else
 		{
-			pData->ClearStatusFlag(SF_Z);
+			ioState.ClearStatusFlag(SF_Z);
 			if((val & 0x80) == 0)
-			{
-				pData->ClearStatusFlag(SF_N);
-			}
+				ioState.ClearStatusFlag(SF_N);
 			else
-			{
-				pData->SetStatusFlag(SF_N);
-			}
+				ioState.SetStatusFlag(SF_N);
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::ASL(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::ASL(CPUmos6510::State& ioState, const void* inAddress)
 	{
-	//	pkData->mem[pAddress] = ASL(pkData, pkData->mem[pAddress]);
-		unsigned char val = *((unsigned char*)pAddress);
+		unsigned char val = *((unsigned char*)inAddress);
 
 		if((val & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_C);
-		}
+			ioState.SetStatusFlag(SF_C);
 		else
-		{
-			pData->ClearStatusFlag(SF_C);
-		}
+			ioState.ClearStatusFlag(SF_C);
 
 		val <<= 1;
 
 		if(val == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
 		if((val & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
-		*((unsigned char*)pAddress) = val;
+		*((unsigned char*)inAddress) = val;
 
 		return false;
 	}
 
 
-	bool CPUmos6510::ROL(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::ROL(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned char val = *((unsigned char*)pAddress);
+		unsigned char val = *((unsigned char*)inAddress);
 
-		bool insertBit = pData->IsStatusFlagSet(SF_C);
+		const bool insertBit = ioState.IsStatusFlagSet(SF_C);
 
 		if((val & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_C);
-		}
+			ioState.SetStatusFlag(SF_C);
 		else
-		{
-			pData->ClearStatusFlag(SF_C);
-		}
+			ioState.ClearStatusFlag(SF_C);
 
 		val <<= 1;
+
 		if(insertBit)
 			val |= 1;
 
 		if(val == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
 		if((val & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
-		*((unsigned char*)pAddress) = val;
+		*((unsigned char*)inAddress) = val;
 
 		return false;
 	}
 
 
-	bool CPUmos6510::LSR(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::LSR(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned char val = *((unsigned char*)pAddress);
+		unsigned char val = *((unsigned char*)inAddress);
 
 		if((val & 0x01) != 0)
-		{
-			pData->SetStatusFlag(SF_C);
-		}
+			ioState.SetStatusFlag(SF_C);
 		else
-		{
-			pData->ClearStatusFlag(SF_C);
-		}
+			ioState.ClearStatusFlag(SF_C);
 
 		val >>= 1;
 
 		if(val == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
 		// This should actually always be false.. but let's do the check in any case!
 		if((val & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
-		*((unsigned char*)pAddress) = val;
+		*((unsigned char*)inAddress) = val;
 
 		return false;
 	}
 
 
-	bool CPUmos6510::ROR(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::ROR(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned char val = *((unsigned char*)pAddress);
+		unsigned char val = *((unsigned char*)inAddress);
 
-		bool insertBit = pData->IsStatusFlagSet(SF_C);
+		bool insertBit = ioState.IsStatusFlagSet(SF_C);
 
 		if((val & 0x01) != 0)
-		{
-			pData->SetStatusFlag(SF_C);
-		}
+			ioState.SetStatusFlag(SF_C);
 		else
-		{
-			pData->ClearStatusFlag(SF_C);
-		}
+			ioState.ClearStatusFlag(SF_C);
 
 		val >>= 1;
 
@@ -977,658 +851,571 @@ namespace Emulation
 			val |= 0x80;
 
 		if(val == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
 		if((val & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
-		*((unsigned char*)pAddress) = val;
+		*((unsigned char*)inAddress) = val;
 
 		return false;
 	}
 
 
 	// Move commands
-	bool CPUmos6510::LDA(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::LDA(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegA = *((unsigned char*)pAddress);
+		ioState.m_RegA = *((unsigned char*)inAddress);
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::STA(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::STA(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		*((unsigned char*)pAddress) = pData->m_ucRegA;
+		*((unsigned char*)inAddress) = ioState.m_RegA;
 
-		pData->MemoryWrite(pAddress, pData->m_ucRegA);
+		ioState.MemoryWrite(inAddress, ioState.m_RegA);
 
 		return false;
 	}
 
-	bool CPUmos6510::LDX(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::LDX(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegX = *((unsigned char*)pAddress);
+		ioState.m_RegX = *((unsigned char*)inAddress);
 
-		if(pData->m_ucRegX == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegX == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegX & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegX & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::STX(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::STX(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		*((unsigned char*)pAddress) = pData->m_ucRegX;
+		*((unsigned char*)inAddress) = ioState.m_RegX;
 
-		pData->MemoryWrite(pAddress, pData->m_ucRegX);
+		ioState.MemoryWrite(inAddress, ioState.m_RegX);
 
 		return false;
 	}
 
-	bool CPUmos6510::LDY(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::LDY(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegY = *((unsigned char*)pAddress);
+		ioState.m_RegY = *((unsigned char*)inAddress);
 
-		if(pData->m_ucRegY == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegY == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegY & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegY & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::STY(CPUmos6510::State* pData, void *pAddress)
+	bool CPUmos6510::STY(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		*((unsigned char*)pAddress) = pData->m_ucRegY;
+		*((unsigned char*)inAddress) = ioState.m_RegY;
 
-		pData->MemoryWrite(pAddress, pData->m_ucRegY);
+		ioState.MemoryWrite(inAddress, ioState.m_RegY);
 
 		return false;
 	}
 
-	bool CPUmos6510::TAX(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::TAX(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegX = pData->m_ucRegA;
+		ioState.m_RegX = ioState.m_RegA;
 
-		if(pData->m_ucRegX == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegX == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegX & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegX & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::TXA(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::TXA(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegA = pData->m_ucRegX;
+		ioState.m_RegA = ioState.m_RegX;
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::TAY(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::TAY(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegY = pData->m_ucRegA;
+		ioState.m_RegY = ioState.m_RegA;
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::TYA(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::TYA(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegA = pData->m_ucRegY;
+		ioState.m_RegA = ioState.m_RegY;
 
-		if(pData->m_ucRegY == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegY == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegY & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegY & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::TSX(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::TSX(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegX = pData->m_ucSP;
+		ioState.m_RegX = ioState.m_SP;
 
-		if(pData->m_ucRegX == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegX == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegX & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegX & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::TXS(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::TXS(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucSP = pData->m_ucRegX;
+		ioState.m_SP = ioState.m_RegX;
 
 		return false;
 	}
 
-	bool CPUmos6510::PLA(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::PLA(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucRegA = pData->StackPull();
+		ioState.m_RegA = ioState.StackPull();
 
-		if(pData->m_ucRegA == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if(ioState.m_RegA == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
-		if((pData->m_ucRegA & 0x80) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_Z);
+
+		if((ioState.m_RegA & 0x80) != 0)
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		return false;
 	}
 
-	bool CPUmos6510::PHA(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::PHA(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->StackPush(pData->m_ucRegA);
+		ioState.StackPush(ioState.m_RegA);
 
 		return false;
 	}
 
-	bool CPUmos6510::PLP(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::PLP(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucStatusReg = pData->StackPull();
+		ioState.m_Status = ioState.StackPull();
 
 		return false;
 	}
 
-	bool CPUmos6510::PHP(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::PHP(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->StackPush(pData->m_ucStatusReg);
+		ioState.StackPush(ioState.m_Status);
 
 		return false;
 	}
 
 
 	// Jump / Flag commands
-	bool CPUmos6510::BPL(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BPL(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(!pData->IsStatusFlagSet(SF_N))
+		if(!ioState.IsStatusFlagSet(SF_N))
 		{
-			pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+			ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 			return true;
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::BMI(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BMI(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(pData->IsStatusFlagSet(SF_N))
+		if(ioState.IsStatusFlagSet(SF_N))
 		{
-			pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+			ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 			return true;
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::BVC(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BVC(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(!pData->IsStatusFlagSet(SF_V))
+		if(!ioState.IsStatusFlagSet(SF_V))
 		{
-			pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+			ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 			return true;
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::BVS(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BVS(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(pData->IsStatusFlagSet(SF_V))
+		if(ioState.IsStatusFlagSet(SF_V))
 		{
-			pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+			ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 			return true;
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::BCC(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BCC(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(!pData->IsStatusFlagSet(SF_C))
+		if(!ioState.IsStatusFlagSet(SF_C))
 		{
-			pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+			ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 			return true;
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::BCS(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BCS(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(pData->IsStatusFlagSet(SF_C))
+		if(ioState.IsStatusFlagSet(SF_C))
 		{
-			pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+			ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 			return true;
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::BNE(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BNE(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(!pData->IsStatusFlagSet(SF_Z))
+		if(!ioState.IsStatusFlagSet(SF_Z))
 		{
-			pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+			ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 			return true;
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::BEQ(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BEQ(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(pData->IsStatusFlagSet(SF_Z))
+		if(ioState.IsStatusFlagSet(SF_Z))
 		{
-			pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+			ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 			return true;
 		}
 
 		return false;
 	}
 
-	bool CPUmos6510::BRK(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::BRK(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned short pc = pData->m_usPC;
+		unsigned short pc = ioState.m_PC;
 
-		pData->StackPush((unsigned char)(pc & 0xff));
-		pData->StackPush((unsigned char)(pc >> 8));
-		pData->StackPush(pData->m_ucStatusReg);
+		ioState.StackPush((unsigned char)(pc & 0xff));
+		ioState.StackPush((unsigned char)(pc >> 8));
+		ioState.StackPush(ioState.m_Status);
 
-		pData->m_usPC = 0xfffe;
+		ioState.m_PC = 0xfffe;
 
-		pData->SetSuspended(true);
+		ioState.SetSuspended(true);
 
 		return false;
 	}
 
-	bool CPUmos6510::RTI(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::RTI(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_ucStatusReg = pData->StackPull();
-		pData->m_usPC = (((unsigned short)pData->StackPull()) << 8) | ((unsigned short)pData->StackPull());
+		ioState.m_Status = ioState.StackPull();
+		ioState.m_PC = (((unsigned short)ioState.StackPull()) << 8) | ((unsigned short)ioState.StackPull());
 
 		return false;
 	}
 
-	bool CPUmos6510::JSR(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::JSR(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->StackPush((unsigned char)(pData->m_usPC & 0xff));
-		pData->StackPush((unsigned char)(pData->m_usPC >> 8));
+		ioState.StackPush((unsigned char)(ioState.m_PC & 0xff));
+		ioState.StackPush((unsigned char)(ioState.m_PC >> 8));
 
-		pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+		ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 
 		return false;
 	}
 
-	bool CPUmos6510::RTS(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::RTS(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		if(pData->m_ucSP != 0x00)
-		{
-			pData->m_usPC = (((unsigned short)pData->StackPull()) << 8) | ((unsigned short)pData->StackPull());
-		}
+		if(ioState.m_SP != 0x00)
+			ioState.m_PC = (((unsigned short)ioState.StackPull()) << 8) | ((unsigned short)ioState.StackPull());
 		else
-		{
-			pData->SetSuspended(true);
-		}
+			ioState.SetSuspended(true);
 
 		return false;
 	}
 
-	bool CPUmos6510::JMP(CPUmos6510::State* pData, void *pAddress)
+	bool CPUmos6510::JMP(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->m_usPC = static_cast<unsigned short>(pData->GetMemory().GetAddress(pAddress));
+		ioState.m_PC = static_cast<unsigned short>(ioState.GetMemory().GetAddress(inAddress));
 		return false;
 	}
 
-	bool CPUmos6510::BIT(CPUmos6510::State* pData, void *pAddress)
+	bool CPUmos6510::BIT(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		unsigned char val = *(unsigned char*)pAddress;
+		unsigned char val = *(unsigned char*)inAddress;
 
 		if((val & (1<<7)) != 0)
-		{
-			pData->SetStatusFlag(SF_N);
-		}
+			ioState.SetStatusFlag(SF_N);
 		else
-		{
-			pData->ClearStatusFlag(SF_N);
-		}
+			ioState.ClearStatusFlag(SF_N);
 
 		if((val & (1<<6)) != 0)
-		{
-			pData->SetStatusFlag(SF_V);
-		}
+			ioState.SetStatusFlag(SF_V);
 		else
-		{
-			pData->ClearStatusFlag(SF_V);
-		}
+			ioState.ClearStatusFlag(SF_V);
 
-		if((pData->m_ucRegA & val) == 0)
-		{
-			pData->SetStatusFlag(SF_Z);
-		}
+		if((ioState.m_RegA & val) == 0)
+			ioState.SetStatusFlag(SF_Z);
 		else
-		{
-			pData->ClearStatusFlag(SF_Z);
-		}
+			ioState.ClearStatusFlag(SF_Z);
 
 		return false;
 	}
 
-	bool CPUmos6510::CLC(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::CLC(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->ClearStatusFlag(SF_C);
+		ioState.ClearStatusFlag(SF_C);
 		return false;
 	}
 
-	bool CPUmos6510::SEC(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::SEC(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->SetStatusFlag(SF_C);
+		ioState.SetStatusFlag(SF_C);
 		return false;
 	}
 
-	bool CPUmos6510::CLD(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::CLD(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->ClearStatusFlag(SF_D);
+		ioState.ClearStatusFlag(SF_D);
 		return false;
 	}
 
-	bool CPUmos6510::SED(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::SED(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->SetStatusFlag(SF_D);
+		ioState.SetStatusFlag(SF_D);
 		return false;
 	}
 
-	bool CPUmos6510::CLI(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::CLI(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->ClearStatusFlag(SF_I);
+		ioState.ClearStatusFlag(SF_I);
 		return false;
 	}
 
-	bool CPUmos6510::SEI(CPUmos6510::State* pData, void* pAddress)
+	bool CPUmos6510::SEI(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->SetStatusFlag(SF_I);
+		ioState.SetStatusFlag(SF_I);
 		return false;
 	}
 
-	bool CPUmos6510::CLV(CPUmos6510::State* pData, void * pAddress)
+	bool CPUmos6510::CLV(CPUmos6510::State& ioState, const void* inAddress)
 	{
-		pData->ClearStatusFlag(SF_V);
+		ioState.ClearStatusFlag(SF_V);
 		return false;
 	}
 
-	bool CPUmos6510::NOP(CPUmos6510::State* pData, void * pAddress)
+	bool CPUmos6510::NOP(CPUmos6510::State& ioState, const void* inAddress)
 	{
 		return false;
 	}
 
 
 	// Addressing modes
-	void* CPUmos6510::imp(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::imp(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		pData->m_usPC += 1;
-		return (void*)&pData->m_ucRegA;
+		ioState.m_PC += 1;
+		return (void*)&ioState.m_RegA;
 	}
 
 
 	// Addressing modes
-	void* CPUmos6510::imm(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::imm(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		void *adr = (void*)&pData->GetMemory()[pData->m_usPC+1];
+		void *adr = (void*)&ioState.GetMemory()[ioState.m_PC+1];
 
-		pData->m_usPC += 2;
+		ioState.m_PC += 2;
 
 		return adr;
 	}
 
-	void* CPUmos6510::zp(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::zp(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
-		void *adr = (void*)&rMemory[rMemory[pData->m_usPC+1]];
+		CPUMemory& rMemory = ioState.GetMemory();
+		void *adr = (void*)&rMemory[rMemory[ioState.m_PC+1]];
 
-		pData->m_usPC += 2;
+		ioState.m_PC += 2;
 
 		return adr;
 	}
 
-	void* CPUmos6510::zpx(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::zpx(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
-		void *adr = (void*)&rMemory[((rMemory[pData->m_usPC+1] + pData->m_ucRegX) & 0xff)];
+		CPUMemory& rMemory = ioState.GetMemory();
+		void *adr = (void*)&rMemory[((rMemory[ioState.m_PC+1] + ioState.m_RegX) & 0xff)];
 
-		pData->m_usPC += 2;
+		ioState.m_PC += 2;
 
 		return adr;
 	}
 
 
-	void* CPUmos6510::zpy(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::zpy(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
-		void *adr = (void*)&rMemory[((rMemory[pData->m_usPC+1] + pData->m_ucRegY) & 0xff)];
+		CPUMemory& rMemory = ioState.GetMemory();
+		void *adr = (void*)&rMemory[((rMemory[ioState.m_PC+1] + ioState.m_RegY) & 0xff)];
 
-		pData->m_usPC += 2;
+		ioState.m_PC += 2;
 
 		return adr;
 	}
 
-	void* CPUmos6510::izx(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::izx(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
-		unsigned short zp = (unsigned short)(rMemory[pData->m_usPC+1] + pData->m_ucRegX) & 0xff;
+		CPUMemory& rMemory = ioState.GetMemory();
+		unsigned short zp = (unsigned short)(rMemory[ioState.m_PC+1] + ioState.m_RegX) & 0xff;
 
-		pData->m_usPC += 2;
+		ioState.m_PC += 2;
 
 		return (void*)&rMemory[(unsigned short)rMemory[zp] | (((unsigned short)rMemory[(zp+1) & 0xff]) << 8)];
 	}
 
-	void* CPUmos6510::izy(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::izy(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
+		CPUMemory& rMemory = ioState.GetMemory();
 		
-		unsigned short zp = (unsigned short)(rMemory[pData->m_usPC+1]);
+		unsigned short zp = (unsigned short)(rMemory[ioState.m_PC+1]);
 		unsigned short base_target_address = ((unsigned short)rMemory[zp] | (((unsigned short)rMemory[(zp + 1) & 0xff]) << 8));
-		unsigned short target_address = base_target_address + pData->m_ucRegY;
+		unsigned short target_address = base_target_address + ioState.m_RegY;
 
 		outAddedCycles = ((base_target_address & 0xff00) != (target_address & 0xff00)) ? 1 : 0;
 
-		pData->m_usPC += 2;
+		ioState.m_PC += 2;
 
 		return (void*)&rMemory[target_address];
 	}
 
-	void* CPUmos6510::abs(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::abs(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
-		void *ret = (void*)&rMemory[((unsigned short)rMemory[pData->m_usPC+1] | (((unsigned short)rMemory[pData->m_usPC+2]) << 8))];
+		CPUMemory& rMemory = ioState.GetMemory();
+		void *ret = (void*)&rMemory[((unsigned short)rMemory[ioState.m_PC+1] | (((unsigned short)rMemory[ioState.m_PC+2]) << 8))];
 
-		pData->m_usPC += 3;
+		ioState.m_PC += 3;
 
 		return ret;
 	}
 
 
-	void* CPUmos6510::abx(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::abx(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
+		CPUMemory& rMemory = ioState.GetMemory();
 
-		unsigned short target_address = ((unsigned short)rMemory[pData->m_usPC + 1] | (((unsigned short)rMemory[pData->m_usPC + 2]) << 8)) + pData->m_ucRegX;
-		outAddedCycles = ((target_address & 0xff00) != (pData->m_usPC & 0xff00)) ? 1 : 0;
+		unsigned short target_address = ((unsigned short)rMemory[ioState.m_PC + 1] | (((unsigned short)rMemory[ioState.m_PC + 2]) << 8)) + ioState.m_RegX;
+		outAddedCycles = ((target_address & 0xff00) != (ioState.m_PC & 0xff00)) ? 1 : 0;
 
-		pData->m_usPC += 3;
+		ioState.m_PC += 3;
 
 		return (void*)&rMemory[target_address];
 	}
 
-	void* CPUmos6510::aby(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::aby(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
+		CPUMemory& rMemory = ioState.GetMemory();
 
-		unsigned short target_address = ((unsigned short)rMemory[pData->m_usPC + 1] | (((unsigned short)rMemory[pData->m_usPC + 2]) << 8)) + pData->m_ucRegY;
-		outAddedCycles = ((target_address & 0xff00) != (pData->m_usPC & 0xff00)) ? 1 : 0;
+		unsigned short target_address = ((unsigned short)rMemory[ioState.m_PC + 1] | (((unsigned short)rMemory[ioState.m_PC + 2]) << 8)) + ioState.m_RegY;
+		outAddedCycles = ((target_address & 0xff00) != (ioState.m_PC & 0xff00)) ? 1 : 0;
 
-		pData->m_usPC += 3;
+		ioState.m_PC += 3;
 
 		return (void*)&rMemory[target_address];
 	}
 
 
-	void *CPUmos6510::ind(CPUmos6510::State* pData, int& outAddedCycles)
+	void *CPUmos6510::ind(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
+		CPUMemory& rMemory = ioState.GetMemory();
 
-		unsigned short adrL = (unsigned short)rMemory[pData->m_usPC+1];
-		unsigned short adrH = (((unsigned short)rMemory[pData->m_usPC+2]) << 8);
+		unsigned short adrL = (unsigned short)rMemory[ioState.m_PC+1];
+		unsigned short adrH = (((unsigned short)rMemory[ioState.m_PC+2]) << 8);
 
-		pData->m_usPC += 3;
+		ioState.m_PC += 3;
 
 		return (void*)&rMemory[((unsigned short)rMemory[adrL | adrH] | (((unsigned short)rMemory[((adrL + 1) & 0xff) | adrH]) << 8))];
 	}
 
-	void* CPUmos6510::rel(CPUmos6510::State* pData, int& outAddedCycles)
+	void* CPUmos6510::rel(CPUmos6510::State& ioState, int& outAddedCycles)
 	{
-		CPUMemory& rMemory = pData->GetMemory();
+		CPUMemory& rMemory = ioState.GetMemory();
 
-		char r = (char)rMemory[pData->m_usPC+1];
-		unsigned short target_address = (unsigned short)(pData->m_usPC + 2 + (short)r);
+		char r = (char)rMemory[ioState.m_PC+1];
+		unsigned short target_address = (unsigned short)(ioState.m_PC + 2 + (short)r);
 
-		outAddedCycles = ((target_address & 0xff00) != (pData->m_usPC & 0xff00)) ? 1 : 0;
+		outAddedCycles = ((target_address & 0xff00) != (ioState.m_PC & 0xff00)) ? 1 : 0;
 
-		pData->m_usPC += 2;
+		ioState.m_PC += 2;
 
 		return (void*)&rMemory[target_address];
 	}

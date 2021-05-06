@@ -21,7 +21,7 @@ namespace Editor
 	class OverlayControl
 	{
 	public:
-		OverlayControl(const Utility::ConfigFile& inConfigFile, Foundation::Viewport* inViewport, const Foundation::IPlatform* inPlatform);
+		OverlayControl(Foundation::Viewport* inViewport);
 
 		void SetOverlayEnabled(bool inEnabled);
 		bool GetOverlayEnabled() const;
@@ -33,7 +33,7 @@ namespace Editor
 
 	private:
 		void ReadConfigValues(const Utility::ConfigFile& inConfigFile);
-		void EnumeratePlatformFiles(const Foundation::IPlatform* inPlatform);
+		void EnumeratePlatformFiles(const Foundation::IPlatform& inPlatform);
 		void LoadOverlay(bool inIsEditorOverlay, const std::string& inFilename);
 
 		bool m_Enabled;

@@ -17,7 +17,7 @@ DMG=$(ARTIFACTS_FOLDER)/$(APP_NAME)_macOS_$(BUILD_NR).dmg
 DMG_RAW=$(ARTIFACTS_FOLDER)/$(APP_NAME)_macOS_$(BUILD_NR)-RAW.dmg
 DMG_CONTENTS=$(ARTIFACTS_FOLDER)/dmg
 DMG_TITLE=$(APP_NAME)
-DMG_SIZE=16384
+DMG_SIZE=20480
 ICONSET=$(ARTIFACTS_FOLDER)/$(APP_NAME).iconset
 ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
@@ -52,7 +52,7 @@ LINKER_FLAGS=\
 
 # Rule to compile .o from .c
 %.o: %.c
-	gcc -c $< -o $@
+	$(CC) -c $< -o $@
 
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o

@@ -14,6 +14,11 @@ namespace Foundation
 		IPlatform() { }
 
 	public: 
+		
+		IPlatform(IPlatform& inOther)  = delete;
+		IPlatform(IPlatform&& inOther)  = delete;
+		IPlatform(const IPlatform& inOther)  = delete;
+
 		virtual ~IPlatform() { }
 
 		virtual std::shared_ptr<IMutex> CreateMutex() = 0;
@@ -30,7 +35,7 @@ namespace Foundation
 		// Get the path to the folder that was set on startup of the application
 		virtual std::string Storage_GetApplicationHomePath() const = 0;
 
-		// Get the locigal home path (could be personal user space, or similar)
+		// Get the logical home path (could be personal user space, or similar)
 		virtual std::string Storage_GetHomePath() const = 0;
 
 		// Get the path to the folder holding the main config file

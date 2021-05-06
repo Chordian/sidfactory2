@@ -375,7 +375,7 @@ namespace Editor
 					return true;
 			}
 
-			// Consume input regardless of foucs
+			// Consume input regardless of focus
 			for (auto& component : m_Components)
 			{
 				if (IsGroupEnabledForInput(component->GetComponentGroupID()))

@@ -54,9 +54,9 @@ namespace Emulation
 		void SetWord(unsigned int inAddress, unsigned short inWordValue);
 		void SetData(unsigned int inAddress, const void* inSourceBuffer, unsigned int inSourceBufferByteCount);
 
-		unsigned int GetAddress(void* inMemoryOffsetPointer) const 
+		unsigned int GetAddress(const void* inMemoryOffsetPointer) const 
 		{
-			unsigned int iAddress = static_cast<unsigned int>(static_cast<unsigned char*>(inMemoryOffsetPointer) - m_Memory);
+			unsigned int iAddress = static_cast<unsigned int>(static_cast<const unsigned char*>(inMemoryOffsetPointer) - m_Memory);
 
 			FOUNDATION_ASSERT(iAddress < m_nSize);
 			FOUNDATION_ASSERT(m_IsLocked);

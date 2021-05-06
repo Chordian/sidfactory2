@@ -145,6 +145,7 @@ namespace Editor
 		int GetEventPositionAtTopOfCurrentSequence() const;
 
 		void SetFocusModeOrderList(bool inFocusModeOrderList);
+		bool GetFocusModeOrderList() const;
 		bool IsTakingOrderListInput() const;
 
 		bool IsMuted() const;
@@ -202,6 +203,8 @@ namespace Editor
 
 		// Cursor
 		void ApplyCursorPosition(CursorControl& inCursorControl);
+		int GetCursorPositionXFromSequenceCellX(int inCellX) const;
+		int GetCursorPositionXFromOrderListCellX(int inCellX) const;
 
 		// Keys
 		void DoKeyLeft(bool inControlIsDown);
@@ -231,6 +234,7 @@ namespace Editor
 
 		// Event pos details
 		EventPosDetails GetEventPosDetails(int inEventPos) const;
+		bool IsEventPosStartOfSequence(int inEventPos) const;
 
 		// Undo
 		void AddUndoStep();

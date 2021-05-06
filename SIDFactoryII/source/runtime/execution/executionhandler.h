@@ -2,10 +2,15 @@
 #define __EXECUTIONHANDLER_H__
 
 #include "foundation/sound/audiostream.h"
-#include <memory>
-#include <vector>
 #include <functional>
+#include <memory>
 #include <string>
+#include <vector>
+
+namespace Utility
+{
+	class ConfigFile;
+}
 
 namespace Foundation
 {
@@ -24,12 +29,10 @@ namespace Emulation
 	{
 	public:
 		ExecutionHandler(
-			Foundation::IPlatform* pPlatformFactory, 
-			CPUmos6510* pCPU, 
-			CPUMemory* pMemory, 
+			CPUmos6510* pCPU,
+			CPUMemory* pMemory,
 			SIDProxy* pSIDProxy,
-			FlightRecorder* inFlightRecorder
-		);
+			FlightRecorder* inFlightRecorder);
 		~ExecutionHandler();
 
 		// IAudioStreamFeeder
@@ -110,9 +113,9 @@ namespace Emulation
 		unsigned int m_FeedCount;
 		unsigned int m_BytesFedCount;
 
-		unsigned int m_CurrentCycle;		// Current cycle being processed
-		unsigned int m_CyclesPerFrame;		// Number of cycles per frame
-		unsigned int m_CPUCyclesSpend;		// Cycles spend on code during the last update (frame)
+		unsigned int m_CurrentCycle; // Current cycle being processed
+		unsigned int m_CyclesPerFrame; // Number of cycles per frame
+		unsigned int m_CPUCyclesSpend; // Cycles spend on code during the last update (frame)
 
 		unsigned int m_CPUFrameCounter;
 
@@ -151,6 +154,7 @@ namespace Emulation
 		// Audio output
 		unsigned int m_SampleBufferSize;
 		short* m_SampleBuffer;
+		float m_OutputGain;
 	};
 }
 

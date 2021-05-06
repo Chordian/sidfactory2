@@ -1,15 +1,15 @@
 #pragma once
 
 #include "runtime/editor/cursor_control.h"
-#include "runtime/editor/edit_state.h"
 #include "runtime/editor/display_state.h"
-#include "runtime/editor/overlay_control.h"
 #include "runtime/editor/driver/driver_info.h"
+#include "runtime/editor/edit_state.h"
 #include "runtime/editor/keys/keyhook_setup.h"
+#include "runtime/editor/overlay_control.h"
 #include "utils/keyhookstore.h"
+#include <functional>
 #include <memory>
 #include <string>
-#include <functional>
 
 namespace Foundation
 {
@@ -51,7 +51,7 @@ namespace Editor
 	public:
 		static const unsigned int DefaultDialogWidth;
 
-		EditorFacility(Foundation::IPlatform* platform, Foundation::Viewport* inViewport, Utility::ConfigFile& inConfigFile);
+		EditorFacility(Foundation::Viewport* inViewport);
 		~EditorFacility();
 
 		void Start(const char* inFileToLoad);
@@ -90,7 +90,7 @@ namespace Editor
 
 		void OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress);
 		void OnQuickSave(ScreenBase* inCallerScreen);
-        void OnSaveError(ScreenBase* inCallerScreen);
+		void OnSaveError(ScreenBase* inCallerScreen);
 
 		void DoLoad(ScreenBase* inCallerScreen, const std::string& inSelectedFilename);
 		void DoSave(ScreenBase* inCallerScreen, const std::string& inSelectedFilename);
@@ -102,7 +102,7 @@ namespace Editor
 		void DoSavePackedToSID(ScreenBase* inCallerScreen, const std::string& inSelectedFilename);
 
 		void SetLastSavedPathAndFilename(const std::string& inLastSavedPathAndFilename);
-		std::string ConfigureColorsFromScheme(int inSchemeIndex, const Utility::ConfigFile& inMainConfigFile, Foundation::Viewport& inViewport);
+		std::string ConfigureColorsFromScheme(int inSchemeIndex, Foundation::Viewport& inViewport);
 
 		std::vector<std::shared_ptr<ConverterBase>> GetConverters() const;
 
@@ -112,9 +112,6 @@ namespace Editor
 		int m_ColorSchemeCount;
 		int m_SelectedColorScheme;
 
-		Utility::ConfigFile& m_ConfigFile;
-
-		Foundation::IPlatform* m_Platform;
 		Foundation::Viewport* m_Viewport;
 		Foundation::TextField* m_TextField;
 		Foundation::AudioStream* m_AudioStream;
@@ -129,7 +126,7 @@ namespace Editor
 		DisplayState m_DisplayState;
 
 		CursorControl m_CursorControl;
-		
+
 		KeyHookSetup m_KeyHookSetup;
 
 		ScreenBase* m_RequestedScreen;

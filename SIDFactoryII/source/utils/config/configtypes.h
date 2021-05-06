@@ -13,6 +13,7 @@ namespace Utility
 			Key,
 			Character,
 			Integer,
+			Float,
 			String,
 			Redirect
 		};
@@ -54,6 +55,27 @@ namespace Utility
 
 			ConfigValueInt();
 			ConfigValueInt(const std::vector<std::string>& inValues);
+			ValueType GetType() const override;
+			size_t GetValueCount() const override;
+			void AddValues(const IConfigValue& inValuesToAdd) override;
+			const DATATYPE& GetValue(size_t inIndex) const;
+			const std::vector<DATATYPE>& GetValues() const;
+
+			static ValueType GetMyType();
+			static bool IsMyType(const std::string& inValue);
+
+		private:
+			std::vector<DATATYPE> m_Values;
+		};
+
+
+		class ConfigValueFloat : public IConfigValue
+		{
+		public:
+			using DATATYPE = float;
+
+			ConfigValueFloat();
+			ConfigValueFloat(const std::vector<std::string>& inValues);
 			ValueType GetType() const override;
 			size_t GetValueCount() const override;
 			void AddValues(const IConfigValue& inValuesToAdd) override;

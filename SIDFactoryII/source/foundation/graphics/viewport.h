@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "foundation/graphics/color.h"
 #include "foundation/base/types.h"
+#include "foundation/graphics/color.h"
 #include "utils/bit_array.h"
 
 namespace Foundation
@@ -20,7 +20,7 @@ namespace Foundation
 	class Viewport final
 	{
 	public:
-		Viewport(int inResolutionX, int inResolutionY, const std::string& inCaption);
+		Viewport(int inResolutionX, int inResolutionY, float inScaling, const std::string& inCaption);
 		~Viewport();
 
 		int GetClientWidth() const;
@@ -53,7 +53,7 @@ namespace Foundation
 
 		void SetUserColor(unsigned char inUserColorIndex, unsigned int inARGB);
 		const Palette& GetPalette() const;
-				
+
 	private:
 		struct Overlay
 		{
@@ -68,8 +68,9 @@ namespace Foundation
 
 		const int m_ClientResolutionX;
 		const int m_ClientResolutionY;
-		
-		int m_ClientX;		
+		const float m_Scaling;
+
+		int m_ClientX;
 		int m_ClientY;
 
 		bool m_ShowOverlay;

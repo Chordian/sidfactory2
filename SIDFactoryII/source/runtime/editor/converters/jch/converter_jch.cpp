@@ -15,6 +15,8 @@
 #include "foundation/graphics/textfield.h"
 #include "foundation/base/assert.h"
 
+#include <algorithm>
+
 using namespace fs;
 
 namespace Editor
@@ -66,7 +68,6 @@ namespace Editor
 				unsigned char version_2 = file->GetByte(address_version + 1);
 				unsigned char version_3 = file->GetByte(address_version + 2);
 				unsigned char version_4 = file->GetByte(address_version + 3);
-				//unsigned char version_5 = file->GetByte(address_version + 4);
 
 				if (version_1 != '2')
 					return false;
@@ -76,8 +77,6 @@ namespace Editor
 					return false;
 				if (version_4 != 'G')
 					return false;
-				//if (version_5 != '4')		// Not sure that this matters!
-				//	return false;
 
 				return true;
 			}
@@ -139,10 +138,19 @@ namespace Editor
 			cout << "Build tempo table... ";
 
 			// Build
-			if (!BuildTempoTable())
 			{
-				cout << "\nERROR: Failed to build tempo table!";
-				return false;
+				const DriverInfo::TableDefinition* command_table = Details::FindTableByName("Commands", m_DriverInfo->GetTableDefinitions());
+				if (command_table == nullptr)
+				{
+					cout << "\nERROR: Failed to build tempo table, couldn't find command table!";
+					return false;
+				}
+
+				if (!BuildTempoTableAndCorrectTempoCommands(*command_table))
+				{
+					cout << "\nERROR: Failed to build tempo table!";
+					return false;
+				}
 			}
 
 			cout << "succeeded!\n";
@@ -183,7 +191,7 @@ namespace Editor
 			cout << "\nConversion complete!";
 		}
 
-		// Return true, to indicate that the convertion has finished consumed the input
+		// Return true, to indicate that the conversion has finished consumed the input
 		return true;
 	}
 
@@ -270,6 +278,7 @@ namespace Editor
 			if (table == nullptr)
 				return false;
 			CopyTableRowToColumnMajor(m_InputInfo.m_CommandTableAddress, table->m_Address, table->m_RowCount, table->m_ColumnCount);
+			GatherCommandInfoFromRowMajorDestinationTable(*table);
 		}
 
 		{
@@ -297,30 +306,58 @@ namespace Editor
 	}
 
 
-	bool ConverterJCH::BuildTempoTable()
+	bool ConverterJCH::BuildTempoTableAndCorrectTempoCommands(const DriverInfo::TableDefinition& inCommandTable)
 	{
+		FOUNDATION_ASSERT(inCommandTable.m_Name == "Command");
+		FOUNDATION_ASSERT(inCommandTable.m_ColumnCount == 2);
+
+		const unsigned short row_count = inCommandTable.m_RowCount;
+		const unsigned short column_1_address = inCommandTable.m_Address;
+		const unsigned short column_2_address = column_1_address + row_count;
+
 		using namespace Details;
 		const std::vector<DriverInfo::TableDefinition>& table_definitions = m_DriverInfo->GetTableDefinitions();
-		const DriverInfo::TableDefinition* table = FindTableByName("Tempo", table_definitions);
+		const DriverInfo::TableDefinition* tempo_table = FindTableByName("Tempo", table_definitions);
 
-		if (table == nullptr)
+		if (tempo_table == nullptr)
 			return false;
 
-		std::vector<unsigned char> speed_values;
+		std::vector<unsigned char> tempo_table_values;
 
-		unsigned char speed = (*m_InputData)[m_InputInfo.m_SpeedSettingAddress];
-		if (speed >= 2)
-			speed_values.push_back(speed);
+		const unsigned char default_tempo = std::max<unsigned char>((*m_InputData)[m_InputInfo.m_SpeedSettingAddress], 1);
+		if (default_tempo >= 2)
+			tempo_table_values.push_back(default_tempo);
 		else
 		{
-			speed_values.push_back((*m_InputData)[m_InputInfo.m_FilterTableAddress + 1]);
-			speed_values.push_back((*m_InputData)[m_InputInfo.m_FilterTableAddress + 0]);
+			tempo_table_values.push_back((*m_InputData)[m_InputInfo.m_FilterTableAddress + 1]);
+			tempo_table_values.push_back((*m_InputData)[m_InputInfo.m_FilterTableAddress + 0]);
 		}
 
-		speed_values.push_back(0x7f);
+		tempo_table_values.push_back(0x7f);
 
-		for (size_t i = 0; i < speed_values.size(); ++i)
-			(*m_OutputData)[table->m_Address + i] = speed_values[i];
+		for (const auto& tempo_command : m_TempoCommandInfoList)
+		{
+			const unsigned char tempo = std::max<unsigned char>(tempo_command.tempo_setting, 1);
+			if (tempo == default_tempo)
+				(*m_OutputData)[column_2_address + tempo_command.command_index] = 0;
+			else
+			{
+				(*m_OutputData)[column_2_address + tempo_command.command_index] = static_cast<unsigned char>(tempo_table_values.size());
+
+				if (tempo >= 2)
+					tempo_table_values.push_back(tempo);
+				else
+				{
+					tempo_table_values.push_back((*m_InputData)[m_InputInfo.m_FilterTableAddress + 1]);
+					tempo_table_values.push_back((*m_InputData)[m_InputInfo.m_FilterTableAddress + 0]);
+				}
+
+				tempo_table_values.push_back(0x7f);
+			}
+		}
+
+		for (size_t i = 0; i < tempo_table_values.size(); ++i)
+			(*m_OutputData)[tempo_table->m_Address + i] = tempo_table_values[i];
 
 		return true;
 	}
@@ -491,7 +528,6 @@ namespace Editor
 				unsigned short dest_address = inDestinationAddress + c * inRowCount + r;
 				(*m_OutputData)[dest_address] = (*m_InputData)[src_address];
 			}
-
 		}
 	}
 
@@ -513,6 +549,27 @@ namespace Editor
 				(*m_OutputData)[inDestinationAddress + inSize + i] = value;
 				(*m_OutputData)[inDestinationAddress + i] = (*m_InputData)[inSourceAddress + inSize + i];
 			}
+		}
+	}
+
+
+	void ConverterJCH::GatherCommandInfoFromRowMajorDestinationTable(const DriverInfo::TableDefinition& inCommandTable)
+	{
+		FOUNDATION_ASSERT(inCommandTable.m_Name == "Command");
+		FOUNDATION_ASSERT(inCommandTable.m_ColumnCount == 2);
+
+		const unsigned short row_count = inCommandTable.m_RowCount;
+		const unsigned short column_1_address = inCommandTable.m_Address;
+		const unsigned short column_2_address = column_1_address + row_count;
+
+		for (unsigned short i = 0; i < row_count; ++i)
+		{
+			const unsigned char command = (*m_OutputData)[column_1_address + i] & 0xf0;
+			const unsigned char value_high = (*m_OutputData)[column_1_address + i] & 0x0f;
+			const unsigned char value_low = (*m_OutputData)[column_2_address + i];
+
+			if (command == 0xe0)
+				m_TempoCommandInfoList.push_back({ static_cast<unsigned char>(i), value_low });
 		}
 	}
 

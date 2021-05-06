@@ -1,31 +1,48 @@
 #include "foundation/graphics/viewport.h"
+#include "foundation/base/assert.h"
+#include "foundation/base/types.h"
+#include "foundation/graphics/drawfield.h"
+#include "foundation/graphics/image.h"
 #include "foundation/graphics/imanaged.h"
 #include "foundation/graphics/textfield.h"
-#include "foundation/graphics/drawfield.h"
-#include "foundation/base/types.h"
-#include "foundation/graphics/image.h"
 #include "resources/data_char.h"
-#include "foundation/base/assert.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/global.h"
+#include <iostream>
+
+using namespace Utility;
+using namespace Utility::Config;
 
 namespace Foundation
 {
-	Viewport::Viewport(int inResolutionX, int inResolutionY, const std::string& inCaption)
+	Viewport::Viewport(int inResolutionX, int inResolutionY, float inScaling, const std::string& inCaption)
 		: m_ClientResolutionX(inResolutionX)
 		, m_ClientResolutionY(inResolutionY)
+		, m_Scaling(inScaling)
 		, m_ClientX(0)
 		, m_ClientY(0)
 		, m_Window(nullptr)
 		, m_Renderer(nullptr)
 		, m_RenderTarget(nullptr)
-        , m_ShowOverlay(false)
+		, m_ShowOverlay(false)
 		, m_Caption(inCaption)
 		, m_FadeValue(0.0f)
 	{
-		m_Window = SDL_CreateWindow(inCaption.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, m_ClientResolutionX, m_ClientResolutionY, SDL_WINDOW_SHOWN);
+		const int window_width = static_cast<int>(m_ClientResolutionX * m_Scaling);
+		const int window_height = static_cast<int>(m_ClientResolutionY * m_Scaling);
+
+		ConfigFile& config = Global::instance().GetConfig();
+
+		m_Window = SDL_CreateWindow(inCaption.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width, window_height, SDL_WINDOW_SHOWN);
 		FOUNDATION_ASSERT(m_Window != nullptr);
 
 		m_Renderer = SDL_CreateRenderer(m_Window, -1, 0);
 		FOUNDATION_ASSERT(m_Renderer != nullptr);
+		SDL_RenderSetLogicalSize(m_Renderer, m_ClientResolutionX, m_ClientResolutionY);
+
+		const bool smooth_scaling = GetSingleConfigurationValue<ConfigValueInt>(config, "Window.Scaling.Smooth", 1) != 0;
+		SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, smooth_scaling ? "2" : "0");
 
 		m_RenderTarget = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, m_ClientResolutionX, m_ClientResolutionY);
 		FOUNDATION_ASSERT(m_RenderTarget != nullptr);
@@ -37,7 +54,7 @@ namespace Foundation
 		for (IManaged* text_field : m_ManagedResources)
 			delete text_field;
 
-		if(m_RenderTarget != nullptr)
+		if (m_RenderTarget != nullptr)
 			SDL_DestroyTexture(m_RenderTarget);
 		for (auto overlay : m_OverlayList)
 		{
@@ -84,7 +101,7 @@ namespace Foundation
 	}
 
 
-	void  Viewport::SetWindowPosition(const Point& inPosition)
+	void Viewport::SetWindowPosition(const Point& inPosition)
 	{
 		SDL_SetWindowPosition(m_Window, inPosition.m_X, inPosition.m_Y);
 	}
@@ -100,7 +117,11 @@ namespace Foundation
 
 	void Viewport::SetWindowSize(const Extent& inSize)
 	{
-		SDL_SetWindowSize(m_Window, inSize.m_Width, inSize.m_Height);
+		const int window_width = static_cast<int>(inSize.m_Width * m_Scaling);
+		const int window_height = static_cast<int>(inSize.m_Height * m_Scaling);
+
+		SDL_SetWindowSize(m_Window, window_width, window_height);
+		SDL_RenderSetLogicalSize(m_Renderer, inSize.m_Width, inSize.m_Height);
 	}
 
 
@@ -147,7 +168,7 @@ namespace Foundation
 		int pitch = inImageRect.m_Dimensions.m_Width * 4;
 
 		SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(inData, inImageRect.m_Dimensions.m_Width, inImageRect.m_Dimensions.m_Height, depth, pitch, mask_r, mask_g, mask_b, mask_a);
-	
+
 		overlay.m_Texture = SDL_CreateTextureFromSurface(m_Renderer, surface);
 		overlay.m_Rect = inImageRect;
 
@@ -157,7 +178,7 @@ namespace Foundation
 
 	void Viewport::Begin()
 	{
-		if(m_RenderTarget != nullptr)
+		if (m_RenderTarget != nullptr)
 			SDL_SetRenderTarget(m_Renderer, m_RenderTarget);
 
 		SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 255);
@@ -181,8 +202,7 @@ namespace Foundation
 			{
 				for (const auto& overlay : m_OverlayList)
 				{
-					SDL_Rect overlay_destination_rect =
-					{
+					SDL_Rect overlay_destination_rect = {
 						overlay.m_Rect.m_Position.m_X,
 						overlay.m_Rect.m_Position.m_Y,
 						overlay.m_Rect.m_Dimensions.m_Width,
@@ -213,7 +233,7 @@ namespace Foundation
 	}
 
 
-	void Viewport::SetUserColor(unsigned char inUserColorIndex, unsigned int inARGB) 
+	void Viewport::SetUserColor(unsigned char inUserColorIndex, unsigned int inARGB)
 	{
 		m_Palette.SetUserColor(inUserColorIndex, inARGB);
 	}
@@ -275,7 +295,6 @@ namespace Foundation
 		m_ManagedResources.push_back(image);
 		return image;
 	}
-
 
 
 	void Viewport::Destroy(IManaged* inManaged)
