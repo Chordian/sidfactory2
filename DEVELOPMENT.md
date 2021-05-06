@@ -20,7 +20,7 @@ Nightly builds:
 - Are not publicly announced
 - Are not tested extensively
 - Are "beta" versions
-- Are automatically build from the current master branch
+- Are automatically built from the current master branch
 - Are not supported; if someone experiences issues with a nightly build, he/she
   could be asked to revert back to an official release.
 - Could have an out of date manual
@@ -65,3 +65,9 @@ For official releases
 - The manual is updated in the master branch
 - The release candidate is more thorougly tested
 - The release is officially announced
+
+## Issue tracking
+
+Anyone can file a feature request or bug. The team will evaluate if it should go
+on the "to do" list and at what priority. There are no guarantees if and when an
+issue will be addressed.
