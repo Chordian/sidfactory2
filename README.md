@@ -33,6 +33,8 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
     startup.
 - Added: Configuration options `Disk.UserFolders` and `Disk.UserFolders.Aliases`
   to add your favorite folder shortcuts to the file browser.
+- Added: Configuration option `Disk.Startup.Folder` to set the default startup
+  folder for the file browser.
 
 ### Build 20210104
 
