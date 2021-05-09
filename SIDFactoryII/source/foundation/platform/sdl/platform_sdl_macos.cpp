@@ -23,9 +23,7 @@ namespace Foundation
 		uint32_t buffer_size = PATH_MAX;
 		_NSGetExecutablePath(m_ApplicationPath, &buffer_size);
 
-		// Add the user's home folder
-		char* realHome = getpwuid(getuid())->pw_dir;
-
+		const char* realHome = getpwuid(getuid())->pw_dir;
 		if (realHome != nullptr)
 		{
 			m_RealHome = std::string(realHome);
