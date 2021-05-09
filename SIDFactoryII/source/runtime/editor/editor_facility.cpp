@@ -22,7 +22,6 @@
 #include "runtime/editor/screens/screen_disk.h"
 #include "runtime/editor/screens/screen_edit.h"
 #include "runtime/editor/screens/screen_edit_utils.h"
-#include "utils/logging.h"
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/import_utils.h"
@@ -37,6 +36,7 @@
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
 #include "utils/global.h"
+#include "utils/logging.h"
 #include "utils/psidfile.h"
 #include "utils/utilities.h"
 
@@ -86,7 +86,8 @@ namespace Editor
 
 			ConfigureColorsFromScheme(m_SelectedColorScheme, *inViewport);
 		}
-		else {
+		else
+		{
 			Utility::Logging::instance().Error("Number of color scheme names (%d) does not match number of color scheme filenames (%d)", color_scheme_names.size(), color_scheme_filenames.size());
 		}
 
@@ -229,8 +230,31 @@ namespace Editor
 		}
 
 		// After loading, set the current path, so that opening the disk menu will be correct.
+		const std::string default_start_path = platform.Storage_GetHomePath();
+		std::string start_path = platform.OS_ParsePath(GetSingleConfigurationValue<ConfigValueString>(configFile, "Disk.Startup.Folder", default_start_path));
+
+		if (!is_directory(start_path))
+		{
+			Logging::instance().Warning("%s is not a folder. Using default path.", start_path.c_str());
+			start_path = default_start_path;
+		}
+
 		std::error_code ec;
-		fs::current_path(platform.Storage_GetHomePath(), ec);
+		fs::current_path(start_path, ec);
+		if (ec)
+		{
+			Logging::instance().Warning("Cannot change folder to %s.", start_path.c_str());
+
+			// if this was a custom path, try again with the default
+			if (start_path != default_start_path)
+			{
+				fs::current_path(default_start_path, ec);
+				if (ec)
+				{
+					Logging::instance().Warning("Cannot change folder to %s.", default_start_path.c_str());
+				}
+			}
+		}
 
 		// Start the intro screen
 		const bool skip_intro = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Editor.Skip.Intro", 0) != 0;
