@@ -20,7 +20,7 @@ namespace Foundation
 		std::error_code error_code;
 		char buffer[PATH_MAX];
 
-		char* realHome = getpwuid(getuid())->pw_dir;
+		const char* realHome = getpwuid(getuid())->pw_dir;
 		if (realHome != nullptr)
 		{
 			m_RealHome = std::string(realHome);
