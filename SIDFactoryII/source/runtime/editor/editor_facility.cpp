@@ -990,6 +990,8 @@ namespace Editor
 			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "You are trying to quick save to a file, with an extension other than .sf2.\nPlease save through the save disk menu!", DefaultDialogWidth, true, []() {}));
 		else
 		{
+			const bool confirm_quick_save = GetSingleConfigurationValue<ConfigValueInt>(Global::instance().GetConfig(), "Editor.Confirm.QuickSave", 1) != 0;
+			
 			auto do_save = [save_path_and_filename, inCallerScreen, this]() {
 				if (SaveFile(save_path_and_filename.string()))
 					this->m_EditScreen->SetStatusBarMessage(" Quick saved to: " + save_path_and_filename.filename().string(), 5000);
@@ -997,8 +999,15 @@ namespace Editor
 					this->OnSaveError(inCallerScreen);
 			};
 
-			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessageYesNo>("Warning", "Do you want to perform a quick save to:\n" + save_path_and_filename.string() + "?", DefaultDialogWidth, do_save, []() {}));
+			if (confirm_quick_save) {
+				inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessageYesNo>("Warning", "Do you want to perform a quick save to:\n" + save_path_and_filename.string() + "?", DefaultDialogWidth, do_save, []() {}));
+			}
+			else {
+				do_save();
+			}
+		
 		}
+
 	}
 
 
