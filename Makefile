@@ -83,7 +83,7 @@ $(ARTIFACTS_FOLDER)/overlay: $(PROJECT_ROOT)/overlay
 $(ARTIFACTS_FOLDER)/color_schemes: $(PROJECT_ROOT)/color_schemes
 	cp -r $(PROJECT_ROOT)/color_schemes $(ARTIFACTS_FOLDER)
 
-$(ARTIFACTS_FOLDER)/config/config.ini: $(ARTIFACTS_FOLDER)/config
+$(ARTIFACTS_FOLDER)/config/config.ini: $(ARTIFACTS_FOLDER)/config ${PROJECT_ROOT}/config.ini
 	cp $(PROJECT_ROOT)/config.ini $@
 
 $(ARTIFACTS_FOLDER)/config:
