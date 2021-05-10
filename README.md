@@ -37,6 +37,9 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
     folder shortcuts to the file browser.
   - `Disk.Startup.Folder` to set the default startup folder for the file
     browser.
+- Fixed: [#131](https://github.com/Chordian/sidfactory2/issues/131) SF2 won't
+  compile on mac with Silicon M1 CPU. (Thanks to Rolf Greven for reporting and
+  suggesting the fix)
 
 ### Build 20210104
 
