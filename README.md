@@ -40,6 +40,9 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Fixed: [#131](https://github.com/Chordian/sidfactory2/issues/131) SF2 won't
   compile on mac with Silicon M1 CPU. (Thanks to Rolf Greven for reporting and
   suggesting the fix)
+- Fixed: [#133](https://github.com/Chordian/sidfactory2/issues/133) Emulation
+  error when starting up linux version. (Thanks to Maurizio Dall'Acqua for
+  reporting)
 
 ### Build 20210104
 

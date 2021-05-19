@@ -45,6 +45,7 @@ namespace Emulation
 		, m_SampleBufferWriteCursor(0)
 		, m_CPUFrameCounter(0)
 		, m_UpdateEnabled(false)
+    , m_ErrorState(false)
 	{
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
