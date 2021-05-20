@@ -1,5 +1,43 @@
 # SIDFactoryII Development
 
+## Building from source
+
+### Windows
+
+Prerequisites:
+
+- Visual Studio
+
+To build:
+
+    build_windows.bat
+
+### macOS
+
+If [Homebrew](https://brew.sh) is installed, the prerequisites can be installed with:
+
+    brew git sdl2
+
+To build:
+
+    cd macos
+    make raw
+
+This creates a DMG image in the `artifacts` folder.
+
+### Linux (Ubuntu)
+
+Install prerequisites:
+
+    apt-get update
+    apt-get install g++ make git libsdl2-dev
+
+To build:
+
+    make dist
+
+Then look in the `artifacts` folder.
+
 ## Releases and nightly builds
 
 There are two sets of binaries:
@@ -54,6 +92,7 @@ further work is neccesary in the master branch, so:
 - Basic functionality is tested (with the latest master branch merged into it)
 - The changelog in `README.md` is updated
 - Config file changes are documented in `config.ini` and `user.default.ini`
+- Key mappings that have changed are documented in `notes.txt`
 - The user manual (Word document) is **not** updated, because it is a binary
   file that can not be automatically merged.
 - Build files (Makefiles/Windows batch file) are updated when needed.

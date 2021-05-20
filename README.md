@@ -3,6 +3,7 @@
 SID Factory II is a cross-platform editor for composing music that will work on
 a Commodore 64. It uses the reSID emulator and is currently in open BETA. You
 can download binary release builds from [here](http://blog.chordian.net/sf2/).
+To build from source, have a look [here](DEVELOPMENT.md).
 
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
