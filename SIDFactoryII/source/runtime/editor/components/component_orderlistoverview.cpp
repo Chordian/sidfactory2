@@ -5,6 +5,8 @@
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/editor/datasources/datasource_table_text.h"
+#include "runtime/editor/undo/undo.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_table_text.h"
 #include "foundation/graphics/textfield.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/mouse.h"
@@ -16,13 +18,18 @@ using namespace Utility;
 
 namespace Editor
 {
-	const int ComponentOrderListOverview::m_MarginWidth = 1;
-	const int ComponentOrderListOverview::m_TextWidth = 19;
+	const int ComponentOrderListOverview::ms_MarginWidth = 1;
+	const int ComponentOrderListOverview::ms_TextWidth = 19;
 
 	int ComponentOrderListOverview::GetWidthFromChannelCount(int inChannelCount)
 	{
 		// Example, 3 rows: " xxxx: 01 02 03 abcdef0123456789 "
-		return m_MarginWidth + 6 + 3 * inChannelCount + m_TextWidth;
+		return ms_MarginWidth + 6 + 3 * inChannelCount + ms_TextWidth;
+	}
+
+	int ComponentOrderListOverview::GetOutputPositionFromCursorX(int inChannel)
+	{
+		return ms_MarginWidth + 6 + 3 * inChannel;
 	}
 
 
@@ -44,8 +51,10 @@ namespace Editor
 		, m_OrderLists(inOrderLists)
 		, m_SequenceList(inSequenceList)
 		, m_PlaybackEventPosition(-1)
-		, m_CursorPosition(0)
-		, m_MaxCursorPosition(0)
+		, m_CursorX(0)
+		, m_CursorY(0)
+		, m_MaxCursorY(0)
+		, m_MaxCursorX(static_cast<int>(inOrderLists.size()))
 		, m_TopPosition(0)
 		, m_SetTrackEventPosFunction(inSetTrackEventPosFunction)
 	{
@@ -54,7 +63,7 @@ namespace Editor
 			inID,
 			inGroupID,
 			inDataSourceTableText, 
-			m_TextWidth,
+			ms_TextWidth,
 			true);
 	}
 
@@ -103,6 +112,20 @@ namespace Editor
 						consume = true;
 					}
 					break;
+				case SDLK_LEFT:
+					if(inKeyboard.IsModifierEmpty() && DoCursorLeft())
+					{
+						m_RequireRefresh = true;
+						consume = true;
+					}
+					break;
+				case SDLK_RIGHT:
+					if (inKeyboard.IsModifierEmpty() && DoCursorRight())
+					{
+						m_RequireRefresh = true;
+						consume = true;
+					}
+					break;
 				case SDLK_PAGEDOWN:
 					if (DoCursorDown(20))
 					{
@@ -134,19 +157,44 @@ namespace Editor
 				case SDLK_RETURN:
 					if (isOnlyShiftDown)
 					{
-						if (m_CursorPosition >= 0 && m_CursorPosition < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
+						if (m_CursorY >= 0 && m_CursorY < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
 						{
-							m_SetTrackEventPosFunction(m_Overview[m_CursorPosition].m_EventPos, inKeyboard.IsModifierDownExclusive(Keyboard::Control));
+							m_SetTrackEventPosFunction(m_Overview[m_CursorY].m_EventPos, inKeyboard.IsModifierDownExclusive(Keyboard::Control));
 							consume = true;
 						}
 					}
 					else if (isNoModifierDown)
 					{
-						DoStartEditText(inCursorControl);
-						m_RequireRefresh = true;
-						consume = true;
+						if (m_CursorX == m_MaxCursorX)
+						{
+							DoStartEditText(inCursorControl);
+							m_RequireRefresh = true;
+							consume = true;
+						}
 					}
 					break;
+				case SDLK_BACKSPACE:
+					if (m_CursorX == m_MaxCursorX)
+					{
+						if (isNoModifierDown)
+						{
+							if (m_CursorY > 1)
+							{
+								DoCursorUp(1);
+								DoDeleteTextRow(m_CursorY);
+
+								m_RequireRefresh = true;
+								consume = true;
+							}
+						}
+						else if (isOnlyShiftDown)
+						{
+							DoInsertTextRow(m_CursorY);
+
+							m_RequireRefresh = true;
+							consume = true;
+						}
+					}
 				}
 			}
 		}
@@ -170,10 +218,10 @@ namespace Editor
 			if (inMouse.IsButtonDoublePressed(Mouse::Left))
 			{
 				Point cell_position = GetLocalCellPosition(inMouse.GetPosition());
-				m_CursorPosition = cell_position.m_Y + m_TopPosition;
+				m_CursorY = cell_position.m_Y + m_TopPosition;
 
-				if (m_CursorPosition >= 0 && m_CursorPosition < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
-					m_SetTrackEventPosFunction(m_Overview[m_CursorPosition].m_EventPos, true);
+				if (m_CursorY >= 0 && m_CursorY < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
+					m_SetTrackEventPosFunction(m_Overview[m_CursorY].m_EventPos, true);
 
 				m_RequireRefresh = true;
 
@@ -182,19 +230,19 @@ namespace Editor
 			else if (inMouse.IsButtonPressed(Mouse::Left))
 			{
 				Point local_cell_position = GetLocalCellPosition(inMouse.GetPosition());
-				m_CursorPosition = local_cell_position.m_Y + m_TopPosition;
+				m_CursorY = local_cell_position.m_Y + m_TopPosition;
 
-				if (m_CursorPosition >= 0 && m_CursorPosition < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
-					m_SetTrackEventPosFunction(m_Overview[m_CursorPosition].m_EventPos, false);
+				if (m_CursorY >= 0 && m_CursorY < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
+					m_SetTrackEventPosFunction(m_Overview[m_CursorY].m_EventPos, false);
 
 				m_RequireRefresh = true;
 
-				const int text_x = m_Dimensions.m_Width - m_TextWidth;
+				const int text_x = m_Dimensions.m_Width - ms_TextWidth;
 				const int text_x_right = m_Dimensions.m_Width;
 
 				if (local_cell_position.m_X >= text_x && local_cell_position.m_X <= text_x_right)
 				{
-					if (IsEditingText() && m_CursorPosition != m_TextEditingDataSourceTableText->GetTextLineIndex())
+					if (IsEditingText() && m_CursorY != m_TextEditingDataSourceTableText->GetTextLineIndex())
 						DoStopEditText(inCursorControl, false);
 					if (!IsEditingText())
 						DoStartEditText(inCursorControl);
@@ -238,7 +286,7 @@ namespace Editor
 			m_TextField->Clear(m_Rect);
 			
 			Rect ListRect = m_Rect;
-			ListRect.m_Dimensions.m_Width -= m_TextWidth;
+			ListRect.m_Dimensions.m_Width -= ms_TextWidth;
 
 			Rect TextRect = m_Rect;
 			TextRect.m_Position.m_X += ListRect.m_Dimensions.m_Width;
@@ -249,10 +297,22 @@ namespace Editor
 			m_TextField->ColorArea(ToColor(UserColor::SongListText), TextRect);
 
 			const bool is_uppercase = inDisplayState.IsHexUppercase();
-			const int cursor_position = m_CursorPosition - m_TopPosition;
+			const int cursor_position = m_CursorY - m_TopPosition;
 
 			if (cursor_position >= 0 && cursor_position < m_Dimensions.m_Height)
-				m_TextField->ColorAreaBackground(ToColor(m_HasControl ? UserColor::SongListCursorFocus : UserColor::SongListCursorDefault), { m_Position + Point(0, cursor_position), { m_Dimensions.m_Width, 1 } });
+			{
+				m_TextField->ColorAreaBackground(ToColor(UserColor::SongListCursorDefault), { m_Position + Point(0, cursor_position), { m_Dimensions.m_Width, 1 } });
+
+				if (m_HasControl)
+				{
+					bool isTextField = m_CursorX == m_MaxCursorX;
+
+					Point highlight_position = { GetOutputPositionFromCursorX(m_CursorX) - (isTextField ? 0 : 1), cursor_position };
+					Extent highlight_extent = { isTextField ? ms_TextWidth : 4, 1 };
+
+					m_TextField->ColorAreaBackground(ToColor(UserColor::SongListCursorFocus), { m_Position + highlight_position, highlight_extent });
+				}
+			}
 
 			int local_y = 0;
 			int overview_list_size = static_cast<int>(m_Overview.size());
@@ -288,12 +348,12 @@ namespace Editor
 					x += 3;
 				}
 
-				int text_x = m_Position.m_X + m_MarginWidth + 5 + 3 * m_OrderLists.size() + 1;
+				int text_x = m_Position.m_X + ms_MarginWidth + 5 + 3 * m_OrderLists.size() + 1;
 
 				if (i < m_TableText->GetSize())
 				{
-					const bool is_editing_line = (m_CursorPosition == i) && IsEditingText();
-					m_TextField->Print(text_x, y, is_editing_line ? ToColor(UserColor::SongListTextEditing) : ToColor(UserColor::SongListText), (*m_TableText)[i], m_TextWidth);
+					const bool is_editing_line = (m_CursorY == i) && IsEditingText();
+					m_TextField->Print(text_x, y, is_editing_line ? ToColor(UserColor::SongListTextEditing) : ToColor(UserColor::SongListText), (*m_TableText)[i], ms_TextWidth);
 				}
 
 				++local_y;
@@ -366,7 +426,7 @@ namespace Editor
 			if (ContainsPosition(screen_position))
 			{
 				const int visible_height = m_Dimensions.m_Height - 1;
-				const int max_top_pos = m_MaxCursorPosition < visible_height ? 0 : (m_MaxCursorPosition - visible_height);
+				const int max_top_pos = m_MaxCursorY < visible_height ? 0 : (m_MaxCursorY - visible_height);
 
 				int top_pos = m_TopPosition;
 				int change = scroll_wheel.m_Y;
@@ -388,10 +448,10 @@ namespace Editor
 				{
 					m_TopPosition = top_pos;
 
-					if (m_CursorPosition < m_TopPosition)
-						m_CursorPosition = m_TopPosition;
-					if (m_CursorPosition > m_TopPosition + visible_height)
-						m_CursorPosition = m_TopPosition + visible_height;
+					if (m_CursorY < m_TopPosition)
+						m_CursorY = m_TopPosition;
+					if (m_CursorY > m_TopPosition + visible_height)
+						m_CursorY = m_TopPosition + visible_height;
 
 					m_RequireRefresh = true;
 				}
@@ -402,15 +462,15 @@ namespace Editor
 
 	bool ComponentOrderListOverview::DoCursorUp(unsigned int inSteps)
 	{
-		if (m_CursorPosition > 0)
+		if (m_CursorY > 0)
 		{
-			m_CursorPosition -= inSteps;
+			m_CursorY -= inSteps;
 
-			if (m_CursorPosition < 0)
-				m_CursorPosition = 0;
+			if (m_CursorY < 0)
+				m_CursorY = 0;
 
-			if (m_CursorPosition < m_TopPosition)
-				m_TopPosition = m_CursorPosition;
+			if (m_CursorY < m_TopPosition)
+				m_TopPosition = m_CursorY;
 
 			return true;
 		}
@@ -421,16 +481,40 @@ namespace Editor
 
 	bool ComponentOrderListOverview::DoCursorDown(unsigned int inSteps)
 	{
-		if (m_CursorPosition < m_MaxCursorPosition)
+		if (m_CursorY < m_MaxCursorY)
 		{
-			m_CursorPosition += inSteps;
+			m_CursorY += inSteps;
 
-			if (m_CursorPosition > m_MaxCursorPosition)
-				m_CursorPosition = m_MaxCursorPosition;
+			if (m_CursorY > m_MaxCursorY)
+				m_CursorY = m_MaxCursorY;
 
-			if (m_CursorPosition >= m_TopPosition + m_Dimensions.m_Height)
-				m_TopPosition = m_CursorPosition - (m_Dimensions.m_Height - 1);
+			if (m_CursorY >= m_TopPosition + m_Dimensions.m_Height)
+				m_TopPosition = m_CursorY - (m_Dimensions.m_Height - 1);
 
+			return true;
+		}
+
+		return false;
+	}
+
+
+	bool ComponentOrderListOverview::DoCursorLeft()
+	{
+		if (m_CursorX > 0)
+		{
+			--m_CursorX;
+			return true;
+		}
+
+		return false;
+	}
+
+
+	bool ComponentOrderListOverview::DoCursorRight()
+	{
+		if (m_CursorX < m_MaxCursorX)
+		{
+			++m_CursorX;
 			return true;
 		}
 
@@ -440,15 +524,15 @@ namespace Editor
 
 	bool ComponentOrderListOverview::DoHome()
 	{
-		if (m_CursorPosition > 0)
+		if (m_CursorY > 0)
 		{
-			if (m_CursorPosition == m_TopPosition)
+			if (m_CursorY == m_TopPosition)
 			{
-				m_CursorPosition = 0;
+				m_CursorY = 0;
 				m_TopPosition = 0;
 			}
 			else
-				m_CursorPosition = m_TopPosition;
+				m_CursorY = m_TopPosition;
 
 			return true;
 		}
@@ -458,20 +542,20 @@ namespace Editor
 
 	bool ComponentOrderListOverview::DoEnd()
 	{
-		if (m_CursorPosition < m_MaxCursorPosition)
+		if (m_CursorY < m_MaxCursorY)
 		{
 			int max_visible = m_TopPosition + m_Dimensions.m_Height - 1;
 
-			if (max_visible <= m_MaxCursorPosition && m_CursorPosition < max_visible)
+			if (max_visible <= m_MaxCursorY && m_CursorY < max_visible)
 			{
-				m_CursorPosition = max_visible;
+				m_CursorY = max_visible;
 			}
 			else
 			{
-				m_CursorPosition = m_MaxCursorPosition;
+				m_CursorY = m_MaxCursorY;
 
-				if (m_CursorPosition >= m_TopPosition + m_Dimensions.m_Height)
-					m_TopPosition = m_CursorPosition - (m_Dimensions.m_Height - 1);
+				if (m_CursorY >= m_TopPosition + m_Dimensions.m_Height)
+					m_TopPosition = m_CursorY - (m_Dimensions.m_Height - 1);
 			}
 
 			return true;
@@ -479,6 +563,112 @@ namespace Editor
 
 		return false;
 	}
+
+
+	bool ComponentOrderListOverview::DoInsertTextRow(unsigned int inRow)
+	{
+		const unsigned int size = static_cast<unsigned int>(m_TableText->GetSize());
+
+		if (inRow < size && size > 1)
+		{
+			AddUndo();
+
+			for (unsigned int i = size - 2; i >= inRow; --i)
+				(*m_TableText)[i + 1] = (*m_TableText)[i];
+
+			(*m_TableText)[inRow] = "";
+
+			m_TableText->PushDataToSource();
+			AddMostRecentEdit();
+
+			m_HasDataChange = true;
+
+			return true;
+		}
+
+		return false;
+	}
+
+
+	bool ComponentOrderListOverview::DoDeleteTextRow(unsigned int inRow)
+	{
+		const unsigned int size = static_cast<unsigned int>(m_TableText->GetSize());
+
+		if (inRow < size && inRow >= 0 && size > 1)
+		{
+			AddUndo();
+
+			for (unsigned int i = inRow; i < size - 1; ++i)
+				(*m_TableText)[i] = (*m_TableText)[i + 1];
+
+			(*m_TableText)[size - 1] = "";
+
+			m_TableText->PushDataToSource();
+			AddMostRecentEdit();
+			
+			m_HasDataChange = true;
+
+			return true;
+		}
+
+		return false;
+	}
+
+
+	void ComponentOrderListOverview::AddUndo()
+	{
+		const int count = m_TableText->GetSize();
+
+		std::vector<std::string> text_lines;
+		for (int i = 0; i < count; ++i)
+			text_lines.push_back((*m_TableText)[i]);
+
+		auto undo_data = std::make_shared<UndoComponentDataTableText>();
+
+		undo_data->m_ComponentID = m_ComponentID;
+		undo_data->m_ComponentGroupID = m_ComponentGroupID;
+		undo_data->m_TextLines = text_lines;
+
+		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
+	}
+
+
+	void ComponentOrderListOverview::AddMostRecentEdit()
+	{
+		const int count = m_TableText->GetSize();
+
+		std::vector<std::string> text_lines;
+		for (int i = 0; i < count; ++i)
+			text_lines.push_back((*m_TableText)[i]);
+
+		auto undo_data = std::make_shared<UndoComponentDataTableText>();
+
+		undo_data->m_ComponentID = m_ComponentID;
+		undo_data->m_ComponentGroupID = m_ComponentGroupID;
+		undo_data->m_TextLines = text_lines;
+
+		m_Undo->AddMostRecentEdit(true, undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
+	}
+
+
+
+	void ComponentOrderListOverview::OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl)
+	{
+		const UndoComponentDataTableText& undo_data = static_cast<const UndoComponentDataTableText&>(inData);
+
+		FOUNDATION_ASSERT(undo_data.m_TextLines.size() == m_TableText->GetSize());
+
+		const int count = m_TableText->GetSize();
+		for (int i = 0; i < count; ++i)
+		{
+			auto& dest = (*m_TableText)[i];
+			dest = undo_data.m_TextLines[i];
+		}
+
+		m_HasDataChange = true;
+		m_RequireRefresh = true;
+	}
+
 
 
 	bool ComponentOrderListOverview::IsEditingText() const
@@ -491,7 +681,7 @@ namespace Editor
 	{
 		auto GetEditingRowIndex = [&]() -> unsigned int
 		{
-			return static_cast<unsigned int>(m_CursorPosition);
+			return static_cast<unsigned int>(m_CursorY);
 		};
 
 		if (!IsEditingText())
@@ -512,7 +702,7 @@ namespace Editor
 
 	Foundation::Point ComponentOrderListOverview::GetEditingTextScreenPosition() const
 	{
-		return Foundation::Point(m_Position.m_X + m_Rect.m_Dimensions.m_Width - m_TextWidth, m_Position.m_Y + m_CursorPosition - m_TopPosition);
+		return Foundation::Point(m_Position.m_X + m_Rect.m_Dimensions.m_Width - ms_TextWidth, m_Position.m_Y + m_CursorY - m_TopPosition);
 	}
 
 	void ComponentOrderListOverview::RebuildOverview()
@@ -589,9 +779,9 @@ namespace Editor
 			event_pos = event_pos_forward;
 		}
 
-		m_MaxCursorPosition = static_cast<int>(m_Overview.size()) - 1;
+		m_MaxCursorY = static_cast<int>(m_Overview.size()) - 1;
 
-		if (m_CursorPosition > m_MaxCursorPosition)
-			m_CursorPosition = m_MaxCursorPosition;
+		if (m_CursorY > m_MaxCursorY)
+			m_CursorY = m_MaxCursorY;
 	}
 }

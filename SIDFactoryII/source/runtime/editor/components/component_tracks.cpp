@@ -70,10 +70,16 @@ namespace Editor
 			track_position.m_X += (*inDataSource)[i]->GetDimensions().m_Width + 1;
 
 			// And add sequence changed event delegate
-			(*inDataSource)[i]->GetSequenceChangedEvent().Add(this, Utility::TDelegate<void(void)>([&]() { AlignTracks(); }));
+			(*inDataSource)[i]->GetSequenceChangedEvent().Add(this, Utility::TDelegate<void(void)>([&]() 
+			{ 
+				AlignTracks(); 
+			}));
 
 			// And add sequence split event delegate
-			(*inDataSource)[i]->GetSequenceSplitEvent().Add(this, Utility::TDelegate<void(unsigned char, unsigned char)>([&](unsigned char inSequence, unsigned char inSequenceToAdd) { HandleSequenceSplit(inSequence, inSequenceToAdd); }));
+			(*inDataSource)[i]->GetSequenceSplitEvent().Add(this, Utility::TDelegate<void(unsigned char, unsigned char)>([&](unsigned char inSequence, unsigned char inSequenceToAdd) 
+			{ 
+				HandleSequenceSplit(inSequence, inSequenceToAdd); 
+			}));
 		}
 
 		// Set the event position on each track

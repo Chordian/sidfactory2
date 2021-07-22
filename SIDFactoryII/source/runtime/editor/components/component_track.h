@@ -46,14 +46,17 @@ namespace Editor
 
 	class ComponentTrack final : public ComponentBase
 	{
-		struct EventPosDetails
+		class EventPosDetails
 		{
-			EventPosDetails()
-				: m_OrderListIndex(0)
-				, m_SequenceIndex(0)
-			{
-		}
+		public:
+			EventPosDetails();
 
+			void Set(unsigned int inOrderListIndex, unsigned int inSequenceIndex);
+
+			unsigned int OrderListIndex() const;
+			unsigned int SequenceIndex() const;
+
+		private:
 			unsigned int m_OrderListIndex;
 			unsigned int m_SequenceIndex;
 		};
@@ -94,6 +97,7 @@ namespace Editor
 		};
 
 	public:
+		using OrderListIndexChangedEvent = Utility::TEvent<void(bool, unsigned int, unsigned char)>;
 		using SequenceSplitEvent = Utility::TEvent<void(unsigned char, unsigned char)>;
 		using SequenceChangedEvent = Utility::TEvent<void(void)>;
 		using OrderListChangedEvent = Utility::TEvent<void(void)>;
@@ -122,6 +126,7 @@ namespace Editor
 		void SetHeight(int inHeight);
 
 		void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl) override;
+		void ClearHasControl(CursorControl& inCursorControl) override;
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
@@ -158,6 +163,7 @@ namespace Editor
 		bool ConsumeHasInputCausedSequenceDataChange();
 		bool ComputePlaybackStateFromEventPosition(int inEventPos, std::vector<IDriverArchitecture::PlayMarkerInfo>& outOrderListIndices) const;
 
+		OrderListIndexChangedEvent& GetOrderListIndexChangedEvent();
 		SequenceSplitEvent& GetSequenceSplitEvent();
 		SequenceChangedEvent& GetSequenceChangedEvent();
 		OrderListChangedEvent& GetOrderListChangedEvent();
@@ -197,6 +203,7 @@ namespace Editor
 
 		// Event position
 		void UpdateMaxEventPos();
+		void SetEventPosDetails(unsigned int inOrderListIndex, unsigned int inSequenceIndex);
 
 		// Status report
 		void UpdateSequenceStatusReport();
@@ -227,7 +234,6 @@ namespace Editor
 		void DoPasteSequenceData();
 		void DoSetInstrumentIndexValue(unsigned char inValue);
 		void DoSetCommandIndexValue(unsigned char inValue);
-
 
 		// Data change
 		void OnOrderListChanged();
@@ -302,6 +308,7 @@ namespace Editor
 
 		std::shared_ptr<TrackCopyPasteData> m_CopyPasteData;
 
+		OrderListIndexChangedEvent m_OrderListIndexChangedEvent;
 		SequenceSplitEvent m_SequenceSplitEvent;
 		SequenceChangedEvent m_SequenceChangedEvent;
 		OrderListChangedEvent m_OrderListChangedEvent;

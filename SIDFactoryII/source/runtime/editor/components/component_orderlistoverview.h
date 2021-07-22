@@ -18,6 +18,7 @@ namespace Editor
 	class DataSourceOrderList;
 	class DataSourceSequence;
 	class DataSourceTableText;
+	class UndoComponentData;
 	class TextEditingDataSourceTableText;
 
 	class ComponentOrderListOverview final : public ComponentBase
@@ -60,8 +61,17 @@ namespace Editor
 		void DoMouseWheel(const Foundation::Mouse& inMouse);
 		bool DoCursorUp(unsigned int inSteps);
 		bool DoCursorDown(unsigned int inSteps);
+		bool DoCursorLeft();
+		bool DoCursorRight();
 		bool DoHome();
 		bool DoEnd();
+		bool DoInsertTextRow(unsigned int inRow);
+		bool DoDeleteTextRow(unsigned int inRow);
+
+		void AddUndo();
+		void AddMostRecentEdit();
+
+		void OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl);
 
 		bool IsEditingText() const;
 		void DoStartEditText(CursorControl& inCursorControl);
@@ -88,13 +98,16 @@ namespace Editor
 		std::function<void(int, bool)> m_SetTrackEventPosFunction;
 
 		static int GetWidthFromChannelCount(int inChannelCount);
+		static int GetOutputPositionFromCursorX(int inCursorX);
 
-		int m_CursorPosition;
-		int m_MaxCursorPosition;
+		int m_CursorY;
+		int m_CursorX;
+		int m_MaxCursorY;
+		int m_MaxCursorX;
 		int m_TopPosition;
 		int m_PlaybackEventPosition;
 
-		static const int m_MarginWidth;
-		static const int m_TextWidth;
+		static const int ms_MarginWidth;
+		static const int ms_TextWidth;
 	};
 }
