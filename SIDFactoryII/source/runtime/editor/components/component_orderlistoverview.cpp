@@ -267,17 +267,27 @@ namespace Editor
 				{
 					if (IsEditingText() && m_CursorY != m_TextEditingDataSourceTableText->GetTextLineIndex())
 						DoStopEditText(inCursorControl, false);
-					if (!IsEditingText())
-						DoStartEditText(inCursorControl);
 
 					const int cursor_pos = local_cell_position.m_X - text_x;
 
 					m_TextEditingDataSourceTableText->TrySetCursorPosition(cursor_pos);
+
+					m_CursorX = m_MaxCursorX;
 				}
 				else
 				{
 					if (IsEditingText())
 						DoStopEditText(inCursorControl, false);
+
+					for (int i = m_MaxCursorX; i >= 0; --i)
+					{
+						int x = GetOutputPositionFromCursorX(i);
+						if (local_cell_position.m_X >= x)
+						{
+							m_CursorX = i;
+							break;
+						}
+					}
 				}
 
 				consume = true;
@@ -330,8 +340,13 @@ namespace Editor
 				{
 					bool isTextField = m_CursorX == m_MaxCursorX;
 
-					Point highlight_position = { GetOutputPositionFromCursorX(m_CursorX) - (isTextField ? 0 : 1), cursor_position };
-					Extent highlight_extent = { isTextField ? ms_TextWidth : 4, 1 };
+					Point cursor_highlight_position = { GetOutputPositionFromCursorX(m_CursorX), cursor_position };
+					Extent cursor_highlight_extent = { isTextField ? ms_TextWidth : 2, 1 };
+
+					m_TextField->ColorAreaBackground(ToColor(UserColor::SongListCursorFocus), { m_Position + cursor_highlight_position, cursor_highlight_extent });
+				
+					Point highlight_position = { 0, cursor_position };
+					Extent highlight_extent = { ms_MarginWidth + 5, 1 };
 
 					m_TextField->ColorAreaBackground(ToColor(UserColor::SongListCursorFocus), { m_Position + highlight_position, highlight_extent });
 				}
