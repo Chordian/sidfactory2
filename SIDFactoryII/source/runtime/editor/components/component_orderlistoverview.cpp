@@ -178,7 +178,7 @@ namespace Editor
 					{
 						if (isNoModifierDown)
 						{
-							if (m_CursorY > 1)
+							if (m_CursorY > 0)
 							{
 								DoCursorUp(1);
 								DoDeleteTextRow(m_CursorY);
@@ -195,6 +195,29 @@ namespace Editor
 							consume = true;
 						}
 					}
+					break;
+				case SDLK_DELETE:
+					if (m_CursorX == m_MaxCursorX)
+					{
+						if (isNoModifierDown)
+						{
+							if (m_CursorY >= 0)
+							{
+								DoDeleteTextRow(m_CursorY);
+
+								m_RequireRefresh = true;
+								consume = true;
+							}
+						}
+						else if (isOnlyShiftDown)
+						{
+							DoInsertTextRow(m_CursorY);
+
+							m_RequireRefresh = true;
+							consume = true;
+						}
+					}
+					break;
 				}
 			}
 		}
@@ -573,7 +596,7 @@ namespace Editor
 		{
 			AddUndo();
 
-			for (unsigned int i = size - 2; i >= inRow; --i)
+			for (int i = static_cast<int>(size) - 2; i >= static_cast<int>(inRow); --i)
 				(*m_TableText)[i + 1] = (*m_TableText)[i];
 
 			(*m_TableText)[inRow] = "";
