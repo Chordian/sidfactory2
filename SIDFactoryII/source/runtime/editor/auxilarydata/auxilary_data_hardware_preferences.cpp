@@ -1,7 +1,13 @@
 #include "auxilary_data_hardware_preferences.h"
 #include "auxilary_data_utils.h"
-#include "utils/c64file.h"
 #include "foundation/base/assert.h"
+#include "utils/c64file.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/global.h"
+
+using namespace Utility;
+using namespace Utility::Config;
 
 namespace Editor
 {
@@ -14,8 +20,28 @@ namespace Editor
 
 	void AuxilaryDataHardwarePreferences::Reset()
 	{
-		m_SIDModel = SIDModel::MOS8580;
-		m_Region = Region::PAL;
+
+		ConfigFile& config = Global::instance().GetConfig();
+		int default_sid_model = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.Default.Model", 8580);
+		std::string default_region = GetSingleConfigurationValue<ConfigValueString>(config, "Sound.Emulation.Default.Region", std::string("PAL"));
+
+		if (default_sid_model == 6581)
+		{
+			m_SIDModel = SIDModel::MOS6581;
+		}
+		else
+		{
+			m_SIDModel = SIDModel::MOS8580;
+		}
+
+		if (default_region == "NTSC")
+		{
+			m_Region = Region::NTSC;
+		}
+		else
+		{
+			m_Region = Region::PAL;
+		}
 	}
 
 

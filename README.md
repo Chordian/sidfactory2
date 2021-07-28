@@ -1,7 +1,9 @@
 # SID Factory II
 
 SID Factory II is a cross-platform editor for composing music that will work on
-a Commodore 64. It uses the reSID emulator and is currently in open BETA. You can download binary release builds from [here](http://blog.chordian.net/sf2/).
+a Commodore 64. It uses the reSID emulator and is currently in open BETA. You
+can download binary release builds from [here](http://blog.chordian.net/sf2/).
+To build from source, have a look [here](DEVELOPMENT.md).
 
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
@@ -15,6 +17,33 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 ![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
 ## Changelog
+
+- Added: Documentation on how to customize configuration using a `user.ini`
+  file. Including a default template `/documentation/user.default.ini`.
+- Added: Configuration option `Window.Scaling` to scale the contents of the
+  window. (Thanks to Matty Seito for suggesting)
+- Added: Configuration options (thanks to Laszlo Vincenzo Vincze for
+  suggesting):
+  - `Editor.Follow.Play` to set default follow play on/off.
+  - `Editor.Sequence.Highlights` to set default sequence highlights on/off.
+  - `Sound.Emulation.Default.Model` to set the default SID model (6581/8580) on
+    startup.
+  - `Sound.Emulation.Default.Region` to set default region (PAL/NTSC) on
+    startup.
+- Added: Configuration options:
+  - `Editor.Confirm.QuickSave` to enable/disable confirmation dialog on quick
+    save.
+  - `Sound.Output.Gain` for boosting/lowering output volume of the editor.
+  - `Disk.UserFolders` and `Disk.UserFolders.Aliases` to add your favorite
+    folder shortcuts to the file browser.
+  - `Disk.Startup.Folder` to set the default startup folder for the file
+    browser.
+- Fixed: [#131](https://github.com/Chordian/sidfactory2/issues/131) SF2 won't
+  compile on mac with Silicon M1 CPU. (Thanks to Rolf Greven for reporting and
+  suggesting the fix)
+- Fixed: [#133](https://github.com/Chordian/sidfactory2/issues/133) Emulation
+  error when starting up linux version. (Thanks to Maurizio Dall'Acqua for
+  reporting)
 
 ### Build 20210104
 

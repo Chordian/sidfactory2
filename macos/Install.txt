@@ -21,3 +21,8 @@ because it is from an unidentified developer. In that case do the following:
 
 - Right click the "SIDFactoryII.app" in your applications folder and select 'Open'.
 - Select 'Open' if macOS asks you if you are sure.
+
+The folder "SIDFactoryII/documentation" contains a template called "user.default.ini".
+Rename this to user.ini and put it in your home directory in the folder .config.
+SIDFactory looks for the file ~/.config/user.ini for custom configuration (where ~
+is your home directory).

@@ -1,12 +1,14 @@
 #include "runtime/editor/overlay_control.h"
+#include "foundation/base/types.h"
+#include "foundation/graphics/viewport.h"
+#include "foundation/platform/iplatform.h"
+#include "libraries/ghc/fs_std.h"
+#include "libraries/picopng/picopng.h"
 #include "runtime/editor/driver/driver_info.h"
 #include "utils/configfile.h"
+#include "utils/global.h"
 #include "utils/utilities.h"
-#include "libraries/picopng/picopng.h"
-#include "libraries/ghc/fs_std.h"
-#include "foundation/platform/iplatform.h"
-#include "foundation/graphics/viewport.h"
-#include "foundation/base/types.h"
+
 #include <algorithm>
 
 
@@ -14,19 +16,25 @@ namespace Editor
 {
 	using namespace fs;
 	using namespace Utility;
+	using namespace Foundation;
 	using namespace Utility::Config;
 
-	OverlayControl::OverlayControl(const Utility::ConfigFile& inConfigFile, Foundation::Viewport* inViewport, const Foundation::IPlatform* inPlatform)
-		: m_Enabled(GetSingleConfigurationValue<ConfigValueInt>(inConfigFile, "Show.Overlay", 0) != 0)
-		, m_OverlayEnabledState(false)
+	OverlayControl::OverlayControl(Foundation::Viewport* inViewport)
+		: m_OverlayEnabledState(false)
+
 		, m_Viewport(inViewport)
 		, m_IsFading(true)
 		, m_FadeValue(0.0f)
 	{
-		ReadConfigValues(inConfigFile);
-		EnumeratePlatformFiles(inPlatform);
-		path overlays_path = inPlatform->Storage_GetOverlaysHomePath();
-		LoadOverlay(true, (overlays_path / (inPlatform->GetName() + "_editor.png")).string());
+		ConfigFile& configFile = Global::instance().GetConfig();
+		m_Enabled = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Show.Overlay", 0) != 0;
+
+		IPlatform& platform = Global::instance().GetPlatform();
+
+		ReadConfigValues(configFile);
+		EnumeratePlatformFiles(platform);
+		path overlays_path = platform.Storage_GetOverlaysHomePath();
+		LoadOverlay(true, (overlays_path / (platform.GetName() + "_editor.png")).string());
 	}
 
 
@@ -150,10 +158,10 @@ namespace Editor
 	}
 
 
-	void OverlayControl::EnumeratePlatformFiles(const Foundation::IPlatform* inPlatform)
+	void OverlayControl::EnumeratePlatformFiles(const Foundation::IPlatform& inPlatform)
 	{
-		const std::string& platform_name = inPlatform->GetName();
-		directory_iterator directory_iterator(inPlatform->Storage_GetOverlaysHomePath());
+		const std::string& platform_name = inPlatform.GetName();
+		directory_iterator directory_iterator(inPlatform.Storage_GetOverlaysHomePath());
 
 		for (auto& path : directory_iterator)
 		{
@@ -161,7 +169,7 @@ namespace Editor
 
 			if (is_regular_file(path, error_code))
 			{
-				if(path.path().filename().string().find(platform_name) != std::string::npos)
+				if (path.path().filename().string().find(platform_name) != std::string::npos)
 					m_OverlayFileList.push_back(path.path().string());
 			}
 		}
@@ -186,12 +194,12 @@ namespace Editor
 			if (PicoPNG::decodePNG(decoded_image, decoded_image_width, decoded_image_height, static_cast<const unsigned char*>(file_buffer), file_size, true) == 0)
 			{
 				unsigned char* data = new unsigned char[decoded_image.size()];
-				
+
 				for (unsigned int i = 0; i < decoded_image.size(); ++i)
 					data[i] = decoded_image[i];
-			
-				Rect rect = 
-				{
+
+				Rect rect = {
+
 					inIsEditorOverlay ? m_OverlayEditorImageX : m_OverlayDriverImageX,
 					inIsEditorOverlay ? m_OverlayEditorImageY : m_OverlayDriverImageY,
 					static_cast<int>(decoded_image_width),

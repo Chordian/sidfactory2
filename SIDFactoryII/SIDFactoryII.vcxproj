@@ -287,11 +287,13 @@
     <ClCompile Include="source\utils\bit_array.cpp" />
     <ClCompile Include="source\utils\c64file.cpp" />
     <ClCompile Include="source\utils\configfile.cpp" />
+    <ClCompile Include="source\utils\global.cpp" />
     <ClCompile Include="source\utils\config\configcolors.cpp" />
     <ClCompile Include="source\utils\config\configtypes.cpp" />
     <ClCompile Include="source\utils\config\configutils.cpp" />
     <ClCompile Include="source\utils\keyhook.cpp" />
     <ClCompile Include="source\utils\keyhookstore.cpp" />
+    <ClCompile Include="source\utils\logging.cpp" />
     <ClCompile Include="source\utils\psidfile.cpp" />
     <ClCompile Include="source\utils\usercolors.cpp" />
     <ClCompile Include="source\utils\utilities.cpp" />
@@ -470,6 +472,7 @@
     <ClInclude Include="source\utils\bit_array.h" />
     <ClInclude Include="source\utils\c64file.h" />
     <ClInclude Include="source\utils\configfile.h" />
+    <ClInclude Include="source\utils\global.h" />
     <ClInclude Include="source\utils\config\configcolors.h" />
     <ClInclude Include="source\utils\config\configtypes.h" />
     <ClInclude Include="source\utils\config\configutils.h" />
@@ -477,6 +480,7 @@
     <ClInclude Include="source\utils\event.h" />
     <ClInclude Include="source\utils\keyhook.h" />
     <ClInclude Include="source\utils\keyhookstore.h" />
+    <ClInclude Include="source\utils\logging.h" />
     <ClInclude Include="source\utils\psidfile.h" />
     <ClInclude Include="source\utils\usercolors.h" />
     <ClInclude Include="source\utils\utilities.h" />
