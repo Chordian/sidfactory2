@@ -596,6 +596,9 @@
     <ClCompile Include="source\runtime\editor\packer\packing_utils.cpp">
       <Filter>source\runtime\editor\packer</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_packing_options.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\utilities.h">
@@ -1142,6 +1145,9 @@
     <ClInclude Include="source\utils\logging.h" />
     <ClInclude Include="source\runtime\editor\packer\packing_utils.h">
       <Filter>source\runtime\editor\packer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_packing_options.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

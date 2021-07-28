@@ -35,6 +35,7 @@
 #include "runtime/editor/dialog/dialog_message_yesno.h"
 #include "runtime/editor/dialog/dialog_hex_value_input.h"
 #include "runtime/editor/dialog/dialog_optimize.h"
+#include "runtime/editor/dialog/dialog_packing_options.h"
 #include "runtime/editor/screens/statusbar/status_bar_edit.h"
 #include "runtime/editor/overlays/overlay_flightrecorder.h"
 #include "runtime/editor/packer/packing_utils.h"
@@ -824,29 +825,25 @@ namespace Editor
 						auto dialog_cancel = [this]()
 						{
 						};
-		
-						auto dialog_ok = [this, &dialog_cancel](unsigned int inDestinationAddress)
+
+						auto dialog_ok = [this](unsigned short inDestinationAddress, unsigned char inDestinationZeroPage)
 						{
-							this->m_PackingDestinationAddress = inDestinationAddress;
-
-							auto dialog_zp_ok = [this](unsigned int inLowestZP)
-							{
-								unsigned char lowest_zp = inLowestZP < 2 ? 2 : inLowestZP;
-								this->m_PackCallback(this->m_PackingDestinationAddress, static_cast<unsigned char>(inLowestZP));
-							};
-
-							ZeroPageRange zp_range = GetZeroPageRangeFromDriver(*(this->m_CPUMemory), *(this->m_DriverInfo));
-
-							if (zp_range.m_LowestZeroPage <= zp_range.m_HighestZeroPage)
-							{
-								unsigned char zp_delta = zp_range.m_HighestZeroPage - zp_range.m_LowestZeroPage;
-								unsigned int highest_value = 0x100 - static_cast<int>(zp_delta + 3);
-								this->m_ComponentsManager->StartDialog(std::make_shared<DialogHexValueInput>("Packer", "Packed song lowest zp:", 32, 2, zp_range.m_LowestZeroPage, highest_value, dialog_zp_ok, dialog_cancel));
-							}
+							this->m_PackCallback(inDestinationAddress, inDestinationZeroPage);
 						};
 
-						const unsigned int default_destination_address = 0x1000;
-						m_ComponentsManager->StartDialog(std::make_shared<DialogHexValueInput>("Packer", "Packed song destination address:", 32, 4, default_destination_address, 0xffff, dialog_ok, dialog_cancel));
+						ZeroPageRange zp_range = GetZeroPageRangeFromDriver(*(this->m_CPUMemory), *(this->m_DriverInfo));
+
+						if (zp_range.m_LowestZeroPage <= zp_range.m_HighestZeroPage)
+						{
+							const unsigned short default_destination_address = 0x1000;
+							m_ComponentsManager->StartDialog(std::make_shared<DialogPackingOptions>(
+								default_destination_address, 
+								zp_range.m_LowestZeroPage, 
+								zp_range, 
+								dialog_ok, 
+								dialog_cancel
+							));
+						}
 					}
 
 					break;
