@@ -88,7 +88,7 @@ namespace Editor
 		void OnExitIntroScreenToLoad();
 		bool OnConversionSuccess(ScreenBase* inCallerScreen, const std::string& inPathAndFilename, std::shared_ptr<Utility::C64File> inConversionResult);
 
-		void OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress);
+		void OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress, unsigned char inFirstZeroPage);
 		void OnQuickSave(ScreenBase* inCallerScreen);
 		void OnSaveError(ScreenBase* inCallerScreen);
 

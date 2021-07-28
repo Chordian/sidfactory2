@@ -262,6 +262,7 @@
     <ClCompile Include="source\runtime\editor\overlays\overlay_flightrecorder.cpp" />
     <ClCompile Include="source\runtime\editor\overlay_control.cpp" />
     <ClCompile Include="source\runtime\editor\packer\packer.cpp" />
+    <ClCompile Include="source\runtime\editor\packer\packing_utils.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_base.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_convert.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_disk.cpp" />
@@ -437,6 +438,7 @@
     <ClInclude Include="source\runtime\editor\overlays\overlay_flightrecorder.h" />
     <ClInclude Include="source\runtime\editor\overlay_control.h" />
     <ClInclude Include="source\runtime\editor\packer\packer.h" />
+    <ClInclude Include="source\runtime\editor\packer\packing_utils.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_base.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_convert.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_disk.h" />

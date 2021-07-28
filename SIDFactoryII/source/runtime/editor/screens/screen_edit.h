@@ -81,7 +81,7 @@ namespace Editor
 			std::function<void(void)> inRequestLoadInstrumentCallback,
 			std::function<void(void)> inRequestSaveInstrumentCallback,
 			std::function<void(void)> inQuickSaveCallback,
-			std::function<void(unsigned short)> inPackCallback,
+			std::function<void(unsigned short, unsigned char)> inPackCallback,
 			std::function<void(void)> inToggleShowOverlay,
 			std::function<void(unsigned int)> inConfigReload);
 		virtual ~ScreenEdit();
@@ -170,7 +170,7 @@ namespace Editor
 		std::function<void(void)> m_LoadInstrumentRequestCallback;
 		std::function<void(void)> m_SaveInstrumentRequestCallback;
 		std::function<void(void)> m_QuickSaveCallback;
-		std::function<void(unsigned short)> m_PackCallback;
+		std::function<void(unsigned short, unsigned char)> m_PackCallback;
 		std::function<void(void)> m_ToggleShowOverlay;
 		std::function<void(unsigned int)> m_ConfigReconfigure;
 
@@ -241,6 +241,9 @@ namespace Editor
 
 		// Added configuration
 		bool m_ConvertLegacyDriverTableDefaultColors;
+
+		// Packing
+		unsigned short m_PackingDestinationAddress;
 
 		// Debug
 		std::unique_ptr<DebugViews> m_DebugViews;

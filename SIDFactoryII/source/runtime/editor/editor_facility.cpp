@@ -176,7 +176,7 @@ namespace Editor
 			[&]() {	m_DiskScreen->SetMode(ScreenDisk::LoadInstrument); RequestScreen(m_DiskScreen.get()); },
 			[&]() {	m_DiskScreen->SetMode(ScreenDisk::SaveInstrument); m_DiskScreen->SetSuggestedFileName(m_LastSF2PathAndFilename);  RequestScreen(m_DiskScreen.get()); },
 			[&]() { OnQuickSave(m_EditScreen.get()); },
-			[&](unsigned short inDestinationAddress) { OnPack(m_EditScreen.get(), inDestinationAddress); },
+			[&](unsigned short inDestinationAddress, unsigned char inFirstZeroPage) { OnPack(m_EditScreen.get(), inDestinationAddress, inFirstZeroPage); },
 			[&]() { m_FlipOverlayState = true; },
 			[&](unsigned int inReconfigureOption) { Reconfigure(inReconfigureOption); });
 
@@ -877,11 +877,11 @@ namespace Editor
 	}
 
 
-	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress)
+	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress, unsigned char inFirstZeroPage)
 	{
 		const bool is_uppercase = m_DisplayState.IsHexUppercase();
 
-		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress);
+		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress, inFirstZeroPage);
 		m_PackedData = packer.GetResult();
 
 		std::string packing_info;

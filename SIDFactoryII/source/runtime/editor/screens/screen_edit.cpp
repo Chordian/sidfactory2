@@ -37,6 +37,7 @@
 #include "runtime/editor/dialog/dialog_optimize.h"
 #include "runtime/editor/screens/statusbar/status_bar_edit.h"
 #include "runtime/editor/overlays/overlay_flightrecorder.h"
+#include "runtime/editor/packer/packing_utils.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/emulation/sid/sidproxydefines.h"
@@ -80,7 +81,7 @@ namespace Editor
 		std::function<void(void)> inRequestLoadInstrumentCallback,
 		std::function<void(void)> inRequestSaveInstrumentCallback,
 		std::function<void(void)> inQuickSaveCallback,
-		std::function<void(unsigned short)> inPackCallback,
+		std::function<void(unsigned short, unsigned char)> inPackCallback,
 		std::function<void(void)> inToggleShowOverlay,
 		std::function<void(unsigned int)> inReconfigure)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
@@ -818,13 +819,30 @@ namespace Editor
 					break;
 				case DialogUtilities::Selection::Pack:
 					{
-						auto dialog_ok = [this](unsigned int inDestinationAddress)
-						{
-							m_PackCallback(static_cast<unsigned short>(inDestinationAddress));
-						};
-						
+						m_PackingDestinationAddress = 0x0000;
+
 						auto dialog_cancel = [this]()
 						{
+						};
+		
+						auto dialog_ok = [this, &dialog_cancel](unsigned int inDestinationAddress)
+						{
+							this->m_PackingDestinationAddress = inDestinationAddress;
+
+							auto dialog_zp_ok = [this](unsigned int inLowestZP)
+							{
+								unsigned char lowest_zp = inLowestZP < 2 ? 2 : inLowestZP;
+								this->m_PackCallback(this->m_PackingDestinationAddress, static_cast<unsigned char>(inLowestZP));
+							};
+
+							ZeroPageRange zp_range = GetZeroPageRangeFromDriver(*(this->m_CPUMemory), *(this->m_DriverInfo));
+
+							if (zp_range.m_LowestZeroPage <= zp_range.m_HighestZeroPage)
+							{
+								unsigned char zp_delta = zp_range.m_HighestZeroPage - zp_range.m_LowestZeroPage;
+								unsigned int highest_value = 0x100 - static_cast<int>(zp_delta + 3);
+								this->m_ComponentsManager->StartDialog(std::make_shared<DialogHexValueInput>("Packer", "Packed song lowest zp:", 32, 2, zp_range.m_LowestZeroPage, highest_value, dialog_zp_ok, dialog_cancel));
+							}
 						};
 
 						const unsigned int default_destination_address = 0x1000;
