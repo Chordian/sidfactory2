@@ -67,6 +67,11 @@ namespace Editor
 		bool DoEnd();
 		bool DoInsertTextRow(unsigned int inRow);
 		bool DoDeleteTextRow(unsigned int inRow);
+		
+		void DoBeginMarking();
+		void DoCancelMarking();
+		int GetMarkingTopY() const;
+		int GetMarkingBottomY() const;
 
 		void AddUndo();
 		void AddMostRecentEdit();
@@ -106,6 +111,11 @@ namespace Editor
 		int m_MaxCursorX;
 		int m_TopPosition;
 		int m_PlaybackEventPosition;
+
+		bool m_IsMarkingArea;
+		int m_MarkingX;
+		int m_MarkingFromY;
+		int m_MarkingToY;
 
 		static const int ms_MarginWidth;
 		static const int ms_TextWidth;

@@ -599,6 +599,18 @@
     <ClCompile Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.cpp">
       <Filter>source\runtime\editor\components\utils</Filter>
     </ClCompile>
+    <ClCompile Include="source\utils\global.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\logging.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datacopy\datacopy_orderlist.cpp">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datacopy\copypaste.cpp">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\utilities.h">
@@ -1149,6 +1161,14 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\undo\undo_datasource\undo_datasource.h">
       <Filter>source\runtime\editor\undo\undo_datasource</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\global.h" />
+    <ClInclude Include="source\utils\logging.h" />
+    <ClInclude Include="source\runtime\editor\datacopy\datacopy_orderlist.h">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datacopy\copypaste.h">
+      <Filter>source\runtime\editor\datacopy</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,7 @@ namespace Editor
 {
 	DataCopySequence::DataCopySequence()
 		: m_EventCount(0)
+		, m_IsFullSequenceCopy(false)
 	{
 		m_Events = new DataSourceSequence::Event[DataSourceSequence::MaxEventCount];
 	}
@@ -12,6 +13,7 @@ namespace Editor
 
 	DataCopySequence::DataCopySequence(const DataSourceSequence& inDataSource)
 		: m_EventCount(inDataSource.GetLength())
+		, m_IsFullSequenceCopy(true)
 	{
 		m_Events = new DataSourceSequence::Event[DataSourceSequence::MaxEventCount];
 
@@ -23,6 +25,12 @@ namespace Editor
 	DataCopySequence::~DataCopySequence()
 	{
 		delete[] m_Events;
+	}
+
+
+	bool DataCopySequence::IsFullSequenceCopy() const
+	{
+		return m_IsFullSequenceCopy;
 	}
 
 

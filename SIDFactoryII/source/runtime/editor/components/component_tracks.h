@@ -21,11 +21,6 @@ namespace Editor
 
 	class UndoComponentDataTableTracks;
 
-	struct TrackCopyPasteData
-	{
-		std::shared_ptr<DataCopySequence> m_SequenceCopy;
-	};
-
 	class ComponentTracks final : public ComponentBase
 	{
 	public:
@@ -106,6 +101,5 @@ namespace Editor
 		ComponentTrackUtils::FocusRow m_FocusRow;
 
 		std::shared_ptr<DataSourceTrackComponents> m_DataSource;
-		TrackCopyPasteData m_CopyPasteData;
 	};
 }

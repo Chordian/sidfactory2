@@ -33,9 +33,7 @@ namespace Utility
 }
 
 namespace Editor
-{
-	struct TrackCopyPasteData;
-	
+{	
 	class UndoComponentData;
 	class UndoComponentDataTableTracks;
 
@@ -112,7 +110,6 @@ namespace Editor
 			const EditState& inEditState,
 			const Utility::KeyHookStore& inKeyHookStore,
 			const AuxilaryDataCollection& inAuxilaryDataCollection,
-			std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
 			std::function<void(bool, int, int)> inStatusReportFunction,
 			std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
 			std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
@@ -198,7 +195,7 @@ namespace Editor
 		int DeleteSequenceLine(bool inChangeSequenceSize);
 		int InsertSequenceLine(bool inChangeSequenceSize);
 		int ResizeSequence(int inLength);
-		int ResizeAndReplaceData(const std::shared_ptr<DataCopySequence>& inSequenceData);
+		int ResizeAndReplaceData(const DataCopySequence* inSequenceData);
 		int InsertSequenceLines(int inLineCount);
 
 		// Event position
@@ -305,8 +302,6 @@ namespace Editor
 		std::function<void(bool, int, int)> m_StatusReportFunction;
 		std::function<unsigned char()> m_GetFirstFreeSequenceIndexFunction;
 		std::function<unsigned char()> m_GetFirstEmptySequenceIndexFunction;
-
-		std::shared_ptr<TrackCopyPasteData> m_CopyPasteData;
 
 		OrderListIndexChangedEvent m_OrderListIndexChangedEvent;
 		SequenceSplitEvent m_SequenceSplitEvent;

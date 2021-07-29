@@ -37,6 +37,7 @@
 #include "runtime/editor/dialog/dialog_optimize.h"
 #include "runtime/editor/screens/statusbar/status_bar_edit.h"
 #include "runtime/editor/overlays/overlay_flightrecorder.h"
+#include "runtime/editor/datacopy/copypaste.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/emulation/sid/sidproxydefines.h"
@@ -962,8 +963,8 @@ namespace Editor
             return first_free_sequence_index;
         };
 
-		// Create copy/paste data container
-		m_TrackCopyPasteData = std::make_shared<TrackCopyPasteData>();
+		// Flush copy paste
+		CopyPaste::Instance().Flush();
 
 		// Create data container for music data (which is all tracks and sequences combined)
 		std::vector<std::shared_ptr<ComponentTrack>> tracks;
@@ -980,7 +981,6 @@ namespace Editor
 					m_EditState,
 					m_KeyHookStore,
 					m_DriverInfo->GetAuxilaryDataCollection(),
-					m_TrackCopyPasteData,
 					sequence_editing_status_report,
 					get_first_free_sequence_index,
                     get_first_empty_sequence_index,

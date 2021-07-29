@@ -55,6 +55,7 @@ namespace Editor
 		, m_CursorY(0)
 		, m_MaxCursorY(0)
 		, m_MaxCursorX(static_cast<int>(inOrderLists.size()))
+		, m_IsMarkingArea(false)
 		, m_TopPosition(0)
 		, m_SetTrackEventPosFunction(inSetTrackEventPosFunction)
 	{
@@ -99,34 +100,83 @@ namespace Editor
 				switch (key_event)
 				{
 				case SDLK_DOWN:
-					if (inKeyboard.IsModifierEmpty() && DoCursorDown(1))
+					if (inKeyboard.IsModifierEmpty())
 					{
-						m_RequireRefresh = true;
-						consume = true;
+						if (m_IsMarkingArea)
+							DoCancelMarking();
+
+						if (DoCursorDown(1))
+						{
+							m_RequireRefresh = true;
+							consume = true;
+						}
+					}
+					else if (isOnlyShiftDown && m_CursorX != m_MaxCursorX)
+					{
+						if (!m_IsMarkingArea)
+							DoBeginMarking();
+
+						if (DoCursorDown(1))
+						{
+							m_MarkingToY = m_CursorY;
+							m_RequireRefresh = true;
+							consume = true;
+						}
 					}
 					break;
 				case SDLK_UP:
-					if (inKeyboard.IsModifierEmpty() && DoCursorUp(1))
+					if (inKeyboard.IsModifierEmpty())
 					{
-						m_RequireRefresh = true;
-						consume = true;
+						if (m_IsMarkingArea)
+							DoCancelMarking();
+
+						if (DoCursorUp(1))
+						{
+							m_RequireRefresh = true;
+							consume = true;
+						}
+					}
+					else if (isOnlyShiftDown && m_CursorX != m_MaxCursorX)
+					{
+						if (!m_IsMarkingArea)
+							DoBeginMarking();
+
+						if (DoCursorUp(1))
+						{
+							m_MarkingToY = m_CursorY;
+							m_RequireRefresh = true;
+							consume = true;
+						}
 					}
 					break;
 				case SDLK_LEFT:
-					if(inKeyboard.IsModifierEmpty() && DoCursorLeft())
+					if(inKeyboard.IsModifierEmpty())
 					{
+						if (m_IsMarkingArea)
+							DoCancelMarking();
+
+						DoCursorLeft();
+
 						m_RequireRefresh = true;
 						consume = true;
 					}
 					break;
 				case SDLK_RIGHT:
-					if (inKeyboard.IsModifierEmpty() && DoCursorRight())
+					if (inKeyboard.IsModifierEmpty())
 					{
+						if (m_IsMarkingArea)
+							DoCancelMarking();
+
+						DoCursorRight();
+
 						m_RequireRefresh = true;
 						consume = true;
 					}
 					break;
 				case SDLK_PAGEDOWN:
+					if (m_IsMarkingArea)
+						DoCancelMarking();
+
 					if (DoCursorDown(20))
 					{
 						m_RequireRefresh = true;
@@ -134,6 +184,9 @@ namespace Editor
 					}
 					break;
 				case SDLK_PAGEUP:
+					if (m_IsMarkingArea)
+						DoCancelMarking();
+
 					if (DoCursorUp(20))
 					{
 						m_RequireRefresh = true;
@@ -141,6 +194,9 @@ namespace Editor
 					}
 					break;
 				case SDLK_HOME:
+					if (m_IsMarkingArea)
+						DoCancelMarking();
+
 					if (DoHome())
 					{
 						m_RequireRefresh = true;
@@ -148,6 +204,9 @@ namespace Editor
 					}
 					break;
 				case SDLK_END:
+					if (m_IsMarkingArea)
+						DoCancelMarking();
+
 					if (DoEnd())
 					{
 						m_RequireRefresh = true;
@@ -155,6 +214,9 @@ namespace Editor
 					}
 					break;
 				case SDLK_RETURN:
+					if (m_IsMarkingArea)
+						DoCancelMarking();
+
 					if (isOnlyShiftDown)
 					{
 						if (m_CursorY >= 0 && m_CursorY < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
@@ -176,6 +238,9 @@ namespace Editor
 				case SDLK_BACKSPACE:
 					if (m_CursorX == m_MaxCursorX)
 					{
+						if (m_IsMarkingArea)
+							DoCancelMarking();
+
 						if (isNoModifierDown)
 						{
 							if (m_CursorY > 0)
@@ -199,6 +264,9 @@ namespace Editor
 				case SDLK_DELETE:
 					if (m_CursorX == m_MaxCursorX)
 					{
+						if (m_IsMarkingArea)
+							DoCancelMarking();
+
 						if (isNoModifierDown)
 						{
 							if (m_CursorY >= 0)
@@ -331,6 +399,28 @@ namespace Editor
 
 			const bool is_uppercase = inDisplayState.IsHexUppercase();
 			const int cursor_position = m_CursorY - m_TopPosition;
+
+			if (m_IsMarkingArea)
+			{
+				const int top_marking = GetMarkingTopY() - m_TopPosition;
+				const int bottom_marking = GetMarkingBottomY() - m_TopPosition;
+
+				if (bottom_marking >= 0 && top_marking < m_Rect.m_Dimensions.m_Height)
+				{
+					const int adjusted_top_marking = top_marking < 0 ? 0 : top_marking;
+					const int adjusted_bottom_marking = bottom_marking > m_Rect.m_Dimensions.m_Height ? m_Rect.m_Dimensions.m_Height : bottom_marking;
+
+					const int marking_height = adjusted_bottom_marking - adjusted_top_marking;
+
+					Rect marking_rect = m_Rect;
+
+					marking_rect.m_Position.m_X += GetOutputPositionFromCursorX(m_MarkingX);
+					marking_rect.m_Position.m_Y += adjusted_top_marking;
+					marking_rect.m_Dimensions = { 2, marking_height };
+
+					m_TextField->ColorAreaBackground(ToColor(m_HasControl ? UserColor::SongListCursorFocus : UserColor::SongListCursorDefault), marking_rect);
+				}
+			}
 
 			if (cursor_position >= 0 && cursor_position < m_Dimensions.m_Height)
 			{
@@ -650,6 +740,47 @@ namespace Editor
 		}
 
 		return false;
+	}
+
+
+	void ComponentOrderListOverview::DoBeginMarking()
+	{
+		FOUNDATION_ASSERT(!m_IsMarkingArea);
+
+		m_IsMarkingArea = true;
+
+		m_MarkingX = m_CursorX;
+		m_MarkingFromY = m_CursorY;
+	}
+
+
+	void ComponentOrderListOverview::DoCancelMarking()
+	{
+		FOUNDATION_ASSERT(m_IsMarkingArea);
+
+		m_IsMarkingArea = false;
+	}
+
+
+	int ComponentOrderListOverview::GetMarkingTopY() const
+	{
+		FOUNDATION_ASSERT(m_IsMarkingArea);
+
+		if (m_MarkingFromY < m_MarkingToY)
+			return m_MarkingFromY;
+
+		return m_MarkingToY;
+	}
+
+
+	int ComponentOrderListOverview::GetMarkingBottomY() const
+	{
+		FOUNDATION_ASSERT(m_IsMarkingArea);
+
+		if (m_MarkingToY > m_MarkingFromY)
+			return m_MarkingToY;
+
+		return m_MarkingFromY + 1;
 	}
 
 

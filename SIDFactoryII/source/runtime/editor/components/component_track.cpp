@@ -21,6 +21,7 @@
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/datasource_utils.h"
 #include "runtime/editor/debug/debug_singleton.h"
+#include "runtime/editor/datacopy/copypaste.h"
 
 #include "utils/keyhook.h"
 #include "utils/keyhookstore.h"
@@ -120,7 +121,6 @@ namespace Editor
 		const EditState& inEditState,
 		const Utility::KeyHookStore& inKeyHookStore,
 		const AuxilaryDataCollection& inAuxilaryDataCollection,
-		std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
 		std::function<void(bool, int, int)> inStatusReportFunction,
 		std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
 		std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
@@ -136,7 +136,6 @@ namespace Editor
 		, m_GetFirstEmptySequenceIndexFunction(inGetFirstEmptySequenceIndexFunction)
 		, m_DataSourceOrderList(inDataSourceOrderList)
 		, m_DataSourceSequenceList(inDataSourceSequenceList)
-		, m_CopyPasteData(inCopyPasteData)
 		, m_CursorPos(0)
 		, m_EventPos(0xffffffff)
 		, m_MaxEventPos(0)
@@ -1575,7 +1574,7 @@ namespace Editor
 	}
 
 
-	int ComponentTrack::ResizeAndReplaceData(const std::shared_ptr<DataCopySequence>& inSequenceData)
+	int ComponentTrack::ResizeAndReplaceData(const DataCopySequence* inSequenceData)
 	{
 		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 		const int source_length = inSequenceData->GetEventCount();
@@ -2214,23 +2213,28 @@ namespace Editor
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-			m_CopyPasteData->m_SequenceCopy = std::make_shared<DataCopySequence>(*sequence_data_source);
+			CopyPaste::Instance().SetData(new DataCopySequence(*sequence_data_source));
 		}
 	}
 
 
 	void ComponentTrack::DoPasteSequenceData()
 	{
-		if (m_CopyPasteData->m_SequenceCopy != nullptr)
+		if (CopyPaste::Instance().HasData<DataCopySequence>())
 		{
 			AddUndoStep();
 
-			// Do additional checking
-			int event_pos = ResizeAndReplaceData(m_CopyPasteData->m_SequenceCopy);
+			const auto* data = CopyPaste::Instance().GetData<DataCopySequence>();
+			const bool is_full_sequence = data->IsFullSequenceCopy();
 
-			// Set the new event position
-			if (m_EventPos != event_pos)
-				SetEventPosition(event_pos);
+			if (is_full_sequence)
+			{
+				int event_pos = ResizeAndReplaceData(data);
+
+				// Set the new event position
+				if (m_EventPos != event_pos)
+					SetEventPosition(event_pos);
+			}
 
 			OnOrderListChanged();
 		}
