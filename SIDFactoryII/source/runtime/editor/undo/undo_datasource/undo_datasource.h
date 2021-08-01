@@ -1,6 +1,6 @@
 #pragma once
 
-#include "source/runtime/editor/auxilarydata/auxilary_data_table_text.h"
+#include "runtime/editor/auxilarydata/auxilary_data_table_text.h"
 
 namespace Editor
 {
