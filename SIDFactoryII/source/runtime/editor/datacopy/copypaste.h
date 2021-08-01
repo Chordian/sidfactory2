@@ -34,7 +34,7 @@ namespace Editor
 	template<typename T>
 	bool CopyPaste::HasData() const
 	{
-		static_assert("Implement data type specialization");
+		static_assert(false, "Implement data type specialization");
 		return false;
 	}
 
@@ -42,14 +42,14 @@ namespace Editor
 	template<typename T>
 	const T* CopyPaste::GetData() const
 	{
-		static_assert("Implement data type specialization");
+		static_assert(false, "Implement data type specialization");
 		return nullptr;
 	}
 
 	template<typename T>
 	void CopyPaste::SetData(T* inData)
 	{
-		static_assert("Implement data type specialization");
+		static_assert(false, "Implement data type specialization");
 	}
 
 
