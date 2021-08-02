@@ -4,6 +4,7 @@
 #include "datacopy_sequence.h"
 #include "foundation/base/assert.h"
 #include <memory>
+#include <type_traits>
 
 namespace Editor
 {
@@ -28,13 +29,18 @@ namespace Editor
 
 		std::unique_ptr<DataCopySequence> m_SequenceData;
 		std::unique_ptr<DataCopyOrderList> m_OrderListData;
+
+		template<typename T>
+		struct FalseT : std::false_type
+		{
+		};
 	};
 
 
 	template<typename T>
 	bool CopyPaste::HasData() const
 	{
-		static_assert(false, "Implement data type specialization");
+		static_assert(FalseT<T>, "Implement data type specialization");
 		return false;
 	}
 
@@ -42,14 +48,14 @@ namespace Editor
 	template<typename T>
 	const T* CopyPaste::GetData() const
 	{
-		static_assert(false, "Implement data type specialization");
+		static_assert(FalseT<T>, "Implement data type specialization");
 		return nullptr;
 	}
 
 	template<typename T>
 	void CopyPaste::SetData(T* inData)
 	{
-		static_assert(false, "Implement data type specialization");
+		static_assert(FalseT<T>, "Implement data type specialization");
 	}
 
 
