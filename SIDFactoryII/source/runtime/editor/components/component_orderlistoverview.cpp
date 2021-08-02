@@ -347,10 +347,13 @@ namespace Editor
 
 					m_CursorX = m_MaxCursorX;
 
-					DoStartEditText(inCursorControl);
+					if (m_CursorY <= m_MaxCursorY)
+					{
+						DoStartEditText(inCursorControl);
 
-					const int cursor_pos = local_cell_position.m_X - text_x;
-					m_TextEditingDataSourceTableText->TrySetCursorPosition(cursor_pos);
+						const int cursor_pos = local_cell_position.m_X - text_x;
+						m_TextEditingDataSourceTableText->TrySetCursorPosition(cursor_pos);
+					}
 				}
 				else
 				{
