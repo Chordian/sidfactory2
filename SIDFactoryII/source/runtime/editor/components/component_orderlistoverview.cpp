@@ -532,6 +532,12 @@ namespace Editor
 	}
 
 
+	bool ComponentOrderListOverview::IsFastForwardAllowed() const
+	{
+		return !IsEditingText();
+	}
+
+
 	void ComponentOrderListOverview::ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost)
 	{
 

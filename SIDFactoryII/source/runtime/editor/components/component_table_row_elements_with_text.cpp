@@ -77,6 +77,12 @@ namespace Editor
 	}
 
 
+	bool ComponentTableRowElementsWithText::IsFastForwardAllowed() const
+	{
+		return !IsEditingText();
+	}
+
+
 	void ComponentTableRowElementsWithText::ClearHasControl(CursorControl& inCursorControl)
 	{
 		if(IsEditingText())

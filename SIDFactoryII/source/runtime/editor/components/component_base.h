@@ -54,6 +54,7 @@ namespace Editor
 
 		virtual bool MayTabOutOfFocus(bool inForward) const;
 		virtual bool IsNoteInputSilenced() const;
+		virtual bool IsFastForwardAllowed() const;
 
 		virtual void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl);
 		virtual void ClearHasControl(CursorControl& inCursorControl);

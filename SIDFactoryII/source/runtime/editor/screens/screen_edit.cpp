@@ -285,8 +285,9 @@ namespace Editor
 		for (const auto key_event : inKeyboard.GetKeyDownList())
 			Utility::ConsumeInputKeyHooks(key_event, inKeyboard.GetModiferMask(), m_FastForwardKeyHooks);
 
-		// Apply fast forward factor to the execution handler
-		m_ExecutionHandler->SetFastForward(m_FastForwardFactor);
+		// Apply fast forward factor to the execution handler if not prevented by the active component
+		const bool may_do_fast_forward = m_ComponentsManager->IsFastForwardAllowed();
+		m_ExecutionHandler->SetFastForward(may_do_fast_forward ? m_FastForwardFactor : 0);
 
 		// Consume input for note play, if allowed
 		if (ConsumeInputNotePlay(inKeyboard))
