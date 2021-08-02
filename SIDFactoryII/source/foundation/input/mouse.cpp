@@ -64,7 +64,7 @@ namespace Foundation
 		{
 			if (IsButtonPressed(static_cast<Button>(i)))
 			{
-				if (m_TickCounter - m_LastButtonPressedTime[i] < 500)
+				if (m_TickCounter - m_LastButtonPressedTime[i] < 250)
 					m_ButtonStateDoublePress |= 1 << i;
 
 				m_LastButtonPressedTime[i] = m_TickCounter;

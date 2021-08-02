@@ -277,7 +277,16 @@ namespace Editor
 								consume = true;
 							}
 						}
-						else if (isOnlyShiftDown)
+					}
+					break;
+				case SDLK_INSERT:
+
+					if (m_CursorX == m_MaxCursorX)
+					{
+						if (m_IsMarkingArea)
+							DoCancelMarking();
+
+						if (isNoModifierDown)
 						{
 							DoInsertTextRow(m_CursorY);
 
@@ -336,11 +345,12 @@ namespace Editor
 					if (IsEditingText() && m_CursorY != m_TextEditingDataSourceTableText->GetTextLineIndex())
 						DoStopEditText(inCursorControl, false);
 
-					const int cursor_pos = local_cell_position.m_X - text_x;
-
-					m_TextEditingDataSourceTableText->TrySetCursorPosition(cursor_pos);
-
 					m_CursorX = m_MaxCursorX;
+
+					DoStartEditText(inCursorControl);
+
+					const int cursor_pos = local_cell_position.m_X - text_x;
+					m_TextEditingDataSourceTableText->TrySetCursorPosition(cursor_pos);
 				}
 				else
 				{
