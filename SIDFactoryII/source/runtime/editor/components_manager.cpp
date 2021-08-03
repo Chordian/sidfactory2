@@ -136,6 +136,15 @@ namespace Editor
 	}
 
 
+	bool ComponentsManager::IsFastForwardAllowed() const
+	{
+		if (m_FocusComponent != nullptr)
+			return m_FocusComponent->IsFastForwardAllowed();
+
+		return true;
+	}
+
+
 	void ComponentsManager::PullDataFromAllSources(const bool inFromUndo)
 	{
 		for (auto& component : m_Components)
