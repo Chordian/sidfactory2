@@ -375,7 +375,8 @@ namespace Editor
 			}
 		}
 		
-		DoMouseWheel(inMouse);
+		if (!IsEditingText())
+			DoMouseWheel(inMouse);
 
 		return consume;
 	}
