@@ -43,6 +43,8 @@ namespace Editor
 		void HandleDataChange() override;
 
 		bool IsNoteInputSilenced() const override;
+		bool IsFastForwardAllowed() const override;
+
 		void ClearHasControl(CursorControl& inCursorControl) override;
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;

@@ -44,6 +44,7 @@ namespace Editor
 		bool IsDisplayingDialog() const;
 		void CancelDialog();
 		bool IsNoteInputSilenced() const;
+		bool IsFastForwardAllowed() const;
 
 		void PullDataFromAllSources(const bool inFromUndo);
 
