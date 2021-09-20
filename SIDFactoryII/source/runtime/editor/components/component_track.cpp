@@ -891,6 +891,7 @@ namespace Editor
 		m_OnUndoHandler = inOnUndoHandler;
 	}
 
+
 	//--------------------------------------------------------------------------------------------------
 	// Order list input
 	//--------------------------------------------------------------------------------------------------
@@ -1198,6 +1199,7 @@ namespace Editor
 
 		return m_EventPos;
 	}
+
 
 	int ComponentTrack::ApplySequenceNoteValue(int inNoteValue)
 	{

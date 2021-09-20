@@ -9,6 +9,7 @@
 #include "runtime/editor/undo/undo_componentdata/undo_componentdata_table_text.h"
 #include "runtime/editor/datacopy/copypaste.h"
 #include "runtime/editor/datacopy/datacopy_orderlist.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_orderlist_overview.h"
 #include "foundation/graphics/textfield.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/mouse.h"
@@ -734,7 +735,7 @@ namespace Editor
 
 		if (inRow < size && size > 1)
 		{
-			AddUndo();
+			AddUndoTextStep();
 
 			for (int i = static_cast<int>(size) - 2; i >= static_cast<int>(inRow); --i)
 				(*m_TableText)[i + 1] = (*m_TableText)[i];
@@ -742,7 +743,7 @@ namespace Editor
 			(*m_TableText)[inRow] = "";
 
 			m_TableText->PushDataToSource();
-			AddMostRecentEdit();
+			AddMostRecentTextEdit();
 
 			m_HasDataChange = true;
 
@@ -759,7 +760,7 @@ namespace Editor
 
 		if (inRow < size && inRow >= 0 && size > 1)
 		{
-			AddUndo();
+			AddUndoTextStep();
 
 			for (unsigned int i = inRow; i < size - 1; ++i)
 				(*m_TableText)[i] = (*m_TableText)[i + 1];
@@ -767,7 +768,7 @@ namespace Editor
 			(*m_TableText)[size - 1] = "";
 
 			m_TableText->PushDataToSource();
-			AddMostRecentEdit();
+			AddMostRecentTextEdit();
 			
 			m_HasDataChange = true;
 
@@ -831,6 +832,8 @@ namespace Editor
 			int channel_count = m_OrderLists.size();
 			if (m_CursorX < channel_count)
 			{
+				AddUndoSequenceStep();
+
 				int current_event_pos = m_Overview[m_CursorY].m_EventPos;
 
 				int order_list_destination_index = [&](const int inCurrentEventPos)
@@ -857,6 +860,9 @@ namespace Editor
 
 					return orderlist_length;
 				}(current_event_pos);
+
+				// Insert and raise events
+				
 			}
 
 		}
@@ -906,7 +912,7 @@ namespace Editor
 	}
 
 
-	void ComponentOrderListOverview::AddUndo()
+	void ComponentOrderListOverview::AddUndoTextStep()
 	{
 		const int count = m_TableText->GetSize();
 
@@ -920,11 +926,11 @@ namespace Editor
 		undo_data->m_ComponentGroupID = m_ComponentGroupID;
 		undo_data->m_TextLines = text_lines;
 
-		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
+		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndoTextEdit(inData, inCursorControl); });
 	}
 
 
-	void ComponentOrderListOverview::AddMostRecentEdit()
+	void ComponentOrderListOverview::AddMostRecentTextEdit()
 	{
 		const int count = m_TableText->GetSize();
 
@@ -938,12 +944,10 @@ namespace Editor
 		undo_data->m_ComponentGroupID = m_ComponentGroupID;
 		undo_data->m_TextLines = text_lines;
 
-		m_Undo->AddMostRecentEdit(true, undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
+		m_Undo->AddMostRecentEdit(true, undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndoTextEdit(inData, inCursorControl); });
 	}
 
-
-
-	void ComponentOrderListOverview::OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl)
+	void ComponentOrderListOverview::OnUndoTextEdit(const UndoComponentData& inData, CursorControl& inCursorControl)
 	{
 		const UndoComponentDataTableText& undo_data = static_cast<const UndoComponentDataTableText&>(inData);
 
@@ -960,6 +964,46 @@ namespace Editor
 		m_RequireRefresh = true;
 	}
 
+
+	void ComponentOrderListOverview::OnUndoSequenceEdit(const UndoComponentData& inData, CursorControl& inCursorControl)
+	{
+		const UndoComponentDataOrderListOverview& undo_data = static_cast<const UndoComponentDataOrderListOverview&>(inData);
+
+		m_CursorX = undo_data.m_CursorX;
+		m_CursorY = undo_data.m_CursorY;
+		m_TopPosition = undo_data.m_TopPosition;
+
+		m_HasDataChange = true;
+		m_RequireRefresh = true;
+	}
+
+
+	void ComponentOrderListOverview::AddUndoSequenceStep()
+	{
+		std::shared_ptr<UndoComponentDataOrderListOverview> undo_data = std::make_shared<UndoComponentDataOrderListOverview>();
+
+		undo_data->m_ComponentGroupID = m_ComponentGroupID;
+		undo_data->m_ComponentID = m_ComponentID;
+		undo_data->m_TopPosition = m_TopPosition;
+		undo_data->m_CursorX = m_CursorX;
+		undo_data->m_CursorY = m_CursorY;
+
+		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndoSequenceEdit(inData, inCursorControl); });
+	}
+
+
+	void ComponentOrderListOverview::AddMostRecentSequenceEdit()
+	{
+		std::shared_ptr<UndoComponentDataOrderListOverview> undo_data = std::make_shared<UndoComponentDataOrderListOverview>();
+
+		undo_data->m_ComponentGroupID = m_ComponentGroupID;
+		undo_data->m_ComponentID = m_ComponentID;
+		//		undo_data->m_TopRow = m_TopRow;
+		undo_data->m_CursorX = m_CursorX;
+		undo_data->m_CursorY = m_CursorY;
+
+		//		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
+	}
 
 
 	bool ComponentOrderListOverview::IsEditingText() const

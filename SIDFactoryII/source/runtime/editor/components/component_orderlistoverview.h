@@ -1,6 +1,7 @@
 #pragma once
 
 #include "component_base.h"
+#include "utils/event.h"
 
 #include <memory>
 #include <vector>
@@ -36,6 +37,8 @@ namespace Editor
 		};
 
 	public:
+		using OrderListChangedEvent = Utility::TEvent<void(void)>;
+
 		ComponentOrderListOverview(
 			int inID, 
 			int inGroupID, 
@@ -89,10 +92,13 @@ namespace Editor
 		int GetMarkingTopY() const;
 		int GetMarkingBottomY() const;
 
-		void AddUndo();
-		void AddMostRecentEdit();
+		void AddUndoSequenceStep();
+		void AddMostRecentSequenceEdit();
+		void AddUndoTextStep();
+		void AddMostRecentTextEdit();
 
-		void OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl);
+		void OnUndoTextEdit(const UndoComponentData& inData, CursorControl& inCursorControl);
+		void OnUndoSequenceEdit(const UndoComponentData& inData, CursorControl& inCursorControl);
 
 		bool IsEditingText() const;
 		void DoStartEditText(CursorControl& inCursorControl);
@@ -103,6 +109,9 @@ namespace Editor
 
 		// Key hooks
 		void ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore);
+
+		static int GetWidthFromChannelCount(int inChannelCount);
+		static int GetOutputPositionFromCursorX(int inCursorX);
 
 		struct OverviewEntry
 		{
@@ -130,8 +139,7 @@ namespace Editor
 		// KeyHooks
 		std::vector<Utility::KeyHook<bool(KeyHookContext&)>> m_KeyHooks;
 
-		static int GetWidthFromChannelCount(int inChannelCount);
-		static int GetOutputPositionFromCursorX(int inCursorX);
+		OrderListChangedEvent m_OrderListChangedEvent;
 
 		int m_CursorY;
 		int m_CursorX;

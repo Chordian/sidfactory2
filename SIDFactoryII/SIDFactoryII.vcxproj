@@ -454,6 +454,7 @@
     <ClInclude Include="source\runtime\editor\undo\undo.h" />
     <ClInclude Include="source\runtime\editor\undo\undostep.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata.h" />
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_orderlist_overview.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_table_row_elements.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_table_text.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_tracks.h" />

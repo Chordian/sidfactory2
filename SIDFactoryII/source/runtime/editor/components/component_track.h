@@ -169,6 +169,9 @@ namespace Editor
 		void HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex);
 
 		void SetUndoHandlers(std::function<void(UndoComponentDataTableTracks&)> inAddUndoStepHandler, std::function<void(const UndoComponentDataTableTracks&, CursorControl&)> inOnUndoHandler);
+		
+		// Data changed
+		void OnOrderListChanged();
 
 	private:
 		// Order list
@@ -233,7 +236,6 @@ namespace Editor
 		void DoSetCommandIndexValue(unsigned char inValue);
 
 		// Data change
-		void OnOrderListChanged();
 		void OnSequenceChanged(unsigned char inSequenceIndex);
 
 		// Event pos details
