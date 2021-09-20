@@ -11,6 +11,13 @@ namespace Foundation
 	class TextField;
 }
 
+namespace Utility
+{
+	template<typename CONTEXT>
+	class KeyHook;
+	class KeyHookStore;
+}
+
 namespace Editor
 {
 	class CursorControl;
@@ -23,12 +30,18 @@ namespace Editor
 
 	class ComponentOrderListOverview final : public ComponentBase
 	{
+		struct KeyHookContext
+		{
+			ComponentsManager& m_ComponentsManager;
+		};
+
 	public:
 		ComponentOrderListOverview(
 			int inID, 
 			int inGroupID, 
 			Undo* inUndo,
 			Foundation::TextField* inTextField, 
+			const Utility::KeyHookStore& inKeyHookStore,
 			std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 			const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 			const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
@@ -68,7 +81,9 @@ namespace Editor
 		bool DoEnd();
 		bool DoInsertTextRow(unsigned int inRow);
 		bool DoDeleteTextRow(unsigned int inRow);
-		
+		bool DoCopy();
+		bool DoPaste();
+
 		void DoBeginMarking();
 		void DoCancelMarking();
 		int GetMarkingTopY() const;
@@ -86,11 +101,20 @@ namespace Editor
 
 		void RebuildOverview();
 
+		// Key hooks
+		void ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore);
+
 		struct OverviewEntry
 		{
+			struct SequenceEntry
+			{
+				int m_Transpose;
+				int m_Index;
+			};
+
 			int m_EventPos;
 
-			std::vector<int> m_SequenceIndices;
+			std::vector<SequenceEntry> m_SequenceEntries;
 		};
 
 		std::vector<OverviewEntry> m_Overview;
@@ -102,6 +126,9 @@ namespace Editor
 		const std::vector<std::shared_ptr<DataSourceSequence>>& m_SequenceList;
 
 		std::function<void(int, bool)> m_SetTrackEventPosFunction;
+
+		// KeyHooks
+		std::vector<Utility::KeyHook<bool(KeyHookContext&)>> m_KeyHooks;
 
 		static int GetWidthFromChannelCount(int inChannelCount);
 		static int GetOutputPositionFromCursorX(int inCursorX);
