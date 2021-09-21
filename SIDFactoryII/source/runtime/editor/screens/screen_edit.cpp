@@ -1278,6 +1278,12 @@ namespace Editor
 			);
 		}
 
+		// Hook up the tracks to order list change from the orderlist overview component
+		m_OrderListOverviewComponent->GetOrderListChangedEvent().Add(
+			nullptr,
+			Utility::TDelegate<void(int)>([&](int inChannel) { m_TracksComponent->OnOrderListChanged(inChannel); })
+		);
+
 		// Enable groups
 		//m_ComponentsManager->SetGroupEnabledForTabbing(0);
 		m_ComponentsManager->SetGroupEnabledForInput(0, true);

@@ -580,6 +580,13 @@ namespace Editor
 	}
 
 
+	ComponentOrderListOverview::OrderListChangedEvent& ComponentOrderListOverview::GetOrderListChangedEvent()
+	{
+		return m_OrderListChangedEvent;
+	}
+
+
+
 	void ComponentOrderListOverview::DoMouseWheel(const Foundation::Mouse& inMouse)
 	{
 		Point scroll_wheel = inMouse.GetWheelDelta();
@@ -829,8 +836,10 @@ namespace Editor
 	{
 		if (CopyPaste::Instance().HasData<DataCopyOrderList>())
 		{
-			int channel_count = m_OrderLists.size();
-			if (m_CursorX < channel_count)
+			const int channel_count = m_OrderLists.size();
+			const int channel = m_CursorX;
+
+			if (channel < channel_count)
 			{
 				AddUndoSequenceStep();
 
@@ -840,7 +849,7 @@ namespace Editor
 				{
 					int event_pos = 0;
 
-					const DataSourceOrderList& order_list = *m_OrderLists[m_CursorX];
+					const DataSourceOrderList& order_list = *m_OrderLists[channel];
 					const int orderlist_length = order_list.GetLength();
 
 					for (int i = 0; i < orderlist_length; ++i)
@@ -862,9 +871,8 @@ namespace Editor
 				}(current_event_pos);
 
 				// Insert and raise events
-				
+				m_OrderListChangedEvent.Execute(channel);
 			}
-
 		}
 
 		return true;

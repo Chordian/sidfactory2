@@ -37,7 +37,7 @@ namespace Editor
 		};
 
 	public:
-		using OrderListChangedEvent = Utility::TEvent<void(void)>;
+		using OrderListChangedEvent = Utility::TEvent<void(int)>;
 
 		ComponentOrderListOverview(
 			int inID, 
@@ -73,6 +73,8 @@ namespace Editor
 		void ExecuteAction(int inActionInput) override;
 
 		void TellPlaybackEventPosition(int inPlaybackEventPosition);
+
+		OrderListChangedEvent& GetOrderListChangedEvent();
 
 	private:
 		void DoMouseWheel(const Foundation::Mouse& inMouse);
