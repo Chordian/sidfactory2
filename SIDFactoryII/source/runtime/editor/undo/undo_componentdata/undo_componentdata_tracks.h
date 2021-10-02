@@ -1,11 +1,13 @@
 #pragma once
 
-#include "runtime/editor/undo/undo_componentdata.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata.h"
+#include "runtime/editor/undo/undo_datasource/undo_datasource.h"
 
 namespace Editor
 {
-	struct UndoComponentDataTableTracks : public UndoComponentData
+	class UndoComponentDataTableTracks : public UndoComponentData
 	{
+	public:
 		// Tracks
 		int m_TracksEventPos;
 		int m_TracksMaxEventPos;
@@ -23,5 +25,11 @@ namespace Editor
 
 		// Order list input focus
 		bool m_FocusModeOrderList;
+
+		UndoDataSource& GetDataSource() override { return m_Data; }
+		const UndoDataSource& GetDataSource() const override { return m_Data; }
+
+	private:
+		UndoDataSource m_Data;
 	};
 }

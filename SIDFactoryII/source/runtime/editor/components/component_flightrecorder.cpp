@@ -228,9 +228,8 @@ namespace Editor
 	}
 
 
-	void ComponentFlightRecorder::PullDataFromSource()
+	void ComponentFlightRecorder::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

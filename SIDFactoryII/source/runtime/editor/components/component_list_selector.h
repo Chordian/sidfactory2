@@ -26,7 +26,7 @@ namespace Editor
 
 		virtual void Refresh(const DisplayState& inDisplayState) override;
 		virtual void HandleDataChange() override;
-		virtual void PullDataFromSource() override;
+		virtual void PullDataFromSource(const bool inFromUndo) override;
 
 		virtual void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		virtual void ExecuteAction(int inActionInput) override;

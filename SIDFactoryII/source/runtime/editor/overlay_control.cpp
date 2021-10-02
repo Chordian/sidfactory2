@@ -8,6 +8,7 @@
 #include "utils/configfile.h"
 #include "utils/global.h"
 #include "utils/utilities.h"
+
 #include <algorithm>
 
 
@@ -20,6 +21,7 @@ namespace Editor
 
 	OverlayControl::OverlayControl(Foundation::Viewport* inViewport)
 		: m_OverlayEnabledState(false)
+
 		, m_Viewport(inViewport)
 		, m_IsFading(true)
 		, m_FadeValue(0.0f)
@@ -140,6 +142,7 @@ namespace Editor
 	}
 
 
+
 	void OverlayControl::ReadConfigValues(const Utility::ConfigFile& inConfigFile)
 	{
 		m_OverlayWidth = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueInt>(inConfigFile, "Overlay.Width", 0);
@@ -196,6 +199,7 @@ namespace Editor
 					data[i] = decoded_image[i];
 
 				Rect rect = {
+
 					inIsEditorOverlay ? m_OverlayEditorImageX : m_OverlayDriverImageX,
 					inIsEditorOverlay ? m_OverlayEditorImageY : m_OverlayDriverImageY,
 					static_cast<int>(decoded_image_width),

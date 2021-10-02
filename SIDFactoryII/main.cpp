@@ -70,7 +70,7 @@ void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 
 	const ConfigFile& configFile = Global::instance().GetConfig();
 
-	float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0);
+	float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0f);
 
 	if (window_scaling > 2.0)
 	{
