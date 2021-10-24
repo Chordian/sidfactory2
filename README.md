@@ -44,6 +44,11 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 - Fixed: [#133](https://github.com/Chordian/sidfactory2/issues/133) Emulation
   error when starting up linux version. (Thanks to Maurizio Dall'Acqua for
   reporting)
+- Fixed: [#134](https://github.com/Chordian/sidfactory2/issues/134) SF2 won't
+  compile on Arch Linux (Thanks to jansalleine for reporting amd suggesting the
+  fix)
+- Fixed: [#137](https://github.com/Chordian/sidfactory2/issues/137) Instability
+  in filter table when jumping to set command in default driver.
 
 ### Build 20210104
 

@@ -38,6 +38,13 @@ To build:
 
 Then look in the `artifacts` folder.
 
+## External dependencies
+
+### PicoPNG
+
+PicoPNG files were copied from https://lodev.org/lodepng
+A small change was made to `picopng.h` in relation to [issue 134](https://github.com/Chordian/sidfactory2/issues/134)
+
 ## Releases and nightly builds
 
 There are two sets of binaries:

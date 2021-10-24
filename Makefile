@@ -112,13 +112,26 @@ clean:
 	rm ${OBJ} || true
 	rm -rf $(ARTIFACTS_FOLDER) || true
 
-# Compile with the Ubuntu image on Docker
-BUILD_IMAGE_UBUNTU=sidfactory2/build-ubuntu
+# --- DOCKER BUILDS ---
+
 TMP_CONTAINER=sf2_build_tmp
+
+# Compile with the Ubuntu image
+BUILD_IMAGE_UBUNTU=sidfactory2/build-ubuntu
 
 ubuntu:
 	docker container rm $(TMP_CONTAINER) || true
 	docker build -t $(BUILD_IMAGE_UBUNTU) .
 	docker run --name $(TMP_CONTAINER) $(BUILD_IMAGE_UBUNTU)
+	docker cp $(TMP_CONTAINER):/home/$(ARTIFACTS_FOLDER) .
+	docker container rm $(TMP_CONTAINER)
+
+# Compile with the Archlinux image
+BUILD_IMAGE_ARCHLINUX=sidfactory2/build-archlinux
+
+archlinux:
+	docker container rm $(TMP_CONTAINER) || true
+	docker build -t $(BUILD_IMAGE_ARCHLINUX) -f Dockerfile.Archlinux .
+	docker run --name $(TMP_CONTAINER) $(BUILD_IMAGE_ARCHLINUX)
 	docker cp $(TMP_CONTAINER):/home/$(ARTIFACTS_FOLDER) .
 	docker container rm $(TMP_CONTAINER)
