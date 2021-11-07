@@ -75,6 +75,8 @@ namespace Editor
 		void TellPlaybackEventPosition(int inPlaybackEventPosition);
 		bool ComputePlaybackStateFromEventPosition(int inEventPos, std::vector<IDriverArchitecture::PlayMarkerInfo>& inPlayMarkerInfoList) const;
 
+		void OnOrderListChanged(int inChannel);
+
 	private:
 		void AlignTracks();
 		void HandleSequenceSplit(unsigned char inSequence, unsigned char inSequenceToAdd);

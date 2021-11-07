@@ -1014,6 +1014,7 @@ namespace Editor
 			OrderListOverviewID, 0, 
 			undo,
 			m_MainTextField, 
+			m_KeyHookStore,
 			song_view_text_buffer,
 			m_OrderListDataSources, 
 			m_SequenceDataSources, 
@@ -1276,6 +1277,12 @@ namespace Editor
 				Utility::TDelegate<void(void)>([&]() { m_OrderListOverviewComponent->ForceRefresh(); })
 			);
 		}
+
+		// Hook up the tracks to order list change from the orderlist overview component
+		m_OrderListOverviewComponent->GetOrderListChangedEvent().Add(
+			nullptr,
+			Utility::TDelegate<void(int)>([&](int inChannel) { m_TracksComponent->OnOrderListChanged(inChannel); })
+		);
 
 		// Enable groups
 		//m_ComponentsManager->SetGroupEnabledForTabbing(0);

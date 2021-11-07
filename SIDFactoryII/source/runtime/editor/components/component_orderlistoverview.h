@@ -1,6 +1,7 @@
 #pragma once
 
 #include "component_base.h"
+#include "utils/event.h"
 
 #include <memory>
 #include <vector>
@@ -9,6 +10,13 @@
 namespace Foundation
 {
 	class TextField;
+}
+
+namespace Utility
+{
+	template<typename CONTEXT>
+	class KeyHook;
+	class KeyHookStore;
 }
 
 namespace Editor
@@ -23,12 +31,20 @@ namespace Editor
 
 	class ComponentOrderListOverview final : public ComponentBase
 	{
+		struct KeyHookContext
+		{
+			ComponentsManager& m_ComponentsManager;
+		};
+
 	public:
+		using OrderListChangedEvent = Utility::TEvent<void(int)>;
+
 		ComponentOrderListOverview(
 			int inID, 
 			int inGroupID, 
 			Undo* inUndo,
 			Foundation::TextField* inTextField, 
+			const Utility::KeyHookStore& inKeyHookStore,
 			std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 			const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 			const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
@@ -58,6 +74,8 @@ namespace Editor
 
 		void TellPlaybackEventPosition(int inPlaybackEventPosition);
 
+		OrderListChangedEvent& GetOrderListChangedEvent();
+
 	private:
 		void DoMouseWheel(const Foundation::Mouse& inMouse);
 		bool DoCursorUp(unsigned int inSteps);
@@ -68,16 +86,21 @@ namespace Editor
 		bool DoEnd();
 		bool DoInsertTextRow(unsigned int inRow);
 		bool DoDeleteTextRow(unsigned int inRow);
-		
+		bool DoCopy();
+		bool DoPaste();
+
 		void DoBeginMarking();
 		void DoCancelMarking();
 		int GetMarkingTopY() const;
 		int GetMarkingBottomY() const;
 
-		void AddUndo();
-		void AddMostRecentEdit();
+		void AddUndoSequenceStep();
+		void AddMostRecentSequenceEdit();
+		void AddUndoTextStep();
+		void AddMostRecentTextEdit();
 
-		void OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl);
+		void OnUndoTextEdit(const UndoComponentData& inData, CursorControl& inCursorControl);
+		void OnUndoSequenceEdit(const UndoComponentData& inData, CursorControl& inCursorControl);
 
 		bool IsEditingText() const;
 		void DoStartEditText(CursorControl& inCursorControl);
@@ -86,11 +109,23 @@ namespace Editor
 
 		void RebuildOverview();
 
+		// Key hooks
+		void ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore);
+
+		static int GetWidthFromChannelCount(int inChannelCount);
+		static int GetOutputPositionFromCursorX(int inCursorX);
+
 		struct OverviewEntry
 		{
+			struct SequenceEntry
+			{
+				int m_Transpose;
+				int m_Index;
+			};
+
 			int m_EventPos;
 
-			std::vector<int> m_SequenceIndices;
+			std::vector<SequenceEntry> m_SequenceEntries;
 		};
 
 		std::vector<OverviewEntry> m_Overview;
@@ -103,8 +138,10 @@ namespace Editor
 
 		std::function<void(int, bool)> m_SetTrackEventPosFunction;
 
-		static int GetWidthFromChannelCount(int inChannelCount);
-		static int GetOutputPositionFromCursorX(int inCursorX);
+		// KeyHooks
+		std::vector<Utility::KeyHook<bool(KeyHookContext&)>> m_KeyHooks;
+
+		OrderListChangedEvent m_OrderListChangedEvent;
 
 		int m_CursorY;
 		int m_CursorX;

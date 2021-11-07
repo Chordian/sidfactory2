@@ -8,21 +8,18 @@
 #include "runtime/editor/components/component_tracks.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
-#include "runtime/editor/datacopy/datacopy_sequence.h"
 #include "runtime/editor/dialog/dialog_hex_value_input.h"
 #include "runtime/editor/undo/undo.h"
 #include "runtime/editor/undo/undo_componentdata/undo_componentdata_tracks.h"
-
-#include "foundation/input/mouse.h"
-#include "foundation/input/keyboard.h"
-#include "foundation/input/keyboard_utils.h"
-#include "foundation/graphics/textfield.h"
-
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/datasource_utils.h"
 #include "runtime/editor/debug/debug_singleton.h"
 #include "runtime/editor/datacopy/copypaste.h"
-
+#include "runtime/editor/datacopy/datacopy_sequence.h"
+#include "foundation/input/mouse.h"
+#include "foundation/input/keyboard.h"
+#include "foundation/input/keyboard_utils.h"
+#include "foundation/graphics/textfield.h"
 #include "utils/keyhook.h"
 #include "utils/keyhookstore.h"
 #include "utils/usercolors.h"
@@ -894,6 +891,7 @@ namespace Editor
 		m_OnUndoHandler = inOnUndoHandler;
 	}
 
+
 	//--------------------------------------------------------------------------------------------------
 	// Order list input
 	//--------------------------------------------------------------------------------------------------
@@ -1201,6 +1199,7 @@ namespace Editor
 
 		return m_EventPos;
 	}
+
 
 	int ComponentTrack::ApplySequenceNoteValue(int inNoteValue)
 	{

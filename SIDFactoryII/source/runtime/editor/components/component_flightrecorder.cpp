@@ -106,7 +106,8 @@ namespace Editor
 
 	bool ComponentFlightRecorder::ConsumeInput(const Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
-		return false;
+		Point screen_position = inMouse.GetPosition();
+		return ContainsPosition(screen_position);
 	}
 
 

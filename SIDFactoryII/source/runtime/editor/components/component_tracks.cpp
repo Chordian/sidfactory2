@@ -563,6 +563,15 @@ namespace Editor
 	}
 
 
+	void ComponentTracks::OnOrderListChanged(int inChannel)
+	{
+		if (inChannel < m_DataSource->GetSize())
+			(*m_DataSource)[inChannel]->OnOrderListChanged();
+
+		m_HasDataChange = true;
+	}
+
+
 	void ComponentTracks::AlignTracks()
 	{
 		m_RequireRefresh = true;
