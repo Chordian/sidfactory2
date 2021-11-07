@@ -126,9 +126,8 @@ namespace Editor
 	}
 
 
-	void ComponentHexValueInput::PullDataFromSource()
+	void ComponentHexValueInput::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

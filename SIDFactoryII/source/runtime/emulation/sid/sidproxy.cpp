@@ -50,6 +50,11 @@ namespace Emulation
 	}
 
 
+	const SIDConfiguration& SIDProxy::GetConfiguration() const
+	{
+		return m_sConfiguration;
+	}
+
 	SIDEnvironment SIDProxy::GetEnvironment() const
 	{
 		return m_sConfiguration.m_eEnvironment;

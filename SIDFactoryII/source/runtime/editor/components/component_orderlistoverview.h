@@ -17,6 +17,9 @@ namespace Editor
 	class ScreenBase;
 	class DataSourceOrderList;
 	class DataSourceSequence;
+	class DataSourceTableText;
+	class UndoComponentData;
+	class TextEditingDataSourceTableText;
 
 	class ComponentOrderListOverview final : public ComponentBase
 	{
@@ -26,6 +29,7 @@ namespace Editor
 			int inGroupID, 
 			Undo* inUndo,
 			Foundation::TextField* inTextField, 
+			std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 			const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 			const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 			int inX,
@@ -42,8 +46,12 @@ namespace Editor
 		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 		
 		void Refresh(const DisplayState& inDisplayState) override;
+		bool HasDataChange() const override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
+
+		bool IsNoteInputSilenced() const override;
+		bool IsFastForwardAllowed() const override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;
@@ -54,8 +62,28 @@ namespace Editor
 		void DoMouseWheel(const Foundation::Mouse& inMouse);
 		bool DoCursorUp(unsigned int inSteps);
 		bool DoCursorDown(unsigned int inSteps);
+		bool DoCursorLeft();
+		bool DoCursorRight();
 		bool DoHome();
 		bool DoEnd();
+		bool DoInsertTextRow(unsigned int inRow);
+		bool DoDeleteTextRow(unsigned int inRow);
+		
+		void DoBeginMarking();
+		void DoCancelMarking();
+		int GetMarkingTopY() const;
+		int GetMarkingBottomY() const;
+
+		void AddUndo();
+		void AddMostRecentEdit();
+
+		void OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl);
+
+		bool IsEditingText() const;
+		void DoStartEditText(CursorControl& inCursorControl);
+		void DoStopEditText(CursorControl& inCursorControl, bool inCancel);
+		Foundation::Point GetEditingTextScreenPosition() const;
+
 		void RebuildOverview();
 
 		struct OverviewEntry
@@ -67,16 +95,30 @@ namespace Editor
 
 		std::vector<OverviewEntry> m_Overview;
 
-		std::vector<std::shared_ptr<DataSourceOrderList>> m_OrderLists;
-		std::vector<std::shared_ptr<DataSourceSequence>> m_SequenceList;
+		std::unique_ptr<TextEditingDataSourceTableText> m_TextEditingDataSourceTableText;
+		std::shared_ptr<DataSourceTableText> m_TableText;
+
+		const std::vector<std::shared_ptr<DataSourceOrderList>>& m_OrderLists;
+		const std::vector<std::shared_ptr<DataSourceSequence>>& m_SequenceList;
 
 		std::function<void(int, bool)> m_SetTrackEventPosFunction;
 
 		static int GetWidthFromChannelCount(int inChannelCount);
+		static int GetOutputPositionFromCursorX(int inCursorX);
 
-		int m_CursorPosition;
-		int m_MaxCursorPosition;
+		int m_CursorY;
+		int m_CursorX;
+		int m_MaxCursorY;
+		int m_MaxCursorX;
 		int m_TopPosition;
 		int m_PlaybackEventPosition;
+
+		bool m_IsMarkingArea;
+		int m_MarkingX;
+		int m_MarkingFromY;
+		int m_MarkingToY;
+
+		static const int ms_MarginWidth;
+		static const int ms_TextWidth;
 	};
 }

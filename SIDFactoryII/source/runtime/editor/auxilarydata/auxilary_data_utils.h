@@ -8,23 +8,23 @@ namespace Editor
 {
 	namespace AuxilaryDataUtils
 	{
-		inline void SaveDataPushBool(std::vector<unsigned char>& ioSaveData, unsigned char inBool)
+		inline void SaveDataPushBool(std::vector<unsigned char>& ioSaveData, const bool inBool)
 		{
 			ioSaveData.push_back(inBool != 0 ? 1 : 0);
 		}
 
-		inline void SaveDataPushByte(std::vector<unsigned char>& ioSaveData, unsigned char inValue)
+		inline void SaveDataPushByte(std::vector<unsigned char>& ioSaveData, const unsigned char inValue)
 		{
 			ioSaveData.push_back(inValue);
 		}
 
-		inline void SaveDataPushWord(std::vector<unsigned char>& ioSaveData, unsigned short inWord)
+		inline void SaveDataPushWord(std::vector<unsigned char>& ioSaveData, const unsigned short inWord)
 		{
 			ioSaveData.push_back(static_cast<unsigned char>(inWord & 0xff));
 			ioSaveData.push_back(static_cast<unsigned char>((inWord >> 8) & 0xfF));
 		}
 
-		inline void SaveDataPushUInt(std::vector<unsigned char>& ioSaveData, unsigned int inUInt)
+		inline void SaveDataPushUInt(std::vector<unsigned char>& ioSaveData, const unsigned int inUInt)
 		{
 			ioSaveData.push_back(static_cast<unsigned char>((inUInt) & 0xff));
 			ioSaveData.push_back(static_cast<unsigned char>((inUInt >> 8) & 0xff));
@@ -32,7 +32,7 @@ namespace Editor
 			ioSaveData.push_back(static_cast<unsigned char>((inUInt >> 24) & 0xff));
 		}
 
-		inline void SaveDataPushInt(std::vector<unsigned char>& ioSaveData, int inInt)
+		inline void SaveDataPushInt(std::vector<unsigned char>& ioSaveData, const int inInt)
 		{
 			return SaveDataPushUInt(ioSaveData, static_cast<unsigned int>(inInt));
 		}
@@ -49,6 +49,18 @@ namespace Editor
 
 			for (int i = 0; i < string_length; ++i)
 				SaveDataPushByte(ioSaveData, c_string[i]);
+		}
+
+		inline void SaveDataPushByteArray(std::vector<unsigned char>& ioSaveData, const std::vector<unsigned char>& inByteArray)
+		{
+			FOUNDATION_ASSERT(inByteArray.size() < 256);
+
+			const unsigned char data_size = static_cast<unsigned char>(inByteArray.size());
+
+			SaveDataPushByte(ioSaveData, data_size);
+
+			for (int i = 0; i < data_size; ++i)
+				SaveDataPushByte(ioSaveData, inByteArray[i]);
 		}
 
 		inline bool LoadDataPullBool(std::vector<unsigned char>::iterator& it)
@@ -69,9 +81,7 @@ namespace Editor
 
 		inline unsigned short LoadDataPullWord(std::vector<unsigned char>::iterator& it)
 		{
-			unsigned short value = 0;
-			
-			value |= static_cast<unsigned short>(*it);
+			unsigned short value = static_cast<unsigned short>(*it);
 			it++;
 			value |= static_cast<unsigned short>(*it) << 8;
 			it++;
@@ -81,9 +91,7 @@ namespace Editor
 
 		inline unsigned int LoadDataPullUInt(std::vector<unsigned char>::iterator& it)
 		{
-			unsigned int value = 0;
-			
-			value |= static_cast<unsigned int>(*it);
+			unsigned int value = static_cast<unsigned int>(*it);
 			it++;
 			value |= static_cast<unsigned int>(*it) << 8;
 			it++;
@@ -103,6 +111,20 @@ namespace Editor
 
 			for(int i=0; i<string_length; ++i)
 				output += static_cast<char>(LoadDataPullByte(it));
+
+			return output;
+		}
+
+		inline std::vector<unsigned char> LoadDataPullByteArray(std::vector<unsigned char>::iterator& it)
+		{
+			const unsigned char data_size = LoadDataPullByte(it);
+
+			std::vector<unsigned char> output;
+
+			output.reserve(data_size);
+
+			for (int i = 0; i < data_size; ++i)
+				output.push_back(LoadDataPullByte(it));
 
 			return output;
 		}

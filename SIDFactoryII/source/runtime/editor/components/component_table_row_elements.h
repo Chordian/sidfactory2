@@ -16,7 +16,7 @@ namespace Foundation
 namespace Editor
 {
 	class CursorControl;
-	struct UndoComponentData;
+	class UndoComponentData;
 
 	class ComponentTableRowElements : public ComponentBase
 	{
@@ -47,7 +47,7 @@ namespace Editor
 		
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;

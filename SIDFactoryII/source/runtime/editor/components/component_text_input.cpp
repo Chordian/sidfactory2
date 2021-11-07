@@ -150,9 +150,8 @@ namespace Editor
 	}
 
 
-	void ComponentTextInput::PullDataFromSource()
+	void ComponentTextInput::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

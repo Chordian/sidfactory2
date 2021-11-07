@@ -17,7 +17,8 @@ namespace Editor
 {
 	class CursorControl;
 	class DataSourceTableText;
-	struct UndoComponentData;
+	class TextEditingDataSourceTableText;
+	class UndoComponentData;
 
 	class ComponentTableRowElementsWithText final : public ComponentTableRowElements
 	{
@@ -42,6 +43,8 @@ namespace Editor
 		void HandleDataChange() override;
 
 		bool IsNoteInputSilenced() const override;
+		bool IsFastForwardAllowed() const override;
+
 		void ClearHasControl(CursorControl& inCursorControl) override;
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
@@ -49,31 +52,19 @@ namespace Editor
 		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 
 		void Refresh(const DisplayState& inDisplayState) override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
 		bool ContainsPosition(const Foundation::Point& inPixelPosition) const override;
+
 	private:
-		void ApplyCharacter(char inCharacter);
-		void ApplyCursorPosition(CursorControl& inCursorControl);
-
+		bool IsEditingText() const;
 		void DoStartEditText();
-		void DoStopEditText(bool inCancel);
+		void DoStopEditText(bool inCancel, CursorControl& inCursorControl);
+		Foundation::Point GetEditingTextScreenPosition() const;
 
-		void DoCursorForward();
-		void DoCursorBackwards();
-		void DoInsert();
-		void DoDelete();
-		void DoBackspace(bool inIsShiftDown);
-
-		const int GetMaxPossibleCursorPosition() const;
-
-		int m_CursorPos;
 		int m_TextWidth;
-		bool m_EditingText;
-		bool m_HasDataChangeText;
-
-		std::string m_PreEditTextValue;
 
 		std::shared_ptr<DataSourceTableText> m_DataSourceTableText;
+		std::unique_ptr<TextEditingDataSourceTableText> m_TextEditingDataSourceTableText;
 	};
 }

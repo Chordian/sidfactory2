@@ -133,9 +133,8 @@ namespace Editor
 	}
 
 
-	void ComponentMemoryView::PullDataFromSource()
+	void ComponentMemoryView::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

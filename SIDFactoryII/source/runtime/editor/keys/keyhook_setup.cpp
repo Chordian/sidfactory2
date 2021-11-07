@@ -143,6 +143,7 @@ namespace Editor
 		definitions.push_back({ "Key.Track.SplitSequenceAtEventPosition", {{ SDLK_b, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedInstrumentIndexValue", {{ SDLK_i, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedCommandIndexValue", {{ SDLK_o, Keyboard::Control }} });
+		definitions.push_back({ "Key.Track.ShowSequenceInfo", {{ SDLK_i, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetOrderlistLoopPoint", {{ SDLK_l, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.Debug", {{ SDLK_F12, Keyboard::Alt }} });
 
