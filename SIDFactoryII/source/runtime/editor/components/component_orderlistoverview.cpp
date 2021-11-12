@@ -557,6 +557,11 @@ namespace Editor
 		return !IsEditingText();
 	}
 
+	void ComponentOrderListOverview::ClearHasControl(CursorControl& inCursorControl)
+	{
+		if(IsEditingText())
+			DoStopEditText(inCursorControl, false);
+	}
 
 	void ComponentOrderListOverview::ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost)
 	{
