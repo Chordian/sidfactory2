@@ -68,6 +68,7 @@ namespace Editor
 
 		bool IsNoteInputSilenced() const override;
 		bool IsFastForwardAllowed() const override;
+		void ClearHasControl(CursorControl& inCursorControl) override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;
