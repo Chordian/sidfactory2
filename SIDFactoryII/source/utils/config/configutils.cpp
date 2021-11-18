@@ -83,6 +83,8 @@ namespace Utility
 					{ "numplus", SDLK_KP_PLUS },
 					{ "numminus", SDLK_KP_MINUS },
 					{ "numcomma", SDLK_KP_COMMA },
+					{ "nummul", SDLK_KP_MULTIPLY },
+					{ "numdiv", SDLK_KP_DIVIDE },
 					{ "minus", SDLK_MINUS },
 					{ "plus", SDLK_PLUS },
 					{ "slash", SDLK_SLASH },
