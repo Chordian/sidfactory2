@@ -20,7 +20,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 - Changed: [#142](https://github.com/Chordian/sidfactory2/issues/142) the
   list of keys that can be remapped is complete now. Please note: the names for
-  keycodes staring with `num` are renamed to start with `kp_`.
+  keycodes starting with `num` are renamed to start with `kp_`.
 - Added: Documentation on how to customize configuration using a `user.ini`
   file. Including a default template `/documentation/user.default.ini`.
 - Added: Configuration option `Window.Scaling` to scale the contents of the
