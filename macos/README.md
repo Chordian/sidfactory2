@@ -12,7 +12,7 @@ Building macOS distribution from command line (iTerm)
 
 - `make`: Create just the executable
 - `make app`: Create the `SIDFactoryII.app`
-- `make tmp`: Create a temporary DMG image
+- `make raw`: Create a temporary 'raw' DMG image
 - `make dmg`: Finalize existing temporary DMG image
 
 ## Create a distribution
