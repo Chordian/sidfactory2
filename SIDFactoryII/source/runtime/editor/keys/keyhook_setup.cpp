@@ -143,8 +143,11 @@ namespace Editor
 		definitions.push_back({ "Key.Track.SplitSequenceAtEventPosition", {{ SDLK_b, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedInstrumentIndexValue", {{ SDLK_i, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedCommandIndexValue", {{ SDLK_o, Keyboard::Control }} });
+		definitions.push_back({ "Key.Track.ShowSequenceInfo", {{ SDLK_i, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetOrderlistLoopPoint", {{ SDLK_l, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.Debug", {{ SDLK_F12, Keyboard::Alt }} });
+		definitions.push_back({ "Key.OrderListOverview.Copy", {{ SDLK_c, Keyboard::Control }} });
+		definitions.push_back({ "Key.OrderListOverview.Paste", {{ SDLK_v, Keyboard::Control }} });
 
 		m_KeyHookStore.PassBaseDefinitions(definitions);
 	}
@@ -167,6 +170,8 @@ namespace Editor
 		m_KeyHookStore.OverrideDefinition({ "Key.Track.Paste", {{ SDLK_v, Keyboard::Cmd }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.ScreenEdit.Undo", {{ SDLK_z, Keyboard::Cmd }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.ScreenEdit.Redo", {{ SDLK_z, Keyboard::Cmd | Keyboard::Shift }} });
+		m_KeyHookStore.OverrideDefinition({ "Key.OrderListOverview.Copy", {{ SDLK_c, Keyboard::Cmd }} });
+		m_KeyHookStore.OverrideDefinition({ "Key.OrderListOverview.Paste", {{ SDLK_v, Keyboard::Cmd }} });
 #endif //_SF2_WINDOWS
 	}
 }

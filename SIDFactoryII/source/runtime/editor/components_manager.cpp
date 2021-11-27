@@ -26,7 +26,6 @@ namespace Editor
 		, m_EnabledTabGroup(0)
 		, m_FocusComponent(nullptr)
 		, m_Suspended(false)
-		, m_SignalDataPull(false)
 	{
 		memset(m_TabGroupFocusComponent, 0, sizeof(m_TabGroupFocusComponent));
 	}
@@ -134,6 +133,22 @@ namespace Editor
 			return m_FocusComponent->IsNoteInputSilenced();
 
 		return false;
+	}
+
+
+	bool ComponentsManager::IsFastForwardAllowed() const
+	{
+		if (m_FocusComponent != nullptr)
+			return m_FocusComponent->IsFastForwardAllowed();
+
+		return true;
+	}
+
+
+	void ComponentsManager::PullDataFromAllSources(const bool inFromUndo)
+	{
+		for (auto& component : m_Components)
+			component->PullDataFromSource(inFromUndo);
 	}
 
 	//--------------------------------------------------------------------------------------------------------------------------------
@@ -390,17 +405,6 @@ namespace Editor
 
 	void ComponentsManager::Update(int inDeltaTick, Emulation::CPUMemory* inCPUMemory)
 	{
-		if (m_SignalDataPull)
-		{
-			for (auto& component : m_Components)
-			{
-				component->PullDataFromSource();
-				component->ForceRefresh();
-			}
-
-			m_SignalDataPull = false;
-		}
-
 		if (m_Suspended)
 		{
 			if (m_ActiveDialog != nullptr)
@@ -530,12 +534,6 @@ namespace Editor
 
 			next_candidate = GetComponentAfter(next_candidate);
 		}
-	}
-
-
-	void ComponentsManager::OnUndoOrRedo()
-	{
-		m_SignalDataPull = true;
 	}
 
 

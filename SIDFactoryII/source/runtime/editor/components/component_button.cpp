@@ -126,9 +126,8 @@ namespace Editor
 	}
 
 
-	void ComponentButton::PullDataFromSource()
+	void ComponentButton::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

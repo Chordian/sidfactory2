@@ -151,9 +151,8 @@ namespace Editor
 	}
 
 
-	void ComponentListSelector::PullDataFromSource()
+	void ComponentListSelector::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

@@ -33,10 +33,9 @@ namespace Utility
 }
 
 namespace Editor
-{
-	struct TrackCopyPasteData;
-	struct UndoComponentData;
-	struct UndoComponentDataTableTracks;
+{	
+	class UndoComponentData;
+	class UndoComponentDataTableTracks;
 
 	class DataSourceOrderList;
 	class DataSourceSequence;
@@ -45,14 +44,17 @@ namespace Editor
 
 	class ComponentTrack final : public ComponentBase
 	{
-		struct EventPosDetails
+		class EventPosDetails
 		{
-			EventPosDetails()
-				: m_OrderListIndex(0)
-				, m_SequenceIndex(0)
-			{
-		}
+		public:
+			EventPosDetails();
 
+			void Set(unsigned int inOrderListIndex, unsigned int inSequenceIndex);
+
+			unsigned int OrderListIndex() const;
+			unsigned int SequenceIndex() const;
+
+		private:
 			unsigned int m_OrderListIndex;
 			unsigned int m_SequenceIndex;
 		};
@@ -93,6 +95,7 @@ namespace Editor
 		};
 
 	public:
+		using OrderListIndexChangedEvent = Utility::TEvent<void(bool, unsigned int, unsigned char)>;
 		using SequenceSplitEvent = Utility::TEvent<void(unsigned char, unsigned char)>;
 		using SequenceChangedEvent = Utility::TEvent<void(void)>;
 		using OrderListChangedEvent = Utility::TEvent<void(void)>;
@@ -107,7 +110,6 @@ namespace Editor
 			const EditState& inEditState,
 			const Utility::KeyHookStore& inKeyHookStore,
 			const AuxilaryDataCollection& inAuxilaryDataCollection,
-			std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
 			std::function<void(bool, int, int)> inStatusReportFunction,
 			std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
 			std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
@@ -121,6 +123,7 @@ namespace Editor
 		void SetHeight(int inHeight);
 
 		void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl) override;
+		void ClearHasControl(CursorControl& inCursorControl) override;
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
@@ -128,7 +131,7 @@ namespace Editor
 
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 		void PullSequenceDataFromSource();
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
@@ -157,6 +160,7 @@ namespace Editor
 		bool ConsumeHasInputCausedSequenceDataChange();
 		bool ComputePlaybackStateFromEventPosition(int inEventPos, std::vector<IDriverArchitecture::PlayMarkerInfo>& outOrderListIndices) const;
 
+		OrderListIndexChangedEvent& GetOrderListIndexChangedEvent();
 		SequenceSplitEvent& GetSequenceSplitEvent();
 		SequenceChangedEvent& GetSequenceChangedEvent();
 		OrderListChangedEvent& GetOrderListChangedEvent();
@@ -165,6 +169,9 @@ namespace Editor
 		void HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex);
 
 		void SetUndoHandlers(std::function<void(UndoComponentDataTableTracks&)> inAddUndoStepHandler, std::function<void(const UndoComponentDataTableTracks&, CursorControl&)> inOnUndoHandler);
+		
+		// Data changed
+		void OnOrderListChanged();
 
 	private:
 		// Order list
@@ -191,11 +198,12 @@ namespace Editor
 		int DeleteSequenceLine(bool inChangeSequenceSize);
 		int InsertSequenceLine(bool inChangeSequenceSize);
 		int ResizeSequence(int inLength);
-		int ResizeAndReplaceData(const std::shared_ptr<DataCopySequence>& inSequenceData);
+		int ResizeAndReplaceData(const DataCopySequence* inSequenceData);
 		int InsertSequenceLines(int inLineCount);
 
 		// Event position
 		void UpdateMaxEventPos();
+		void SetEventPosDetails(unsigned int inOrderListIndex, unsigned int inSequenceIndex);
 
 		// Status report
 		void UpdateSequenceStatusReport();
@@ -227,9 +235,7 @@ namespace Editor
 		void DoSetInstrumentIndexValue(unsigned char inValue);
 		void DoSetCommandIndexValue(unsigned char inValue);
 
-
 		// Data change
-		void OnOrderListChanged();
 		void OnSequenceChanged(unsigned char inSequenceIndex);
 
 		// Event pos details
@@ -299,8 +305,7 @@ namespace Editor
 		std::function<unsigned char()> m_GetFirstFreeSequenceIndexFunction;
 		std::function<unsigned char()> m_GetFirstEmptySequenceIndexFunction;
 
-		std::shared_ptr<TrackCopyPasteData> m_CopyPasteData;
-
+		OrderListIndexChangedEvent m_OrderListIndexChangedEvent;
 		SequenceSplitEvent m_SequenceSplitEvent;
 		SequenceChangedEvent m_SequenceChangedEvent;
 		OrderListChangedEvent m_OrderListChangedEvent;

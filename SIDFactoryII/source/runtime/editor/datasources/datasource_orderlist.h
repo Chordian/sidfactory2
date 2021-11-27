@@ -53,6 +53,8 @@ namespace Editor
 		virtual ~DataSourceOrderList();
 
 		Entry& operator[](int inIndex);
+		const Entry& operator[](int inIndex) const;
+
 		bool PushDataToSource() override;
 		void PullDataFromSource() override;
 

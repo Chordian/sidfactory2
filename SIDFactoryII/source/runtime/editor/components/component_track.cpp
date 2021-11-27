@@ -8,21 +8,18 @@
 #include "runtime/editor/components/component_tracks.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
-#include "runtime/editor/datacopy/datacopy_sequence.h"
 #include "runtime/editor/dialog/dialog_hex_value_input.h"
 #include "runtime/editor/undo/undo.h"
-#include "runtime/editor/undo/undo_componentdata.h"
-#include "runtime/editor/undo/undo_componentdata_tracks.h"
-
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_tracks.h"
+#include "runtime/editor/utilities/editor_utils.h"
+#include "runtime/editor/utilities/datasource_utils.h"
+#include "runtime/editor/debug/debug_singleton.h"
+#include "runtime/editor/datacopy/copypaste.h"
+#include "runtime/editor/datacopy/datacopy_sequence.h"
 #include "foundation/input/mouse.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/keyboard_utils.h"
 #include "foundation/graphics/textfield.h"
-
-#include "runtime/editor/utilities/editor_utils.h"
-#include "runtime/editor/utilities/datasource_utils.h"
-#include "runtime/editor/debug/debug_singleton.h"
-
 #include "utils/keyhook.h"
 #include "utils/keyhookstore.h"
 #include "utils/usercolors.h"
@@ -87,6 +84,30 @@ namespace Editor
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
 
+	ComponentTrack::EventPosDetails::EventPosDetails()
+		: m_OrderListIndex(0)
+		, m_SequenceIndex(0)
+	{
+	}
+
+	void ComponentTrack::EventPosDetails::Set(unsigned int inOrderListIndex, unsigned int inSequenceIndex)
+	{
+		m_OrderListIndex = inOrderListIndex;
+		m_SequenceIndex = inSequenceIndex;
+	}
+
+	unsigned int ComponentTrack::EventPosDetails::OrderListIndex() const 
+	{ 
+		return m_OrderListIndex; 
+	}
+	
+	unsigned int ComponentTrack::EventPosDetails::SequenceIndex() const 
+	{ 
+		return m_SequenceIndex; 
+	}
+
+	//----------------------------------------------------------------------------------------------------------------------------------------
+
 	ComponentTrack::ComponentTrack(
 		int inID,
 		int inGroupID,
@@ -97,7 +118,6 @@ namespace Editor
 		const EditState& inEditState,
 		const Utility::KeyHookStore& inKeyHookStore,
 		const AuxilaryDataCollection& inAuxilaryDataCollection,
-		std::shared_ptr<TrackCopyPasteData> inCopyPasteData,
 		std::function<void(bool, int, int)> inStatusReportFunction,
 		std::function<unsigned char()> inGetFirstFreeSequenceIndexFunction,
 		std::function<unsigned char()> inGetFirstEmptySequenceIndexFunction,
@@ -113,7 +133,6 @@ namespace Editor
 		, m_GetFirstEmptySequenceIndexFunction(inGetFirstEmptySequenceIndexFunction)
 		, m_DataSourceOrderList(inDataSourceOrderList)
 		, m_DataSourceSequenceList(inDataSourceSequenceList)
-		, m_CopyPasteData(inCopyPasteData)
 		, m_CursorPos(0)
 		, m_EventPos(0xffffffff)
 		, m_MaxEventPos(0)
@@ -141,6 +160,8 @@ namespace Editor
 	{
 		m_OrderListChangedEvent.Clear();
 		m_SequenceChangedEvent.Clear();
+		m_SequenceSplitEvent.Clear();
+		m_OrderListIndexChangedEvent.Clear();
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
@@ -171,6 +192,30 @@ namespace Editor
 		{
 			UpdateOrderListStatusReport();
 			UpdateSequenceStatusReport();
+		}
+
+		{
+			const unsigned int order_list_index = m_EventPosDetails.OrderListIndex();
+			const auto& order_list_entry = (*m_DataSourceOrderList)[order_list_index];
+			if (order_list_entry.m_Transposition >= 0xfe)
+				m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, 0xff);
+			else
+				m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, order_list_entry.m_SequenceIndex);
+		}
+	}
+
+
+	void ComponentTrack::ClearHasControl(CursorControl& inCursorControl)
+	{
+		ComponentBase::ClearHasControl(inCursorControl);
+
+		{
+			const unsigned int order_list_index = m_EventPosDetails.OrderListIndex();
+			const auto& order_list_entry = (*m_DataSourceOrderList)[order_list_index];
+			if (order_list_entry.m_Transposition >= 0xfe)
+				m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, 0xff);
+			else
+				m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, order_list_entry.m_SequenceIndex);
 		}
 	}
 
@@ -451,7 +496,7 @@ namespace Editor
 							m_TextField->Print(m_Position.m_X, current_y, color_orderlist_end_stop, "stop");
 						else
 						{
-							if (m_HasControl && m_TakingOrderListInput && orderlist_index == m_EventPosDetails.m_OrderListIndex)
+							if (m_HasControl && m_TakingOrderListInput && orderlist_index == m_EventPosDetails.OrderListIndex())
 							{
 								m_TextField->PrintHexValue(m_Position.m_X, current_y, color_orderlist_value_input, is_uppercase, m_OrderListInputValue);
 							}
@@ -521,7 +566,7 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::PullDataFromSource()
+	void ComponentTrack::PullDataFromSource(const bool inFromUndo)
 	{
 		m_DataSourceOrderList->PullDataFromSource();
 	}
@@ -623,9 +668,7 @@ namespace Editor
 				if (!found_event_pos && m_EventPos >= event_pos && m_EventPos < next_event_pos)
 				{
 					found_event_pos = true;
-
-					m_EventPosDetails.m_OrderListIndex = i;
-					m_EventPosDetails.m_SequenceIndex = m_EventPos - event_pos;
+					SetEventPosDetails(i, m_EventPos - event_pos);
 
 					break;
 				}
@@ -731,11 +774,11 @@ namespace Editor
 		if (m_EventPos < m_MaxEventPos)
 		{
 			EventPosDetails event_pos_details = GetEventPosDetails(m_EventPos);
-			if (event_pos_details.m_OrderListIndex >= 0)
+			if (event_pos_details.OrderListIndex() >= 0)
 			{
-				FOUNDATION_ASSERT(event_pos_details.m_OrderListIndex < 0x100);
+				FOUNDATION_ASSERT(event_pos_details.OrderListIndex() < 0x100);
 
-				m_DataSourceOrderList->SetLoopIndex(static_cast<unsigned char>(event_pos_details.m_OrderListIndex));
+				m_DataSourceOrderList->SetLoopIndex(static_cast<unsigned char>(event_pos_details.OrderListIndex()));
 
 				OnOrderListChanged();
 
@@ -781,38 +824,35 @@ namespace Editor
 
 	bool ComponentTrack::ComputePlaybackStateFromEventPosition(int inEventPos, std::vector<IDriverArchitecture::PlayMarkerInfo>& outOrderListIndices) const
 	{
-		//if (inEventPos < m_MaxEventPos)
+		EventPosDetails event_pos_details = GetEventPosDetails(inEventPos);
+
+		// Find position in packed order list
+		DataSourceOrderList::PackedDataEventPosition order_list_event_position = m_DataSourceOrderList->GetIndexInPackedData(event_pos_details.OrderListIndex());
+
+		if (order_list_event_position.m_IsValid)
 		{
-			EventPosDetails event_pos_details = GetEventPosDetails(inEventPos);
+			// Find index in packed sequence data and remaining ticks to next event in packed sequence data
+			const DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[event_pos_details.OrderListIndex()];
 
-			// Find position in packed order list
-			DataSourceOrderList::PackedDataEventPosition order_list_event_position = m_DataSourceOrderList->GetIndexInPackedData(event_pos_details.m_OrderListIndex);
-
-			if (order_list_event_position.m_IsValid)
+			if (order_list_entry.m_Transposition < 0xfe)
 			{
-				// Find index in packed sequence data and remaining ticks to next event in packed sequence data
-				const DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[event_pos_details.m_OrderListIndex];
+				DataSourceSequence::PackedDataEventPosition event_position = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex]->GetEventPositionInPackedData(event_pos_details.SequenceIndex());
 
-				if (order_list_entry.m_Transposition < 0xfe)
+				if (event_position.m_IsValid)
 				{
-					DataSourceSequence::PackedDataEventPosition event_position = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex]->GetEventPositionInPackedData(event_pos_details.m_SequenceIndex);
+					outOrderListIndices.push_back(
+						{
+							static_cast<unsigned char>(order_list_event_position.m_Index),
+							order_list_event_position.m_Sequence,
+							order_list_event_position.m_CurrentTranspose,
+							event_position.m_Index,
+							event_position.m_CurrentDurationValue,
+							event_position.m_RemainingTicks,
+							event_position.m_NextInstrumentAddress,
+							!event_position.m_NextIsEndOfSequence
+						} );
 
-					if (event_position.m_IsValid)
-					{
-						outOrderListIndices.push_back(
-							{
-								static_cast<unsigned char>(order_list_event_position.m_Index),
-								order_list_event_position.m_Sequence,
-								order_list_event_position.m_CurrentTranspose,
-								event_position.m_Index,
-								event_position.m_CurrentDurationValue,
-								event_position.m_RemainingTicks,
-								event_position.m_NextInstrumentAddress,
-								!event_position.m_NextIsEndOfSequence
-							} );
-
-						return true;
-					}
+					return true;
 				}
 			}
 		}
@@ -820,6 +860,11 @@ namespace Editor
 		return false;
 	}
 
+
+	ComponentTrack::OrderListIndexChangedEvent& ComponentTrack::GetOrderListIndexChangedEvent()
+	{
+		return m_OrderListIndexChangedEvent;
+	}
 
 	ComponentTrack::SequenceSplitEvent& ComponentTrack::GetSequenceSplitEvent()
 	{
@@ -846,6 +891,7 @@ namespace Editor
 		m_OnUndoHandler = inOnUndoHandler;
 	}
 
+
 	//--------------------------------------------------------------------------------------------------
 	// Order list input
 	//--------------------------------------------------------------------------------------------------
@@ -856,7 +902,7 @@ namespace Editor
 		FOUNDATION_ASSERT(m_DataSourceSequenceList.size() > 0);
 		FOUNDATION_ASSERT(!m_TakingOrderListInput);
 
-		const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (orderlist_entry.m_Transposition < 0xfe)
 		{
@@ -906,7 +952,7 @@ namespace Editor
 
 		AddUndoStep();
 
-		DataSourceOrderList::Entry& orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry& orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		orderlist_entry.m_Transposition = static_cast<unsigned char>(m_OrderListInputValue >> 8);
 		orderlist_entry.m_SequenceIndex = static_cast<unsigned char>(m_OrderListInputValue & 0xff);
@@ -1066,7 +1112,7 @@ namespace Editor
 
 	unsigned int ComponentTrack::GetSequenceSize() const
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
@@ -1082,12 +1128,12 @@ namespace Editor
 	{
 		FOUNDATION_ASSERT(!IsCursorAtSequenceNote());
 
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.m_SequenceIndex];
+			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
 			unsigned char value = EditorUtils::ConvertSingleCharHexValueToValue(inValueKey);
 			bool change_made = false;
@@ -1154,16 +1200,17 @@ namespace Editor
 		return m_EventPos;
 	}
 
+
 	int ComponentTrack::ApplySequenceNoteValue(int inNoteValue)
 	{
 		FOUNDATION_ASSERT(IsCursorAtSequenceNote());
 
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.m_SequenceIndex];
+			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
 			const int transpose = static_cast<int>(order_list_entry.m_Transposition) - 0xa0;
 			int note_value = inNoteValue - transpose;
@@ -1191,12 +1238,12 @@ namespace Editor
 
 	int ComponentTrack::ApplySequenceHoldNoteValue()
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.m_SequenceIndex];
+			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
 			if (!sequence_data_source->IsInErrorState())
 				AddUndoStep();
@@ -1216,7 +1263,7 @@ namespace Editor
 
 	bool ComponentTrack::ApplyTranspose(char inDelta)
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
@@ -1263,7 +1310,7 @@ namespace Editor
 
 	void ComponentTrack::ToggleSequenceHoldNoteUntilEvent(bool inDown)
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
@@ -1272,7 +1319,7 @@ namespace Editor
 			if (!sequence_data_source->IsInErrorState())
 				AddUndoStep();
 
-			int event_pos_index = m_EventPosDetails.m_SequenceIndex;
+			int event_pos_index = m_EventPosDetails.SequenceIndex();
 
 			unsigned char note = (*sequence_data_source)[event_pos_index].m_Note;
 
@@ -1323,12 +1370,12 @@ namespace Editor
 
 	void ComponentTrack::ToggleSequenceTieNote()
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.m_SequenceIndex];
+			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
 			if (!sequence_data_source->IsInErrorState())
 				AddUndoStep();
@@ -1345,12 +1392,12 @@ namespace Editor
 
 	int ComponentTrack::EraseSequenceLine(bool inValueOnlyAtCursor)
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.m_SequenceIndex];
+			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
 			if (!sequence_data_source->IsInErrorState())
 				AddUndoStep();
@@ -1397,7 +1444,7 @@ namespace Editor
 
 	int ComponentTrack::DeleteSequenceLine(bool inChangeSequenceSize)
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
@@ -1410,7 +1457,7 @@ namespace Editor
 
 			if (sequence_data_source_length > 0)
 			{
-				for (unsigned int i = m_EventPosDetails.m_SequenceIndex; i < sequence_data_source_length - 1; ++i)
+				for (unsigned int i = m_EventPosDetails.SequenceIndex(); i < sequence_data_source_length - 1; ++i)
 				{
 					const DataSourceSequence::Event& event = (*sequence_data_source)[i + 1];
 					(*sequence_data_source)[i] = event;
@@ -1433,7 +1480,7 @@ namespace Editor
 				if (inChangeSequenceSize && sequence_data_source_length > 1)
 				{
 					OnOrderListChanged();
-					return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.m_OrderListIndex, m_EventPosDetails.m_SequenceIndex, m_DataSourceOrderList, m_DataSourceSequenceList);
+					return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), m_DataSourceOrderList, m_DataSourceSequenceList);
 				}
 			}
 		}
@@ -1443,7 +1490,7 @@ namespace Editor
 
 	int ComponentTrack::InsertSequenceLine(bool inChangeSequenceSize)
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
@@ -1462,13 +1509,13 @@ namespace Editor
 					changed_size = true;
 				}
 
-				for (unsigned int i = sequence_data_source_length; i > static_cast<unsigned int>(m_EventPosDetails.m_SequenceIndex); --i)
+				for (unsigned int i = sequence_data_source_length; i > static_cast<unsigned int>(m_EventPosDetails.SequenceIndex()); --i)
 				{
 					const DataSourceSequence::Event& event = (*sequence_data_source)[i - 1];
 					(*sequence_data_source)[i] = event;
 				}
 
-				DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.m_SequenceIndex];
+				DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
 				event.m_Command = 0x80;
 				event.m_Instrument = 0x80;
@@ -1482,7 +1529,7 @@ namespace Editor
 				if (changed_size)
 				{
 					OnOrderListChanged();
-					return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.m_OrderListIndex, m_EventPosDetails.m_SequenceIndex, m_DataSourceOrderList, m_DataSourceSequenceList);
+					return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), m_DataSourceOrderList, m_DataSourceSequenceList);
 				}
 			}
 		}
@@ -1493,7 +1540,7 @@ namespace Editor
 
 	int ComponentTrack::ResizeSequence(int inLength)
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe && inLength > 0)
 		{
@@ -1519,16 +1566,16 @@ namespace Editor
 
 			OnSequenceChanged(order_list_entry.m_SequenceIndex);
 
-			return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.m_OrderListIndex, m_EventPosDetails.m_SequenceIndex, m_DataSourceOrderList, m_DataSourceSequenceList);
+			return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), m_DataSourceOrderList, m_DataSourceSequenceList);
 		}
 
 		return m_EventPos;
 	}
 
 
-	int ComponentTrack::ResizeAndReplaceData(const std::shared_ptr<DataCopySequence>& inSequenceData)
+	int ComponentTrack::ResizeAndReplaceData(const DataCopySequence* inSequenceData)
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 		const int source_length = inSequenceData->GetEventCount();
 
 		if (order_list_entry.m_Transposition < 0xfe && source_length > 0)
@@ -1544,7 +1591,7 @@ namespace Editor
 
 			OnSequenceChanged(order_list_entry.m_SequenceIndex);
 
-			return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.m_OrderListIndex, m_EventPosDetails.m_SequenceIndex, m_DataSourceOrderList, m_DataSourceSequenceList);
+			return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), m_DataSourceOrderList, m_DataSourceSequenceList);
 		}
 
 		return m_EventPos;
@@ -1553,7 +1600,7 @@ namespace Editor
 
 	int ComponentTrack::InsertSequenceLines(int inLineCount)
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe && inLineCount > 0)
 		{
@@ -1571,13 +1618,13 @@ namespace Editor
 				int dest_index = sequence_data_source_length + inLineCount - 1;
 
 				FOUNDATION_ASSERT(sequence_data_source_length > 0);
-				for (unsigned int i = sequence_data_source_length - 1; i > m_EventPosDetails.m_SequenceIndex; --i, --dest_index)
+				for (unsigned int i = sequence_data_source_length - 1; i > m_EventPosDetails.SequenceIndex(); --i, --dest_index)
 				{
 					DataSourceSequence::Event& event = (*sequence_data_source)[i];
 					(*sequence_data_source)[dest_index] = event;
 				}
 
-				for (unsigned int i = m_EventPosDetails.m_SequenceIndex; i < m_EventPosDetails.m_SequenceIndex + inLineCount; ++i)
+				for (unsigned int i = m_EventPosDetails.SequenceIndex(); i < m_EventPosDetails.SequenceIndex() + inLineCount; ++i)
 				{
 					DataSourceSequence::Event& event = (*sequence_data_source)[i];
 
@@ -1590,7 +1637,7 @@ namespace Editor
 
 				OnSequenceChanged(order_list_entry.m_SequenceIndex);
 
-				return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.m_OrderListIndex, m_EventPosDetails.m_SequenceIndex, m_DataSourceOrderList, m_DataSourceSequenceList);
+				return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), m_DataSourceOrderList, m_DataSourceSequenceList);
 			}
 		}
 
@@ -1604,6 +1651,23 @@ namespace Editor
 		m_MaxEventPos = ComponentTrackUtils::GetMaxEventPosition(m_DataSourceOrderList, m_DataSourceSequenceList);
 	}
 
+
+	void ComponentTrack::SetEventPosDetails(unsigned int inOrderListIndex, unsigned int inSequenceIndex)
+	{
+		unsigned int previous_order_list_index = m_EventPosDetails.OrderListIndex();
+
+		m_EventPosDetails.Set(inOrderListIndex, inSequenceIndex);
+
+		if (inOrderListIndex != previous_order_list_index)
+		{
+			const auto& order_list_entry = (*m_DataSourceOrderList)[inOrderListIndex];
+			if (order_list_entry.m_Transposition >= 0xfe)
+				m_OrderListIndexChangedEvent.Execute(m_HasControl, inOrderListIndex, 0xff);
+			else
+				m_OrderListIndexChangedEvent.Execute(m_HasControl, inOrderListIndex, order_list_entry.m_SequenceIndex);
+		}
+	}
+
 	//--------------------------------------------------------------------------------------------------
 	// Information report (function callback)
 	//--------------------------------------------------------------------------------------------------
@@ -1612,7 +1676,7 @@ namespace Editor
 	{
 		if (m_HasControl && m_StatusReportFunction != nullptr && !m_FocusModeOrderList)
 		{
-			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (order_list_entry.m_Transposition < 0xfe)
 			{
@@ -1749,11 +1813,11 @@ namespace Editor
 		}
 		else
 		{
-			const unsigned char transposition = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex].m_Transposition;
+			const unsigned char transposition = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()].m_Transposition;
 
 			if (transposition < 0xfe)
 			{
-				const unsigned char sequence_index = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex].m_SequenceIndex;
+				const unsigned char sequence_index = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()].m_SequenceIndex;
 				const int sequence_length = m_DataSourceSequenceList[sequence_index]->GetLength();
 
 				return m_EventPos + sequence_length;
@@ -1773,9 +1837,9 @@ namespace Editor
 		}
 		else
 		{
-			if (m_EventPosDetails.m_OrderListIndex > 0)
+			if (m_EventPosDetails.OrderListIndex() > 0)
 			{
-				const unsigned char sequence_index = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1].m_SequenceIndex;
+				const unsigned char sequence_index = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex() - 1].m_SequenceIndex;
 				const int sequence_length = m_DataSourceSequenceList[sequence_index]->GetLength();
 
 				return m_EventPos - sequence_length;
@@ -1799,7 +1863,7 @@ namespace Editor
 		}
 		else
 		{
-			int order_list_index = m_EventPosDetails.m_OrderListIndex;
+			int order_list_index = m_EventPosDetails.OrderListIndex();
 			int event_pos = m_EventPos;
 
 			for (int i = 0; i < 4; ++i)
@@ -1835,9 +1899,9 @@ namespace Editor
 		}
 		else
 		{
-			if (m_EventPosDetails.m_OrderListIndex > 0)
+			if (m_EventPosDetails.OrderListIndex() > 0)
 			{
-				int order_list_index = m_EventPosDetails.m_OrderListIndex;
+				int order_list_index = m_EventPosDetails.OrderListIndex();
 				int event_pos = m_EventPos;
 
 				for (int i = 0; i < 4; ++i)
@@ -1867,17 +1931,17 @@ namespace Editor
 		if (m_FocusModeOrderList)
 		{
 			AddUndoStep();
-			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
 			{
-				if (m_EventPosDetails.m_OrderListIndex == 0)
+				if (m_EventPosDetails.OrderListIndex() == 0)
 					return m_EventPos;
 
-				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1];
+				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex() - 1];
 			}
 
-			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.m_OrderListIndex, orderlist_entry))
+			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
 			{
 				OnOrderListChanged();
 				UpdateMaxEventPos();
@@ -1896,11 +1960,11 @@ namespace Editor
 	{
 		if (m_FocusModeOrderList)
 		{
-			if (m_DataSourceOrderList->GetLength() > 2 && (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex].m_Transposition <= 0xfe)
+			if (m_DataSourceOrderList->GetLength() > 2 && (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()].m_Transposition <= 0xfe)
 			{
 				AddUndoStep();
 
-				for (int i = m_EventPosDetails.m_OrderListIndex; i < static_cast<int>(m_DataSourceOrderList->GetLength()) - 1; ++i)
+				for (int i = m_EventPosDetails.OrderListIndex(); i < static_cast<int>(m_DataSourceOrderList->GetLength()) - 1; ++i)
 					(*m_DataSourceOrderList)[i] = (*m_DataSourceOrderList)[i + 1];
 
 				m_DataSourceOrderList->DecreaseSize();
@@ -1922,10 +1986,10 @@ namespace Editor
 	{
 		if (m_FocusModeOrderList)
 		{
-			if (m_EventPosDetails.m_OrderListIndex > 0)
+			if (m_EventPosDetails.OrderListIndex() > 0)
 			{
 				int event_pos = DoKeyUp();
-				--m_EventPosDetails.m_OrderListIndex;
+				SetEventPosDetails(m_EventPosDetails.OrderListIndex() - 1, m_EventPosDetails.SequenceIndex());
 				DoDelete(inIsControlDown);
 
 				return event_pos;
@@ -1933,10 +1997,10 @@ namespace Editor
 		}
 		else
 		{
-			if (m_EventPosDetails.m_SequenceIndex > 0)
+			if (m_EventPosDetails.SequenceIndex() > 0)
 			{
 				int event_pos = DoKeyUp();
-				--m_EventPosDetails.m_SequenceIndex;
+				SetEventPosDetails(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex() - 1);
 				DoDelete(inIsControlDown);
 
 				return event_pos;
@@ -1953,14 +2017,14 @@ namespace Editor
 		{
 			AddUndoStep();
 
-			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
 			{
-				if (m_EventPosDetails.m_OrderListIndex == 0)
+				if (m_EventPosDetails.OrderListIndex() == 0)
 					return m_EventPos;
 
-				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex - 1];
+				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex() - 1];
 			}
 
 			unsigned char first_free_sequence_index = inFindFreeSequence();
@@ -1968,7 +2032,7 @@ namespace Editor
 			if (first_free_sequence_index < 0x80)
 				orderlist_entry.m_SequenceIndex = first_free_sequence_index;
 
-			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.m_OrderListIndex, orderlist_entry))
+			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
 			{
 				OnOrderListChanged();
 				UpdateMaxEventPos();
@@ -1982,12 +2046,12 @@ namespace Editor
 	{
 		if (!m_FocusModeOrderList)
 		{
-			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
 				return;
 
-			const int index_in_current_sequence = m_EventPosDetails.m_SequenceIndex;
+			const int index_in_current_sequence = m_EventPosDetails.SequenceIndex();
 			if (index_in_current_sequence == 0)
 				return;
 
@@ -2018,7 +2082,7 @@ namespace Editor
 	{
 		if (m_FocusModeOrderList)
 		{
-			const unsigned int order_index = m_EventPosDetails.m_OrderListIndex;
+			const unsigned int order_index = m_EventPosDetails.OrderListIndex();
 			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[order_index];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
@@ -2067,7 +2131,7 @@ namespace Editor
 	{
 		if (!m_FocusModeOrderList)
 		{
-			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
 				return;
@@ -2087,7 +2151,7 @@ namespace Editor
 	{
 		if (!m_FocusModeOrderList)
 		{
-			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (order_list_entry.m_Transposition < 0xfe)
 			{
@@ -2134,7 +2198,7 @@ namespace Editor
 			{
 			};
 
-			unsigned int max_value = DataSourceSequence::MaxEventCount - m_DataSourceSequenceList[m_EventPosDetails.m_OrderListIndex]->GetLength();
+			unsigned int max_value = DataSourceSequence::MaxEventCount - m_DataSourceSequenceList[m_EventPosDetails.OrderListIndex()]->GetLength();
 
 			inComponentsManager.StartDialog(std::make_shared<DialogHexValueInput>("Add lines to sequence", "Enter number of lines to add to sequence", 30, 3, 0, max_value, dialog_ok, dialog_cancel));
 		}
@@ -2143,28 +2207,33 @@ namespace Editor
 
 	void ComponentTrack::DoCopySequenceData()
 	{
-		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-			m_CopyPasteData->m_SequenceCopy = std::make_shared<DataCopySequence>(*sequence_data_source);
+			CopyPaste::Instance().SetData(new DataCopySequence(*sequence_data_source));
 		}
 	}
 
 
 	void ComponentTrack::DoPasteSequenceData()
 	{
-		if (m_CopyPasteData->m_SequenceCopy != nullptr)
+		if (CopyPaste::Instance().HasData<DataCopySequence>())
 		{
 			AddUndoStep();
 
-			// Do additional checking
-			int event_pos = ResizeAndReplaceData(m_CopyPasteData->m_SequenceCopy);
+			const auto* data = CopyPaste::Instance().GetData<DataCopySequence>();
+			const bool is_full_sequence = data->IsFullSequenceCopy();
 
-			// Set the new event position
-			if (m_EventPos != event_pos)
-				SetEventPosition(event_pos);
+			if (is_full_sequence)
+			{
+				int event_pos = ResizeAndReplaceData(data);
+
+				// Set the new event position
+				if (m_EventPos != event_pos)
+					SetEventPosition(event_pos);
+			}
 
 			OnOrderListChanged();
 		}
@@ -2177,12 +2246,12 @@ namespace Editor
 
 		if (!m_FocusModeOrderList)
 		{
-			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (order_list_entry.m_Transposition < 0xfe)
 			{
 				const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-				DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.m_SequenceIndex];
+				DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
 				if (!sequence_data_source->IsInErrorState())
 					AddUndoStep();
@@ -2204,12 +2273,12 @@ namespace Editor
 
 		if (!m_FocusModeOrderList)
 		{
-			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (order_list_entry.m_Transposition < 0xfe)
 			{
 				const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-				DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.m_SequenceIndex];
+				DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
 				if (!sequence_data_source->IsInErrorState())
 					AddUndoStep();
@@ -2223,7 +2292,6 @@ namespace Editor
 			}
 		}
 	}
-
 
 
 	//--------------------------------------------------------------------------------------------------
@@ -2294,8 +2362,7 @@ namespace Editor
 
 			if (inEventPos >= event_pos && inEventPos < next_event_pos)
 			{
-				details.m_OrderListIndex = i;
-				details.m_SequenceIndex = static_cast<unsigned int>(inEventPos - event_pos);
+				details.Set(i, static_cast<unsigned int>(inEventPos - event_pos));
 
 				break;
 			}
@@ -2314,7 +2381,7 @@ namespace Editor
 
 		const auto details = GetEventPosDetails(inEventPos);
 
-		return details.m_SequenceIndex == 0;
+		return details.SequenceIndex() == 0;
 	}
 
 
@@ -2327,8 +2394,8 @@ namespace Editor
 
 		undo_data->m_CursorPos = m_CursorPos;
 		undo_data->m_MaxEventPos = m_MaxEventPos;
-		undo_data->m_EventPosDetailsOrderListIndex = m_EventPosDetails.m_OrderListIndex;
-		undo_data->m_EventPosDetailsSequenceIndex = m_EventPosDetails.m_SequenceIndex;
+		undo_data->m_EventPosDetailsOrderListIndex = m_EventPosDetails.OrderListIndex();
+		undo_data->m_EventPosDetailsSequenceIndex = m_EventPosDetails.SequenceIndex();
 		undo_data->m_EventPosOrderListIndex = m_EventPosOrderListIndex;
 		undo_data->m_EventPosSequenceIndex = m_EventPosSequenceIndex;
 
@@ -2346,8 +2413,8 @@ namespace Editor
 
 		undo_data->m_CursorPos = m_CursorPos;
 		undo_data->m_MaxEventPos = m_MaxEventPos;
-		undo_data->m_EventPosDetailsOrderListIndex = m_EventPosDetails.m_OrderListIndex;
-		undo_data->m_EventPosDetailsSequenceIndex = m_EventPosDetails.m_SequenceIndex;
+		undo_data->m_EventPosDetailsOrderListIndex = m_EventPosDetails.OrderListIndex();
+		undo_data->m_EventPosDetailsSequenceIndex = m_EventPosDetails.SequenceIndex();
 		undo_data->m_EventPosOrderListIndex = m_EventPosOrderListIndex;
 		undo_data->m_EventPosSequenceIndex = m_EventPosSequenceIndex;
 
@@ -2364,10 +2431,9 @@ namespace Editor
 
 		m_CursorPos = undo_data.m_CursorPos;
 		m_MaxEventPos = undo_data.m_MaxEventPos;
-		m_EventPosDetails.m_OrderListIndex = undo_data.m_EventPosDetailsOrderListIndex;
-		m_EventPosDetails.m_SequenceIndex = undo_data.m_EventPosDetailsSequenceIndex;
 		m_EventPosOrderListIndex = undo_data.m_EventPosOrderListIndex;
 		m_EventPosSequenceIndex = undo_data.m_EventPosSequenceIndex;
+		SetEventPosDetails(undo_data.m_EventPosDetailsOrderListIndex, undo_data.m_EventPosDetailsSequenceIndex);
 
 		m_OnUndoHandler(undo_data, inCursorControl);
 
@@ -2674,13 +2740,13 @@ namespace Editor
 		} });
 		m_KeyHooks.push_back({ "Key.Track.InsertFirstEmptySequence", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
-				if (m_FocusModeOrderList && !m_TakingOrderListInput)
-				{
-						inKeyHookContext.m_NewEventPos = DoInsertFirstFreeSequence(m_GetFirstEmptySequenceIndexFunction);
-						return true;
-				}
+			if (m_FocusModeOrderList && !m_TakingOrderListInput)
+			{
+				inKeyHookContext.m_NewEventPos = DoInsertFirstFreeSequence(m_GetFirstEmptySequenceIndexFunction);
+				return true;
+			}
 
-				return false;
+			return false;
 		} });
 		m_KeyHooks.push_back({ "Key.Track.SplitSequenceAtEventPosition", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
@@ -2740,6 +2806,7 @@ namespace Editor
 
 			return false;
 		} });
+
 /*		m_KeyHooks.push_back({ "Key.Track.DoubleSequenceSize", SDLK_b, Keyboard::Control, [&](KeyHookContext& inKeyHookContext)
 		{
 			if (!m_FocusModeOrderList)
@@ -2760,7 +2827,7 @@ namespace Editor
 				DebugSingleton::GetInstance()->SetDebugAddress(m_DataSourceOrderList->GetSourceAddress());
 			else
 			{
-				const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.m_OrderListIndex];
+				const DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 				DebugSingleton::GetInstance()->SetDebugAddress(m_DataSourceSequenceList[orderlist_entry.m_SequenceIndex]->GetSourceAddress());
 			}
 

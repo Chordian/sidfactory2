@@ -1,15 +1,21 @@
 #include "runtime/editor/undo/undo.h"
 #include "runtime/editor/undo/undostep.h"
-#include "runtime/editor/undo/undo_componentdata.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata.h"
+#include "runtime/editor/undo/undo_datasource/undo_datasource.h"
+#include "runtime/editor/undo/undo_datasource/undo_datasource.h"
 #include "runtime/editor/driver/driver_info.h"
+#include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_table_text.h"
 #include "runtime/emulation/cpumemory.h"
 #include <memory>
 #include "foundation/base/assert.h"
+#include "foundation/graphics/textfield.h"
 
 namespace Editor
 {
-	Undo::Undo(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo)
+	Undo::Undo(Emulation::CPUMemory& inCPUMemory, DriverInfo& inDriverInfo)
 		: m_CPUMemory(inCPUMemory)
+		, m_DriverInfo(inDriverInfo)
 		, m_DataSnapshotAddressBegin(inDriverInfo.GetDescriptor().m_DriverCodeTop + inDriverInfo.GetDescriptor().m_DriverSize)
 		, m_DataSnapshotSize(0x10000 - m_DataSnapshotAddressBegin)
 		, m_Begin(0)
@@ -22,6 +28,11 @@ namespace Editor
 	{
 		for (auto& step : m_UndoSteps)
 			step = nullptr;
+		//for (auto& step : m_UndoStepsRecentEdits)
+		//	step = nullptr;
+
+		m_Begin = 0;
+		m_End = 0;
 	}
 
 
@@ -40,7 +51,7 @@ namespace Editor
 	bool Undo::HasRedoStep() const
 	{
 		unsigned int next_end = m_End + 1;
-		
+
 		if (next_end >= m_UndoSteps.size())
 			next_end = 0;
 
@@ -56,31 +67,20 @@ namespace Editor
 		FOUNDATION_ASSERT(m_End < m_UndoSteps.size());
 
 		unsigned char* data = new unsigned char[m_DataSnapshotSize];
+		auto& data_source = inComponentUndoData->GetDataSource();
 
-		if(inLockCPU)
+		if (inLockCPU)
 			m_CPUMemory.Lock();
-		
-		m_CPUMemory.GetData(m_DataSnapshotAddressBegin, static_cast<void*>(data), m_DataSnapshotSize);
-	
-		if(inLockCPU)
+
+		GetDataForUndo(data_source);
+		//m_CPUMemory.GetData(m_DataSnapshotAddressBegin, static_cast<void*>(data), m_DataSnapshotSize);
+
+		if (inLockCPU)
 			m_CPUMemory.Unlock();
 
 		m_UndoSteps[m_End] = std::make_shared<UndoStep>(data, inComponentUndoData, inRestorePostFunction);
 
-		// Flush forward
-		unsigned int i = m_End + 1;
-
-		while (true)
-		{
-			if (i == m_UndoSteps.size())
-				i = 0;
-			if (i == m_Begin)
-				break;
-
-			m_UndoSteps[i] = nullptr;
-
-			++i;
-		}
+		FlushForwardUndoSteps();
 	}
 
 
@@ -89,11 +89,14 @@ namespace Editor
 		FOUNDATION_ASSERT(m_End < m_UndoSteps.size());
 
 		unsigned char* data = new unsigned char[m_DataSnapshotSize];
+		auto& data_source = inComponentUndoData->GetDataSource();
 
 		m_CPUMemory.Lock();
-		m_CPUMemory.GetData(m_DataSnapshotAddressBegin, static_cast<void*>(data), m_DataSnapshotSize);
+		GetDataForUndo(data_source);
+		//m_CPUMemory.GetData(m_DataSnapshotAddressBegin, static_cast<void*>(data), m_DataSnapshotSize);
 		m_CPUMemory.Unlock();
 
+		//m_UndoStepsRecentEdits[m_End] = m_UndoSteps[m_End];
 		m_UndoSteps[m_End] = std::make_shared<UndoStep>(data, inComponentUndoData, inRestorePostFunction);
 
 		++m_End;
@@ -109,7 +112,26 @@ namespace Editor
 	}
 
 
-	void Undo::DoUndo(CursorControl& inCursorControl)
+	void Undo::FlushForwardUndoSteps()
+	{
+		unsigned int i = m_End + 1;
+
+		while (true)
+		{
+			if (i == m_UndoSteps.size())
+				i = 0;
+			if (i == m_Begin)
+				break;
+
+			m_UndoSteps[i] = nullptr;
+			//m_UndoStepsRecentEdits[i] = nullptr;
+
+			++i;
+		}
+	}
+
+
+	int Undo::DoUndo(CursorControl& inCursorControl)
 	{
 		FOUNDATION_ASSERT(HasUndoStep());
 
@@ -121,11 +143,30 @@ namespace Editor
 		FOUNDATION_ASSERT(m_UndoSteps[new_end] != nullptr);
 
 		const unsigned char* restore_data = m_UndoSteps[new_end]->GetData();
+		//const unsigned char* resent_edit_restore_data = m_UndoStepsRecentEdits[new_end] != nullptr ? m_UndoStepsRecentEdits[new_end]->GetData() : nullptr;
+		const unsigned char* resent_edit_restore_data = nullptr; 
 
-		if(restore_data != nullptr)
+		if (restore_data != nullptr || resent_edit_restore_data != nullptr)
 		{
 			m_CPUMemory.Lock();
-			m_CPUMemory.SetData(m_DataSnapshotAddressBegin, static_cast<const void*>(restore_data), m_DataSnapshotSize);
+
+//			if (resent_edit_restore_data != nullptr)
+//			{
+//				const auto& component_data = m_UndoStepsRecentEdits[new_end]->GetComponentData();
+//				const auto& data_source = component_data.GetDataSource();
+//				RestoreDataFromUndo(data_source);
+//
+//				//m_CPUMemory.SetData(m_DataSnapshotAddressBegin, static_cast<const void*>(resent_edit_restore_data), m_DataSnapshotSize);
+//			}
+			if (restore_data != nullptr)
+			{
+				const auto& component_data = m_UndoSteps[new_end]->GetComponentData();
+				const auto& data_source = component_data.GetDataSource();
+				RestoreDataFromUndo(data_source);
+
+				//m_CPUMemory.SetData(m_DataSnapshotAddressBegin, static_cast<const void*>(restore_data), m_DataSnapshotSize);
+			}
+
 			m_CPUMemory.Unlock();
 		}
 
@@ -135,13 +176,18 @@ namespace Editor
 		if (m_RestoredStepComponentHandler != nullptr)
 			m_RestoredStepComponentHandler(component_id, component_group_id);
 
+		//if (m_UndoStepsRecentEdits[new_end] != nullptr)
+		//	m_UndoStepsRecentEdits[new_end]->OnRestored(inCursorControl);
+
 		m_UndoSteps[new_end]->OnRestored(inCursorControl);
 
 		m_End = static_cast<unsigned int>(new_end);
+
+		return component_id;
 	}
 
 
-	void Undo::DoRedo(CursorControl& inCursorControl)
+	int Undo::DoRedo(CursorControl& inCursorControl)
 	{
 		FOUNDATION_ASSERT(HasRedoStep());
 
@@ -153,11 +199,30 @@ namespace Editor
 		FOUNDATION_ASSERT(m_UndoSteps[new_end] != nullptr);
 
 		const unsigned char* restore_data = m_UndoSteps[new_end]->GetData();
+		//const unsigned char* resent_edit_restore_data = m_UndoStepsRecentEdits[new_end] != nullptr ? m_UndoStepsRecentEdits[new_end]->GetData() : nullptr;
+		const unsigned char* resent_edit_restore_data = nullptr;
 
-		if (restore_data != nullptr)
+		if (restore_data != nullptr || resent_edit_restore_data != nullptr)
 		{
 			m_CPUMemory.Lock();
-			m_CPUMemory.SetData(m_DataSnapshotAddressBegin, static_cast<const void*>(restore_data), m_DataSnapshotSize);
+
+//			if (resent_edit_restore_data != nullptr)
+//			{
+//				const auto& component_data = m_UndoStepsRecentEdits[new_end]->GetComponentData();
+//				const auto& data_source = component_data.GetDataSource();
+//				RestoreDataFromUndo(data_source);
+//
+//				//m_CPUMemory.SetData(m_DataSnapshotAddressBegin, static_cast<const void*>(resent_edit_restore_data), m_DataSnapshotSize);
+//			}
+			if (restore_data != nullptr)
+			{
+				const auto& component_data = m_UndoSteps[new_end]->GetComponentData();
+				const auto& data_source = component_data.GetDataSource();
+				RestoreDataFromUndo(data_source);
+
+				//m_CPUMemory.SetData(m_DataSnapshotAddressBegin, static_cast<const void*>(restore_data), m_DataSnapshotSize);
+			}
+
 			m_CPUMemory.Unlock();
 		}
 
@@ -167,8 +232,50 @@ namespace Editor
 		if (m_RestoredStepComponentHandler != nullptr)
 			m_RestoredStepComponentHandler(component_id, component_group_id);
 
+		//if (m_UndoStepsRecentEdits[new_end] != nullptr)
+		//	m_UndoStepsRecentEdits[new_end]->OnRestored(inCursorControl);
+
 		m_UndoSteps[new_end]->OnRestored(inCursorControl);
 
 		m_End = new_end;
+
+		return component_id;
+	}
+
+
+	void Undo::PrintDebug(Foundation::TextField& inTextField)
+	{
+		inTextField.PrintHexValue(0, 0, false, static_cast<unsigned short>(m_Begin));
+		inTextField.PrintHexValue(0, 1, false, static_cast<unsigned short>(m_End));
+
+		for (size_t i = 0; i < m_UndoSteps.size(); ++i)
+		{
+			std::string text = std::to_string(reinterpret_cast<unsigned long>(m_UndoSteps[i].get()));
+			inTextField.Print(5, i, Foundation::Color::White, text);
+		}
+	}
+
+
+	void Undo::GetDataForUndo(UndoDataSource& inData)
+	{
+		// CPU Memory
+		unsigned char* data = new unsigned char[m_DataSnapshotSize];
+		m_CPUMemory.GetData(m_DataSnapshotAddressBegin, static_cast<void*>(data), m_DataSnapshotSize);
+		inData.SetCPUMemoryData(data);
+
+		// Auxilary data table text
+		const auto& table_text = m_DriverInfo.GetAuxilaryDataCollection().GetTableText();
+		inData.SetAuxilaryDataTableText(table_text);
+	}
+
+
+	void Undo::RestoreDataFromUndo(const UndoDataSource& inData)
+	{
+		// CPU Memory
+		m_CPUMemory.SetData(m_DataSnapshotAddressBegin, static_cast<const void*>(inData.GetCPUMemoryData()), m_DataSnapshotSize);
+
+		// Auxilary data table text
+		auto& table_text = m_DriverInfo.GetAuxilaryDataCollection().GetTableText();
+		table_text = inData.GetAuxilaryDataTableText();
 	}
 }

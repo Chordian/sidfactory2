@@ -102,6 +102,12 @@ namespace Editor
 	}
 
 
+	bool ComponentBase::IsFastForwardAllowed() const
+	{
+		return true;
+	}
+
+
 	void ComponentBase::SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl)
 	{
 		m_HasControl = true;

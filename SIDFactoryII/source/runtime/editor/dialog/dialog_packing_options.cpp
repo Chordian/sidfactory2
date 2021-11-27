@@ -9,6 +9,7 @@
 #include "foundation/input/mouse.h"
 #include "foundation/base/assert.h"
 #include "utils/usercolors.h"
+#include <algorithm>
 
 using namespace Utility;
 
@@ -38,7 +39,8 @@ namespace Editor
 
 	bool DialogPackingOptions::ConsumeInput(const Foundation::Keyboard& inKeyboard, const Foundation::Mouse& inMouse)
 	{
-		DialogBase::ConsumeInput(inKeyboard, inMouse);
+		if (DialogBase::ConsumeInput(inKeyboard, inMouse))
+			return true;
 
 		for (const auto& key_event : inKeyboard.GetKeyEventList())
 		{
@@ -123,7 +125,7 @@ namespace Editor
 
 		m_HexValueZeroPageInputComponent = std::make_shared<ComponentHexValueInput>
 			(
-				0, 0,
+				1, 0,
 				nullptr,
 				m_HexValueZeroPageDataBuffer,
 				m_TextField,
@@ -168,9 +170,8 @@ namespace Editor
 		const unsigned int zp_delta = static_cast<unsigned int>(m_ZeroPageRange.m_HighestZeroPage - m_ZeroPageRange.m_LowestZeroPage);
 		const unsigned int zp_max = 0xff - zp_delta;
 
-		const unsigned int range_adjusted_zero_page = zp_max < zero_page ? zp_max : zero_page;
-
-		m_DoneFunction(static_cast<unsigned short>(address), static_cast<unsigned char>(range_adjusted_zero_page > 2 ? range_adjusted_zero_page : 2));
+		const unsigned int range_adjusted_zero_page = std::max(std::min(zero_page, zp_max), 2u); 
+		m_DoneFunction(static_cast<unsigned short>(address), static_cast<unsigned char>(range_adjusted_zero_page));
 	}
 
 

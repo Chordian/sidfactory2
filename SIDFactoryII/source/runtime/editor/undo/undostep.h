@@ -5,7 +5,7 @@
 
 namespace Editor
 {
-	struct UndoComponentData;
+	class UndoComponentData;
 	class CursorControl;
 	class UndoStep
 	{

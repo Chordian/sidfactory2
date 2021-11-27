@@ -42,7 +42,6 @@ namespace Editor
 	class OverlayFlightRecorder;
 
 	class DebugViews;
-	struct TrackCopyPasteData;
 
 	class ScreenEdit final : public ScreenBase
 	{
@@ -226,9 +225,6 @@ namespace Editor
 
 		// Undo
 		std::shared_ptr<Undo> m_Undo;
-
-		// Copy/paste
-		std::shared_ptr<TrackCopyPasteData> m_TrackCopyPasteData;
 
 		// Track data status report variables
 		bool m_IsTrackDataReportSequence;

@@ -34,6 +34,15 @@ namespace Editor
 	}
 
 
+	const DataSourceOrderList::Entry& DataSourceOrderList::operator[](int inIndex) const
+	{
+		FOUNDATION_ASSERT(inIndex < MaxEntryCount);
+		FOUNDATION_ASSERT(m_Events != nullptr);
+
+		return m_Events[inIndex];
+	}
+
+
 	bool DataSourceOrderList::PushDataToSource()
 	{
 		FOUNDATION_ASSERT(m_CPUMemory != nullptr);
