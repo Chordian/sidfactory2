@@ -134,6 +134,7 @@ namespace Editor
 				3
 			);
 
+		m_HexValueZeroPageInputComponent->SetAllowedRange(2u, static_cast<unsigned int>(zp_max));
 		m_HexValueZeroPageInputComponent->SetColors(ToColor(UserColor::DialogText));
 
 		m_ComponentsManager->AddComponent(m_HexValueAddressInputComponent);

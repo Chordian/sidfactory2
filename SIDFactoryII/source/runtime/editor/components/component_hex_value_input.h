@@ -34,6 +34,9 @@ namespace Editor
 		void ExecuteAction(int inActionInput) override;
 		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 
+		void SetAllowedRange(unsigned int inRangeLow, unsigned int inRangeHigh);
+		void ClearAllowedRangeAll();
+
 	private:
 		void ApplyCharacter(char inCharacter);
 		void ApplyCursorPosition(CursorControl& inCursorControl);
@@ -41,9 +44,15 @@ namespace Editor
 		void DoCursorForward();
 		void DoCursorBackwards();
 
+		void ClampRange();
+
 		int m_CursorPos;
 		int m_MaxCursorPos;
 		int m_DigitCount;
+
+		bool m_UseRange;
+		unsigned int m_RangeLow;
+		unsigned int m_RangeHigh;
 
 		Foundation::Color m_TextColor;
 
