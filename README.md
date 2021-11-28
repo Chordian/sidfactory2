@@ -18,6 +18,8 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+- Added: An option in the packer to specify the base for zero page addresses
+  that the player uses.
 - Changed: [#142](https://github.com/Chordian/sidfactory2/issues/142) the
   list of keys that can be remapped is complete now. Please note: the names for
   keycodes starting with `num` are renamed to start with `kp_`.
