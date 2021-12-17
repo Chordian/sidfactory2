@@ -4,7 +4,14 @@
 #include "libraries/residfp/SID.h"
 
 #include "foundation/base/assert.h"
+
+#include "utils/configfile.h"
+#include "utils/global.h"
+#include "utils/logging.h"
+
 #include <cmath>
+
+using namespace Utility;
 
 namespace Emulation
 {
@@ -102,15 +109,48 @@ namespace Emulation
 
 			const double passband = 20000.0;
 
-			m_pSID->setSamplingParameters
-			(
+			double filter_8580_curve = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Emulation.8580.FilterCurve", 0.5);
+			if (filter_8580_curve < 0.0)
+			{
+				Logging::instance().Warning("Sound.Emulation.8580.FilterCurve %f is lower than 0. Limiting to 0", filter_8580_curve);
+				filter_8580_curve = 0.0;
+			}
+			if (filter_8580_curve > 1.0)
+			{
+				Logging::instance().Warning("Sound.Emulation.8580.FilterCurve %f is higher than 1.0. Limiting to 1.0", filter_8580_curve);
+				filter_8580_curve = 1.0;
+			}
+
+			double filter_6581_curve = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Emulation.6581.FilterCurve", 0.5);
+			if (filter_6581_curve < 0.0)
+			{
+				Logging::instance().Warning("Sound.Emulation.6581.FilterCurve %f is lower than 0.0 Limiting to 0.0", filter_6581_curve);
+				filter_6581_curve = 0.0;
+			}
+			if (filter_6581_curve > 1.0)
+			{
+				Logging::instance().Warning("Sound.Emulation.6581.FilterCurve %f is higher than 1.0. Limiting to 1.0", filter_6581_curve);
+				filter_6581_curve = 1.0;
+			}
+
+			m_pSID->setSamplingParameters(
 				static_cast<double>(m_sConfiguration.m_eEnvironment == SID_ENVIRONMENT_PAL ? EMULATION_CYCLES_PER_SECOND_PAL : EMULATION_CYCLES_PER_SECOND_NTSC),
 				m_sConfiguration.m_eSampleMethod != SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE ? SamplingMethod::DECIMATE : SamplingMethod::RESAMPLE,
 				static_cast<double>(m_sConfiguration.m_nSampleFrequency),
-				passband
-			);
+				passband);
 
 			m_pSID->setChipModel(m_sConfiguration.m_eModel == SID_MODEL_6581 ? ChipModel::MOS6581 : ChipModel::MOS8580);
+			m_pSID->setFilter8580Curve(filter_8580_curve);
+			m_pSID->setFilter6581Curve(filter_6581_curve);
+
+			if (m_sConfiguration.m_eModel == SID_MODEL_6581)
+			{
+				Logging::instance().Info("Sound.Emulation.6581.FilterCurve set to %f", filter_6581_curve);
+			}
+			else
+			{
+				Logging::instance().Info("Sound.Emulation.8580.FilterCurve set to %f", filter_8580_curve);
+			}
 		}
 	}
 
@@ -193,11 +233,19 @@ namespace Emulation
 //		{
 //			float r = (static_cast<float>(m_SampleCounter) * 2.0f * 3.1416f) / 25.0f;
 //			short v = static_cast<short>(std::sinf(r) * 65535.0f / 4.0f);
+		//
 //		
-//			pBuffer[i] = v;
+		//
 //		
-//			m_SampleCounter++;
-//		}
+		//
+//		
+		//
+		//			pBuffer[i] = v;
+		//
+//		
+		//
+		//			m_SampleCounter++;
+		//		}
 
 		if (IsRecordingToFile())
 		{
