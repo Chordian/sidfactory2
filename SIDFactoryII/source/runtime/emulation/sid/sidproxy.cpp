@@ -143,14 +143,8 @@ namespace Emulation
 			m_pSID->setFilter8580Curve(filter_8580_curve);
 			m_pSID->setFilter6581Curve(filter_6581_curve);
 
-			if (m_sConfiguration.m_eModel == SID_MODEL_6581)
-			{
-				Logging::instance().Info("Sound.Emulation.6581.FilterCurve set to %f", filter_6581_curve);
-			}
-			else
-			{
-				Logging::instance().Info("Sound.Emulation.8580.FilterCurve set to %f", filter_8580_curve);
-			}
+			Logging::instance().Info("Sound.Emulation.6581.FilterCurve set to %f", filter_6581_curve);
+			Logging::instance().Info("Sound.Emulation.8580.FilterCurve set to %f", filter_8580_curve);
 		}
 	}
 
@@ -234,15 +228,17 @@ namespace Emulation
 //			float r = (static_cast<float>(m_SampleCounter) * 2.0f * 3.1416f) / 25.0f;
 //			short v = static_cast<short>(std::sinf(r) * 65535.0f / 4.0f);
 		//
-//		
+//
 		//
-//		
+//
 		//
-//		
+//
 		//
-		//			pBuffer[i] = v;
+//
 		//
-//		
+//			pBuffer[i] = v;
+		//
+//
 		//
 		//			m_SampleCounter++;
 		//		}
