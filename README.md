@@ -18,6 +18,11 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+- Changed: [#146](https://github.com/Chordian/sidfactory2/issues/146) the
+  official macOS distribution is now a universal application, meaning it will
+  run native both on the new M1 (arm_64) and the Intel (x86_64) architecture.
+  The architecture the application is running on is reflected in the build
+  number in the lower right corner of the startup screen.
 - Added: Documentation on how to customize configuration using a `user.ini`
   file. Including a default template `/documentation/user.default.ini`.
 - Added: [#144](https://github.com/Chordian/sidfactory2/issues/144)
