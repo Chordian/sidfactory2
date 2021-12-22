@@ -18,6 +18,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+- Added: You can now adds labels for song list rows. Left-click to edit a label.
 - Changed: [#146](https://github.com/Chordian/sidfactory2/issues/146) the
   official macOS distribution is now a universal application, meaning it will
   run native both on the new M1 (arm64) and the Intel (x86_64) architecture.

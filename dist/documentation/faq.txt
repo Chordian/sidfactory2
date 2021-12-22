@@ -43,4 +43,3 @@ A: SID Factory II is still in BETA and a lot of essential features may be missin
      o  Subtunes (for game support) including being able to stop a tune (jingle)
      o  Multispeed
      o  Load/Save instruments
-     o  Descriptions in the song list
