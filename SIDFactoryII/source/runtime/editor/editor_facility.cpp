@@ -224,7 +224,7 @@ namespace Editor
 		// Try to load the driver directly
 		if (!file_loaded_successfully)
 		{
-			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_03.prg"));
+			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_04.prg"));
 			std::string drivers_folder = platform.Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}

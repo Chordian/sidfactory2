@@ -14,10 +14,14 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20bi
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png 'SID Factory II')
+![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
 
 ## Changelog
 
+- Added: Note delay; delay a note by 0-F ticks. This is a feature of the new
+  default driver 11.04
+- Added: Configuration option `Editor.Driver.Default` to set the default driver
+  that is loaded when starting up the editor.
 - Added: You can now adds labels for song list rows. Left-click to edit a label.
 - Changed: [#146](https://github.com/Chordian/sidfactory2/issues/146) the
   official macOS distribution is now a universal application, meaning it will
