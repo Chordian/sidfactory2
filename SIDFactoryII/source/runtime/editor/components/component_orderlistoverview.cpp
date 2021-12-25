@@ -397,12 +397,14 @@ namespace Editor
 	}
 
 
-	void ComponentOrderListOverview::ConsumeNonExclusiveInput(const Mouse& inMouse)
+	bool ComponentOrderListOverview::ConsumeNonExclusiveInput(const Mouse& inMouse)
 	{
 		if (!m_HasControl)
 		{
 			DoMouseWheel(inMouse);
 		}
+
+		return false;
 	}
 
 

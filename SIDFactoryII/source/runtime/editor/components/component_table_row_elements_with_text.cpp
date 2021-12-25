@@ -184,9 +184,9 @@ namespace Editor
 	}
 
 
-	void ComponentTableRowElementsWithText::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTableRowElementsWithText::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-		ComponentTableRowElements::ConsumeNonExclusiveInput(inMouse);
+		return ComponentTableRowElements::ConsumeNonExclusiveInput(inMouse);
 	}
 
 

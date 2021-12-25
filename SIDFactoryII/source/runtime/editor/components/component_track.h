@@ -127,7 +127,7 @@ namespace Editor
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;

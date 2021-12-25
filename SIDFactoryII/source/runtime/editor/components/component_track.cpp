@@ -360,8 +360,9 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTrack::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
+		return false;
 	}
 
 

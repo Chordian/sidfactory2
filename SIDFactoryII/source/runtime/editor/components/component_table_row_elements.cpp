@@ -310,10 +310,12 @@ namespace Editor
 	}
 
 
-	void ComponentTableRowElements::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTableRowElements::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		if (!m_HasControl)
 			DoScrollWheel(inMouse, nullptr);
+
+		return false;
 	}
 
 

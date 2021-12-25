@@ -82,9 +82,9 @@ namespace Editor
 	}
 
 
-	void ComponentHexValueInput::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentHexValueInput::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-
+		return false;
 	}
 
 

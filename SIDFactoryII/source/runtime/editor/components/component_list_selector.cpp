@@ -109,10 +109,12 @@ namespace Editor
 	}
 
 
-	void ComponentListSelector::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentListSelector::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		if (!m_HasControl)
-			DoMouseWheel(inMouse);
+			return DoMouseWheel(inMouse);
+
+		return false;
 	}
 
 
@@ -221,7 +223,7 @@ namespace Editor
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
 
-	void ComponentListSelector::DoMouseWheel(const Foundation::Mouse& inMouse)
+	bool ComponentListSelector::DoMouseWheel(const Foundation::Mouse& inMouse)
 	{
 		Point scroll_wheel = inMouse.GetWheelDelta();
 
@@ -261,8 +263,12 @@ namespace Editor
 
 					m_RequireRefresh = true;
 				}
+
+				return change != 0;
 			}
 		}
+
+		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------

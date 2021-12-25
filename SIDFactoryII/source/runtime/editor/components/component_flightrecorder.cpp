@@ -18,11 +18,11 @@ using namespace Utility;
 
 namespace Editor
 {
-	ComponentFlightRecorder::ComponentFlightRecorder(int inID, int inGroupID, Undo* inUndo, TextField* inTextField, int inX, int inY, int inHeight, std::shared_ptr<DataSourceFlightRecorder>& inDataSource)
-		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, 40, inHeight)
+	ComponentFlightRecorder::ComponentFlightRecorder(int inID, int inGroupID, Undo* inUndo, TextField* inTextField, std::shared_ptr<DataSourceFlightRecorder>& inDataSource)
+		: ComponentBase(inID, inGroupID, inUndo, inTextField, 0, 0, inTextField->GetDimensions().m_Width, inTextField->GetDimensions().m_Height)
 		, m_DataSource(inDataSource)
 		, m_CursorPos(0)
-		, m_MaxCursorPos(static_cast<unsigned int>(m_DataSource->GetSize()) - inHeight)
+		, m_MaxCursorPos(static_cast<unsigned int>(m_DataSource->GetSize()) - inTextField->GetDimensions().m_Height)
 	{
 		FOUNDATION_ASSERT(inTextField != nullptr);
 		m_RequireRefresh = true;
@@ -106,12 +106,14 @@ namespace Editor
 
 	bool ComponentFlightRecorder::ConsumeInput(const Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
-		Point screen_position = inMouse.GetPosition();
-		return ContainsPosition(screen_position);
+		if (ConsumeNonExclusiveInput(inMouse))
+			return true;
+
+		return false;
 	}
 
 
-	void ComponentFlightRecorder::ConsumeNonExclusiveInput(const Mouse& inMouse)
+	bool ComponentFlightRecorder::ConsumeNonExclusiveInput(const Mouse& inMouse)
 	{
 		Point scroll_wheel = inMouse.GetWheelDelta();
 
@@ -132,8 +134,12 @@ namespace Editor
 
 				if (change != 0)
 					m_CursorPos = static_cast<unsigned int>(cursor_pos);
+
+				return change != 0;
 			}
 		}
+
+		return false;
 	}
 
 

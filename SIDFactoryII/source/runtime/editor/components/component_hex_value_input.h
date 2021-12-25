@@ -32,7 +32,7 @@ namespace Editor
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 
 		void SetAllowedRange(unsigned int inRangeLow, unsigned int inRangeHigh);
 		void ClearAllowedRangeAll();

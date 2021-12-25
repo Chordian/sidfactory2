@@ -95,9 +95,9 @@ namespace Editor
 	}
 
 
-	void ComponentTextInput::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTextInput::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-
+		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------

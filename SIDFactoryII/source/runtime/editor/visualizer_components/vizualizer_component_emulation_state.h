@@ -27,7 +27,7 @@ namespace Editor
 		);
 		virtual ~VisualizerComponentEmulationState();
 
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 		void Refresh(const DisplayState& inDisplayState) override;
 
 	private:

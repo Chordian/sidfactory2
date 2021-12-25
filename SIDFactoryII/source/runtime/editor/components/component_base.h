@@ -64,7 +64,7 @@ namespace Editor
 
 		virtual bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) = 0;
 		virtual bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) = 0;
-		virtual void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) = 0;
+		virtual bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) = 0;
 
 		virtual void Refresh(const DisplayState& inDisplayState) = 0;
 		virtual void HandleDataChange() = 0;

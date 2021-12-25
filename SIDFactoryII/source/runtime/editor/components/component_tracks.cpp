@@ -267,7 +267,7 @@ namespace Editor
 	}
 
 
-	void ComponentTracks::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTracks::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		Point scroll_wheel = inMouse.GetWheelDelta();
 
@@ -294,8 +294,12 @@ namespace Editor
 
 				if (event_pos != m_EventPos)
 					SetEventPosition(event_pos, false);
+
+				return change != 0;
 			}
 		}
+
+		return false;
 	}
 
 

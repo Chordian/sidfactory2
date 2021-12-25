@@ -32,9 +32,9 @@ namespace Editor
 	}
 
 
-	void VisualizerComponentEmulationState::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool VisualizerComponentEmulationState::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-
+		return false;
 	}
 
 
