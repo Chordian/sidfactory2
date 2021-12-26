@@ -35,8 +35,11 @@
 #include "runtime/editor/dialog/dialog_message_yesno.h"
 #include "runtime/editor/dialog/dialog_hex_value_input.h"
 #include "runtime/editor/dialog/dialog_optimize.h"
+#include "runtime/editor/dialog/dialog_packing_options.h"
 #include "runtime/editor/screens/statusbar/status_bar_edit.h"
 #include "runtime/editor/overlays/overlay_flightrecorder.h"
+#include "runtime/editor/datacopy/copypaste.h"
+#include "runtime/editor/packer/packing_utils.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/emulation/sid/sidproxydefines.h"
@@ -80,7 +83,7 @@ namespace Editor
 		std::function<void(void)> inRequestLoadInstrumentCallback,
 		std::function<void(void)> inRequestSaveInstrumentCallback,
 		std::function<void(void)> inQuickSaveCallback,
-		std::function<void(unsigned short)> inPackCallback,
+		std::function<void(unsigned short, unsigned char)> inPackCallback,
 		std::function<void(void)> inToggleShowOverlay,
 		std::function<void(unsigned int)> inReconfigure)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
@@ -130,6 +133,9 @@ namespace Editor
 	void ScreenEdit::Activate()
 	{
 		ScreenBase::Activate();
+
+		// Clear undo
+		FlushUndo();
 
 		// Prepare data (tracks and sequences)
 		PrepareMusicData();
@@ -284,8 +290,9 @@ namespace Editor
 		for (const auto key_event : inKeyboard.GetKeyDownList())
 			Utility::ConsumeInputKeyHooks(key_event, inKeyboard.GetModiferMask(), m_FastForwardKeyHooks);
 
-		// Apply fast forward factor to the execution handler
-		m_ExecutionHandler->SetFastForward(m_FastForwardFactor);
+		// Apply fast forward factor to the execution handler if not prevented by the active component
+		const bool may_do_fast_forward = m_ComponentsManager->IsFastForwardAllowed();
+		m_ExecutionHandler->SetFastForward(may_do_fast_forward ? m_FastForwardFactor : 0);
 
 		// Consume input for note play, if allowed
 		if (ConsumeInputNotePlay(inKeyboard))
@@ -381,6 +388,8 @@ namespace Editor
 
 		m_MainTextField->Print(x + 1, y + 1, ToColor(IsPlaying() ? UserColor::ScreenEditInfoRectTextTimePlaybackState : UserColor::ScreenEditInfoRectText), "Playing time: " + std::to_string(minutes) + ((seconds < 10) ? ":0" : ":") + std::to_string(seconds) + "      ");
 		m_MainTextField->Print(x + 1, y + 2, ToColor(UserColor::ScreenEditInfoRectText), m_DriverInfo->GetDescriptor().m_DriverName);
+
+		// m_Undo->PrintDebug(*m_MainTextField);
 	}
 
 	//------------------------------------------------------------------------------------------------------------
@@ -812,8 +821,8 @@ namespace Editor
 						m_CPUMemory,
 						[&]() 
 						{
-							m_InstrumentTableComponent->PullDataFromSource();
-							m_CommandTableComponent->PullDataFromSource();
+							m_InstrumentTableComponent->PullDataFromSource(false);
+							m_CommandTableComponent->PullDataFromSource(false);
 
 							m_ComponentsManager->ForceRefresh(); 
 						}
@@ -821,17 +830,30 @@ namespace Editor
 					break;
 				case DialogUtilities::Selection::Pack:
 					{
-						auto dialog_ok = [this](unsigned int inDestinationAddress)
-						{
-							m_PackCallback(static_cast<unsigned short>(inDestinationAddress));
-						};
-						
+						m_PackingDestinationAddress = 0x0000;
+
 						auto dialog_cancel = [this]()
 						{
 						};
 
-						const unsigned int default_destination_address = 0x1000;
-						m_ComponentsManager->StartDialog(std::make_shared<DialogHexValueInput>("Packer", "Packed song destination address:", 32, 4, default_destination_address, 0xffff, dialog_ok, dialog_cancel));
+						auto dialog_ok = [this](unsigned short inDestinationAddress, unsigned char inDestinationZeroPage)
+						{
+							this->m_PackCallback(inDestinationAddress, inDestinationZeroPage);
+						};
+
+						ZeroPageRange zp_range = GetZeroPageRangeFromDriver(*(this->m_CPUMemory), *(this->m_DriverInfo));
+
+						if (zp_range.m_LowestZeroPage <= zp_range.m_HighestZeroPage)
+						{
+							const unsigned short default_destination_address = 0x1000;
+							m_ComponentsManager->StartDialog(std::make_shared<DialogPackingOptions>(
+								default_destination_address, 
+								zp_range.m_LowestZeroPage, 
+								zp_range, 
+								dialog_ok, 
+								dialog_cancel
+							));
+						}
 					}
 
 					break;
@@ -960,8 +982,8 @@ namespace Editor
             return first_free_sequence_index;
         };
 
-		// Create copy/paste data container
-		m_TrackCopyPasteData = std::make_shared<TrackCopyPasteData>();
+		// Flush copy paste
+		CopyPaste::Instance().Flush();
 
 		// Create data container for music data (which is all tracks and sequences combined)
 		std::vector<std::shared_ptr<ComponentTrack>> tracks;
@@ -978,7 +1000,6 @@ namespace Editor
 					m_EditState,
 					m_KeyHookStore,
 					m_DriverInfo->GetAuxilaryDataCollection(),
-					m_TrackCopyPasteData,
 					sequence_editing_status_report,
 					get_first_free_sequence_index,
                     get_first_empty_sequence_index,
@@ -1001,10 +1022,18 @@ namespace Editor
 		const int player_markers_list_top = order_list_overview_bottom + 1;
 
 		// Create orderlist overview component
+		std::shared_ptr<DataSourceTableText> song_view_text_buffer = std::make_shared<DataSourceTableText>(
+			OrderListOverviewID,
+			256,
+			m_DriverInfo->GetAuxilaryDataCollection().GetTableText()
+		);
+
 		m_OrderListOverviewComponent = std::make_shared<ComponentOrderListOverview>(
 			OrderListOverviewID, 0, 
 			undo,
 			m_MainTextField, 
+			m_KeyHookStore,
+			song_view_text_buffer,
 			m_OrderListDataSources, 
 			m_SequenceDataSources, 
 			1, 
@@ -1024,8 +1053,8 @@ namespace Editor
 
 		// Play markers component
 		const int play_markers_width = orderlist_overview_rect.m_Dimensions.m_Width;
-		std::vector<std::string> test_strings;
 		auto play_markers_data_source = std::make_shared<DataSourcePlayMarkers>(m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers(), m_DisplayState);
+
 		m_PlayMarkerListComponent = std::make_shared<ComponentStringListSelector>(
 			PlayMarkerListID, 0,
 			undo, 
@@ -1036,7 +1065,8 @@ namespace Editor
 			play_markers_width, 
 			bottom - player_markers_list_top, 
 			1, 
-			0);
+			0
+		);
 		m_PlayMarkerListComponent->SetColors(ToColor(UserColor::MarkerListBackground), ToColor(UserColor::MarkerListCursorFocus), ToColor(UserColor::MarkerListCursorNoFocus));
 		m_PlayMarkerListComponent->SetColors(ToColor(UserColor::MarkerListText));
 		m_PlayMarkerListComponent->SetSelectionCallback([&](bool inOnDoubleClick)
@@ -1265,6 +1295,12 @@ namespace Editor
 				Utility::TDelegate<void(void)>([&]() { m_OrderListOverviewComponent->ForceRefresh(); })
 			);
 		}
+
+		// Hook up the tracks to order list change from the orderlist overview component
+		m_OrderListOverviewComponent->GetOrderListChangedEvent().Add(
+			nullptr,
+			Utility::TDelegate<void(int)>([&](int inChannel) { m_TracksComponent->OnOrderListChanged(inChannel); })
+		);
 
 		// Enable groups
 		//m_ComponentsManager->SetGroupEnabledForTabbing(0);
@@ -1728,7 +1764,7 @@ namespace Editor
 			if (m_Undo->HasUndoStep())
 			{
 				m_Undo->DoUndo(*m_CursorControl);
-				m_ComponentsManager->OnUndoOrRedo();
+				m_ComponentsManager->PullDataFromAllSources(true);
 			}
 
 			return true;
@@ -1738,8 +1774,8 @@ namespace Editor
 		{
 			if (m_Undo->HasRedoStep())
 			{
-				m_Undo->DoRedo(*m_CursorControl);
-				m_ComponentsManager->OnUndoOrRedo();
+				m_Undo->DoRedo(*m_CursorControl);			
+				m_ComponentsManager->PullDataFromAllSources(true);
 			}
 
 			return true;

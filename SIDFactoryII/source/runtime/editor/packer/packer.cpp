@@ -1,5 +1,5 @@
 #include "packer.h"
-
+#include "packing_utils.h"
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/driver/driver_utils.h"
 #include "runtime/emulation/cpumos6510.h"
@@ -21,10 +21,11 @@ namespace Editor
 	}
 
 
-	Packer::Packer(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned short inDestinationAddress)
+	Packer::Packer(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned short inDestinationAddress, unsigned char inLowestZP)
 		: m_CPUMemory(inCPUMemory)
 		, m_DriverInfo(inDriverInfo)
 		, m_DestinationAddress(inDestinationAddress)
+		, m_LowestZP(inLowestZP)
 		, m_HighestUsedSequenceIndex(0)
 		, m_OrderListPointersDataSectionLowID(0)
 		, m_OrderListPointersDataSectionHighID(0)
@@ -35,6 +36,13 @@ namespace Editor
 
 		// Compute the destination address delta. The driver and data are processed for the destination address at address 0x1000 in the data container, but the load 
 		// address of the file generated is altered to the destination address before saving it to disk.
+
+		ZeroPageRange zp_range = GetZeroPageRangeFromDriver(inCPUMemory, inDriverInfo);
+
+		FOUNDATION_ASSERT(zp_range.m_LowestZeroPage > 0);
+		FOUNDATION_ASSERT(zp_range.m_LowestZeroPage <= zp_range.m_HighestZeroPage);
+
+		m_CurrentLowestZP = zp_range.m_LowestZeroPage;
 
 		m_DestinationAddressDelta = m_DestinationAddress - m_DriverInfo.GetDescriptor().m_DriverCodeTop;
 
@@ -315,22 +323,22 @@ namespace Editor
 			return false;
 		};
 
-		//auto requires_zeropage_check = [](Emulation::CPUmos6510::AddressingMode inAddressingMode)
-		//{
-		//	switch (inAddressingMode)
-		//	{
-		//	case Emulation::CPUmos6510::am_ZP:
-		//	case Emulation::CPUmos6510::am_ZPX:
-		//	case Emulation::CPUmos6510::am_ZPY:
-		//	case Emulation::CPUmos6510::am_IZX:
-		//	case Emulation::CPUmos6510::am_IZY:
-		//		return true;
-        //    default:
-        //        break;
-		//	}
-        //
-		//	return false;
-		//};
+		auto requires_zeropage_check = [](Emulation::CPUmos6510::AddressingMode inAddressingMode)
+		{
+			switch (inAddressingMode)
+			{
+			case Emulation::CPUmos6510::am_ZP:
+			case Emulation::CPUmos6510::am_ZPX:
+			case Emulation::CPUmos6510::am_ZPY:
+			case Emulation::CPUmos6510::am_IZX:
+			case Emulation::CPUmos6510::am_IZY:
+				return true;
+            default:
+                break;
+			}
+        
+			return false;
+		};
 
 		const int top_address = m_DriverInfo.GetDescriptor().m_DriverCodeTop;
 		const int bottom_address = top_address + m_DriverInfo.GetDescriptor().m_DriverCodeSize;
@@ -364,12 +372,16 @@ namespace Editor
 			}
 
             // Relocate zp addresses
-			//if (requires_zeropage_check(opcode_addressing_mode))
-			//{
-			//	FOUNDATION_ASSERT(opcode_size == 2);
-            //
-			//	const unsigned short zero_page_address = m_OutputData->GetByte(address + 1);
-			//}
+			if (requires_zeropage_check(opcode_addressing_mode))
+			{
+				FOUNDATION_ASSERT(opcode_size == 2);
+            
+				const unsigned char zero_page = m_OutputData->GetByte(address + 1);
+				const unsigned char zero_page_base = zero_page - m_CurrentLowestZP;
+				const unsigned char zero_page_relocated = zero_page_base + m_LowestZP;
+
+				(*m_OutputData)[address + 1] = zero_page_relocated;
+			}
 
 			address += static_cast<unsigned short>(opcode_size);
 		}

@@ -8,7 +8,7 @@
 
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_editing_preferences.h"
-#include "runtime/editor/undo/undo_componentdata_tracks.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_tracks.h"
 #include "runtime/editor/display_state.h"
 
 #include "utils/usercolors.h"
@@ -70,10 +70,16 @@ namespace Editor
 			track_position.m_X += (*inDataSource)[i]->GetDimensions().m_Width + 1;
 
 			// And add sequence changed event delegate
-			(*inDataSource)[i]->GetSequenceChangedEvent().Add(this, Utility::TDelegate<void(void)>([&]() { AlignTracks(); }));
+			(*inDataSource)[i]->GetSequenceChangedEvent().Add(this, Utility::TDelegate<void(void)>([&]() 
+			{ 
+				AlignTracks(); 
+			}));
 
 			// And add sequence split event delegate
-			(*inDataSource)[i]->GetSequenceSplitEvent().Add(this, Utility::TDelegate<void(unsigned char, unsigned char)>([&](unsigned char inSequence, unsigned char inSequenceToAdd) { HandleSequenceSplit(inSequence, inSequenceToAdd); }));
+			(*inDataSource)[i]->GetSequenceSplitEvent().Add(this, Utility::TDelegate<void(unsigned char, unsigned char)>([&](unsigned char inSequence, unsigned char inSequenceToAdd) 
+			{ 
+				HandleSequenceSplit(inSequence, inSequenceToAdd); 
+			}));
 		}
 
 		// Set the event position on each track
@@ -261,7 +267,7 @@ namespace Editor
 	}
 
 
-	void ComponentTracks::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTracks::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		Point scroll_wheel = inMouse.GetWheelDelta();
 
@@ -288,8 +294,12 @@ namespace Editor
 
 				if (event_pos != m_EventPos)
 					SetEventPosition(event_pos, false);
+
+				return change != 0;
 			}
 		}
+
+		return false;
 	}
 
 
@@ -398,10 +408,10 @@ namespace Editor
 	}
 
 
-	void ComponentTracks::PullDataFromSource()
+	void ComponentTracks::PullDataFromSource(const bool inFromUndo)
 	{
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
-			(*m_DataSource)[i]->PullDataFromSource();
+			(*m_DataSource)[i]->PullDataFromSource(inFromUndo);
 	}
 
 
@@ -554,6 +564,15 @@ namespace Editor
 		}
 
 		return true;
+	}
+
+
+	void ComponentTracks::OnOrderListChanged(int inChannel)
+	{
+		if (inChannel < m_DataSource->GetSize())
+			(*m_DataSource)[inChannel]->OnOrderListChanged();
+
+		m_HasDataChange = true;
 	}
 
 

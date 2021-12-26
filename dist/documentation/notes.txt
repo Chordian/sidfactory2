@@ -17,8 +17,8 @@ Context         Windows keys                macOS keys                  Purpose
 GENERAL         Tab                         Tab                         Next input focus
                 Shift + Tab                 Shift + Tab                 Previous input focus
 
-                Ctrl + z                    Cmd + z                    Undo
-                Ctrl + x/y                  Shift + Cmd + z            Redo
+                Ctrl + z                    Cmd + z                     Undo
+                Ctrl + x/y                  Shift + Cmd + z             Redo
 
                 F3/F4                       F3/F4                       Octave down or up
                 F6                          F6                          Open utility menu

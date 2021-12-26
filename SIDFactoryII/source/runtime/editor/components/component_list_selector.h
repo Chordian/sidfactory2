@@ -20,19 +20,19 @@ namespace Editor
 		ComponentListSelector(int inID, int inGroupID, Undo* inUndo, std::shared_ptr<IDataSource> inDataSource, Foundation::TextField* inTextField, int inX, int inY, int inWidth, int inHeight, int inHorizontalMargin, int inVerticalMargin);
 		~ComponentListSelector();
 
-		virtual bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		virtual bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		virtual void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
+		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 
-		virtual void Refresh(const DisplayState& inDisplayState) override;
-		virtual void HandleDataChange() override;
-		virtual void PullDataFromSource() override;
+		void Refresh(const DisplayState& inDisplayState) override;
+		void HandleDataChange() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
-		virtual void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
-		virtual void ExecuteAction(int inActionInput) override;
+		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
+		void ExecuteAction(int inActionInput) override;
 
-		virtual void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl) override;
-		virtual void ClearHasControl(CursorControl& inCursorControl) override;
+		void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl) override;
+		void ClearHasControl(CursorControl& inCursorControl) override;
 
 		void SetColors(const Foundation::Color& inBackground, const Foundation::Color& inSelection, const Foundation::Color& inSelectionNoFocus);
 		void SetColors(const Foundation::Color& inTextColor);
@@ -41,7 +41,7 @@ namespace Editor
 		const int GetSelectionIndex() const;
 
 	protected:
-		void DoMouseWheel(const Foundation::Mouse& inMouse);
+		bool DoMouseWheel(const Foundation::Mouse& inMouse);
 		virtual void RefreshLine(int inIndex, int inPosY);
 
 		void DoCursorDown();

@@ -77,9 +77,9 @@ namespace Editor
 	}
 
 
-	void ComponentMemoryView::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentMemoryView::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-
+		return false;
 	}
 
 
@@ -133,9 +133,8 @@ namespace Editor
 	}
 
 
-	void ComponentMemoryView::PullDataFromSource()
+	void ComponentMemoryView::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

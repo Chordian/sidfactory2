@@ -39,7 +39,7 @@ namespace Editor
 		, m_OnDoneCallback(inOnDoneCallback)
 	{
 		m_Optimizer = std::make_unique<Optimizer>(inCPUMemory, inDriverInfo, inOrderListDataSources, inSequenceDataSources, inInstrumentTableDataSource, inCommandTableDataSource, inInstrumentsTableID, inCommandsTableID);
-		m_InstrumentData = InstrumentData::Create(0, inDriverInfo, inComponentsManager);
+//		m_InstrumentData = InstrumentData::Create(0, inDriverInfo, inComponentsManager);
 	}
 
 

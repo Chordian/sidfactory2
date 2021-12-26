@@ -128,12 +128,14 @@ namespace Editor
 	}
 
 
-	void ComponentConsole::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentConsole::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		Foundation::Point cell_position = m_TextField->GetCellPositionFromPixelPosition(inMouse.GetPosition());
 
 		const bool mouse_over = (cell_position.m_Y == m_Position.m_Y && cell_position.m_X >= m_Position.m_X && cell_position.m_X < m_Position.m_X + m_Dimensions.m_Width);
 		m_MouseOver = mouse_over;
+
+		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
@@ -163,9 +165,8 @@ namespace Editor
 	}
 
 
-	void ComponentConsole::PullDataFromSource()
+	void ComponentConsole::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

@@ -95,9 +95,9 @@ namespace Editor
 	}
 
 
-	void ComponentTextInput::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTextInput::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-
+		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
@@ -150,9 +150,8 @@ namespace Editor
 	}
 
 
-	void ComponentTextInput::PullDataFromSource()
+	void ComponentTextInput::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

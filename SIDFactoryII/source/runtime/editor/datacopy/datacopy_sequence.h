@@ -12,10 +12,14 @@ namespace Editor
 
 		~DataCopySequence();
 
+		bool IsFullSequenceCopy() const;
+
 		unsigned int GetEventCount() const;
 		const DataSourceSequence::Event& operator[](unsigned int inIndex) const;
 
 	private:
+		bool m_IsFullSequenceCopy;
+
 		unsigned int m_EventCount;
 		DataSourceSequence::Event* m_Events;
 	};

@@ -27,15 +27,8 @@ namespace Editor
 			unsigned short m_DestinationAddress;
 		};
 
-		struct CodeVectorDescription
-		{
-			unsigned short m_SourceVector;
-			unsigned char m_SourceVectorSpace;
-			unsigned short m_DestinationVector;
-		};
-
 	public:
-		Packer(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned short inDestinationAddress);
+		Packer(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned short inDestinationAddress, unsigned char inLowestZP);
 		~Packer();
 
 		std::shared_ptr<Utility::C64File> GetResult() const;
@@ -64,8 +57,10 @@ namespace Editor
 		unsigned short m_DestinationAddress;
 		unsigned short m_DestinationAddressDelta;
 
+		unsigned char m_CurrentLowestZP;
+		unsigned char m_LowestZP;
+
 		std::vector<DataSection> m_DataSectionList;
-		std::vector<CodeVectorDescription> m_CodeVectorDescriptionList;
 
 		unsigned char m_HighestUsedSequenceIndex;
 

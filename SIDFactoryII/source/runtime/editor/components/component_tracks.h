@@ -19,12 +19,7 @@ namespace Editor
 	class DataCopySequence;
 	class AuxilaryDataCollection;
 
-	struct UndoComponentDataTableTracks;
-
-	struct TrackCopyPasteData
-	{
-		std::shared_ptr<DataCopySequence> m_SequenceCopy;
-	};
+	class UndoComponentDataTableTracks;
 
 	class ComponentTracks final : public ComponentBase
 	{
@@ -51,11 +46,11 @@ namespace Editor
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 		
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;
@@ -79,6 +74,8 @@ namespace Editor
 
 		void TellPlaybackEventPosition(int inPlaybackEventPosition);
 		bool ComputePlaybackStateFromEventPosition(int inEventPos, std::vector<IDriverArchitecture::PlayMarkerInfo>& inPlayMarkerInfoList) const;
+
+		void OnOrderListChanged(int inChannel);
 
 	private:
 		void AlignTracks();
@@ -106,6 +103,5 @@ namespace Editor
 		ComponentTrackUtils::FocusRow m_FocusRow;
 
 		std::shared_ptr<DataSourceTrackComponents> m_DataSource;
-		TrackCopyPasteData m_CopyPasteData;
 	};
 }

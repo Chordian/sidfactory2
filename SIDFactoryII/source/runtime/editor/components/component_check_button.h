@@ -29,11 +29,11 @@ namespace Editor
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;

@@ -8,6 +8,7 @@ Versions
   o  11.01: Also includes the fret slide command
   o  11.02: Also includes the pulse table index, tempo table index and main volume commands
   o  11.03: Also includes additional filter enable flag
+  o  11.04: Also includes note event delay
 
 
 Instruments
@@ -32,21 +33,22 @@ Flags:
 Commands
 --------
 
-00 XX YY - Slide up/down        XXYY = 16-bit speed
-01 XX YY - Vibrato              XX   = frequency            YY  = amplitude             (use smaller amplitude values for stronger vibrato)
-02 XX YY - Portamento           XXYY = 16-bit speed                                     (use 02 80 00 to disable a portamento running wild)
-03 XX YY - Arpeggio             XX   = arpeggio speed       YY  = arpeggio table index  (use this for chords)
-04 XX YY - [11.01] Fret slide   XX   = 00-7f speed up       YY  = semitones to slide    (only available in driver 11.01+)
+T0 XX YY - Slide up/down        XXYY = 16-bit speed
+T1 XX YY - Vibrato              XX   = frequency            YY  = amplitude             (use smaller amplitude values for stronger vibrato)
+T2 XX YY - Portamento           XXYY = 16-bit speed                                     (use 02 80 00 to disable a portamento running wild)
+T3 XX YY - Arpeggio             XX   = arpeggio speed       YY  = arpeggio table index  (use this for chords)
+T4 XX YY - [11.01] Fret slide   XX   = 00-7f speed up       YY  = semitones to slide    (only available in driver 11.01+)
                                        80-ff speed down
-08 XX YY - Set local ADSR                                                               (lasts until next note is triggered)
-09 XX YY - Set instrument ADSR                                                          (lasts until a different instrument is used)
-0a -- XX - Filter program       XX   = table index
-0b -- XX - Wave program         XX   = table index
-0c -- XX - [11.02] Pulse prg    XX   = table index                                      (only available in driver 11.02)
-0d -- XX - [11.02] Tempo prg    XX   = table index                                      (only available in driver 11.02)
-0e -- -X - [11.02] Main volume  X    = 0-f main volume                                  (only available in driver 11.02)
-0f -- XX - Increase demo value  XX   = amount                                           (use this for timing demo parts)
-
+T8 XX YY - Set local ADSR                                                               (lasts until next note is triggered)
+T9 XX YY - Set instrument ADSR                                                          (lasts until a different instrument is used)
+Ta -- XX - Filter program       XX   = table index
+Tb -- XX - Wave program         XX   = table index
+Tc -- XX - [11.02] Pulse prg    XX   = table index                                      (only available in driver 11.02)
+Td -- XX - [11.02] Tempo prg    XX   = table index                                      (only available in driver 11.02)
+Te -- -X - [11.02] Main volume  X    = 0-f main volume                                  (only available in driver 11.02)
+Tf -- XX - Increase demo value  XX   = amount                                           (use this for timing demo parts)
+|
+T        - [11.04] Note delay   T    = 0-f ticks                                        (only available in driver 11.04)
 
 Wave
 ----

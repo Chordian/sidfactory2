@@ -140,6 +140,15 @@
     <Filter Include="source\foundation\base">
       <UniqueIdentifier>{33ab8f9f-a192-4917-8a86-cad12dd4cbb4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\editor\components\utils">
+      <UniqueIdentifier>{e3e78e09-410e-45dd-8a3b-5fb2575d838a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\undo\undo_datasource">
+      <UniqueIdentifier>{69d4293c-ed15-4c8a-a87d-42776902e850}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\runtime\editor\undo\undo_componentdata">
+      <UniqueIdentifier>{127874af-3b40-478d-b724-47ad17aca9e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -587,6 +596,27 @@
     <ClCompile Include="source\runtime\editor\dialog\dialog_selection_list.cpp">
       <Filter>source\runtime\editor\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.cpp">
+      <Filter>source\runtime\editor\components\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\global.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\utils\logging.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datacopy\datacopy_orderlist.cpp">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datacopy\copypaste.cpp">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\packer\packing_utils.cpp">
+      <Filter>source\runtime\editor\packer</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_packing_options.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\utilities.h">
@@ -901,15 +931,6 @@
     <ClInclude Include="source\runtime\editor\undo\undostep.h">
       <Filter>source\runtime\editor\undo</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\editor\undo\undo_componentdata.h">
-      <Filter>source\runtime\editor\undo</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\editor\undo\undo_componentdata_tracks.h">
-      <Filter>source\runtime\editor\undo</Filter>
-    </ClInclude>
-    <ClInclude Include="source\runtime\editor\undo\undo_componentdata_table_row_elements.h">
-      <Filter>source\runtime\editor\undo</Filter>
-    </ClInclude>
     <ClInclude Include="source\runtime\editor\instrument\instrumentdata.h">
       <Filter>source\runtime\editor\instrument</Filter>
     </ClInclude>
@@ -1128,6 +1149,41 @@
     </ClInclude>
     <ClInclude Include="source\foundation\base\types.h">
       <Filter>source\foundation\base</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.h">
+      <Filter>source\runtime\editor\components\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata.h">
+      <Filter>source\runtime\editor\undo\undo_componentdata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_table_row_elements.h">
+      <Filter>source\runtime\editor\undo\undo_componentdata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_table_text.h">
+      <Filter>source\runtime\editor\undo\undo_componentdata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_tracks.h">
+      <Filter>source\runtime\editor\undo\undo_componentdata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_datasource\undo_datasource.h">
+      <Filter>source\runtime\editor\undo\undo_datasource</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\global.h" />
+    <ClInclude Include="source\utils\logging.h" />
+    <ClInclude Include="source\runtime\editor\datacopy\datacopy_orderlist.h">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\datacopy\copypaste.h">
+      <Filter>source\runtime\editor\datacopy</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_orderlist_overview.h">
+      <Filter>source\runtime\editor\undo\undo_componentdata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\packer\packing_utils.h">
+      <Filter>source\runtime\editor\packer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_packing_options.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

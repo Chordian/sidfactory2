@@ -28,11 +28,14 @@ namespace Editor
 
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
-		void PullDataFromSource() override;
+		void PullDataFromSource(const bool inFromUndo) override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+
+		void SetAllowedRange(unsigned int inRangeLow, unsigned int inRangeHigh);
+		void ClearAllowedRangeAll();
 
 	private:
 		void ApplyCharacter(char inCharacter);
@@ -41,9 +44,15 @@ namespace Editor
 		void DoCursorForward();
 		void DoCursorBackwards();
 
+		void ClampRange();
+
 		int m_CursorPos;
 		int m_MaxCursorPos;
 		int m_DigitCount;
+
+		bool m_UseRange;
+		unsigned int m_RangeLow;
+		unsigned int m_RangeHigh;
 
 		Foundation::Color m_TextColor;
 

@@ -7,7 +7,7 @@
 #include "runtime/editor/cursor_control.h"
 #include "runtime/editor/display_state.h"
 #include "runtime/editor/undo/undo.h"
-#include "runtime/editor/undo/undo_componentdata_table_row_elements.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_table_row_elements.h"
 #include "runtime/editor/dialog/dialog_bit_input.h"
 #include "runtime/editor/components_manager.h"
 #include "utils/usercolors.h"
@@ -310,10 +310,12 @@ namespace Editor
 	}
 
 
-	void ComponentTableRowElements::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTableRowElements::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		if (!m_HasControl)
 			DoScrollWheel(inMouse, nullptr);
+
+		return false;
 	}
 
 
@@ -380,7 +382,7 @@ namespace Editor
 	}
 
 
-	void ComponentTableRowElements::PullDataFromSource()
+	void ComponentTableRowElements::PullDataFromSource(const bool inFromUndo)
 	{
 		m_DataSource->PullDataFromSource();
 	}
@@ -694,7 +696,7 @@ namespace Editor
 		m_CursorX = undo_data.m_CursorX;
 		m_CursorY = undo_data.m_CursorY;
 
-		PullDataFromSource();
+		//PullDataFromSource();
 
 		m_RequireRefresh = true;
 	}

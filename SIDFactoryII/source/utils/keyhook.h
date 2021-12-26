@@ -80,9 +80,6 @@ namespace Utility
 		, m_KeyDownCallback(inKeyDownCallback)
 	{
 		m_Keys = inKeyHookStore.GetKey(inIdentifier);
-
-		//m_KeyCode = key.m_KeyCode;
-		//m_Modifiers = key.m_Modifiers;
 	}
 
 

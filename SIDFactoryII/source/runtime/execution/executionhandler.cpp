@@ -45,6 +45,7 @@ namespace Emulation
 		, m_SampleBufferWriteCursor(0)
 		, m_CPUFrameCounter(0)
 		, m_UpdateEnabled(false)
+    , m_ErrorState(false)
 	{
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
@@ -52,7 +53,7 @@ namespace Emulation
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
 		m_Mutex = Global::instance().GetPlatform().CreateMutex();
-		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", 1.0f);
+		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", -1.0f);
 
 		Logging::instance().Info("Sound.Output.Gain = %f", m_OutputGain);
 		// Set default action vector
@@ -159,8 +160,8 @@ namespace Emulation
 					CaptureNewFrame();
 				}
 
-				unsigned int uiRemainingSourceSamples = m_SampleBufferWriteCursor - m_SampleBufferReadCursor;
-				unsigned int uiSamplesToCopy = uiRemainingSamples > uiRemainingSourceSamples ? uiRemainingSourceSamples : uiRemainingSamples;
+				const unsigned int uiRemainingSourceSamples = m_SampleBufferWriteCursor - m_SampleBufferReadCursor;
+				const unsigned int uiSamplesToCopy = uiRemainingSamples > uiRemainingSourceSamples ? uiRemainingSourceSamples : uiRemainingSamples;
 
 				for (unsigned int i = 0; i < uiSamplesToCopy; ++i)
 				{

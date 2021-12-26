@@ -86,7 +86,7 @@ namespace Editor
 	}
 
 
-	void ComponentButton::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentButton::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		Foundation::Point cell_position = m_TextField->GetCellPositionFromPixelPosition(inMouse.GetPosition());
 
@@ -96,6 +96,8 @@ namespace Editor
 			m_RequireRefresh = true;
 
 		m_MouseOver = mouse_over;
+
+		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
@@ -126,9 +128,8 @@ namespace Editor
 	}
 
 
-	void ComponentButton::PullDataFromSource()
+	void ComponentButton::PullDataFromSource(const bool inFromUndo)
 	{
-
 	}
 
 

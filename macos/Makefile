@@ -1,7 +1,11 @@
 # Makefile for macOS version
 
+TARGET=x86_64-apple-macos10.09
+
+BUILD_NR=$(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
+BUILD_NR_TARGET=$(BUILD_NR).$(TARGET)
+
 # Sources
-BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 PROJECT_ROOT=../SIDFactoryII
 SOURCE=$(PROJECT_ROOT)/source
 SRC_TMP=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
@@ -17,21 +21,22 @@ DMG=$(ARTIFACTS_FOLDER)/$(APP_NAME)_macOS_$(BUILD_NR).dmg
 DMG_RAW=$(ARTIFACTS_FOLDER)/$(APP_NAME)_macOS_$(BUILD_NR)-RAW.dmg
 DMG_CONTENTS=$(ARTIFACTS_FOLDER)/dmg
 DMG_TITLE=$(APP_NAME)
-DMG_SIZE=20480
+DMG_SIZE=25600
 ICONSET=$(ARTIFACTS_FOLDER)/$(APP_NAME).iconset
 ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
-CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
+CC=g++
 
 CC_FLAGS= \
   -I$(SOURCE) \
 	-I./App/Contents/Frameworks/SDL2.framework/Headers \
-	-D_BUILD_NR=\"$(BUILD_NR)\" \
+	-D_BUILD_NR=\"$(BUILD_NR_TARGET)\" \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \
 	-DNDEBUG \
-	-flto
+	-flto \
+	-target $(TARGET)
 
 LINKER_FLAGS=\
 	-framework SDL2 \
@@ -39,7 +44,8 @@ LINKER_FLAGS=\
 	-F./App/Contents/Frameworks \
 	-lstdc++ \
 	-flto \
-	-Wl,-rpath,@executable_path/../Frameworks
+	-Wl,-rpath,@executable_path/../Frameworks \
+	-target $(TARGET)
 
 .PHONY: clean
 .PHONY: tmp
@@ -52,7 +58,7 @@ LINKER_FLAGS=\
 
 # Rule to compile .o from .c
 %.o: %.c
-	$(CC) -c $< -o $@
+	$(CC) -target $(TARGET) -c $< -o $@
 
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
@@ -61,6 +67,15 @@ OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
 	$(CC) $(LINKER_FLAGS) -o $(EXE) $(OBJ)
 	strip $(EXE)
+
+# Make universal binary
+universal: | clean $(EXE)
+	rm ${OBJ} || true
+	mv $(EXE) $(EXE)_x86
+	make TARGET=arm64-apple-macos11
+	mv $(EXE) $(EXE)_arm
+	lipo -create -output $(EXE) $(EXE)_x86 $(EXE)_arm
+	rm $(EXE)_x86 $(EXE)_arm
 
 app: $(APP)
 
@@ -77,7 +92,7 @@ dmg: $(DMG)
 # ---------------------------------------------------
 
 # Package executable and dependencies in macOS App
-$(APP): $(EXE) $(ICONS)
+$(APP): universal $(ICONS)
 	rm -rf $(APP)
 	mkdir -p $(APP)
 	cp -r App/ ${APP}

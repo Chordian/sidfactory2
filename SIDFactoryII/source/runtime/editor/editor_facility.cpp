@@ -22,7 +22,6 @@
 #include "runtime/editor/screens/screen_disk.h"
 #include "runtime/editor/screens/screen_edit.h"
 #include "runtime/editor/screens/screen_edit_utils.h"
-#include "utils/logging.h"
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/import_utils.h"
@@ -37,6 +36,7 @@
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
 #include "utils/global.h"
+#include "utils/logging.h"
 #include "utils/psidfile.h"
 #include "utils/utilities.h"
 
@@ -86,7 +86,8 @@ namespace Editor
 
 			ConfigureColorsFromScheme(m_SelectedColorScheme, *inViewport);
 		}
-		else {
+		else
+		{
 			Utility::Logging::instance().Error("Number of color scheme names (%d) does not match number of color scheme filenames (%d)", color_scheme_names.size(), color_scheme_filenames.size());
 		}
 
@@ -175,7 +176,7 @@ namespace Editor
 			[&]() {	m_DiskScreen->SetMode(ScreenDisk::LoadInstrument); RequestScreen(m_DiskScreen.get()); },
 			[&]() {	m_DiskScreen->SetMode(ScreenDisk::SaveInstrument); m_DiskScreen->SetSuggestedFileName(m_LastSF2PathAndFilename);  RequestScreen(m_DiskScreen.get()); },
 			[&]() { OnQuickSave(m_EditScreen.get()); },
-			[&](unsigned short inDestinationAddress) { OnPack(m_EditScreen.get(), inDestinationAddress); },
+			[&](unsigned short inDestinationAddress, unsigned char inFirstZeroPage) { OnPack(m_EditScreen.get(), inDestinationAddress, inFirstZeroPage); },
 			[&]() { m_FlipOverlayState = true; },
 			[&](unsigned int inReconfigureOption) { Reconfigure(inReconfigureOption); });
 
@@ -223,14 +224,37 @@ namespace Editor
 		// Try to load the driver directly
 		if (!file_loaded_successfully)
 		{
-			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_03.prg"));
+			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_04.prg"));
 			std::string drivers_folder = platform.Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}
 
 		// After loading, set the current path, so that opening the disk menu will be correct.
+		const std::string default_start_path = platform.Storage_GetHomePath();
+		std::string start_path = platform.OS_ParsePath(GetSingleConfigurationValue<ConfigValueString>(configFile, "Disk.Startup.Folder", default_start_path));
+
+		if (!is_directory(start_path))
+		{
+			Logging::instance().Warning("%s is not a folder. Using default path.", start_path.c_str());
+			start_path = default_start_path;
+		}
+
 		std::error_code ec;
-		fs::current_path(platform.Storage_GetHomePath(), ec);
+		fs::current_path(start_path, ec);
+		if (ec)
+		{
+			Logging::instance().Warning("Cannot change folder to %s.", start_path.c_str());
+
+			// if this was a custom path, try again with the default
+			if (start_path != default_start_path)
+			{
+				fs::current_path(default_start_path, ec);
+				if (ec)
+				{
+					Logging::instance().Warning("Cannot change folder to %s.", default_start_path.c_str());
+				}
+			}
+		}
 
 		// Start the intro screen
 		const bool skip_intro = GetSingleConfigurationValue<ConfigValueInt>(configFile, "Editor.Skip.Intro", 0) != 0;
@@ -853,11 +877,11 @@ namespace Editor
 	}
 
 
-	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress)
+	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress, unsigned char inFirstZeroPage)
 	{
 		const bool is_uppercase = m_DisplayState.IsHexUppercase();
 
-		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress);
+		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress, inFirstZeroPage);
 		m_PackedData = packer.GetResult();
 
 		std::string packing_info;
@@ -966,6 +990,8 @@ namespace Editor
 			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessage>("Illegal save destination", "You are trying to quick save to a file, with an extension other than .sf2.\nPlease save through the save disk menu!", DefaultDialogWidth, true, []() {}));
 		else
 		{
+			const bool confirm_quick_save = GetSingleConfigurationValue<ConfigValueInt>(Global::instance().GetConfig(), "Editor.Confirm.QuickSave", 1) != 0;
+			
 			auto do_save = [save_path_and_filename, inCallerScreen, this]() {
 				if (SaveFile(save_path_and_filename.string()))
 					this->m_EditScreen->SetStatusBarMessage(" Quick saved to: " + save_path_and_filename.filename().string(), 5000);
@@ -973,8 +999,15 @@ namespace Editor
 					this->OnSaveError(inCallerScreen);
 			};
 
-			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessageYesNo>("Warning", "Do you want to perform a quick save to:\n" + save_path_and_filename.string() + "?", DefaultDialogWidth, do_save, []() {}));
+			if (confirm_quick_save) {
+				inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessageYesNo>("Warning", "Do you want to perform a quick save to:\n" + save_path_and_filename.string() + "?", DefaultDialogWidth, do_save, []() {}));
+			}
+			else {
+				do_save();
+			}
+		
 		}
+
 	}
 
 
