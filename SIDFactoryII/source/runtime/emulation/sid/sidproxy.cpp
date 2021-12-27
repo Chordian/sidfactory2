@@ -135,7 +135,7 @@ namespace Emulation
 
 			m_pSID->setSamplingParameters(
 				static_cast<double>(m_sConfiguration.m_eEnvironment == SID_ENVIRONMENT_PAL ? EMULATION_CYCLES_PER_SECOND_PAL : EMULATION_CYCLES_PER_SECOND_NTSC),
-				m_sConfiguration.m_eSampleMethod != SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE ? SamplingMethod::DECIMATE : SamplingMethod::RESAMPLE,
+				m_sConfiguration.m_eSampleMethod != SIDSampleMethod::SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE ? SamplingMethod::DECIMATE : SamplingMethod::RESAMPLE,
 				static_cast<double>(m_sConfiguration.m_nSampleFrequency),
 				passband);
 
