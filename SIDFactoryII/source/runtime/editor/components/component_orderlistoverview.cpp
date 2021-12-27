@@ -232,7 +232,7 @@ namespace Editor
 					if (m_IsMarkingArea)
 						DoCancelMarking();
 
-					if (isOnlyShiftDown)
+					if (inKeyboard.IsModifierDown(Keyboard::Shift) || inKeyboard.IsModifierDown(Keyboard::Control))
 					{
 						if (m_CursorY >= 0 && m_CursorY < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
 						{
