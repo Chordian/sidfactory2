@@ -39,6 +39,14 @@ namespace Editor
 	}
 
 
+	const bool DataSourceFlightRecorder::IsRecording() const
+	{
+		FOUNDATION_ASSERT(m_FlightRecorder != nullptr);
+		return m_FlightRecorder->IsRecording();
+	}
+
+
+
 	const int DataSourceFlightRecorder::GetSize() const
 	{
 		FOUNDATION_ASSERT(m_FlightRecorder != nullptr);
@@ -54,7 +62,7 @@ namespace Editor
 		if (index >= m_FlightRecorder->GetCapacity())
 			return m_FlightRecorder->GetCapacity() - 1;
 
-		return static_cast<int>(m_FlightRecorder->RecordedFrameCount());
+		return index;
 	}
 }
 

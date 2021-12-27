@@ -16,6 +16,7 @@ namespace Editor
 
 		const Emulation::FlightRecorder::Frame& operator [](unsigned int inIndex) const;
 		const int GetSize() const override;
+		const bool IsRecording() const;
 		const unsigned int GetNewestRecordingIndex() const;
 
 		bool PushDataToSource() override { return true; }

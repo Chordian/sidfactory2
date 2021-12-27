@@ -157,7 +157,15 @@ namespace Editor
 			const Color color_cpu_usage_high = ToColor(UserColor::FlightRecorderCPUUsageHigh);
 			const Color color_desc = ToColor(UserColor::FlightRecorderDesc);
 
+			const int visible_row_count = m_Dimensions.m_Height - 4;
+
 			m_DataSource->Lock();
+
+			if (m_DataSource->IsRecording())
+			{
+				const int newest_recording_index = static_cast<int>(m_DataSource->GetNewestRecordingIndex());
+				m_CursorPos = newest_recording_index > visible_row_count ? (newest_recording_index - visible_row_count) : 0;
+			}
 
 			auto print_channel = [&](int x, int y, int channel, const Emulation::FlightRecorder::Frame& frame_data)
 			{
@@ -194,7 +202,7 @@ namespace Editor
 
 			const int x = 2;
 
-			for (int i = 0; i < m_Dimensions.m_Height - 4; ++i)
+			for (int i = 0; i < visible_row_count; ++i)
 			{
 				const int y = i + 3;
 
