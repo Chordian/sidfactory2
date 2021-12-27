@@ -52,6 +52,9 @@ namespace Emulation
 		void Lock();
 		void Unlock();
 
+		// Settings
+		void SetPAL(const bool inPALMode);
+
 		// Error
 		bool IsInErrorState() const;
 		std::string GetErrorMessage() const;

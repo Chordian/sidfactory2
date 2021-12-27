@@ -18,6 +18,8 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
+- Changed: More accurate clockspeed (Thanks to Lazlo Vincenzo Vincze for
+  reporting)
 - Added: Note delay; delay a note by 0-F ticks. This is a feature of the new
   default driver 11.04
 - Added: Configuration option `Editor.Driver.Default` to set the default driver
