@@ -242,12 +242,9 @@ namespace Editor
 					}
 					else if (isNoModifierDown)
 					{
-						if (m_CursorX == m_MaxCursorX)
-						{
-							DoStartEditText(inCursorControl);
-							m_RequireRefresh = true;
-							consume = true;
-						}
+						DoStartEditText(inCursorControl);
+						m_RequireRefresh = true;
+						consume = true;
 					}
 					break;
 				case SDLK_BACKSPACE:
