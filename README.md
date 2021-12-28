@@ -8,6 +8,8 @@ To build from source, have a look [here](DEVELOPMENT.md).
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
+Please report issues in our [issue tracker](https://github.com/issues).
+
 ![Build windows
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build macOS
@@ -18,40 +20,18 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 ## Changelog
 
-- Changed: More accurate clockspeed (Thanks to Lazlo Vincenzo Vincze for
-  reporting)
+- Added: You can now add labels for song list rows. Left-click to edit a label.
 - Added: Note delay; delay a note by 0-F ticks. This is a feature of the new
   default driver 11.04
-- Added: Configuration option `Editor.Driver.Default` to set the default driver
-  that is loaded when starting up the editor.
-- Added: You can now adds labels for song list rows. Left-click to edit a label.
-- Changed: [#146](https://github.com/Chordian/sidfactory2/issues/146) the
-  official macOS distribution is now a universal application, meaning it will
-  run native both on the new M1 (arm64) and the Intel (x86_64) architecture.
-  The architecture the application is running on is reflected in the build
-  number in the lower right corner of the startup screen.
-- Added: Documentation on how to customize configuration using a `user.ini`
-  file. Including a default template `/documentation/user.default.ini`.
-- Added: [#144](https://github.com/Chordian/sidfactory2/issues/144)
-  Configuration options:
-  - `Sound.Emulation.8580.FilterCurve` for adjusting the filter of the 8580 model.
-  - `Sound.Emulation.6581.FilterCurve` for adjusting the filter of the 6581 model.
 - Added: An option in the packer to specify the base for zero page addresses
   that the player uses.
-- Changed: [#142](https://github.com/Chordian/sidfactory2/issues/142) the
-  list of keys that can be remapped is complete now. Please note: the names for
-  keycodes starting with `num` are renamed to start with `kp_`.
-- Added: Configuration option `Window.Scaling` to scale the contents of the
-  window. (Thanks to Matty Seito for suggesting)
-- Added: Configuration options (thanks to Laszlo Vincenzo Vincze for
-  suggesting):
-  - `Editor.Follow.Play` to set default follow play on/off.
-  - `Editor.Sequence.Highlights` to set default sequence highlights on/off.
-  - `Sound.Emulation.Default.Model` to set the default SID model (6581/8580) on
-    startup.
-  - `Sound.Emulation.Default.Region` to set default region (PAL/NTSC) on
-    startup.
+- Added: Documentation on how to customize configuration using a `user.ini`
+  file. Including a default template `/documentation/user.default.ini`.
 - Added: Configuration options:
+  - `Window.Scaling` to scale the contents of the window. (Thanks to Matty
+    Seito for suggesting)
+  - `Editor.Driver.Default` to set the default driver that is loaded when
+    starting up the editor.
   - `Editor.Confirm.QuickSave` to enable/disable confirmation dialog on quick
     save.
   - `Sound.Output.Gain` for boosting/lowering output volume of the editor.
@@ -59,13 +39,31 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
     folder shortcuts to the file browser.
   - `Disk.Startup.Folder` to set the default startup folder for the file
     browser.
-- Fixed: [#131](https://github.com/Chordian/sidfactory2/issues/131) SF2 won't
+  - `Editor.Follow.Play` to set default follow play on/off.
+  - `Editor.Sequence.Highlights` to set default sequence highlights on/off.
+  - `Sound.Emulation.8580.FilterCurve` for adjusting the filter of the 8580 model.
+  - `Sound.Emulation.6581.FilterCurve` for adjusting the filter of the 6581 model.
+  - `Sound.Emulation.Default.Model` to set the default SID model (6581/8580) on
+    startup.
+  - `Sound.Emulation.Default.Region` to set default region (PAL/NTSC) on
+    startup.
+- Changed: [#142](https://github.com/Chordian/sidfactory2/issues/142) the
+  list of keycodes that can be used for remapping is complete now. Please note: the names for
+  keycodes starting with `num` are renamed to start with `kp_`.
+- Changed: `macOs` [#146](https://github.com/Chordian/sidfactory2/issues/146) the
+  official macOS distribution is now a universal application, meaning it will
+  run native both on the new M1 (arm64) and the Intel (x86_64) architecture.
+  The architecture the application is running on is reflected in the build
+  number in the lower right corner of the startup screen.
+- Fixed: More accurate clockspeed (Thanks to Lazlo Vincenzo Vincze for
+  reporting)
+- Fixed: `macOs` [#131](https://github.com/Chordian/sidfactory2/issues/131) SF2 won't
   compile on mac with Silicon M1 CPU. (Thanks to Rolf Greven for reporting and
   suggesting the fix)
-- Fixed: [#133](https://github.com/Chordian/sidfactory2/issues/133) Emulation
+- Fixed: `linux` [#133](https://github.com/Chordian/sidfactory2/issues/133) Emulation
   error when starting up linux version. (Thanks to Maurizio Dall'Acqua for
   reporting)
-- Fixed: [#134](https://github.com/Chordian/sidfactory2/issues/134) SF2 won't
+- Fixed: `linux` [#134](https://github.com/Chordian/sidfactory2/issues/134) SF2 won't
   compile on Arch Linux (Thanks to jansalleine for reporting amd suggesting the
   fix)
 - Fixed: [#137](https://github.com/Chordian/sidfactory2/issues/137) Instability
