@@ -14,9 +14,16 @@ To build:
 
 ### macOS
 
-If [Homebrew](https://brew.sh) is installed, the prerequisites can be installed with:
+Prerequisites:
 
-    brew git sdl2
+- XCode command line tools
+- git
+- gnu-sed
+- pandoc
+
+If [Homebrew](https://brew.sh) is installed, most prerequisites can be installed with:
+
+    brew git gnu-sed pandoc
 
 To build:
 

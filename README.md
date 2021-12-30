@@ -8,7 +8,7 @@ To build from source, have a look [here](DEVELOPMENT.md).
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
-Please report issues in our [issue tracker](https://github.com/issues).
+![SID Factory II screenshot](screenshot.png)
 
 ![Build windows
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
@@ -16,7 +16,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20bi
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
+Please report issues in our [issue tracker](https://github.com/issues).
 
 ## Changelog
 
