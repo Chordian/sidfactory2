@@ -185,6 +185,7 @@
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_collection.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_songorderlists.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_base.cpp" />
@@ -360,6 +361,7 @@
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_collection.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_songorderlists.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_utils.h" />

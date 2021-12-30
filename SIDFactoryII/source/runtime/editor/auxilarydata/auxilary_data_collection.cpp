@@ -4,6 +4,7 @@
 #include "auxilary_data_hardware_preferences.h"
 #include "auxilary_data_play_markers.h"
 #include "auxilary_data_table_text.h"
+#include "auxilary_data_songorderlists.h"
 
 #include "utils/c64file.h"
 
@@ -16,6 +17,7 @@ namespace Editor
 		, m_HardwarePreferences(std::make_unique<AuxilaryDataHardwarePreferences>())
 		, m_PlayMarkers(std::make_unique<AuxilaryDataPlayMarkers>())
 		, m_TableText(std::make_unique<AuxilaryDataTableText>())
+		, m_SongOrderLists(std::make_unique<AuxilaryDataSongOrderLists>())
 	{
 
 	}
@@ -33,6 +35,7 @@ namespace Editor
 		*m_HardwarePreferences = *inRHS.m_HardwarePreferences;
 		*m_PlayMarkers = *inRHS.m_PlayMarkers;
 		*m_TableText = *inRHS.m_TableText;
+		*m_SongOrderLists = *inRHS.m_SongOrderLists;
 	}
 
 
@@ -42,6 +45,7 @@ namespace Editor
 		m_HardwarePreferences->Reset();
 		m_PlayMarkers->Reset();
 		m_TableText->Reset();
+		m_SongOrderLists->Reset();
 	}
 
 
@@ -80,16 +84,31 @@ namespace Editor
 		return *m_EditingPreferences;
 	}
 
+
 	AuxilaryDataTableText& AuxilaryDataCollection::GetTableText()
 	{
 		return *m_TableText;
 	}
+
 
 	const AuxilaryDataTableText& AuxilaryDataCollection::GetTableText() const
 	{
 		return *m_TableText;
 	}
 
+
+	AuxilaryDataSongOrderLists& AuxilaryDataCollection::GetSongOrderLists()
+	{
+		return *m_SongOrderLists;
+	}
+
+
+	const AuxilaryDataSongOrderLists& AuxilaryDataCollection::GetSongOrderLists() const
+	{
+		return *m_SongOrderLists;
+	}
+
+	
 	bool AuxilaryDataCollection::Save(Utility::C64FileWriter& inWriter) const
 	{
 		AuxilaryData end_mark;
@@ -98,7 +117,8 @@ namespace Editor
 		m_HardwarePreferences->Write(inWriter);
 		m_EditingPreferences->Write(inWriter);
 		m_TableText->Write(inWriter);
-		
+		m_SongOrderLists->Write(inWriter);
+
 		end_mark.Write(inWriter);
 
 		return true;
@@ -117,10 +137,18 @@ namespace Editor
 			if (end_mark.Read(header, inReader))
 				break;
 
-			m_PlayMarkers->Read(header, inReader);
-			m_HardwarePreferences->Read(header, inReader);
-			m_EditingPreferences->Read(header, inReader);
-			m_TableText->Read(header, inReader);
+			bool data_read = false;
+
+			data_read |= m_PlayMarkers->Read(header, inReader);
+			data_read |= m_HardwarePreferences->Read(header, inReader);
+			data_read |= m_EditingPreferences->Read(header, inReader);
+			data_read |= m_TableText->Read(header, inReader);
+			data_read |= m_SongOrderLists->Read(header, inReader);
+
+			FOUNDATION_ASSERT(data_read);
+
+			if (!data_read)
+				return false;
 		}
 
 		return true;
