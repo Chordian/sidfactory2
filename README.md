@@ -20,6 +20,8 @@ Please report issues in our [issue tracker](https://github.com/issues).
 
 ## Changelog
 
+### Build 20211230
+
 - Added: You can now add labels for song list rows. Left-click to edit a label.
 - Added: Note delay; delay a note by 0-F ticks. This is a feature of the new
   default driver 11.04
