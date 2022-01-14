@@ -8,7 +8,25 @@ To build from source, have a look [here](DEVELOPMENT.md).
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
+Notable features:
+
+- Tracker-like interface
+- Choice of various music routines made by pioneer musicians
+  [Laxity](https://deepsid.chordian.net/?file=/MUSICIANS/L/Laxity) and
+  [JCH](https://deepsid.chordian.net/?file=/MUSICIANS/J/JCH) ,
+  optimized for use in demos and games on the Commodore 64.
+- Imports Goattracker, Cheesecutter and MOD files.
+- Supports both SID models 6581 and 8580 for PAL and NTSC.
+- Unlimited undo
+- Relocate the music routine anywhere to the Commodore 64 memory. Relocate used
+  zero page adresses.
+- Includes demo tunes to learn from.
+- Cross platform: Windows, macOS and linux versions.
+- Open source
+
 ![SID Factory II screenshot](screenshot.png)
+
+## Changelog
 
 ![Build windows
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
@@ -18,8 +36,6 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 Please report issues in our [issue tracker](https://github.com/issues).
 
-## Changelog
-
 ### Build 20211230
 
 - Added: You can now add labels for song list rows. Left-click to edit a label.
@@ -28,7 +44,7 @@ Please report issues in our [issue tracker](https://github.com/issues).
 - Added: An option in the packer to specify the base for zero page addresses
   that the player uses.
 - Added: Documentation on how to customize configuration using a `user.ini`
-  file. Including a default template `/documentation/user.default.ini`.
+  file. Including a default template in `/documentation/user.default.ini`.
 - Added: Configuration options:
   - `Window.Scaling` to scale the contents of the window. (Thanks to Matty
     Seito for suggesting)
@@ -66,7 +82,7 @@ Please report issues in our [issue tracker](https://github.com/issues).
   error when starting up linux version. (Thanks to Maurizio Dall'Acqua for
   reporting)
 - Fixed: `linux` [#134](https://github.com/Chordian/sidfactory2/issues/134) SF2 won't
-  compile on Arch Linux (Thanks to jansalleine for reporting amd suggesting the
+  compile on Arch Linux (Thanks to jansalleine for reporting and suggesting the
   fix)
 - Fixed: [#137](https://github.com/Chordian/sidfactory2/issues/137) Instability
   in filter table when jumping to set command in default driver.
