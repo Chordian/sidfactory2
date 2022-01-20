@@ -1,11 +1,15 @@
 #include "datasource_orderlist.h"
+#include "runtime/editor/driver/driver_info.h"
 #include "runtime/emulation/cpumemory.h"
 #include <cstring>
 #include "foundation/base/assert.h"
 
 namespace Editor
 {
-	DataSourceOrderList::DataSourceOrderList(Emulation::CPUMemory* inCPUMemory, unsigned short inSourceAddress, int inBlockSize)
+	DataSourceOrderList::DataSourceOrderList(
+		Emulation::CPUMemory* inCPUMemory, 
+		unsigned short inSourceAddress,
+		int inBlockSize)
 		: DataSourceEmulationMemory(inCPUMemory, inSourceAddress, inBlockSize)
 		, m_Length(0)
 		, m_PackedSize(0)
@@ -52,6 +56,12 @@ namespace Editor
 		m_CPUMemory->SetData(m_SourceAddress, m_Data, m_DataSize);
 
 		return true;
+	}
+
+
+	const unsigned char* DataSourceOrderList::GetPackedDataForRead() const
+	{
+		return m_Data;
 	}
 
 

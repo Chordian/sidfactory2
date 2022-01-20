@@ -26,6 +26,9 @@ namespace Editor
 		const unsigned char GetEventPosHighlightInterval() const;
 		void SetEventPosHighlightInterval(const unsigned char inInterval);
 
+		const unsigned char GetCurrentSong() const;
+		void SetCurrentSong(const unsigned char inCurrentSong);
+
 	protected:
 		std::vector<unsigned char> GenerateSaveData() const override;
 		unsigned short GetGeneratedFileVersion() const override;
@@ -36,5 +39,6 @@ namespace Editor
 		NotationMode m_NotationMode;
 		unsigned char m_EventPosHighlightOffset;
 		unsigned char m_EventPosHighlightInterval;
+		unsigned char m_CurrentSong;
 	};
 }

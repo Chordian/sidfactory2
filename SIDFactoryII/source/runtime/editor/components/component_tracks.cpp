@@ -8,6 +8,7 @@
 
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_editing_preferences.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songorderlists.h"
 #include "runtime/editor/undo/undo_componentdata/undo_componentdata_tracks.h"
 #include "runtime/editor/display_state.h"
 
@@ -400,11 +401,20 @@ namespace Editor
 
 	void ComponentTracks::HandleDataChange()
 	{
+		bool has_data_change = false;
+
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
 		{
-			if ((*m_DataSource)[i]->HasDataChange())
-				(*m_DataSource)[i]->HandleDataChange();
+			auto& data_source = (*m_DataSource)[i];
+			if (data_source->HasDataChange())
+			{
+				data_source->HandleDataChange();
+				has_data_change = true;
+			}
 		}
+
+		if (has_data_change)
+			CopyOrderListsToAuxilaryData();
 	}
 
 
@@ -412,6 +422,8 @@ namespace Editor
 	{
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
 			(*m_DataSource)[i]->PullDataFromSource(inFromUndo);
+
+		CopyOrderListsToAuxilaryData();
 	}
 
 
@@ -642,6 +654,12 @@ namespace Editor
 			m_RequireRefresh = true;
 		}
 	}
+
+
+	void ComponentTracks::CopyOrderListsToAuxilaryData()
+	{
+	}
+
 
 	//----------------------------------------------------------------------------------------------------
 	// Undo

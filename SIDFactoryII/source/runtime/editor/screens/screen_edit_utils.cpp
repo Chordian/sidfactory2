@@ -65,10 +65,13 @@ namespace Editor
 			const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 			const unsigned short order_list_data_size = music_data.m_OrderListSize;
 
-			for (int i = 0; i < music_data.m_TrackCount; ++i)
+			for (unsigned int i = 0; i < music_data.m_TrackCount; ++i)
 			{
 				const unsigned short order_list_data_address = music_data.m_OrderListTrack1Address + i * order_list_data_size;
-				outOrderListDataSources.push_back(std::make_shared<DataSourceOrderList>(&inCPUMemory, order_list_data_address, order_list_data_size));
+				outOrderListDataSources.push_back(std::make_shared<DataSourceOrderList>(
+					&inCPUMemory, 
+					order_list_data_address, 
+					order_list_data_size));
 			}
 		}
 

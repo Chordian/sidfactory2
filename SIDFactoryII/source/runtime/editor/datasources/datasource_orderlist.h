@@ -12,6 +12,7 @@ namespace Emulation
 
 namespace Editor
 {
+	class DriverInfo;
 	class DataSourceOrderList : public DataSourceEmulationMemory
 	{
 	public:
@@ -57,6 +58,8 @@ namespace Editor
 
 		bool PushDataToSource() override;
 		void PullDataFromSource() override;
+
+		const unsigned char* GetPackedDataForRead() const;
 
 		unsigned int GetPackedSize() const;
 		unsigned int GetLength() const;

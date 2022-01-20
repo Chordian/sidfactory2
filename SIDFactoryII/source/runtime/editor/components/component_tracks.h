@@ -84,6 +84,8 @@ namespace Editor
 		void OnTabForward(CursorControl& inCursorControl);
 		void OnTabBackward(CursorControl& inCursorControl);
 
+		void CopyOrderListsToAuxilaryData();
+
 		// Undo
 		void AddUndoStep(UndoComponentDataTableTracks& ioData);
 		void OnUndo(const UndoComponentDataTableTracks& inData, CursorControl& inCursorControl);

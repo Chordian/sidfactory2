@@ -7,7 +7,6 @@ namespace Editor
 {
 	AuxilaryDataEditingPreferences::AuxilaryDataEditingPreferences()
 		: AuxilaryData(Type::EditingPreferences)
-
 	{
 		Reset();
 	}
@@ -18,6 +17,7 @@ namespace Editor
 		m_NotationMode = NotationMode::Sharp;
 		m_EventPosHighlightOffset = 0;
 		m_EventPosHighlightInterval = 4;
+		m_CurrentSong = 0;
 	}
 
 	const AuxilaryDataEditingPreferences::NotationMode AuxilaryDataEditingPreferences::GetNotationMode() const
@@ -56,6 +56,19 @@ namespace Editor
 	}
 
 
+	const unsigned char AuxilaryDataEditingPreferences::GetCurrentSong() const
+	{
+		return m_CurrentSong;
+	}
+
+
+	void AuxilaryDataEditingPreferences::SetCurrentSong(const unsigned char inCurrentSong) 
+	{
+		m_CurrentSong = inCurrentSong;
+	}
+
+
+
 	std::vector<unsigned char> AuxilaryDataEditingPreferences::GenerateSaveData() const
 	{
 		std::vector<unsigned char> output;
@@ -63,6 +76,7 @@ namespace Editor
 		AuxilaryDataUtils::SaveDataPushByte(output, m_NotationMode);
 		AuxilaryDataUtils::SaveDataPushByte(output, m_EventPosHighlightOffset);
 		AuxilaryDataUtils::SaveDataPushByte(output, m_EventPosHighlightInterval);
+		AuxilaryDataUtils::SaveDataPushByte(output, m_CurrentSong);
 
 		return output;
 	}
@@ -70,7 +84,7 @@ namespace Editor
 
 	unsigned short AuxilaryDataEditingPreferences::GetGeneratedFileVersion() const
 	{
-		return 1;
+		return 2;
 	}
 
 
@@ -78,9 +92,17 @@ namespace Editor
 	{
 		auto it = inData.begin();
 
-		m_NotationMode = static_cast<NotationMode>(AuxilaryDataUtils::LoadDataPullByte(it));
-		m_EventPosHighlightOffset = AuxilaryDataUtils::LoadDataPullByte(it);
-		m_EventPosHighlightInterval = AuxilaryDataUtils::LoadDataPullByte(it);
+		if (inDataVersion <= 1)
+		{
+			m_NotationMode = static_cast<NotationMode>(AuxilaryDataUtils::LoadDataPullByte(it));
+			m_EventPosHighlightOffset = AuxilaryDataUtils::LoadDataPullByte(it);
+			m_EventPosHighlightInterval = AuxilaryDataUtils::LoadDataPullByte(it);
+		}
+
+		if (inDataVersion <= 2)
+		{
+			m_CurrentSong = AuxilaryDataUtils::LoadDataPullByte(it);
+		}
 
 		return true;
 	}

@@ -11,12 +11,10 @@ namespace Editor
 
 	}
 
-
 	AuxilaryDataSongOrderLists::~AuxilaryDataSongOrderLists()
 	{
 
 	}
-
 
 	void AuxilaryDataSongOrderLists::Reset()
 	{
