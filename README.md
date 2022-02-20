@@ -10,18 +10,21 @@ Huus and Michel de Bree.
 
 Notable features:
 
-- Tracker-like interface
-- Choice of various music routines made by pioneer musicians
+- Uses the renowned reSID emulator
+- Tracker-like interface, using JCH's contiguous sequence stacking system and
+  Protracker note input layout.
+- Choice of various music drivers made by pioneer musicians
   [Laxity](https://deepsid.chordian.net/?file=/MUSICIANS/L/Laxity) and
   [JCH](https://deepsid.chordian.net/?file=/MUSICIANS/J/JCH) ,
   optimized for use in demos and games on the Commodore 64.
-- Imports Goattracker, Cheesecutter and MOD files.
+- A hotkey opens a surrounding overlay with help for both editor and driver.
+- Imports Goattracker, CheeseCutter and MOD files.
 - Supports both SID models 6581 and 8580 for PAL and NTSC.
 - Unlimited undo
-- Relocate the music routine anywhere to the Commodore 64 memory. Relocate used
-  zero page adresses.
+- Built-in packer and relocator to position the music anywhere in the Commodore
+  64 memory. Relocate used zero page adresses.
 - Includes demo tunes to learn from.
-- Cross platform: Windows, macOS and linux versions.
+- Cross platform: Windows, macOS and Linux versions.
 - Open source
 
 ![SID Factory II screenshot](screenshot.png)

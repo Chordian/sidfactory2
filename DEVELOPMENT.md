@@ -118,6 +118,7 @@ For official releases
 - The manual is updated in the master branch
 - The release candidate is more thorougly tested
 - The release is officially announced
+- The release is given a git tag
 
 ## Issue tracking
 
