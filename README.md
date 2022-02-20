@@ -20,6 +20,9 @@ Please report issues in our [issue tracker](https://github.com/issues).
 
 ## Changelog
 
+- Added: Configuration option `Disk.Hide.Extensions` to hide files with certain
+  extensions in the file browser. Default values are `.sid` and `.prg`.
+
 ### Build 20211230
 
 - Added: You can now add labels for song list rows. Left-click to edit a label.

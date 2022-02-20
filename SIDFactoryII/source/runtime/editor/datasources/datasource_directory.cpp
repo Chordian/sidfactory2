@@ -23,6 +23,7 @@ namespace Editor
 
 		auto user_folders = GetConfigurationValues<ConfigValueString>(inConfigFile, "Disk.UserFolders", {});
 		auto user_folders_alias = GetConfigurationValues<ConfigValueString>(inConfigFile, "Disk.UserFolders.Aliases", {});
+		m_ExtensionFilter = GetConfigurationValues<ConfigValueString>(inConfigFile, "Disk.Hide.Extensions", {});
 
 		const size_t user_folder_count = user_folders.size();
 		const bool has_aliases = user_folders_alias.size() == user_folder_count;
@@ -35,7 +36,7 @@ namespace Editor
 			if (is_directory(user_folder_path))
 				m_Drives.push_back({ user_folder, has_aliases ? user_folders_alias[i] : "" });
 		}
-        
+
 		GenerateData();
 	}
 
@@ -80,7 +81,7 @@ namespace Editor
 	bool DataSourceDirectory::Back()
 	{
         std::error_code error_code;
-        
+
 		std::string current_path_string = current_path().string();
 		if (m_Platform->Storage_SetCurrentPath(current_path().parent_path().string()))
  		{
@@ -158,8 +159,27 @@ namespace Editor
                 std::error_code error_code;
                 if (is_directory(path, error_code))
                     m_List.push_back({ DirectoryEntry::Folder, path });
-				else if (is_regular_file(path, error_code))
-					files.push_back(path);
+				else if (is_regular_file(path, error_code)) {
+					std::string extension = fs::path(path).extension();
+
+					// filter out files with extensions on the hide list
+					bool showFile = true;
+					for (size_t i = 0; i < m_ExtensionFilter.size(); ++i) {
+						if (extension.compare(m_ExtensionFilter[i]) == 0) {
+							showFile = false;
+						}
+					}
+
+				// TODO: more optimal, but crashes when extensionFilter is empty
+				//    size_t i = 0;
+				//    while (showFile && (i < m_ExtensionFilter.size())) {
+				// 	   showFile = showFile && (extension.compare(m_ExtensionFilter[i++]) != 0);
+				//    }
+
+					if (showFile) {
+						files.push_back(path);
+					}
+				}
 			}
 		}
 
