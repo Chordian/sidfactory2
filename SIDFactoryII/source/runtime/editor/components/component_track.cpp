@@ -1931,6 +1931,7 @@ namespace Editor
 	{
 		if (m_FocusModeOrderList)
 		{
+			AddUndoStep();
 			return DoInsertOrderlist(false);
 		}
 		else
@@ -1942,7 +1943,6 @@ namespace Editor
 
 	int ComponentTrack::DoInsertOrderlist(bool insertFirstSequenceNumber)
 	{
-			AddUndoStep();
 			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (insertFirstSequenceNumber)
