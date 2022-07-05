@@ -173,6 +173,9 @@ namespace Editor
 		// Data changed
 		void OnOrderListChanged();
 
+		// Insert into orderlist
+		int DoInsertOrderlist(bool insertFirstSequenceNumber);
+
 	private:
 		// Order list
 		bool BeginOrderListInput();

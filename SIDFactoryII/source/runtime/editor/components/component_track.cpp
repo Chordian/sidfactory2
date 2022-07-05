@@ -1926,13 +1926,29 @@ namespace Editor
 	}
 
 
-
+	// Do insert on the orderlist
 	int ComponentTrack::DoInsert(bool inIsControlDown)
 	{
 		if (m_FocusModeOrderList)
 		{
+			return DoInsertOrderlist(false);
+		}
+		else
+		// cursor is on the note sequence
+		{
+			return InsertSequenceLine(inIsControlDown);
+		}
+	}
+
+	int ComponentTrack::DoInsertOrderlist(bool insertFirstSequenceNumber)
+	{
 			AddUndoStep();
 			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
+
+		if (insertFirstSequenceNumber)
+		{
+			orderlist_entry.m_SequenceIndex = 0;
+		}
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
 			{
@@ -1950,12 +1966,6 @@ namespace Editor
 
 			return m_EventPos;
 		}
-		else
-		{
-			return InsertSequenceLine(inIsControlDown);
-		}
-	}
-
 
 	int ComponentTrack::DoDelete(bool inIsControlDown)
 	{

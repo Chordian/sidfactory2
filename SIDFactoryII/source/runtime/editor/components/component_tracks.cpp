@@ -189,7 +189,11 @@ namespace Editor
 								(*m_DataSource)[i]->SetFocusModeOrderList(m_FocusModeOrderList);
 						}
 					}
-
+					else if (inKeyboard.IsModifierDownExclusive(Keyboard::Shift)) {
+						(*m_DataSource)[0]->DoInsertOrderlist(true);
+						(*m_DataSource)[1]->DoInsertOrderlist(true);
+						(*m_DataSource)[2]->DoInsertOrderlist(true);
+					}
 					break;
 				}
 			}
