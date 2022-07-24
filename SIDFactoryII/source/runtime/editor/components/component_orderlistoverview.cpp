@@ -560,6 +560,8 @@ namespace Editor
 	{
 		if(IsEditingText())
 			DoStopEditText(inCursorControl, false);
+
+		ComponentBase::ClearHasControl(inCursorControl);
 	}
 
 	void ComponentOrderListOverview::ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost)

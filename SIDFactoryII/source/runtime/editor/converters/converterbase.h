@@ -3,6 +3,7 @@
 #include <SDL_keycode.h>
 #include <memory>
 #include <functional>
+#include <string>
 
 namespace Foundation
 {

@@ -458,9 +458,6 @@
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl_windows.cpp">
       <Filter>source\foundation\platform\sdl</Filter>
     </ClCompile>
-    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_macos.cpp">
-      <Filter>source\foundation\platform\sdl</Filter>
-    </ClCompile>
     <ClCompile Include="source\utils\keyhookstore.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
@@ -490,9 +487,6 @@
     </ClCompile>
     <ClCompile Include="source\foundation\platform\platform_factory.cpp">
       <Filter>source\foundation\platform</Filter>
-    </ClCompile>
-    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_linux.cpp">
-      <Filter>source\foundation\platform\sdl</Filter>
     </ClCompile>
     <ClCompile Include="source\libraries\residfp\Dac.cpp">
       <Filter>source\libraries\residfp</Filter>
@@ -991,9 +985,6 @@
     <ClInclude Include="source\foundation\platform\sdl\platform_sdl_windows.h">
       <Filter>source\foundation\platform\sdl</Filter>
     </ClInclude>
-    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_macos.h">
-      <Filter>source\foundation\platform\sdl</Filter>
-    </ClInclude>
     <ClInclude Include="source\utils\keyhookstore.h">
       <Filter>source\utils</Filter>
     </ClInclude>
@@ -1023,9 +1014,6 @@
     </ClInclude>
     <ClInclude Include="source\foundation\platform\platform_factory.h">
       <Filter>source\foundation\platform</Filter>
-    </ClInclude>
-    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_linux.h">
-      <Filter>source\foundation\platform\sdl</Filter>
     </ClInclude>
     <ClInclude Include="source\libraries\residfp\array.h">
       <Filter>source\libraries\residfp</Filter>
