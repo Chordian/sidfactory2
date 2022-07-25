@@ -202,6 +202,7 @@
     <ClCompile Include="source\runtime\editor\components\component_text_input.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_tracks.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\components\utils\orderlist_utils.cpp" />
     <ClCompile Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.cpp" />
     <ClCompile Include="source\runtime\editor\components_manager.cpp" />
     <ClCompile Include="source\runtime\editor\converters\cc\converter_cc.cpp" />
@@ -376,6 +377,7 @@
     <ClInclude Include="source\runtime\editor\components\component_text_input.h" />
     <ClInclude Include="source\runtime\editor\components\component_tracks.h" />
     <ClInclude Include="source\runtime\editor\components\component_track_utils.h" />
+    <ClInclude Include="source\runtime\editor\components\utils\orderlist_utils.h" />
     <ClInclude Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.h" />
     <ClInclude Include="source\runtime\editor\components_manager.h" />
     <ClInclude Include="source\runtime\editor\converters\cc\converter_cc.h" />

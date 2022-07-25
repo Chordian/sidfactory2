@@ -6,6 +6,7 @@
 #include "runtime/editor/display_state.h"
 #include "runtime/editor/components_manager.h"
 #include "runtime/editor/components/component_tracks.h"
+#include "runtime/editor/components/utils/orderlist_utils.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/editor/dialog/dialog_hex_value_input.h"
@@ -63,23 +64,6 @@ namespace Editor
 		"Bb",
 		"B-"
 	};
-
-	bool OrderListInsert(std::shared_ptr<Editor::DataSourceOrderList>& inOrderList, int inAtOrderListIndex, const DataSourceOrderList::Entry& inEntryToInsert)
-	{
-		if (inOrderList->CanIncreaseSize())
-		{
-			inOrderList->IncreaseSize();
-
-			for (int i = inOrderList->GetLength() - 2; i >= inAtOrderListIndex; --i)
-				(*inOrderList)[i + 1] = (*inOrderList)[i];
-
-			(*inOrderList)[inAtOrderListIndex] = inEntryToInsert;
-
-			return true;
-		}
-
-		return false;
-	}
 
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
@@ -961,7 +945,6 @@ namespace Editor
 		m_TakingOrderListInput = false;
 
 		OnOrderListChanged();
-		UpdateMaxEventPos();
 	}
 
 
@@ -1945,7 +1928,6 @@ namespace Editor
 			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
 			{
 				OnOrderListChanged();
-				UpdateMaxEventPos();
 			}
 
 			return m_EventPos;
@@ -1971,7 +1953,6 @@ namespace Editor
 				m_DataSourceOrderList->DecreaseSize();
 
 				OnOrderListChanged();
-				UpdateMaxEventPos();
 			}
 
 			return m_EventPos;
@@ -2036,7 +2017,6 @@ namespace Editor
 			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
 			{
 				OnOrderListChanged();
-				UpdateMaxEventPos();
 			}
 		}
 
@@ -2121,7 +2101,6 @@ namespace Editor
 				if (OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry))
 				{
 					OnOrderListChanged();
-					UpdateMaxEventPos();
 				};
 			}
 		}
@@ -2301,6 +2280,8 @@ namespace Editor
 
 	void ComponentTrack::OnOrderListChanged()
 	{
+		UpdateMaxEventPos();
+
 		// Pack orderlist
 		DataSourceOrderList::PackResult packed_result = m_DataSourceOrderList->Pack();
 
