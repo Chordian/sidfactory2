@@ -40,6 +40,7 @@ namespace Editor
 	class DataSourceOrderList;
 	class DataSourceSequence;
 	class DataCopySequence;
+	class DataCopySequenceEvents;
 	class ScreenBase;
 
 	class ComponentTrack final : public ComponentBase
@@ -99,6 +100,7 @@ namespace Editor
 		using SequenceSplitEvent = Utility::TEvent<void(unsigned char, unsigned char)>;
 		using SequenceChangedEvent = Utility::TEvent<void(void)>;
 		using OrderListChangedEvent = Utility::TEvent<void(void)>;
+		using ComputeMaxEventPosEvent = Utility::TEvent<void(void)>;
 
 		ComponentTrack(
 			int inID,
@@ -164,6 +166,7 @@ namespace Editor
 		SequenceSplitEvent& GetSequenceSplitEvent();
 		SequenceChangedEvent& GetSequenceChangedEvent();
 		OrderListChangedEvent& GetOrderListChangedEvent();
+		ComputeMaxEventPosEvent& GetComputeMaxEventPosEvent();
 
 		void CancelOrderListInputValue();
 		void HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex);
@@ -199,10 +202,15 @@ namespace Editor
 		int InsertSequenceLine(bool inChangeSequenceSize);
 		int ResizeSequence(int inLength);
 		int ResizeAndReplaceData(const DataCopySequence* inSequenceData);
+		int ResizeAndInsertData(const DataCopySequenceEvents* inSequenceEventData);
+		int InsertAndOverwriteData(const DataCopySequenceEvents* inSequenceEventData);
 		int InsertSequenceLines(int inLineCount);
 
 		// Event position
+	public:
 		void UpdateMaxEventPos();
+
+	private:
 		void SetEventPosDetails(unsigned int inOrderListIndex, unsigned int inSequenceIndex);
 
 		// Status report
@@ -230,7 +238,8 @@ namespace Editor
 		void DoTestExpandSequence();
 		void DoResizeSequence(ComponentsManager& inComponentsManager);
 		void DoInsertLinesInSequence(ComponentsManager& inComponentsManager);
-		void DoCopySequenceData();
+		void DoCopyFullSequenceData();
+		void DoCopyMarkedSequenceData();
 		void DoPaste(bool inResizeSequence);
 		void DoSetInstrumentIndexValue(unsigned char inValue);
 		void DoSetCommandIndexValue(unsigned char inValue);
@@ -311,6 +320,7 @@ namespace Editor
 		SequenceSplitEvent m_SequenceSplitEvent;
 		SequenceChangedEvent m_SequenceChangedEvent;
 		OrderListChangedEvent m_OrderListChangedEvent;
+		ComputeMaxEventPosEvent m_ComputedMaxEventPosEvent;
 
 		// KeyHooks
 		std::vector<Utility::KeyHook<bool(KeyHookContext&)>> m_KeyHooks;
