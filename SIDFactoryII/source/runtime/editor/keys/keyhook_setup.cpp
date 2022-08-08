@@ -104,6 +104,8 @@ namespace Editor
 
 		definitions.push_back({ "Key.Track.CursorUp", {{ SDLK_UP, Keyboard::None }} });
 		definitions.push_back({ "Key.Track.CursorDown", {{ SDLK_DOWN, Keyboard::None }} });
+		definitions.push_back({ "Key.Track.MarkingCursorUp", {{ SDLK_UP, Keyboard::Shift }} });
+		definitions.push_back({ "Key.Track.MarkingCursorDown", {{ SDLK_DOWN, Keyboard::Shift }} });
 		definitions.push_back({ "Key.Track.ToggleGateUntilNextEvent", {{ SDLK_DOWN, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.ToggleGateSincePreviousEvent", {{ SDLK_UP, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.PageUp", {{ SDLK_PAGEUP, Keyboard::None }} });

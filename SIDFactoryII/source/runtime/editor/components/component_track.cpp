@@ -129,9 +129,9 @@ namespace Editor
 		, m_HasDataChangeOrderList(false)
 		, m_LocalDataChange(false)
 		, m_IsMuted(false)
-		, m_HasMarking(false)
-		, m_MarkTop(0x40)
-		, m_MarkBottom(0x50)
+		, m_IsMarkingArea(false)
+		, m_MarkingFromEventPos(0)
+		, m_MarkingToEventPos(0)
 	{
 		UpdateMaxEventPos();
 
@@ -192,6 +192,9 @@ namespace Editor
 	void ComponentTrack::ClearHasControl(CursorControl& inCursorControl)
 	{
 		ComponentBase::ClearHasControl(inCursorControl);
+
+		if (m_IsMarkingArea)
+			DoCancelMarking();
 
 		{
 			const unsigned int order_list_index = m_EventPosDetails.OrderListIndex();
@@ -382,10 +385,13 @@ namespace Editor
 				int current_event = top_event;
 
 				// Draw marking
-				if (m_HasMarking)
+				if (m_IsMarkingArea)
 				{
-					int marking_top_screen_position = m_MarkTop - top_event;
-					int marking_bottom_screen_position = m_MarkBottom - top_event;
+					int top = std::min(m_MarkingFromEventPos, m_MarkingToEventPos);
+					int bottom = std::max(m_MarkingFromEventPos, m_MarkingToEventPos);
+
+					int marking_top_screen_position = top - top_event;
+					int marking_bottom_screen_position = (bottom - top_event) + 1;
 
 					const bool out_of_screen = (marking_top_screen_position < 0 && marking_bottom_screen_position < 0)
 						|| (marking_top_screen_position >= m_Dimensions.m_Height && marking_bottom_screen_position >= m_Dimensions.m_Height);
@@ -397,11 +403,13 @@ namespace Editor
 
 						Rect marking_rect = m_Rect;
 
-						marking_rect.m_Position.m_Y = m_Rect.m_Position.m_Y + marking_top_screen_position;
+						marking_rect.m_Position.m_Y += marking_top_screen_position;
 						marking_rect.m_Dimensions.m_Height = marking_bottom_screen_position - marking_top_screen_position;
+						marking_rect.m_Position.m_X += 5;
+						marking_rect.m_Dimensions.m_Width -= 6;
 
-						const Color background_color_marking = Color::DarkRed;
-						const Color background_color_marking_muted = Color::Grey;
+						const Color background_color_marking = Color::DarkerBlue;
+						const Color background_color_marking_muted = Color::DarkerGrey;
 
 						m_TextField->ColorAreaBackground(m_IsMuted ? background_color_marking_muted : background_color_marking, marking_rect);
 					}
@@ -704,6 +712,9 @@ namespace Editor
 
 	void ComponentTrack::SetFocusModeOrderList(bool inFocusModeOrderList)
 	{
+		if (m_IsMarkingArea)
+			DoCancelMarking();
+
 		m_FocusModeOrderList = inFocusModeOrderList;
 
 		if (m_FocusModeOrderList)
@@ -2197,7 +2208,7 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::DoPasteSequenceData()
+	void ComponentTrack::DoPaste(bool inResizeSequence)
 	{
 		if (CopyPaste::Instance().HasData<DataCopySequence>())
 		{
@@ -2206,7 +2217,7 @@ namespace Editor
 			const auto* data = CopyPaste::Instance().GetData<DataCopySequence>();
 			const bool is_full_sequence = data->IsFullSequenceCopy();
 
-			if (is_full_sequence)
+			if (is_full_sequence && inResizeSequence)
 			{
 				int event_pos = ResizeAndReplaceData(data);
 
@@ -2271,6 +2282,22 @@ namespace Editor
 				OnSequenceChanged(order_list_entry.m_SequenceIndex);
 			}
 		}
+	}
+
+
+	void ComponentTrack::DoBeginMarking(int inBeginMarkingEventPos)
+	{
+		FOUNDATION_ASSERT(!m_IsMarkingArea);
+
+		m_MarkingFromEventPos = inBeginMarkingEventPos;
+		m_IsMarkingArea = true;
+	}
+
+	void ComponentTrack::DoCancelMarking()
+	{
+		FOUNDATION_ASSERT(m_IsMarkingArea);
+
+		m_IsMarkingArea = false;
 	}
 
 
@@ -2434,6 +2461,9 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
+				if (m_IsMarkingArea)
+					DoCancelMarking();
+
 				inKeyHookContext.m_NewEventPos = DoKeyUp();
 				return true;
 			}
@@ -2444,12 +2474,57 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
+				if (m_IsMarkingArea)
+					DoCancelMarking();
+
 				inKeyHookContext.m_NewEventPos = DoKeyDown();
 				return true;
 			}
 
 			return false;
 		} });
+	
+		m_KeyHooks.push_back({ "Key.Track.MarkingCursorUp", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (!m_TakingOrderListInput)
+			{
+				if (!m_FocusModeOrderList)
+				{
+					if (!m_IsMarkingArea)
+						DoBeginMarking(m_EventPos);
+
+					int new_event_pos = DoKeyUp();
+
+					m_MarkingToEventPos = new_event_pos;
+					inKeyHookContext.m_NewEventPos = new_event_pos;
+
+					return true;
+				}
+			}
+
+			return false;
+		} });
+		m_KeyHooks.push_back({"Key.Track.MarkingCursorDown", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (!m_TakingOrderListInput)
+			{
+				if (!m_FocusModeOrderList)
+				{
+					if (!m_IsMarkingArea)
+						DoBeginMarking(m_EventPos);
+
+					int new_event_pos = DoKeyDown();
+
+					m_MarkingToEventPos = new_event_pos;
+					inKeyHookContext.m_NewEventPos = new_event_pos;
+
+					return true;
+				}
+			}
+
+			return false;
+		} });
+
 		m_KeyHooks.push_back({"Key.Track.ToggleGateUntilNextEvent", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
 			if (!m_FocusModeOrderList)
@@ -2694,7 +2769,9 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				DoCopySequenceData();
+				if(m_FocusModeOrderList)
+					DoCopySequenceData();
+				
 				return true;
 			}
 
@@ -2704,7 +2781,8 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				DoPasteSequenceData();
+				DoPaste(true);
+
 				return true;
 			}
 

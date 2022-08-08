@@ -231,9 +231,11 @@ namespace Editor
 		void DoResizeSequence(ComponentsManager& inComponentsManager);
 		void DoInsertLinesInSequence(ComponentsManager& inComponentsManager);
 		void DoCopySequenceData();
-		void DoPasteSequenceData();
+		void DoPaste(bool inResizeSequence);
 		void DoSetInstrumentIndexValue(unsigned char inValue);
 		void DoSetCommandIndexValue(unsigned char inValue);
+		void DoBeginMarking(int inBeginMarkingEventPos);
+		void DoCancelMarking();
 
 		// Data change
 		void OnSequenceChanged(unsigned char inSequenceIndex);
@@ -288,9 +290,9 @@ namespace Editor
 		unsigned int m_FirstValidSequenceIndex;
 
 		// Marking
-		bool m_HasMarking;
-		int m_MarkTop;
-		int m_MarkBottom;
+		bool m_IsMarkingArea;
+		int m_MarkingFromEventPos;
+		int m_MarkingToEventPos;
 
 		// Undo
 		std::function<void(UndoComponentDataTableTracks&)> m_AddUndoStepHandler;
