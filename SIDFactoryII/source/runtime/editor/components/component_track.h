@@ -202,8 +202,7 @@ namespace Editor
 		int InsertSequenceLine(bool inChangeSequenceSize);
 		int ResizeSequence(int inLength);
 		int ResizeAndReplaceData(const DataCopySequence* inSequenceData);
-		int ResizeAndInsertData(const DataCopySequenceEvents* inSequenceEventData);
-		int InsertAndOverwriteData(const DataCopySequenceEvents* inSequenceEventData);
+		int PasteSequenceEventData(const DataCopySequenceEvents* inSequenceEventData, bool inInsert);
 		int InsertSequenceLines(int inLineCount);
 
 		// Event position

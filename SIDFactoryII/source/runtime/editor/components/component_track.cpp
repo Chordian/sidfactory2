@@ -409,8 +409,8 @@ namespace Editor
 						marking_rect.m_Position.m_X += 5;
 						marking_rect.m_Dimensions.m_Width -= 6;
 
-						const Color background_color_marking = Color::DarkerBlue;
-						const Color background_color_marking_muted = Color::DarkerGrey;
+						const Color background_color_marking = focus_line_background_color;
+						const Color background_color_marking_muted = focus_line_background_color_muted;
 
 						m_TextField->ColorAreaBackground(m_IsMuted ? background_color_marking_muted : background_color_marking, marking_rect);
 					}
@@ -1600,12 +1600,13 @@ namespace Editor
 	}
 
 
-	int ComponentTrack::ResizeAndInsertData(const DataCopySequenceEvents* inSequenceEventData)
+	int ComponentTrack::PasteSequenceEventData(const DataCopySequenceEvents* inSequenceEventData, bool inInsert)
 	{
 		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 		if (order_list_entry.m_Transposition < 0xfe)
 		{
-			InsertSequenceLines(inSequenceEventData->GetEventCount());
+			if(inInsert)
+				InsertSequenceLines(inSequenceEventData->GetEventCount());
 
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 
@@ -1626,11 +1627,6 @@ namespace Editor
 			return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), m_DataSourceOrderList, m_DataSourceSequenceList);
 		}
 
-		return m_EventPos;
-	}
-
-	int ComponentTrack::InsertAndOverwriteData(const DataCopySequenceEvents* inSequenceEventData)
-	{
 		return m_EventPos;
 	}
 
@@ -2341,13 +2337,13 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::DoPaste(bool inResizeSequence)
+	void ComponentTrack::DoPaste(bool inCtrlPressed)
 	{
 		if (CopyPaste::Instance().HasData<DataCopySequence>())
 		{
 			const auto* data = CopyPaste::Instance().GetData<DataCopySequence>();
 
-			if (inResizeSequence)
+			if (!inCtrlPressed)
 			{
 				AddUndoStep();
 
@@ -2366,26 +2362,13 @@ namespace Editor
 			const auto* data = CopyPaste::Instance().GetData<DataCopySequenceEvents>();
 			AddUndoStep();
 
-			if (inResizeSequence)
-			{
-				int event_pos = ResizeAndInsertData(data);
+			int event_pos = PasteSequenceEventData(data, inCtrlPressed);
 
-				// Set the new event position
-				if (m_EventPos != event_pos)
-					SetEventPosition(event_pos);
+			// Set the new event position
+			if (m_EventPos != event_pos)
+				SetEventPosition(event_pos);
 
-				OnOrderListChanged();
-			}
-			else
-			{
-				int event_pos = InsertAndOverwriteData(data);
-
-				// Set the new event position
-				if (m_EventPos != event_pos)
-					SetEventPosition(event_pos);
-
-				OnOrderListChanged();
-			}
+			OnOrderListChanged();
 		}
 	}
 
@@ -2945,6 +2928,17 @@ namespace Editor
 			return false;
 		} });
 		m_KeyHooks.push_back({ "Key.Track.Paste", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (!m_TakingOrderListInput)
+			{
+				DoPaste(false);
+
+				return true;
+			}
+
+			return false;
+		} });
+		m_KeyHooks.push_back({ "Key.Track.InsertPaste", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
 			if (!m_TakingOrderListInput)
 			{
