@@ -358,6 +358,8 @@ namespace Editor
 				{
 					if (IsEditingText() && m_CursorY != m_TextEditingDataSourceTableText->GetTextLineIndex())
 						DoStopEditText(inCursorControl, false);
+					if (m_IsMarkingArea)
+						DoCancelMarking();
 
 					m_CursorX = m_MaxCursorX;
 
@@ -373,6 +375,8 @@ namespace Editor
 				{
 					if (IsEditingText())
 						DoStopEditText(inCursorControl, false);
+					if (m_IsMarkingArea)
+						DoCancelMarking();
 
 					for (int i = m_MaxCursorX; i >= 0; --i)
 					{
