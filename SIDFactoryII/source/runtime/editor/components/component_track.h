@@ -6,6 +6,8 @@
 #include "runtime/editor/edit_state.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/driver/idriver_architecture.h"
+#include "runtime/editor/datasources/datasource_orderlist.h"
+#include "runtime/editor/datasources/datasource_sequence.h"
 
 #include "foundation/graphics/color.h"
 
@@ -37,8 +39,6 @@ namespace Editor
 	class UndoComponentData;
 	class UndoComponentDataTableTracks;
 
-	class DataSourceOrderList;
-	class DataSourceSequence;
 	class DataCopySequence;
 	class DataCopySequenceEvents;
 	class ScreenBase;
@@ -244,6 +244,7 @@ namespace Editor
 		void DoSetCommandIndexValue(unsigned char inValue);
 		void DoBeginMarking(int inBeginMarkingEventPos);
 		void DoCancelMarking();
+		void DoEraseMarkedArea(bool inValueOnlyAtCursor);
 
 		// Data change
 		void OnSequenceChanged(unsigned char inSequenceIndex);
@@ -261,6 +262,9 @@ namespace Editor
 		void ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore);
 
 		static std::string ToHexValueString(unsigned char inValue, const bool inUppercase);
+
+		template<typename PREDICATE>
+		std::vector<unsigned char> ForEachEventInMarkedRange(PREDICATE&& inPredicate);
 
 		// Edit state
 		const EditState& m_EditState;
@@ -329,4 +333,75 @@ namespace Editor
 		static std::string ms_NotesSharp[12];
 		static std::string ms_NotesFlat[12];
 	};
+
+
+	template<typename PREDICATE>
+	std::vector<unsigned char> ComponentTrack::ForEachEventInMarkedRange(PREDICATE&& inPredicate)
+	{
+		int top = m_IsMarkingArea ? std::min(m_MarkingFromEventPos, m_MarkingToEventPos) : m_EventPos;
+		int bottom = m_IsMarkingArea ? std::max(m_MarkingFromEventPos, m_MarkingToEventPos) : m_EventPos;
+
+		// Find sequence and index of top position
+		int find_event_pos = top;
+		int event_pos = 0;
+
+		int orderlist_index = 0;
+		int sequence_event_pos = 0;
+
+		bool found = false;
+
+		for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
+		{
+			unsigned char sequence_index = (*m_DataSourceOrderList)[i].m_SequenceIndex;
+			const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[sequence_index];
+
+			int next_event_pos = event_pos + sequence->GetLength();
+
+			if (find_event_pos >= event_pos && find_event_pos < next_event_pos)
+			{
+				orderlist_index = i;
+				sequence_event_pos = find_event_pos - event_pos;
+
+				found = true;
+				break;
+			}
+
+			event_pos = next_event_pos;
+		}
+
+		if (!found)
+			return std::vector<unsigned char>();
+
+		std::vector<unsigned char> altered_sequence_indicies;
+		unsigned char last_sequence_index = 0xff;
+
+		for (int event_pos = top, i = 0; event_pos <= bottom; ++event_pos, ++i)
+		{
+			const auto& orderlist_entry = (*m_DataSourceOrderList)[orderlist_index];
+			if (orderlist_entry.m_Transposition >= 0xfe)
+				break;
+
+			unsigned char sequence_index = orderlist_entry.m_SequenceIndex;
+
+			if (sequence_index != last_sequence_index)
+			{
+				altered_sequence_indicies.push_back(sequence_index);
+				last_sequence_index = sequence_index;
+			}
+
+			const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[sequence_index];
+
+			DataSourceSequence::Event& event = (*sequence)[sequence_event_pos];
+			inPredicate(event, i);
+
+			++sequence_event_pos;
+			if (sequence_event_pos >= static_cast<int>(sequence->GetLength()))
+			{
+				++orderlist_index;
+				sequence_event_pos = 0;
+			}
+		}
+
+		return altered_sequence_indicies;
+	}
 }

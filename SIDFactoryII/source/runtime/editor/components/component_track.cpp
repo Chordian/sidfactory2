@@ -66,8 +66,8 @@ namespace Editor
 		"B-"
 	};
 
-
 	//----------------------------------------------------------------------------------------------------------------------------------------
+
 
 	ComponentTrack::EventPosDetails::EventPosDetails()
 		: m_OrderListIndex(0)
@@ -2442,6 +2442,30 @@ namespace Editor
 		m_IsMarkingArea = false;
 	}
 
+	void ComponentTrack::DoEraseMarkedArea(bool inValueOnlyAtCursor)
+	{
+		FOUNDATION_ASSERT(m_IsMarkingArea);
+
+		AddUndoStep();
+
+		std::vector<unsigned char> altered_sequence_indices = ForEachEventInMarkedRange([&](DataSourceSequence::Event& inEvent, int index)
+		{
+			if (!inValueOnlyAtCursor)
+				inEvent.Clear();
+			else if (IsCursorAtSequenceInstrument())
+				inEvent.m_Instrument = 0x80;
+			else if (IsCursorAtSequenceCommand())
+				inEvent.m_Command = 0x80;
+			else
+				inEvent.m_Note = 0x00;
+		});
+
+		for (auto altered_sequence_index : altered_sequence_indices)
+			OnSequenceChanged(altered_sequence_index);
+
+		DoCancelMarking();
+	}
+
 
 	//--------------------------------------------------------------------------------------------------
 	// Data change
@@ -2775,7 +2799,11 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				inKeyHookContext.m_NewEventPos = EraseSequenceLine(true);
+				if (m_IsMarkingArea)
+					DoEraseMarkedArea(true);
+				else
+					inKeyHookContext.m_NewEventPos = EraseSequenceLine(true);
+
 				return true;
 			}
 
@@ -2785,7 +2813,10 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				inKeyHookContext.m_NewEventPos = EraseSequenceLine(false);
+				if (m_IsMarkingArea)
+					DoEraseMarkedArea(false);
+				else
+					inKeyHookContext.m_NewEventPos = EraseSequenceLine(false);
 				return true;
 			}
 
