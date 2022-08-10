@@ -195,9 +195,13 @@ namespace Editor
 		int ApplySequenceNoteValue(int inNoteValue);
 		int ApplySequenceHoldNoteValue();
 		bool ApplyTranspose(char inDelta);
+		bool ApplyTransposeInMarkedArea(char inDelta);
 		void ToggleSequenceHoldNoteUntilEvent(bool inDown);
 		void ToggleSequenceTieNote();
+		void ToggleSequenceTieNoteInMarkedArea();
 		int EraseSequenceLine(bool inValueOnlyAtCursor);
+		void EraseSequenceLinesInMarkedArea(bool inValueOnlyAtCursor);
+
 		int DeleteSequenceLine(bool inChangeSequenceSize);
 		int InsertSequenceLine(bool inChangeSequenceSize);
 		int ResizeSequence(int inLength);
@@ -242,9 +246,10 @@ namespace Editor
 		void DoPaste(bool inResizeSequence);
 		void DoSetInstrumentIndexValue(unsigned char inValue);
 		void DoSetCommandIndexValue(unsigned char inValue);
+
+		// Marking
 		void DoBeginMarking(int inBeginMarkingEventPos);
 		void DoCancelMarking();
-		void DoEraseMarkedArea(bool inValueOnlyAtCursor);
 
 		// Data change
 		void OnSequenceChanged(unsigned char inSequenceIndex);
