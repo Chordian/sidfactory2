@@ -3,7 +3,7 @@
 
 namespace Editor
 {
-	bool OrderListInsert(std::shared_ptr<Editor::DataSourceOrderList>& inOrderList, int inAtOrderListIndex, const DataSourceOrderList::Entry& inEntryToInsert)
+	bool InsertSequenceIndexInOrderListAtIndex(std::shared_ptr<Editor::DataSourceOrderList>& inOrderList, int inAtOrderListIndex, const DataSourceOrderList::Entry& inEntryToInsert)
 	{
 		if (inOrderList->CanIncreaseSize())
 		{

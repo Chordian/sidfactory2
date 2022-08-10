@@ -978,7 +978,7 @@ namespace Editor
 
 	void ComponentTrack::HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex)
 	{
-		const int length = m_DataSourceOrderList->GetLength();
+		int length = m_DataSourceOrderList->GetLength();
 
 		for (int i = length - 1; i >= 0; --i)
 		{
@@ -988,7 +988,8 @@ namespace Editor
 				auto new_entry = entry;
 				new_entry.m_SequenceIndex = inAddSequenceIndex;
 
-				OrderListInsert(m_DataSourceOrderList, i + 1, new_entry);
+				if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, i + 1, new_entry))
+					++length;
 			}
 		}
 
@@ -2057,10 +2058,8 @@ namespace Editor
 				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex() - 1];
 			}
 
-			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
-			{
+			if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
 				OnOrderListChanged();
-			}
 
 			return m_EventPos;
 		}
@@ -2169,10 +2168,8 @@ namespace Editor
 			if (first_free_sequence_index < 0x80)
 				orderlist_entry.m_SequenceIndex = first_free_sequence_index;
 
-			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
-			{
+			if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
 				OnOrderListChanged();
-			}
 		}
 
 		return m_EventPos;
@@ -2256,10 +2253,9 @@ namespace Editor
 				// insert the duplicate in the order list right after the original
 				auto new_entry = orderlist_entry;
 				new_entry.m_SequenceIndex = duplicate_sequence_index;
-				if (OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry))
-				{
+				
+				if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, order_index + 1, new_entry))
 					OnOrderListChanged();
-				};
 			}
 		}
 	}

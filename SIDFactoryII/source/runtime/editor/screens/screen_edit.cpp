@@ -1004,7 +1004,7 @@ namespace Editor
 					get_first_free_sequence_index,
                     get_first_empty_sequence_index,
 					0, 0, 0
-					)
+				)
 			);
 
 		m_TracksDataSource = std::make_shared<DataSourceTrackComponents>(tracks);

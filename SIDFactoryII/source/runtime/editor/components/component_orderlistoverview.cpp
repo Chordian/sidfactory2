@@ -904,7 +904,7 @@ namespace Editor
 					if (!order_list->CanIncreaseSize())
 						break;
 
-					OrderListInsert(order_list, i + order_list_destination_index, order_list_copy[i]);					
+					InsertSequenceIndexInOrderListAtIndex(order_list, i + order_list_destination_index, order_list_copy[i]);					
 				}
 
 				// Insert and raise events
