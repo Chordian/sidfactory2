@@ -94,12 +94,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\source;C:\Projects\Libs\SDL2-2.0.9\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\source;..\libs\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>sdl2.lib;sdl2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Projects\Libs\SDL2-2.0.9\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\SDL2-2.0.12\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,14 +134,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\source;C:\Projects\Libs\SDL2-2.0.9\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\source;..\libs\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>sdl2.lib;sdl2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Projects\Libs\SDL2-2.0.9\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\SDL2-2.0.12\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -158,8 +158,6 @@
     <ClCompile Include="source\foundation\platform\platform_factory.cpp" />
     <ClCompile Include="source\foundation\platform\sdl\mutex_sdl.cpp" />
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl.cpp" />
-    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_linux.cpp" />
-    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_macos.cpp" />
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl_windows.cpp" />
     <ClCompile Include="source\foundation\sound\audiostream.cpp" />
     <ClCompile Include="source\libraries\miniz\miniz.c" />
@@ -205,6 +203,7 @@
     <ClCompile Include="source\runtime\editor\components\component_text_input.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_tracks.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\components\utils\orderlist_utils.cpp" />
     <ClCompile Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.cpp" />
     <ClCompile Include="source\runtime\editor\components_manager.cpp" />
     <ClCompile Include="source\runtime\editor\converters\cc\converter_cc.cpp" />
@@ -321,8 +320,6 @@
     <ClInclude Include="source\foundation\platform\platform_factory.h" />
     <ClInclude Include="source\foundation\platform\sdl\mutex_sdl.h" />
     <ClInclude Include="source\foundation\platform\sdl\platform_sdl.h" />
-    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_linux.h" />
-    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_macos.h" />
     <ClInclude Include="source\foundation\platform\sdl\platform_sdl_windows.h" />
     <ClInclude Include="source\foundation\sound\audiostream.h" />
     <ClInclude Include="source\libraries\ghc\filesystem.h" />
@@ -382,6 +379,7 @@
     <ClInclude Include="source\runtime\editor\components\component_text_input.h" />
     <ClInclude Include="source\runtime\editor\components\component_tracks.h" />
     <ClInclude Include="source\runtime\editor\components\component_track_utils.h" />
+    <ClInclude Include="source\runtime\editor\components\utils\orderlist_utils.h" />
     <ClInclude Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.h" />
     <ClInclude Include="source\runtime\editor\components_manager.h" />
     <ClInclude Include="source\runtime\editor\converters\cc\converter_cc.h" />

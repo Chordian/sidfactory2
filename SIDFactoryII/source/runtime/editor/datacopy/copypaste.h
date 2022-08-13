@@ -27,6 +27,7 @@ namespace Editor
 	private:
 		CopyPaste();
 
+		std::unique_ptr<DataCopySequenceEvents> m_SequenceEventsData;
 		std::unique_ptr<DataCopySequence> m_SequenceData;
 		std::unique_ptr<DataCopyOrderList> m_OrderListData;
 
@@ -61,6 +62,12 @@ namespace Editor
 
 	// Template specializations
 	template<>
+	inline bool CopyPaste::HasData<DataCopySequenceEvents>() const
+	{
+		return m_SequenceEventsData != nullptr;
+	}
+
+	template<>
 	inline bool CopyPaste::HasData<DataCopySequence>() const
 	{
 		return m_SequenceData != nullptr;
@@ -74,6 +81,13 @@ namespace Editor
 
 
 	template<>
+	inline const DataCopySequenceEvents* CopyPaste::GetData<DataCopySequenceEvents>() const
+	{
+		FOUNDATION_ASSERT(m_SequenceEventsData != nullptr);
+		return m_SequenceEventsData.get();
+	}
+
+	template<>
 	inline const DataCopySequence* CopyPaste::GetData<DataCopySequence>() const
 	{
 		FOUNDATION_ASSERT(m_SequenceData != nullptr);
@@ -85,6 +99,15 @@ namespace Editor
 	{
 		FOUNDATION_ASSERT(m_OrderListData != nullptr);
 		return m_OrderListData.get();
+	}
+
+
+	template<>
+	inline void CopyPaste::SetData<DataCopySequenceEvents>(DataCopySequenceEvents* inData)
+	{
+		Flush();
+
+		m_SequenceEventsData = std::unique_ptr<DataCopySequenceEvents>(inData);
 	}
 
 

@@ -81,15 +81,25 @@ namespace Editor
 			{ 
 				HandleSequenceSplit(inSequence, inSequenceToAdd); 
 			}));
+
+			// Set event handle
+			(*m_DataSource)[i]->GetComputeMaxEventPosEvent().Add(this, Utility::TDelegate<void(void)>([&]()
+			{
+				for (int i = 0; i < m_DataSource->GetSize(); ++i)
+				{
+					(*m_DataSource)[i]->PullSequenceDataFromSource();
+					(*m_DataSource)[i]->UpdateMaxEventPos();
+				}
+			}));
 		}
 
 		// Set the event position on each track
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
 			(*m_DataSource)[i]->SetEventPosition(m_EventPos);
 
-		// Set undo handlers
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
 		{
+			// Set undo handlers
 			(*m_DataSource)[i]->SetUndoHandlers(
 				[this](UndoComponentDataTableTracks& ioData) { AddUndoStep(ioData); },
 				[this](const UndoComponentDataTableTracks& inData, CursorControl& inCursorControl) { OnUndo(inData, inCursorControl); }

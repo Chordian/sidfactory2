@@ -14,6 +14,7 @@ namespace Editor
 
 	void CopyPaste::Flush()
 	{
+		m_SequenceEventsData = nullptr;
 		m_SequenceData = nullptr;
 		m_OrderListData = nullptr;
 	}
