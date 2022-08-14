@@ -5,6 +5,9 @@
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/driver/idriver_architecture.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
+#include "runtime/editor/screens/screen_edit.h"
+#include "runtime/editor/utilities/editor_utils.h"
 
 #include <map>
 #include "foundation/base/assert.h"
@@ -199,9 +202,10 @@ namespace Editor
 		{
 			const auto& music_data = inLoadedDriverInfo.GetMusicData();
 			Editor::IDriverArchitecture* driver_architecture = inLoadedDriverInfo.GetDriverArchitecture();
+			const int song_coount = static_cast<int>(inLoadedDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 
 			// Clear tracks
-			for (int i = 0; i < music_data.m_TrackCount; ++i)
+			for (int i = 0; i < music_data.m_TrackCount * song_coount; ++i)
 			{
 				unsigned short orderlist_address = music_data.m_OrderListTrack1Address + music_data.m_OrderListSize * i;
 
@@ -227,6 +231,7 @@ namespace Editor
 		void CopyMusicData(const DriverInfo& inLoadedDriverInfo, Emulation::CPUMemory& inCPUMemory, const DriverInfo& inImportDriverInfo, const Utility::C64File& inImportFile)
 		{
 			unsigned char highest_sequence_index_used = DriverUtils::GetHighestSequenceIndexUsed(inImportDriverInfo, inImportFile);
+			const int song_count = static_cast<int>(inLoadedDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 
 			const auto& import_music_data = inImportDriverInfo.GetMusicData();
 			const auto& loaded_music_data = inLoadedDriverInfo.GetMusicData();
@@ -235,7 +240,7 @@ namespace Editor
 			int track_count = import_music_data.m_TrackCount < loaded_music_data.m_TrackCount ? import_music_data.m_TrackCount : loaded_music_data.m_TrackCount;
 			int orderlist_size = import_music_data.m_OrderListSize < loaded_music_data.m_OrderListSize ? import_music_data.m_OrderListSize : loaded_music_data.m_OrderListSize;
 
-			for (int i = 0; i < track_count; ++i)
+			for (int i = 0; i < track_count * song_count; ++i)
 			{
 				unsigned short import_address = import_music_data.m_OrderListTrack1Address + import_music_data.m_OrderListSize * i;
 				unsigned short target_address = loaded_music_data.m_OrderListTrack1Address + loaded_music_data.m_OrderListSize * i;
@@ -276,6 +281,28 @@ namespace Editor
 			// Map tables
 			std::map<unsigned char, unsigned char> table_mapping = GetTableMapping(inLoadedDriverInfo, inImportDriverInfo);
 
+			// Adjust song count of the loaded driver to match that of the imported driver
+			const unsigned char loaded_driver_song_count = inLoadedDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+			const unsigned char import_driver_song_count = inImportDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+
+			if (loaded_driver_song_count != import_driver_song_count)
+			{
+				if (loaded_driver_song_count < import_driver_song_count)
+				{
+					unsigned char add_count = import_driver_song_count - loaded_driver_song_count;
+
+					for(int i = 0; i< add_count; ++i)
+						EditorUtils::AddSong(0, inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID);
+				}
+				else
+				{
+					unsigned char remove_count = loaded_driver_song_count - import_driver_song_count;
+
+					for (int i = 0; i < remove_count; ++i)
+						EditorUtils::RemoveSong(0, inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID);
+				}
+			}
+
 			// Unlock CPU memory for writing
 			inCPUMemory.Lock();
 
@@ -296,6 +323,9 @@ namespace Editor
 
 			// Lock CPU memory for writing
 			inCPUMemory.Unlock();
+
+			// Set selected song to 0
+			EditorUtils::SelectSong(0, inLoadedDriverInfo, inCPUMemory);
 		}
 	}
 }

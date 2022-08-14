@@ -1452,16 +1452,21 @@ namespace Editor
 		case DriverState::PlayState::Playing:
 			{
 				const unsigned short tempo_counter_address = m_DriverInfo->GetDriverCommon().m_TempoCounterAddress;
+				const unsigned short driver_state_address = m_DriverInfo->GetDriverCommon().m_DriverStateAddress;
 
 				if (tempo_counter_address != 0)
 				{
-					const unsigned char tempo_counter_value = (*inCPUMemory)[tempo_counter_address];
+					const unsigned char driver_state_value = (*inCPUMemory)[driver_state_address];
+					if (driver_state_value == 0x80)
+					{
+						const unsigned char tempo_counter_value = (*inCPUMemory)[tempo_counter_address];
 
-					if (tempo_counter_value == 0)
-						++m_PlaybackCurrentEventPos;
+						if (tempo_counter_value == 0)
+							++m_PlaybackCurrentEventPos;
 
-					if (m_PlaybackCurrentEventPos >= m_TracksComponent->GetMaxEventPosition())
-						m_PlaybackCurrentEventPos = m_TracksComponent->GetLoopEventPosition();
+						if (m_PlaybackCurrentEventPos >= m_TracksComponent->GetMaxEventPosition())
+							m_PlaybackCurrentEventPos = m_TracksComponent->GetLoopEventPosition();
+					}
 				}
 			}
 			break;

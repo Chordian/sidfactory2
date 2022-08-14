@@ -293,6 +293,11 @@ namespace Editor
 							order_list_length_list.push_back(static_cast<unsigned short>(j) + 2);
 							break;
 						}
+						else if (value == 0xfe)
+						{
+							order_list_length_list.push_back(static_cast<unsigned short>(j) + 1);
+							break;
+						}
 					}
 				}
 			}
