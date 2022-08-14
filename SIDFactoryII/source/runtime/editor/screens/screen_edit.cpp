@@ -1029,9 +1029,6 @@ namespace Editor
             return first_free_sequence_index;
         };
 
-		// Flush copy paste
-		CopyPaste::Instance().Flush();
-
 		// Create data container for music data (which is all tracks and sequences combined)
 		std::vector<std::shared_ptr<ComponentTrack>> tracks;
 

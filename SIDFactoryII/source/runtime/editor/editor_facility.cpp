@@ -26,6 +26,7 @@
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/import_utils.h"
+#include "runtime/editor/datacopy/copypaste.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/cpumos6510.h"
 #include "runtime/emulation/sid/sidproxy.h"
@@ -211,8 +212,8 @@ namespace Editor
 		IPlatform& platform = Global::instance().GetPlatform();
 		ConfigFile& configFile = Global::instance().GetConfig();
 
-
-		const bool file_loaded_successfully = [&]() {
+		const bool file_loaded_successfully = [&]()
+		{
 			if (inFileToLoad != nullptr)
 			{
 				std::string file_to_load(inFileToLoad);
@@ -520,6 +521,9 @@ namespace Editor
 				// Flush undo after load
 				m_EditScreen->FlushUndo();
 
+				// Flush copy/paste
+				CopyPaste::Instance().Flush();
+
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
 			}
@@ -553,6 +557,9 @@ namespace Editor
 
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
+
+					// Flush copy/paste
+					CopyPaste::Instance().Flush();
 
 					return true;
 				}
@@ -601,6 +608,9 @@ namespace Editor
 
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
+
+					// Flush copy/paste
+					CopyPaste::Instance().Flush();
 
 					// Notify overlay
 					m_OverlayControl->OnChange(*m_DriverInfo);
@@ -871,6 +881,9 @@ namespace Editor
 
 				// Flush undo after load
 				m_EditScreen->FlushUndo();
+
+				// Flush copy/paste
+				CopyPaste::Instance().Flush();
 
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
