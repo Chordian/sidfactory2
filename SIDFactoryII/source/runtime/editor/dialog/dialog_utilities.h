@@ -11,6 +11,9 @@ namespace Editor
 	public:
 		enum class Selection : int
 		{
+			SelectSong,
+			AddSong,
+			RemoveSong,
 			Statistics,
 			Optimize,
 			Pack,

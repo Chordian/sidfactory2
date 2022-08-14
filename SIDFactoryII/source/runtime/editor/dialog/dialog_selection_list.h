@@ -12,6 +12,7 @@ namespace Editor
 		DialogSelectionList(
 			int inWidth, 
 			int inHeight, 
+			int inSelectionIndex,
 			const std::string& inCaption,
 			const std::vector<std::string>& inSelectionList, 
 			std::function<void(const unsigned int)>&& inSelect, 
@@ -28,6 +29,8 @@ namespace Editor
 	private:
 		const int m_Width;
 		const int m_Height;
+
+		const int m_InitialSelectionIndex;
 
 		Foundation::TextField* m_TextField;
 

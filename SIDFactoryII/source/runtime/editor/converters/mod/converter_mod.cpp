@@ -105,8 +105,9 @@ namespace Editor
 					m_ComponentsManager->StartDialog(
 						std::make_shared<DialogSelectionList>
 						(
-							60, 
-							7, 
+							60,
+							7,
+							0,
 							"Select channel to ignore!",
 							selections,
 							on_select, 

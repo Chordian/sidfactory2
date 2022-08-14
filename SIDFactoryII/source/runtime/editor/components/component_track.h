@@ -169,10 +169,13 @@ namespace Editor
 		ComputeMaxEventPosEvent& GetComputeMaxEventPosEvent();
 
 		void CancelOrderListInputValue();
-		void HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex);
+		//void HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex);
 
 		void SetUndoHandlers(std::function<void(UndoComponentDataTableTracks&)> inAddUndoStepHandler, std::function<void(const UndoComponentDataTableTracks&, CursorControl&)> inOnUndoHandler);
 		
+		// Data source
+		std::shared_ptr<DataSourceOrderList> GetDataSourceOrderList();
+
 		// Data changed
 		void OnOrderListChanged();
 

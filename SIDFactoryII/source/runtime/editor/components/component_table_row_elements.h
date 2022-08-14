@@ -93,7 +93,10 @@ namespace Editor
 	protected:
 		Foundation::TextColoring GetTextColoring(int inDataOffset, const Foundation::TextColoring& inBaseTextColoring) const;
 
+		const bool m_HighlightRowOfSelectedSongIndex;
+		const bool m_IndexAsContinuousMemory;
 		bool m_InsertDeleteEnabled;
+
 		unsigned int m_TopRow;
 
 		int m_CursorX;
@@ -107,7 +110,6 @@ namespace Editor
 		SelectedRowChangedEvent m_SelectedRowChangedEvent;
 
 		DriverInfo::TableActionRules m_ActionRules;
-		bool m_IndexAsContinuousMemory;
 
 		std::function<void(int, int)> m_ActionRuleExecutionCallback;
 		std::function<void(int, int, int)> m_InsertDeleteCallback;

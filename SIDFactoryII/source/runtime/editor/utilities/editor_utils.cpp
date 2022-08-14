@@ -1,4 +1,9 @@
 #include "runtime/editor/utilities/editor_utils.h"
+
+#include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
+#include "runtime/editor/driver/driver_info.h"
+#include "runtime/emulation/cpumemory.h"
 #include "foundation/input/keyboard_utils.h"
 #include "foundation/base/assert.h"
 
@@ -217,6 +222,149 @@ namespace Editor
 			buffer[3] = make_character((inValue & 0x000f) >> 0);
 
 			return std::string(buffer, 4);
+		}
+
+
+		void SelectSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
+		{
+			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
+			FOUNDATION_ASSERT(song_count > 0);
+			FOUNDATION_ASSERT(inIndex < song_count);
+
+			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSelectedSong(inIndex);
+
+			inCPUMemory.Lock();
+
+			const auto& music_data = inDriverInfo.GetMusicData();
+
+			unsigned short song_order_list_byte_size = music_data.m_OrderListSize * music_data.m_TrackCount;
+			const auto first_song_orderlist_address = music_data.m_OrderListTrack1Address + song_order_list_byte_size * inIndex;
+
+			for (unsigned char i = 0; i < music_data.m_TrackCount; ++i)
+			{
+				unsigned short address = first_song_orderlist_address + music_data.m_OrderListSize * i;
+				inCPUMemory.SetByte(music_data.m_TrackOrderListPointersLowAddress + i, static_cast<unsigned char>(address & 0xff));
+				inCPUMemory.SetByte(music_data.m_TrackOrderListPointersHighAddress + i, static_cast<unsigned char>(address >> 8));
+			}
+
+			inCPUMemory.Unlock();
+		}
+
+		void AddSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
+		{
+			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
+			FOUNDATION_ASSERT(song_count > 0);
+			FOUNDATION_ASSERT(inIndex < song_count);
+
+			if (song_count < 0x10)
+			{
+				FOUNDATION_ASSERT(inIndex < inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
+
+				inCPUMemory.Lock();
+
+				const auto& music_data = inDriverInfo.GetMusicData();
+
+				unsigned short song_order_list_byte_size = music_data.m_OrderListSize * music_data.m_TrackCount;
+				unsigned short order_list_insert_address = music_data.m_OrderListTrack1Address + song_order_list_byte_size * (inIndex + 1);
+				unsigned short length = music_data.m_SequenceSize * music_data.m_SequenceCount + song_order_list_byte_size * (song_count - inIndex);
+
+				// Move orderlists and sequences down in memory to make room for orderlist of the new song
+				inCPUMemory.Copy(order_list_insert_address, length, order_list_insert_address + song_order_list_byte_size);
+				inCPUMemory.Set(0, order_list_insert_address, song_order_list_byte_size);
+
+				// Set default orderlist value for the inserted song
+				static const unsigned char default_order_list[] = { 0xa0, 0x00, 0xff, 0x00 };
+				
+				for (unsigned char i = 0; i < music_data.m_TrackCount; ++i)
+					inCPUMemory.SetData(order_list_insert_address + i * music_data.m_OrderListSize, default_order_list, sizeof(default_order_list));
+
+				// Update all sequence points
+				for (unsigned int i = 0; i < music_data.m_SequenceCount; ++i)
+				{
+					unsigned short sequence_address = static_cast<unsigned short>(inCPUMemory.GetByte(music_data.m_SequencePointersLowAddress + i)) |
+						(static_cast<unsigned short>(inCPUMemory.GetByte(music_data.m_SequencePointersHighAddress + i)) << 8);
+
+					sequence_address += song_order_list_byte_size;
+
+					unsigned char sequence_address_low = static_cast<unsigned char>(sequence_address & 0xff);
+					unsigned char sequence_address_high = static_cast<unsigned char>(sequence_address >> 8);
+
+					inCPUMemory.SetByte(music_data.m_SequencePointersLowAddress + i, sequence_address_low);
+					inCPUMemory.SetByte(music_data.m_SequencePointersHighAddress + i, sequence_address_high);
+				}
+
+				const auto& music_data_meta_data_addresses_in_emulation_memory = inDriverInfo.GetMusicDataMetaDataEmulationAddresses();
+
+				unsigned short address_of_first_sequence = inCPUMemory.GetWord(music_data_meta_data_addresses_in_emulation_memory.m_EmulationAddressOfSequence00Address);
+				inCPUMemory.SetWord(music_data_meta_data_addresses_in_emulation_memory.m_EmulationAddressOfSequence00Address, address_of_first_sequence + song_order_list_byte_size);
+
+				inCPUMemory.Unlock();
+
+				inDriverInfo.RefreshMusicData(inCPUMemory);
+				inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongCount(song_count + 1);
+
+				SelectSong(inIndex + 1, inDriverInfo, inCPUMemory);
+			}
+		}
+
+		void RemoveSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
+		{
+			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
+			if (song_count < 2)
+				return;
+
+			const unsigned int selected_song = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSelectedSong());
+			FOUNDATION_ASSERT(inIndex < song_count);
+
+			inCPUMemory.Lock();
+
+			const auto& music_data = inDriverInfo.GetMusicData();
+
+			unsigned short song_order_list_byte_size = music_data.m_OrderListSize * music_data.m_TrackCount;
+			unsigned short order_list_copy_from_address = music_data.m_OrderListTrack1Address + song_order_list_byte_size * (inIndex + 1);
+			unsigned short order_list_copy_to_address = order_list_copy_from_address - song_order_list_byte_size;
+
+			unsigned short length = music_data.m_SequenceSize * music_data.m_SequenceCount + song_order_list_byte_size * (song_count - (inIndex + 1));
+
+			// Move orderlists and sequences down in memory to make room for orderlist of the new song
+			inCPUMemory.Copy(order_list_copy_from_address, length, order_list_copy_to_address);
+
+			// Update all sequence points
+			for (unsigned int i = 0; i < music_data.m_SequenceCount; ++i)
+			{
+				unsigned short sequence_address = static_cast<unsigned short>(inCPUMemory.GetByte(music_data.m_SequencePointersLowAddress + i)) |
+					(static_cast<unsigned short>(inCPUMemory.GetByte(music_data.m_SequencePointersHighAddress + i)) << 8);
+
+				sequence_address -= song_order_list_byte_size;
+
+				unsigned char sequence_address_low = static_cast<unsigned char>(sequence_address & 0xff);
+				unsigned char sequence_address_high = static_cast<unsigned char>(sequence_address >> 8);
+
+				inCPUMemory.SetByte(music_data.m_SequencePointersLowAddress + i, sequence_address_low);
+				inCPUMemory.SetByte(music_data.m_SequencePointersHighAddress + i, sequence_address_high);
+			}
+
+			const auto& music_data_meta_data_addresses_in_emulation_memory = inDriverInfo.GetMusicDataMetaDataEmulationAddresses();
+
+			unsigned short address_of_first_sequence = inCPUMemory.GetWord(music_data_meta_data_addresses_in_emulation_memory.m_EmulationAddressOfSequence00Address);
+			inCPUMemory.SetWord(music_data_meta_data_addresses_in_emulation_memory.m_EmulationAddressOfSequence00Address, address_of_first_sequence - song_order_list_byte_size);
+
+			inCPUMemory.Unlock();
+
+			inDriverInfo.RefreshMusicData(inCPUMemory);
+			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongCount(song_count - 1);
+
+			if (selected_song == inIndex)
+			{
+				if (inIndex < song_count - 1)
+					SelectSong(inIndex, inDriverInfo, inCPUMemory);
+				else
+					SelectSong(selected_song - 1, inDriverInfo, inCPUMemory);
+			}
+			else if (selected_song > inIndex)
+				SelectSong(selected_song - 1, inDriverInfo, inCPUMemory);
+			else
+				SelectSong(selected_song, inDriverInfo, inCPUMemory);
 		}
 	}
 }

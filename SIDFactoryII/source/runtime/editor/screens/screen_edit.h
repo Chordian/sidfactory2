@@ -7,6 +7,8 @@
 #include "runtime/editor/driver/driver_state.h"
 #include "runtime/editor/undo/undo.h"
 
+#include "runtime/editor/dialog/dialog_selection_list.h"
+
 #include <memory>
 #include <vector>
 #include <functional>
@@ -162,6 +164,9 @@ namespace Editor
 		void ConfigureKeyHooks();
 		void ConfigureDynamicKeyHooks();
 
+		template<typename EXECUTION_CALLBACK>
+		void StartSongsDialogWithSelectionExecution(const std::string& headline, EXECUTION_CALLBACK&& inExecutionCallback);
+
 		// Load/save requests
 		std::function<void(void)> m_LoadRequestCallback;
 		std::function<void(void)> m_SaveRequestCallback;
@@ -208,6 +213,7 @@ namespace Editor
 
 		// Data sources
 		std::vector<std::shared_ptr<DataSourceOrderList>> m_OrderListDataSources;
+		std::vector<std::shared_ptr<DataSourceOrderList>> m_NotSelectedSongOrderListDataSources;
 		std::vector<std::shared_ptr<DataSourceSequence>> m_SequenceDataSources;
 		std::shared_ptr<DataSourceTable> m_InstrumentTableDataSource;
 		std::shared_ptr<DataSourceTable> m_CommandTableDataSource;
@@ -244,4 +250,30 @@ namespace Editor
 		// Debug
 		std::unique_ptr<DebugViews> m_DebugViews;
 	};
+
+
+	template<typename EXECUTION_CALLBACK>
+	void ScreenEdit::StartSongsDialogWithSelectionExecution(const std::string& inCaption, EXECUTION_CALLBACK&& inExecutionCallback)
+	{
+		std::vector<std::string> selections;
+
+		const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
+		const unsigned char selected_song = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+
+		for (unsigned char i = 0; i < song_count; ++i)
+			selections.push_back("Song " + std::to_string(i));
+
+		m_ComponentsManager->StartDialog(
+			std::make_shared<DialogSelectionList>
+			(
+				60,
+				song_count + 3,
+				selected_song,
+				inCaption,
+				selections,
+				inExecutionCallback,
+				[]() {}
+			)
+		);
+	}
 }

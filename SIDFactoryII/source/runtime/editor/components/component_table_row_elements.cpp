@@ -48,6 +48,7 @@ namespace Editor
 		, m_HasLocalDataChange(false)
 		, m_SpaceBarPressed(false)
 		, m_IndexAsContinuousMemory(inIndexAsContinuousMemory)
+		, m_HighlightRowOfSelectedSongIndex(false)
 	{
 		FOUNDATION_ASSERT(inDataSource != nullptr);
 		FOUNDATION_ASSERT(inTextField != nullptr);
@@ -345,6 +346,11 @@ namespace Editor
 				if (row < m_DataSource->GetRowCount())
 				{
 					int base_data_offset = row * m_DataSource->GetColumnCount();
+
+					if (m_HighlightRowOfSelectedSongIndex)
+					{
+						//if(row == )
+					}
 
 					TextColoring text_coloring = GetTextColoring(base_data_offset, base_text_coloring);
 

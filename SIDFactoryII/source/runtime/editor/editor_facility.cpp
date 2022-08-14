@@ -7,6 +7,7 @@
 #include "libraries/ghc/fs_std.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_hardware_preferences.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/editor/converters/converterbase.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/dialog/dialog_message_yesno.h"
@@ -357,7 +358,6 @@ namespace Editor
 
 	void EditorFacility::Reconfigure(unsigned int inReconfigureOption)
 	{
-
 		ConfigFile& configFile = Global::instance().GetConfig();
 
 		if (inReconfigureOption == 0)
@@ -370,7 +370,7 @@ namespace Editor
 			m_EditScreen->SetActivationMessage("Reloaded config!");
 			ForceRequestScreen(m_EditScreen.get());
 		}
-		if (inReconfigureOption == 1)
+		else if (inReconfigureOption == 1)
 		{
 			m_SelectedColorScheme++;
 			if (m_SelectedColorScheme >= m_ColorSchemeCount)
@@ -384,7 +384,7 @@ namespace Editor
 				ForceRequestScreen(m_EditScreen.get());
 			}
 		}
-		if (inReconfigureOption == 2)
+		else if (inReconfigureOption == 2)
 		{
 			std::string selected_color_scheme_name = ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
 
@@ -393,6 +393,13 @@ namespace Editor
 				m_EditScreen->SetActivationMessage("Reloaded color scheme: " + selected_color_scheme_name);
 				ForceRequestScreen(m_EditScreen.get());
 			}
+		}
+		else if (inReconfigureOption == 3)
+		{
+			ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
+
+			m_EditScreen->SetActivationMessage("[Selected song: " + std::to_string(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong()) + "]");
+			ForceRequestScreen(m_EditScreen.get());
 		}
 	}
 
@@ -715,13 +722,14 @@ namespace Editor
 				// Save PSID file to disk, also
 				const auto& driver_common = m_DriverInfo->GetDriverCommon();
 				const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+				const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
 
 				Utility::PSIDFile psid_file(
 					data,
 					data_size + 2,
 					0,
 					driver_common.m_UpdateAddress - driver_common.m_InitAddress,
-					1,
+					static_cast<unsigned short>(song_count),
 					inTitle,
 					inAuthor,
 					inCopyright,

@@ -9,6 +9,12 @@ namespace Utility
 	class C64File;
 	class C64FileReader;
 }
+
+namespace Emulation
+{
+	class CPUMemory;
+}
+
 namespace Editor
 {
 	class IDriverArchitecture;
@@ -103,6 +109,15 @@ namespace Editor
 
 			unsigned short m_SequenceSize;
 			unsigned short m_Sequence00Address;
+		};
+
+
+		struct MusicDataMetaDataEmulationAddresses
+		{
+			unsigned short m_EmulationAddressOfSequencePointersLowAddress;
+			unsigned short m_EmulationAddressOfSequencePointersHighAddress;
+			unsigned short m_EmulationAddressOfOrderListTrack1Address;
+			unsigned short m_EmulationAddressOfSequence00Address;
 		};
 
 
@@ -239,6 +254,9 @@ namespace Editor
 		AuxilaryDataCollection& GetAuxilaryDataCollection();
 		const AuxilaryDataCollection& GetAuxilaryDataCollection() const;
 
+		const MusicDataMetaDataEmulationAddresses& GetMusicDataMetaDataEmulationAddresses() const;
+		void RefreshMusicData(Emulation::CPUMemory& inCPUMemory);
+
 	private:
 		bool HasParsedRequiredBlocks() const;
 
@@ -285,5 +303,8 @@ namespace Editor
 		std::unique_ptr<AuxilaryDataCollection> m_AuxilaryDataCollection;
 
 		InstrumentDescriptor m_InstrumentDescriptor;
+
+		// Data required to reallocated sequences when adding and removing songs
+		MusicDataMetaDataEmulationAddresses m_MusicDataMetaDataEmulationAddresses;
 	};
 }

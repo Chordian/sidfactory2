@@ -76,7 +76,7 @@ namespace Editor
 		m_ComponentsManager->SetGroupEnabledForInput(0, true);
 		// m_ComponentsManager->SetGroupEnabledForTabbing(0);
 
-		m_StringListDataBuffer = std::make_shared<DataSourceTList<std::string>>(std::vector<std::string>({ "Statistics", "Optimize", "Pack", "Clear Sequences", "Expand sequences" }));
+		m_StringListDataBuffer = std::make_shared<DataSourceTList<std::string>>(std::vector<std::string>({ "Select song", "Add song", "Remove song", "Statistics", "Optimize", "Pack", "Clear Sequences", "Expand sequences"}));
 		m_StringListSelectorComponent = std::make_shared<ComponentStringListSelector>
 			(
 				0, 0,

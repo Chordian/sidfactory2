@@ -976,25 +976,25 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex)
-	{
-		int length = m_DataSourceOrderList->GetLength();
-
-		for (int i = length - 1; i >= 0; --i)
-		{
-			const auto& entry = (*m_DataSourceOrderList)[i];
-			if (entry.m_Transposition <= 0xfe && entry.m_SequenceIndex == inSequenceIndex)
-			{
-				auto new_entry = entry;
-				new_entry.m_SequenceIndex = inAddSequenceIndex;
-
-				if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, i + 1, new_entry))
-					++length;
-			}
-		}
-
-		OnOrderListChanged();
-	}
+	//void ComponentTrack::HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex)
+	//{
+	//	int length = m_DataSourceOrderList->GetLength();
+	//
+	//	for (int i = length - 1; i >= 0; --i)
+	//	{
+	//		const auto& entry = (*m_DataSourceOrderList)[i];
+	//		if (entry.m_Transposition <= 0xfe && entry.m_SequenceIndex == inSequenceIndex)
+	//		{
+	//			auto new_entry = entry;
+	//			new_entry.m_SequenceIndex = inAddSequenceIndex;
+	//
+	//			if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, i + 1, new_entry))
+	//				++length;
+	//		}
+	//	}
+	//
+	//	OnOrderListChanged();
+	//}
 
 	//--------------------------------------------------------------------------------------------------
 	// Draw sequence entry
@@ -2533,6 +2533,11 @@ namespace Editor
 		FOUNDATION_ASSERT(m_IsMarkingArea);
 
 		m_IsMarkingArea = false;
+	}
+
+	std::shared_ptr<DataSourceOrderList> ComponentTrack::GetDataSourceOrderList()
+	{
+		return m_DataSourceOrderList;
 	}
 
 	//--------------------------------------------------------------------------------------------------
