@@ -2,6 +2,7 @@
 
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_songs.h"
+#include "runtime/editor/auxilarydata/auxilary_data_table_text.h"
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/emulation/cpumemory.h"
 #include "foundation/input/keyboard_utils.h"
@@ -250,7 +251,7 @@ namespace Editor
 			inCPUMemory.Unlock();
 		}
 
-		void AddSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
+		void AddSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 			FOUNDATION_ASSERT(song_count > 0);
@@ -302,12 +303,13 @@ namespace Editor
 
 				inDriverInfo.RefreshMusicData(inCPUMemory);
 				inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongCount(song_count + 1);
+				inDriverInfo.GetAuxilaryDataCollection().GetTableText().InsertLayer(static_cast<int>(inSongOverviewTableID), inIndex + 1);
 
 				SelectSong(inIndex + 1, inDriverInfo, inCPUMemory);
 			}
 		}
 
-		void RemoveSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
+		void RemoveSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 			if (song_count < 2)
@@ -353,6 +355,7 @@ namespace Editor
 
 			inDriverInfo.RefreshMusicData(inCPUMemory);
 			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongCount(song_count - 1);
+			inDriverInfo.GetAuxilaryDataCollection().GetTableText().RemoveLayer(static_cast<int>(inSongOverviewTableID), inIndex);
 
 			if (selected_song == inIndex)
 			{

@@ -804,7 +804,7 @@ namespace Editor
 					{
 						const auto do_add_song = [&, selection = inSelection]()
 						{
-							EditorUtils::AddSong(selection, *m_DriverInfo, *m_CPUMemory);
+							EditorUtils::AddSong(selection, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
 							m_ConfigReconfigure(3);
 						};
 
@@ -816,7 +816,7 @@ namespace Editor
 					{
 						const auto do_remove_song = [&, selection = inSelection]()
 						{
-							EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory);
+							EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
 							m_ConfigReconfigure(3);
 						};
 
@@ -1072,6 +1072,7 @@ namespace Editor
 		std::shared_ptr<DataSourceTableText> song_view_text_buffer = std::make_shared<DataSourceTableText>(
 			OrderListOverviewID,
 			256,
+			m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong(),
 			m_DriverInfo->GetAuxilaryDataCollection().GetTableText()
 		);
 

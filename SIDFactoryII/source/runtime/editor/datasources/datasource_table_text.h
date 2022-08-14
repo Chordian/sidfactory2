@@ -12,6 +12,7 @@ namespace Editor
 	{
 	public:
 		DataSourceTableText(int inTableID, int inRowCount, AuxilaryDataTableText& inAuxDataTableText);
+		DataSourceTableText(int inTableID, int inRowCount, unsigned int inTextLayer, AuxilaryDataTableText& inAuxDataTableText);
 
 		bool PushDataToSource() override;
 		bool PullDataFromSource();
@@ -19,6 +20,7 @@ namespace Editor
 	private:
 		const int m_TableID;
 		const int m_TableRowCount;
+		const unsigned int m_TextLayer;
 
 		AuxilaryDataTableText& m_AuxDataTableText;
 	};
