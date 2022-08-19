@@ -6,8 +6,9 @@
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/driver/driver_state.h"
 #include "runtime/editor/undo/undo.h"
-
 #include "runtime/editor/dialog/dialog_selection_list.h"
+#include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 
 #include <memory>
 #include <vector>

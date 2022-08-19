@@ -157,7 +157,7 @@ namespace Emulation
 		FOUNDATION_ASSERT(inDestinationAddress < m_nSize);
 		FOUNDATION_ASSERT(inDestinationAddress + inLength <= m_nSize);
 
-		memcpy_s(&m_Memory[inDestinationAddress], inLength, &m_Memory[inSourceAddress], inLength);
+		memcpy(&m_Memory[inDestinationAddress], &m_Memory[inSourceAddress], inLength);
 	}
 
 
