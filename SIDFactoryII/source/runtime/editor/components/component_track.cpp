@@ -1264,6 +1264,22 @@ namespace Editor
 	}
 
 
+	void ComponentTrack::ToggleSequenceHoldNoteValueInMarkedArea()
+	{
+		AddUndoStep();
+
+		std::vector<unsigned char> modified_sequence_indices = ForEachEventInMarkedRange([](DataSourceSequence::Event& inEvent, int index)
+		{
+			if (inEvent.m_Note == 0x00 || inEvent.m_Note == 0x7e)
+				inEvent.m_Note ^= 0x7e;
+		});
+
+		for (auto modified_sequence_index : modified_sequence_indices)
+			OnSequenceChanged(modified_sequence_index);
+	}
+
+
+
 	bool ComponentTrack::ApplyTranspose(char inDelta)
 	{
 		if (m_IsMarkingArea)
@@ -2907,7 +2923,10 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				inKeyHookContext.m_NewEventPos = ApplySequenceHoldNoteValue();
+				if (m_IsMarkingArea)
+					ToggleSequenceHoldNoteValueInMarkedArea();
+				else
+					inKeyHookContext.m_NewEventPos = ApplySequenceHoldNoteValue();
 				return true;
 			}
 
