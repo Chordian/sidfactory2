@@ -197,6 +197,7 @@ namespace Editor
 		int ApplySequenceValueKey(char inValueKey);
 		int ApplySequenceNoteValue(int inNoteValue);
 		int ApplySequenceHoldNoteValue();
+		void ToggleSequenceHoldNoteValueInMarkedArea();
 		bool ApplyTranspose(char inDelta);
 		bool ApplyTransposeInMarkedArea(char inDelta);
 		void ToggleSequenceHoldNoteUntilEvent(bool inDown);
