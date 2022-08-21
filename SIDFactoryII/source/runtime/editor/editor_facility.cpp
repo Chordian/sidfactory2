@@ -100,9 +100,10 @@ namespace Editor
 		SIDConfiguration sid_configuration; // Default settings are applicable
 
 		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.Resample", 1) != 0;
+		const int sid_sample_frequency = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.SampleFrequency", 44100);
 		sid_configuration.m_eSampleMethod = sid_use_resample ? SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE : SID_SAMPLE_METHOD_INTERPOLATE;
 		sid_configuration.m_eModel = SID_MODEL_6581;
-
+		sid_configuration.m_nSampleFrequency = sid_sample_frequency;
 
 		m_SIDProxy = new SIDProxy(sid_configuration);
 		m_CPUMemory = new CPUMemory(0x10000, &platform);
@@ -112,7 +113,7 @@ namespace Editor
 
 		// Create audio stream
 		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Buffer.Size", 256);
-		m_AudioStream = new AudioStream(44100, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
+		m_AudioStream = new AudioStream(sid_sample_frequency, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
 
 		// Create the main text field
 		m_TextField = m_Viewport->CreateTextField(m_Viewport->GetClientWidth() / TextField::font_width, m_Viewport->GetClientHeight() / TextField::font_height, 0, 0);
