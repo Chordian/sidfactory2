@@ -58,6 +58,9 @@ private:
 
     int w0hp_1_s17;
 
+    /// used to prime the filters after a reset
+    unsigned int reset_pipeline;
+
 public:
     /**
      * SID clocking.
@@ -95,6 +98,14 @@ RESID_INLINE
 int ExternalFilter::clock(unsigned short input)
 {
     const int Vi = (static_cast<unsigned int>(input)<<11) - (1 << (11+15));
+
+    if (reset_pipeline)
+		{
+			Vlp = Vi;
+			Vhp = Vi;
+			reset_pipeline = 0;
+    }
+
     const int dVlp = (w0lp_1_s7 * (Vi - Vlp) >> 7);
     const int dVhp = (w0hp_1_s17 * (Vlp - Vhp) >> 17);
     Vlp += dVlp;

@@ -42,7 +42,8 @@ ExternalFilter::ExternalFilter() :
     Vlp(0),
     Vhp(0),
     w0lp_1_s7(0),
-    w0hp_1_s17(0)
+    w0hp_1_s17(0), 
+    reset_pipeline(0)
 {
     reset();
 }
@@ -61,6 +62,7 @@ void ExternalFilter::reset()
     // State of filter.
     Vlp = 0; //1 << (15 + 11);
     Vhp = 0;
+		reset_pipeline = 1;
 }
 
 } // namespace reSIDfp
