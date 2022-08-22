@@ -17,6 +17,9 @@ namespace Editor
 	{
 		m_SongCount = 1;
 		m_SelectedSong = 0;
+
+		m_SongNames.clear();
+		m_SongNames.push_back("");
 	}
 
 	const unsigned char AuxilaryDataSongs::GetSongCount() const
@@ -24,13 +27,50 @@ namespace Editor
 		return m_SongCount;
 	}
 
-
-	void AuxilaryDataSongs::SetSongCount(const unsigned char inSongCount)
+	void AuxilaryDataSongs::AddSong(const unsigned char inIndex)
 	{
-		FOUNDATION_ASSERT(inSongCount > 0);
-		m_SongCount = inSongCount;
+		FOUNDATION_ASSERT(inIndex <= m_SongNames.size());
+
+		if (inIndex == m_SongNames.size())
+			m_SongNames.push_back("");
+		else
+			m_SongNames.insert(m_SongNames.begin() + inIndex, "");
+
+		m_SongCount = static_cast<unsigned char>(m_SongNames.size());
 	}
 
+	void AuxilaryDataSongs::RemoveSong(const unsigned char inIndex)
+	{
+		FOUNDATION_ASSERT(inIndex < m_SongNames.size());
+		m_SongNames.erase(m_SongNames.begin() + inIndex);
+
+		m_SongCount = static_cast<unsigned char>(m_SongNames.size());
+	}
+
+	void AuxilaryDataSongs::SwapSongs(const unsigned char inIndex1, const unsigned char inIndex2)
+	{
+		FOUNDATION_ASSERT(inIndex1 < m_SongNames.size());
+		FOUNDATION_ASSERT(inIndex2 < m_SongNames.size());
+		
+		if (inIndex1 != inIndex2)
+		{
+			const auto index1_song_name = m_SongNames[inIndex1];
+			m_SongNames[inIndex1] = m_SongNames[inIndex2];
+			m_SongNames[inIndex2] = index1_song_name;
+		}
+	}
+
+	const std::string& AuxilaryDataSongs::GetSongName(const unsigned char inIndex) const
+	{
+		FOUNDATION_ASSERT(inIndex < m_SongNames.size());
+		return m_SongNames[inIndex];
+	}
+
+	void AuxilaryDataSongs::SetSongName(const unsigned char inIndex, const std::string& inName)
+	{
+		FOUNDATION_ASSERT(inIndex < m_SongNames.size());
+		m_SongNames[inIndex] = inName;
+	}
 
 	const unsigned char AuxilaryDataSongs::GetSelectedSong() const
 	{
@@ -51,13 +91,16 @@ namespace Editor
 		AuxilaryDataUtils::SaveDataPushByte(output, m_SongCount);
 		AuxilaryDataUtils::SaveDataPushByte(output, m_SelectedSong);
 
+		for (unsigned char i = 0; i < m_SongCount; ++i)
+			AuxilaryDataUtils::SaveDataPushStdString256(output, m_SongNames[i]);
+
 		return output;
 	}
 
 
 	unsigned short AuxilaryDataSongs::GetGeneratedFileVersion() const
 	{
-		return 1;
+		return 2;
 	}
 
 
@@ -65,8 +108,21 @@ namespace Editor
 	{
 		auto it = inData.begin();
 
+		m_SongNames.clear();
+
 		m_SongCount = AuxilaryDataUtils::LoadDataPullByte(it);
 		m_SelectedSong = AuxilaryDataUtils::LoadDataPullByte(it);
+
+		if (inDataVersion == 1)
+		{
+			for (unsigned char i = 0; i < m_SongCount; ++i)
+				m_SongNames.push_back("");
+		}
+		else 	
+		{
+			for (unsigned char i = 0; i < m_SongCount; ++i)
+				m_SongNames.push_back(AuxilaryDataUtils::LoadDataPullStdString256(it));
+		}
 
 		return true;
 	}

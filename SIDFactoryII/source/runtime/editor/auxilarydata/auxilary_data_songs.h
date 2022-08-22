@@ -1,6 +1,7 @@
 #pragma once
 
 #include "auxilary_data.h"
+#include <string>
 
 namespace Editor
 {
@@ -18,7 +19,13 @@ namespace Editor
 		void Reset() override;
 
 		const unsigned char GetSongCount() const;
-		void SetSongCount(const unsigned char inSongCount);
+
+		void AddSong(const unsigned char inIndex);
+		void RemoveSong(const unsigned char inIndex);
+		void SwapSongs(const unsigned char inIndex1, const unsigned char inIndex2);
+
+		const std::string& GetSongName(const unsigned char inIndex) const;
+		void SetSongName(const unsigned char inIndex, const std::string& inName);
 
 		const unsigned char GetSelectedSong() const;
 		void SetSelectedSong(const unsigned char inSelectedSong);
@@ -32,5 +39,6 @@ namespace Editor
 	private:
 		unsigned char m_SongCount;
 		unsigned char m_SelectedSong;
+		std::vector<std::string> m_SongNames;
 	};
 }

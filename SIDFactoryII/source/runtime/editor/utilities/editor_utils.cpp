@@ -302,7 +302,7 @@ namespace Editor
 				inCPUMemory.Unlock();
 
 				inDriverInfo.RefreshMusicData(inCPUMemory);
-				inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongCount(song_count + 1);
+				inDriverInfo.GetAuxilaryDataCollection().GetSongs().AddSong(inIndex + 1);
 				inDriverInfo.GetAuxilaryDataCollection().GetTableText().InsertLayer(static_cast<int>(inSongOverviewTableID), inIndex + 1);
 
 				SelectSong(inIndex + 1, inDriverInfo, inCPUMemory);
@@ -331,7 +331,7 @@ namespace Editor
 			// Move orderlists and sequences down in memory to make room for orderlist of the new song
 			inCPUMemory.Copy(order_list_copy_from_address, length, order_list_copy_to_address);
 
-			// Update all sequence points
+			// Update all sequence pointers
 			for (unsigned int i = 0; i < music_data.m_SequenceCount; ++i)
 			{
 				unsigned short sequence_address = static_cast<unsigned short>(inCPUMemory.GetByte(music_data.m_SequencePointersLowAddress + i)) |
@@ -354,7 +354,7 @@ namespace Editor
 			inCPUMemory.Unlock();
 
 			inDriverInfo.RefreshMusicData(inCPUMemory);
-			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongCount(song_count - 1);
+			inDriverInfo.GetAuxilaryDataCollection().GetSongs().RemoveSong(inIndex);
 			inDriverInfo.GetAuxilaryDataCollection().GetTableText().RemoveLayer(static_cast<int>(inSongOverviewTableID), inIndex);
 
 			if (selected_song == inIndex)
@@ -368,6 +368,25 @@ namespace Editor
 				SelectSong(selected_song - 1, inDriverInfo, inCPUMemory);
 			else
 				SelectSong(selected_song, inDriverInfo, inCPUMemory);
+		}
+
+
+		void SwapSongs(unsigned int inIndex1, unsigned int inIndex2, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID)
+		{
+			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
+
+			FOUNDATION_ASSERT(inIndex1 < song_count);
+			FOUNDATION_ASSERT(inIndex2 < song_count);
+
+			if (inIndex1 == inIndex2)
+				return;
+
+			// TODO: Implement swap table text layers for the song over view text buffers
+			// TODO: Implement swap song orderlists
+
+			FOUNDATION_ASSERT(false);
+
+			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SwapSongs(static_cast<unsigned char>(inIndex1), static_cast<unsigned char>(inIndex2));
 		}
 	}
 }
