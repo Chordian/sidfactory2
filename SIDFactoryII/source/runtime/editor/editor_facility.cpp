@@ -100,7 +100,22 @@ namespace Editor
 		SIDConfiguration sid_configuration; // Default settings are applicable
 
 		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.Resample", 1) != 0;
-		const int sid_sample_frequency = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.SampleFrequency", 44100);
+		
+		int sid_sample_frequency = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.SampleFrequency", 44100);
+		if (sid_sample_frequency < 11025)
+		{
+			// In resampling mode reSID can downsample down to clock/125 Hz. With NTSC this puts us at min. 8200Hz,
+			// so let's use 11025 which is the next higher usual rate. 
+			Logging::instance().Warning("Sound.Emulation.SampleFrequency (%d) is too low, using 11025 instead", sid_sample_frequency);
+			sid_sample_frequency = 11025;
+		}
+		else if (sid_sample_frequency > 192000)
+		{
+			Logging::instance().Warning("Sound.Emulation.SampleFrequency (%d) is too high, using 192000 instead", sid_sample_frequency);
+			sid_sample_frequency = 192000;
+		}
+		Logging::instance().Info("Sound.Emulation.SampleFrequency set to %d", sid_sample_frequency);
+
 		sid_configuration.m_eSampleMethod = sid_use_resample ? SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE : SID_SAMPLE_METHOD_INTERPOLATE;
 		sid_configuration.m_eModel = SID_MODEL_6581;
 		sid_configuration.m_nSampleFrequency = sid_sample_frequency;
