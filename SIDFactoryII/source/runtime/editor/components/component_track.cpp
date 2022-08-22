@@ -1254,6 +1254,7 @@ namespace Editor
 			if (event.m_Note != 0x7e)
 			{
 				event.m_Note = 0x7e;
+
 				OnSequenceChanged(order_list_entry.m_SequenceIndex);
 			}
 
@@ -1438,15 +1439,12 @@ namespace Editor
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
-			if (event.m_Note > 0x00 && event.m_Note <= 0x60)
-			{
-				AddUndoStep();
+			AddUndoStep();
 
-				if (event.m_Instrument == 0x80)
-					event.m_Instrument = 0x90;
-				else if (event.m_Instrument == 0x90)
-					event.m_Instrument = 0x80;
-			}
+			if (event.m_Instrument != 0x90)
+				event.m_Instrument = 0x90;
+			else if (event.m_Instrument == 0x90)
+				event.m_Instrument = 0x80;
 
 			OnSequenceChanged(order_list_entry.m_SequenceIndex);
 		}
