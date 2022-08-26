@@ -20,6 +20,11 @@ Please report issues in our [issue tracker](https://github.com/issues).
 
 ## Changelog
 
+- Added: An option to set the emulation sample rate to a user defined value 
+  (Thanks to Tammo Hinrichs)
+- Fixed: reSID won't output a click anymore when launching SID Factory II or
+  loading/saving files (Thanks to Tammo Hinrichs)
+
 ### Build 20211230
 
 - Added: You can now add labels for song list rows. Left-click to edit a label.
