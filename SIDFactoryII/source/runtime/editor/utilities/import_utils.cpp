@@ -291,8 +291,8 @@ namespace Editor
 				{
 					unsigned char add_count = import_driver_song_count - loaded_driver_song_count;
 
-					for(int i = 0; i< add_count; ++i)
-						EditorUtils::AddSong(0, inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID);
+					for(int i = 0; i < add_count; ++i)
+						EditorUtils::AddSong(0, std::string(), inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID);
 				}
 				else
 				{
@@ -301,6 +301,13 @@ namespace Editor
 					for (int i = 0; i < remove_count; ++i)
 						EditorUtils::RemoveSong(0, inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID);
 				}
+			}
+
+			// Import song names
+			for (int i = 0; i < import_driver_song_count; ++i)
+			{
+				const std::string& imported_song_name = inImportDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongName(i);
+				inLoadedDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongName(i, imported_song_name);
 			}
 
 			// Unlock CPU memory for writing

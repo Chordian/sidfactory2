@@ -67,6 +67,7 @@ namespace Editor
 		definitions.push_back({ "Key.ScreenEdit.OctaveUp", {{ SDLK_F4, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.OpenUtilitiesDialog", {{ SDLK_F6, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.OpenOptionsDialog", {{ SDLK_F6, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.OpenSongsDialog", {{ SDLK_F7, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.Config.Reload", {{ SDLK_F7, Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleSIDModel", {{ SDLK_F9, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleRegion", {{ SDLK_F9, Keyboard::Shift }} });

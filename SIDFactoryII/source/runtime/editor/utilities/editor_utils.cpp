@@ -251,7 +251,7 @@ namespace Editor
 			inCPUMemory.Unlock();
 		}
 
-		void AddSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID)
+		void AddSong(unsigned int inIndex, const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 			FOUNDATION_ASSERT(song_count > 0);
@@ -303,6 +303,7 @@ namespace Editor
 
 				inDriverInfo.RefreshMusicData(inCPUMemory);
 				inDriverInfo.GetAuxilaryDataCollection().GetSongs().AddSong(inIndex + 1);
+				inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongName(inIndex + 1, inName);
 				inDriverInfo.GetAuxilaryDataCollection().GetTableText().InsertLayer(static_cast<int>(inSongOverviewTableID), inIndex + 1);
 
 				SelectSong(inIndex + 1, inDriverInfo, inCPUMemory);
@@ -368,6 +369,16 @@ namespace Editor
 				SelectSong(selected_song - 1, inDriverInfo, inCPUMemory);
 			else
 				SelectSong(selected_song, inDriverInfo, inCPUMemory);
+		}
+
+
+		void RenameSong(unsigned int inIndex, const std::string& inNewName, DriverInfo& inDriverInfo)
+		{
+			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
+			FOUNDATION_ASSERT(inIndex < song_count);
+
+			// TODO: Implement
+			FOUNDATION_ASSERT(false);
 		}
 
 

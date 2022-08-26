@@ -32,11 +32,13 @@
 #include "runtime/editor/visualizer_components/vizualizer_component_emulation_state.h"
 #include "runtime/editor/debug/debug_views.h"
 #include "runtime/editor/dialog/dialog_utilities.h"
+#include "runtime/editor/dialog/dialog_songs.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/dialog/dialog_message_yesno.h"
 #include "runtime/editor/dialog/dialog_hex_value_input.h"
 #include "runtime/editor/dialog/dialog_optimize.h"
 #include "runtime/editor/dialog/dialog_packing_options.h"
+#include "runtime/editor/dialog/dialog_text_input.h"
 #include "runtime/editor/screens/statusbar/status_bar_edit.h"
 #include "runtime/editor/overlays/overlay_flightrecorder.h"
 #include "runtime/editor/datacopy/copypaste.h"
@@ -789,40 +791,6 @@ namespace Editor
 			{
 				switch (inSelection)
 				{
-				case DialogUtilities::Selection::SelectSong:
-					StartSongsDialogWithSelectionExecution("Select song", [&](unsigned int inSelection)
-					{
-						if(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong() != inSelection)
-						{
-							EditorUtils::SelectSong(inSelection, *m_DriverInfo, *m_CPUMemory);
-							m_ConfigReconfigure(3);
-						}
-					});
-					break;
-				case DialogUtilities::Selection::AddSong:
-					StartSongsDialogWithSelectionExecution("Add song (after selected)", [&](unsigned int inSelection)
-					{
-						const auto do_add_song = [&, selection = inSelection]()
-						{
-							EditorUtils::AddSong(selection, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
-							m_ConfigReconfigure(3);
-						};
-
-						m_ComponentsManager->StartDialog(std::make_shared<DialogMessageYesNo>("Add song!", "Are you sure you want to add a song after song " + std::to_string(inSelection) + "?\nThis cannot be undone!", 60, do_add_song, []() {}));
-					});
-					break;
-				case DialogUtilities::Selection::RemoveSong:
-					StartSongsDialogWithSelectionExecution("Remove song", [&](unsigned int inSelection)
-					{
-						const auto do_remove_song = [&, selection = inSelection]()
-						{
-							EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
-							m_ConfigReconfigure(3);
-						};
-
-						m_ComponentsManager->StartDialog(std::make_shared<DialogMessageYesNo>("Add song!", "Are you sure you want to remove song "+ std::to_string(inSelection) + "?\nThis cannot be undone!", 60, do_remove_song, []() {}));
-					});
-					break;
 				case DialogUtilities::Selection::Statistics:
 					{
 						m_CPUMemory->Lock();
@@ -941,7 +909,7 @@ namespace Editor
 				}
 			};
 
-			m_ComponentsManager->StartDialog(std::make_shared<DialogUtilities>(60, 11, on_select, [&]() { DoRestoreMuteState(); }));
+			m_ComponentsManager->StartDialog(std::make_shared<DialogUtilities>(60, 8, on_select, [&]() { DoRestoreMuteState(); }));
 		}
 	}
 
@@ -949,6 +917,70 @@ namespace Editor
 	void ScreenEdit::DoOptionsDialog()
 	{
 		m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Not implemented", "Options!", 60, true, []() {}));
+	}
+
+
+	void ScreenEdit::DoSongsDialog()
+	{
+		if (!m_ComponentsManager->IsDisplayingDialog())
+		{
+			auto on_select = [&](const DialogSongs::Selection inSelection)
+			{
+				switch (inSelection)
+				{
+				case DialogSongs::Selection::SelectSong:
+					StartSongsDialogWithSelectionExecution("Select song", [&](unsigned int inSelection)
+					{
+						if (m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong() != inSelection)
+						{
+							EditorUtils::SelectSong(inSelection, *m_DriverInfo, *m_CPUMemory);
+							m_ConfigReconfigure(3);
+						}
+					});
+					break;
+				case DialogSongs::Selection::AddSong:
+					StartSongsDialogWithSelectionExecution("Add song (after selected)", [&](unsigned int inSelection)
+					{
+						const auto do_add_song = [&, selection = inSelection](std::string inName)
+						{
+							EditorUtils::AddSong(selection, inName, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
+							m_ConfigReconfigure(3);
+						};
+
+						m_ComponentsManager->StartDialog(std::make_shared<DialogTextInput>(
+							"Add song!", 
+							"Are you sure you want to add a song after song " + std::to_string(inSelection) + "?\nThis cannot be undone!",
+							"Song name: ", 
+							"New song", 
+							50, 
+							32, 
+							true, 
+							do_add_song, 
+							[]() {}));
+					});
+					break;
+				case DialogSongs::Selection::RemoveSong:
+					StartSongsDialogWithSelectionExecution("Remove song", [&](unsigned int inSelection)
+					{
+						const auto do_remove_song = [&, selection = inSelection]()
+						{
+							EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
+							m_ConfigReconfigure(3);
+						};
+
+						m_ComponentsManager->StartDialog(std::make_shared<DialogMessageYesNo>("Add song!", "Are you sure you want to remove song " + std::to_string(inSelection) + "?\nThis cannot be undone!", 60, do_remove_song, []() {}));
+					});
+					break;
+				case DialogSongs::Selection::RenameSong:
+					{
+						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Not implemented", "Rename song!", 60, true, []() {}));
+					}
+				break;
+				}
+			};
+
+			m_ComponentsManager->StartDialog(std::make_shared<DialogSongs>(60, 7, on_select, [&]() { DoRestoreMuteState(); }));
+		}
 	}
 
 
@@ -1657,6 +1689,16 @@ namespace Editor
 				DoStop();
 
 			DoUtilitiesDialog();
+
+			return true;
+		} });
+
+		m_KeyHooks.push_back({ "Key.ScreenEdit.OpenSongsDialog", m_KeyHookStore, [&]()
+		{
+			if (IsPlaying())
+				DoStop();
+
+			DoSongsDialog();
 
 			return true;
 		} });

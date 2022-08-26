@@ -137,6 +137,7 @@ namespace Editor
 
 		void DoUtilitiesDialog();
 		void DoOptionsDialog();
+		void DoSongsDialog();
 
 		void DoLoadSong();
 		void DoLoadInstrument();
@@ -262,7 +263,10 @@ namespace Editor
 		const unsigned char selected_song = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
 
 		for (unsigned char i = 0; i < song_count; ++i)
-			selections.push_back("Song " + std::to_string(i));
+		{
+			std::string selection_string = "Song " + std::to_string(i) + (i < 10 ? "  [" : " [") + m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(i) + "]";
+			selections.push_back(selection_string);
+		}
 
 		m_ComponentsManager->StartDialog(
 			std::make_shared<DialogSelectionList>
