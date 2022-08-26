@@ -163,7 +163,7 @@ namespace Emulation
 		if (m_FileOutput.size() > 0)
 		{
 			FILE* file = fopen(m_FileName.c_str(), "wb");
-
+		
 			struct wave_header
 			{
 				char chunk_id[4] = { 'R', 'I', 'F', 'F' };
@@ -185,6 +185,9 @@ namespace Emulation
 			header.chunk_size = 36 + data_size;
 			header.sub_chunk1_size = 16;
 			header.sub_chunk2_size = data_size;
+
+			header.sample_rate = m_sConfiguration.m_nSampleFrequency;
+			header.byte_rate = header.block_align * m_sConfiguration.m_nSampleFrequency;
 
 			fwrite(&header, sizeof(wave_header), 1, file);
 
