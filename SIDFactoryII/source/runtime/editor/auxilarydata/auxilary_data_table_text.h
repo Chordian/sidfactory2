@@ -25,6 +25,7 @@ namespace Editor
 
 		bool InsertLayer(int inTableID, unsigned int inLayer);
 		bool RemoveLayer(int inTableID, unsigned int inLayer);
+		bool SwapLayers(int inTableID, unsigned int inLayer1, unsigned int inLayer2);
 
 	protected:
 		std::vector<unsigned char> GenerateSaveData() const override;

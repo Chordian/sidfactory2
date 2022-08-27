@@ -3,7 +3,9 @@
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/editor/auxilarydata/auxilary_data_table_text.h"
+#include "runtime/editor/components/component_table_row_elements.h"
 #include "runtime/editor/driver/driver_info.h"
+#include "runtime/editor/components_manager.h"
 #include "runtime/emulation/cpumemory.h"
 #include "foundation/input/keyboard_utils.h"
 #include "foundation/base/assert.h"
@@ -226,6 +228,37 @@ namespace Editor
 		}
 
 
+		unsigned char GetTableIDFromNameInTableDefinition(const DriverInfo& inDriverInfo, const std::string& inTableName)
+		{
+			const auto& table_definitions = inDriverInfo.GetTableDefinitions();
+
+			const auto is_same = [](const std::string& inName1, const std::string& inName2)
+			{
+				if (inName1.size() != inName2.size())
+					return false;
+
+				const char* c_string1 = inName1.c_str();
+				const char* c_string2 = inName2.c_str();
+
+				for (size_t i = 0; i < inName1.size(); ++i)
+				{
+					if (std::tolower(c_string1[i]) != std::tolower(c_string2[i]))
+						return false;
+				}
+
+				return true;
+			};
+
+			for (const auto& table_definition : table_definitions)
+			{
+				if (is_same(table_definition.m_Name, inTableName))
+					return table_definition.m_ID;
+			}
+
+			return 0xff;
+		}
+
+
 		void SelectSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
@@ -251,23 +284,22 @@ namespace Editor
 			inCPUMemory.Unlock();
 		}
 
-		void AddSong(unsigned int inIndex, const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID)
+		void AddSong(const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID, ComponentsManager* inComponentsManager)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 			FOUNDATION_ASSERT(song_count > 0);
-			FOUNDATION_ASSERT(inIndex < song_count);
 
-			if (song_count < 0x10)
+			const unsigned int new_song_index = song_count;
+
+			if (song_count < MAX_SONG_COUNT)
 			{
-				FOUNDATION_ASSERT(inIndex < inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
-
 				inCPUMemory.Lock();
 
 				const auto& music_data = inDriverInfo.GetMusicData();
 
 				unsigned short song_order_list_byte_size = music_data.m_OrderListSize * music_data.m_TrackCount;
-				unsigned short order_list_insert_address = music_data.m_OrderListTrack1Address + song_order_list_byte_size * (inIndex + 1);
-				unsigned short length = music_data.m_SequenceSize * music_data.m_SequenceCount + song_order_list_byte_size * (song_count - inIndex);
+				unsigned short order_list_insert_address = music_data.m_OrderListTrack1Address + song_order_list_byte_size * (new_song_index);
+				unsigned short length = music_data.m_SequenceSize * music_data.m_SequenceCount + song_order_list_byte_size * (song_count - (new_song_index - 1));
 
 				// Move orderlists and sequences down in memory to make room for orderlist of the new song
 				inCPUMemory.Copy(order_list_insert_address, length, order_list_insert_address + song_order_list_byte_size);
@@ -301,12 +333,33 @@ namespace Editor
 
 				inCPUMemory.Unlock();
 
-				inDriverInfo.RefreshMusicData(inCPUMemory);
-				inDriverInfo.GetAuxilaryDataCollection().GetSongs().AddSong(inIndex + 1);
-				inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongName(inIndex + 1, inName);
-				inDriverInfo.GetAuxilaryDataCollection().GetTableText().InsertLayer(static_cast<int>(inSongOverviewTableID), inIndex + 1);
+				if (inComponentsManager != nullptr)
+				{
+					const unsigned char init_table_id = GetTableIDFromNameInTableDefinition(inDriverInfo, "init");
+					if (init_table_id != 0xff)
+					{
+						ComponentTableRowElements* component = reinterpret_cast<ComponentTableRowElements*>(inComponentsManager->GetComponent(init_table_id));
+						FOUNDATION_ASSERT(component != nullptr);
 
-				SelectSong(inIndex + 1, inDriverInfo, inCPUMemory);
+						DataSourceTable* init_table_data_source = component->GetDataSource();
+						init_table_data_source->PullDataFromSource();
+
+						const int table_column_count = init_table_data_source->GetColumnCount();
+						const int from_row = (new_song_index - 1) * table_column_count;
+
+						for (int i = 0; i < table_column_count; ++i)
+							(*init_table_data_source)[from_row + i + table_column_count] = (*init_table_data_source)[from_row + i];
+
+						init_table_data_source->PushDataToSource();
+					}
+				}
+
+				inDriverInfo.RefreshMusicData(inCPUMemory);
+				inDriverInfo.GetAuxilaryDataCollection().GetSongs().AddSong(new_song_index);
+				inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongName(new_song_index, inName);
+				inDriverInfo.GetAuxilaryDataCollection().GetTableText().InsertLayer(static_cast<int>(inSongOverviewTableID), new_song_index);
+
+				SelectSong(new_song_index, inDriverInfo, inCPUMemory);
 			}
 		}
 
@@ -377,12 +430,11 @@ namespace Editor
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 			FOUNDATION_ASSERT(inIndex < song_count);
 
-			// TODO: Implement
-			FOUNDATION_ASSERT(false);
+			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongName(inIndex, inNewName);
 		}
 
 
-		void SwapSongs(unsigned int inIndex1, unsigned int inIndex2, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID)
+		void SwapSongs(unsigned int inIndex1, unsigned int inIndex2, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID, ComponentsManager& inComponentsManager)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 
@@ -392,12 +444,95 @@ namespace Editor
 			if (inIndex1 == inIndex2)
 				return;
 
-			// TODO: Implement swap table text layers for the song over view text buffers
-			// TODO: Implement swap song orderlists
+			inCPUMemory.Lock();
 
-			FOUNDATION_ASSERT(false);
+			const auto& music_data = inDriverInfo.GetMusicData();
+
+			unsigned short song_order_list_byte_size = music_data.m_OrderListSize * music_data.m_TrackCount;
+
+			unsigned short order_list_index1_address = music_data.m_OrderListTrack1Address + song_order_list_byte_size * inIndex1;
+			unsigned short order_list_index2_address = music_data.m_OrderListTrack1Address + song_order_list_byte_size * inIndex2;
+
+			unsigned char* order_list_index1_buffer = new unsigned char[song_order_list_byte_size];
+			unsigned char* order_list_index2_buffer = new unsigned char[song_order_list_byte_size];
+
+			inCPUMemory.GetData(order_list_index1_address, order_list_index1_buffer, song_order_list_byte_size);
+			inCPUMemory.GetData(order_list_index2_address, order_list_index2_buffer, song_order_list_byte_size);
+			inCPUMemory.SetData(order_list_index1_address, order_list_index2_buffer, song_order_list_byte_size);
+			inCPUMemory.SetData(order_list_index2_address, order_list_index1_buffer, song_order_list_byte_size);
+
+			delete[] order_list_index1_buffer;
+			delete[] order_list_index2_buffer;
+
+			inCPUMemory.Unlock();
+
+			const unsigned char init_table_id = GetTableIDFromNameInTableDefinition(inDriverInfo, "init");
+			if (init_table_id != 0xff)
+			{
+				ComponentTableRowElements* component = reinterpret_cast<ComponentTableRowElements*>(inComponentsManager.GetComponent(init_table_id));
+				FOUNDATION_ASSERT(component != nullptr);
+
+				DataSourceTable* init_table_data_source = component->GetDataSource();
+				init_table_data_source->PullDataFromSource();
+
+				const int table_column_count = init_table_data_source->GetColumnCount();
+				const int row_1 = (inIndex1) * table_column_count;
+				const int row_2 = (inIndex2) * table_column_count;
+
+
+				for (int i = 0; i < table_column_count; ++i)
+				{
+					unsigned char row_1_value = (*init_table_data_source)[row_1 + i];
+					(*init_table_data_source)[row_1 + i] = (*init_table_data_source)[row_2 + i];
+					(*init_table_data_source)[row_2 + i] = row_1_value;
+				}
+
+				init_table_data_source->PushDataToSource();
+			}
 
 			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SwapSongs(static_cast<unsigned char>(inIndex1), static_cast<unsigned char>(inIndex2));
+			inDriverInfo.GetAuxilaryDataCollection().GetTableText().SwapLayers(inSongOverviewTableID, static_cast<unsigned char>(inIndex1), static_cast<unsigned char>(inIndex2));
+		}
+
+
+		bool MoveSong(unsigned int inIndexFrom, unsigned int inIndexTo, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID, ComponentsManager& inComponentsManager)
+		{
+			if (inIndexFrom == inIndexTo)
+				return false;
+
+			const int move_delta = static_cast<int>(inIndexTo) - static_cast<int>(inIndexFrom);
+			
+			SwapSongs(inIndexFrom, inIndexTo, inDriverInfo, inCPUMemory, inSongOverviewTableID, inComponentsManager);
+			
+			if (std::abs(move_delta) == 1)
+				return true;
+
+			if (move_delta < 0)
+			{
+				int index = inIndexFrom;
+				const int steps = (-move_delta) - 1;
+
+				for (int i = 0; i < steps; ++i)
+				{
+					SwapSongs(index, index - 1, inDriverInfo, inCPUMemory, inSongOverviewTableID, inComponentsManager);
+					--index;
+				}
+			}
+			else
+			{
+				int index = inIndexFrom;
+				const int steps = move_delta - 1;
+
+				for (int i = 0; i < steps; ++i)
+				{
+					SwapSongs(index, index + 1, inDriverInfo, inCPUMemory, inSongOverviewTableID, inComponentsManager);
+					++index;
+				}
+			}
+
+			SelectSong(inIndexTo, inDriverInfo, inCPUMemory);
+
+			return true;
 		}
 	}
 }

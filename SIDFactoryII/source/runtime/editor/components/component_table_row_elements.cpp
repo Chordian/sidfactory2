@@ -103,6 +103,12 @@ namespace Editor
 	}
 
 
+	DataSourceTable* ComponentTableRowElements::GetDataSource() 
+	{
+		return &(*m_DataSource);
+	}
+
+
 	const DataSourceTable* ComponentTableRowElements::GetDataSource() const
 	{
 		return &(*m_DataSource);
@@ -111,14 +117,14 @@ namespace Editor
 
 	void ComponentTableRowElements::DoCursorUp()
 	{
-		SetRow(m_CursorY > 0 ? (m_CursorY - 1) : 0);
+		SetSelectedRow(m_CursorY > 0 ? (m_CursorY - 1) : 0);
 		AdjustVisibleArea();
 		m_RequireRefresh = true;
 	}
 
 	void ComponentTableRowElements::DoCursorDown()
 	{
-		SetRow(m_CursorY < m_MaxCursorY ? (m_CursorY + 1) : m_MaxCursorY);
+		SetSelectedRow(m_CursorY < m_MaxCursorY ? (m_CursorY + 1) : m_MaxCursorY);
 		AdjustVisibleArea();
 		m_RequireRefresh = true;
 	}
@@ -213,7 +219,7 @@ namespace Editor
 						}
 						break;
 					case SDLK_HOME:
-						SetRow(0);
+						SetSelectedRow(0);
 						m_RequireRefresh = true;
 						break;
 					case SDLK_END:
@@ -221,19 +227,19 @@ namespace Editor
 							int first_unused_row = GetLastUnusedRow();
 
 							if (m_CursorY == first_unused_row)
-								SetRow(m_MaxCursorY);
+								SetSelectedRow(m_MaxCursorY);
 							else
-								SetRow(first_unused_row);
+								SetSelectedRow(first_unused_row);
 
 							m_RequireRefresh = true;
 						}
 						break;
 					case SDLK_PAGEDOWN:
-						SetRow(m_CursorY + m_Dimensions.m_Height);
+						SetSelectedRow(m_CursorY + m_Dimensions.m_Height);
 						m_RequireRefresh = true;
 						break;
 					case SDLK_PAGEUP:
-						SetRow(m_CursorY - m_Dimensions.m_Height);
+						SetSelectedRow(m_CursorY - m_Dimensions.m_Height);
 						m_RequireRefresh = true;
 						break;
 					default:
@@ -295,7 +301,7 @@ namespace Editor
 			}
 			if(local_cell_position.m_Y >= 0 && local_cell_position.m_Y < m_Dimensions.m_Height)
 			{
-				SetRow(m_TopRow + local_cell_position.m_Y);
+				SetSelectedRow(m_TopRow + local_cell_position.m_Y);
 
 				ApplyCursorPosition(inCursorControl);
 			}
@@ -431,7 +437,7 @@ namespace Editor
 			if (m_IndexAsContinuousMemory)
 				inActionInput /= m_DataSource->GetColumnCount();
 
-			SetRow(inActionInput);
+			SetSelectedRow(inActionInput);
 
 			AdjustVisibleArea();
 			m_RequireRefresh = true;
@@ -476,9 +482,9 @@ namespace Editor
 					m_TopRow = top_row;
 					
 					if(m_CursorY < top_row)
-						SetRow(top_row);
+						SetSelectedRow(top_row);
 					if (m_CursorY > top_row + visible_row_count)
-						SetRow(top_row + visible_row_count);
+						SetSelectedRow(top_row + visible_row_count);
 
 					if(inCursorControl != nullptr)
 						ApplyCursorPosition(*inCursorControl);
@@ -609,7 +615,7 @@ namespace Editor
 			DoInsert();
 		else if (m_CursorY > 0)
 		{
-			SetRow(m_CursorY - 1);
+			SetSelectedRow(m_CursorY - 1);
 			DoDelete();
 		}
 	}
@@ -746,7 +752,7 @@ namespace Editor
 
 
 
-	void ComponentTableRowElements::SetRow(int inRow)
+	void ComponentTableRowElements::SetSelectedRow(int inRow)
 	{
 		if (inRow > m_MaxCursorY)
 			inRow = m_MaxCursorY;

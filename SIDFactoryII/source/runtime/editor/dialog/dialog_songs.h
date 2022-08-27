@@ -14,7 +14,8 @@ namespace Editor
 			SelectSong,
 			AddSong,
 			RemoveSong,
-			RenameSong
+			RenameSong,
+			MoveSong
 		};
 
 		DialogSongs(int inWidth, int inHeight, std::function<void(const Selection)>&& inSelect, std::function<void(void)>&& inCancel);

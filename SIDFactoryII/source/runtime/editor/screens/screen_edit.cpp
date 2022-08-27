@@ -113,6 +113,7 @@ namespace Editor
 		, m_LastPlayNote(0x30)
 		, m_ActivationMessage("")
 		, m_ConvertLegacyDriverTableDefaultColors(false)
+		, m_ActivationFocusOnComponent(false)
 	{
 	}
 
@@ -402,6 +403,15 @@ namespace Editor
 	{
 		m_ActivationMessage = " " + inMessage;
 	}
+
+
+	void ScreenEdit::SetActivationTableFocusID(int inFocusComponentID, int inSelectedRow)
+	{
+		m_ActivationFocusOnComponent = true;
+		m_ActivationComponentFocusID = inFocusComponentID;
+		m_ActivationSelectedRow = inSelectedRow;
+	}
+
 
 	void ScreenEdit::SetStatusBarMessage(const std::string& inMessage, int inDisplayDuration)
 	{
@@ -939,47 +949,81 @@ namespace Editor
 					});
 					break;
 				case DialogSongs::Selection::AddSong:
-					StartSongsDialogWithSelectionExecution("Add song (after selected)", [&](unsigned int inSelection)
+					if (m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount() < EditorUtils::MAX_SONG_COUNT)
 					{
-						const auto do_add_song = [&, selection = inSelection](std::string inName)
+						const auto do_add_song = [&](std::string inName)
 						{
-							EditorUtils::AddSong(selection, inName, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
+							EditorUtils::AddSong(inName, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID, &(*m_ComponentsManager));
 							m_ConfigReconfigure(3);
 						};
 
 						m_ComponentsManager->StartDialog(std::make_shared<DialogTextInput>(
-							"Add song!", 
-							"Are you sure you want to add a song after song " + std::to_string(inSelection) + "?\nThis cannot be undone!",
-							"Song name: ", 
-							"New song", 
-							50, 
-							32, 
-							true, 
-							do_add_song, 
+							"Add song!",
+							"Enter a name for the song you are adding!",
+							"Name: ",
+							"New song",
+							50,
+							32,
+							true,
+							do_add_song,
+							[]() {}));
+					}
+					else
+						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Info", "You cannot add more than " + std::to_string(EditorUtils::MAX_SONG_COUNT) + " songs!", 60, true, []() {}));
+
+					break;
+				case DialogSongs::Selection::RemoveSong:
+					if (m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount() > 1)
+					{
+						StartSongsDialogWithSelectionExecution("Remove song", [&](unsigned int inSelection)
+						{
+							const auto do_remove_song = [&, selection = inSelection]()
+							{
+								EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
+								m_ConfigReconfigure(3);
+							};
+
+							m_ComponentsManager->StartDialog(std::make_shared<DialogMessageYesNo>("Remove song!", "Are you sure you want to remove song " + std::to_string(inSelection) + "?\nThis cannot be undone!", 60, do_remove_song, []() {}));
+						});
+					}
+					else
+						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Info", "You cannot delete the last remaining song", 60, true, []() {}));
+
+					break;
+				case DialogSongs::Selection::RenameSong:
+					StartSongsDialogWithSelectionExecution("Remove song", [&](unsigned int inSelection)
+					{
+						const auto do_rename_song = [&, selection = inSelection](std::string inName)
+						{
+							EditorUtils::RenameSong(selection, inName, *m_DriverInfo);
+						};
+
+						const std::string song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(inSelection);
+						m_ComponentsManager->StartDialog(std::make_shared<DialogTextInput>(
+							"Rename song!",
+							"Rename " + std::to_string(inSelection) + " [" + song_name + "]?",
+							"Song name: ",
+							song_name,
+							50,
+							32,
+							true,
+							do_rename_song,
 							[]() {}));
 					});
 					break;
-				case DialogSongs::Selection::RemoveSong:
-					StartSongsDialogWithSelectionExecution("Remove song", [&](unsigned int inSelection)
+				case DialogSongs::Selection::MoveSong:
+					//m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Move song!", "Not implemented", 60, true, []() {}));
+					StartMoveSongDialogWithSelectionExecution("Move song", [&](unsigned int inSelectionFrom, unsigned int inSelectionTo)
 					{
-						const auto do_remove_song = [&, selection = inSelection]()
-						{
-							EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
+						if(EditorUtils::MoveSong(inSelectionFrom, inSelectionTo, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID, *m_ComponentsManager))
 							m_ConfigReconfigure(3);
-						};
-
-						m_ComponentsManager->StartDialog(std::make_shared<DialogMessageYesNo>("Add song!", "Are you sure you want to remove song " + std::to_string(inSelection) + "?\nThis cannot be undone!", 60, do_remove_song, []() {}));
 					});
+
 					break;
-				case DialogSongs::Selection::RenameSong:
-					{
-						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Not implemented", "Rename song!", 60, true, []() {}));
-					}
-				break;
 				}
 			};
 
-			m_ComponentsManager->StartDialog(std::make_shared<DialogSongs>(60, 7, on_select, [&]() { DoRestoreMuteState(); }));
+			m_ComponentsManager->StartDialog(std::make_shared<DialogSongs>(60, 8, on_select, [&]() { DoRestoreMuteState(); }));
 		}
 	}
 
@@ -1383,7 +1427,19 @@ namespace Editor
 		// Enable groups
 		//m_ComponentsManager->SetGroupEnabledForTabbing(0);
 		m_ComponentsManager->SetGroupEnabledForInput(0, true);
-		m_ComponentsManager->SetComponentInFocus(m_TracksComponent);
+
+		if (m_ActivationFocusOnComponent)
+		{
+			m_ComponentsManager->SetComponentInFocus(m_ActivationComponentFocusID);
+			ComponentTableRowElements* component = reinterpret_cast<ComponentTableRowElements*>(m_ComponentsManager->GetComponent(m_ActivationComponentFocusID));
+
+			FOUNDATION_ASSERT(component != nullptr);
+			component->SetSelectedRow(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong());
+
+			m_ActivationFocusOnComponent = false;
+		}
+		else
+			m_ComponentsManager->SetComponentInFocus(m_TracksComponent);
 	}
 
 

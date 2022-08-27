@@ -11,9 +11,12 @@ namespace Emulation
 namespace Editor
 {
 	class DriverInfo;
+	class ComponentsManager;
 
 	namespace EditorUtils
 	{
+		static constexpr int MAX_SONG_COUNT = 0x10;
+
 		int GetNoteValue(SDL_Keycode inKeyCode, int inOctave);
 		int GetNoteValue(char inKeyCharacter, int inOctave);
 		unsigned char ConvertSingleCharHexValueToValue(char inKeyCharacter);
@@ -21,10 +24,12 @@ namespace Editor
 		std::string ConvertToHexValue(unsigned char inValue, bool inUppercase);
 		std::string ConvertToHexValue(unsigned short inValue, bool inUppercase);
 
+		unsigned char GetTableIDFromNameInTableDefinition(const DriverInfo& inDriverinfo, const std::string& inTableName);
+
 		void SelectSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory);
-		void AddSong(unsigned int inIndex, const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID);
+		void AddSong(const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID, ComponentsManager* inComponentsManager);
 		void RemoveSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID);
 		void RenameSong(unsigned int inIndex, const std::string& inNewName, DriverInfo& inDriverInfo);
-		void SwapSongs(unsigned int inIndex1, unsigned int inIndex2, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID);
+		bool MoveSong(unsigned int inIndexFrom, unsigned int inIndexTo, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID, ComponentsManager& inComponentsManager);
 	}
 }

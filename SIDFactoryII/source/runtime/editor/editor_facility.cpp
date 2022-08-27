@@ -415,7 +415,16 @@ namespace Editor
 		{
 			ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
 
-			m_EditScreen->SetActivationMessage("[Selected song: " + std::to_string(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong()) + "]");
+			const auto selected_song_index = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+			const std::string& song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(selected_song_index);
+			const std::string& song_selection_text = song_name.empty()
+				? std::to_string(selected_song_index)
+				: song_name;
+
+			m_EditScreen->SetActivationMessage("[Selected song: " + song_selection_text + "]");
+			const unsigned char initTableID = EditorUtils::GetTableIDFromNameInTableDefinition(*m_DriverInfo, "init");
+			if (initTableID != 0xff)
+				m_EditScreen->SetActivationTableFocusID(static_cast<int>(initTableID), selected_song_index);
 			ForceRequestScreen(m_EditScreen.get());
 		}
 	}

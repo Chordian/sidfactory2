@@ -112,13 +112,13 @@ namespace Editor
 			m_ComponentButtonOk = std::make_shared<ComponentButton>(3, 0,
 				nullptr,
 				m_TextField, "Ok",
-				1, 
+				2, 
 				GetMessageBottomPositionY() + 3,
 				button_width,
 				[&]() { OnDone(); });
 			m_ComponentsManager->AddComponent(m_ComponentButtonOk);
 
-			m_ComponentButtonCancel = std::make_shared<ComponentButton>(3, 0,
+			m_ComponentButtonCancel = std::make_shared<ComponentButton>(4, 0,
 				nullptr,
 				m_TextField, "Cancel",
 				m_Width - (button_width + 1),

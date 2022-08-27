@@ -292,7 +292,7 @@ namespace Editor
 					unsigned char add_count = import_driver_song_count - loaded_driver_song_count;
 
 					for(int i = 0; i < add_count; ++i)
-						EditorUtils::AddSong(0, std::string(), inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID);
+						EditorUtils::AddSong(std::string(), inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID, nullptr);
 				}
 				else
 				{

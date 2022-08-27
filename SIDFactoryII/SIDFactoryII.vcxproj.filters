@@ -620,6 +620,9 @@
     <ClCompile Include="source\runtime\editor\dialog\dialog_songs.cpp">
       <Filter>source\runtime\editor\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_move_selection_list.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\utilities.h">
@@ -1189,6 +1192,9 @@
       <Filter>source\runtime\editor\auxilarydata</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\editor\dialog\dialog_songs.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_move_selection_list.h">
       <Filter>source\runtime\editor\dialogs</Filter>
     </ClInclude>
   </ItemGroup>

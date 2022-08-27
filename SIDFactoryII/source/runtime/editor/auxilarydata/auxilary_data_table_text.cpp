@@ -187,6 +187,29 @@ namespace Editor
 		return false;
 	}
 
+	bool AuxilaryDataTableText::SwapLayers(int inTableID, unsigned int inLayer1, unsigned int inLayer2)
+	{
+		for (auto& table_text_list : m_TableTextLists)
+		{
+			if (table_text_list.m_TableID == inTableID)
+			{
+				const int layer_count = static_cast<int>(table_text_list.m_TextEntryListLayers.size());
+
+				FOUNDATION_ASSERT(table_text_list.m_TextEntryListLayers.size() > inLayer1);
+				FOUNDATION_ASSERT(table_text_list.m_TextEntryListLayers.size() > inLayer2);
+
+				const auto layer1_text_entry_list = table_text_list.m_TextEntryListLayers[inLayer1];
+				table_text_list.m_TextEntryListLayers[inLayer1] = table_text_list.m_TextEntryListLayers[inLayer2];
+				table_text_list.m_TextEntryListLayers[inLayer2] = layer1_text_entry_list;
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
 
 	std::vector<unsigned char> AuxilaryDataTableText::GenerateSaveData() const
 	{

@@ -76,7 +76,7 @@ namespace Editor
 		m_ComponentsManager->SetGroupEnabledForInput(0, true);
 
 		m_StringListDataBuffer = std::make_shared<DataSourceTList<std::string>>(std::vector<std::string>(
-			{ "Select song", "Add song", "Remove song", "Rename song" }));
+			{ "Select song", "Add song", "Remove song", "Rename song", "Move song" }));
 		m_StringListSelectorComponent = std::make_shared<ComponentStringListSelector>
 			(
 				0, 0,

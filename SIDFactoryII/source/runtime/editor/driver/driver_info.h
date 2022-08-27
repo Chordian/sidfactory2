@@ -137,7 +137,7 @@ namespace Editor
 			};
 
 			unsigned char m_Type;						// Type of table
-			unsigned char m_ID;							// Identifier for rule targeting
+			unsigned char m_ID;							// Identifier for the table and rule targeting
 			unsigned char m_TextFieldSize;				// Size of the text field added to the table
 			std::string m_Name;							// The readable name of the table
 

@@ -62,11 +62,13 @@ namespace Editor
 		const int GetSelectedRow() const;
 		SelectedRowChangedEvent& GetSelectedRowChangedEvent();
 
+		DataSourceTable* GetDataSource();
 		const DataSourceTable* GetDataSource() const;
 
 		void DoCursorUp();
 		void DoCursorDown();
 
+		void SetSelectedRow(int inRow);
 	private:
 		void DoScrollWheel(const Foundation::Mouse& inMouse, CursorControl* inCursorControl);
 		void AdjustVisibleArea();
@@ -88,7 +90,6 @@ namespace Editor
 
 		int GetLastUnusedRow();
 
-		void SetRow(int inRow);
 
 	protected:
 		Foundation::TextColoring GetTextColoring(int inDataOffset, const Foundation::TextColoring& inBaseTextColoring) const;

@@ -244,6 +244,7 @@
     <ClCompile Include="source\runtime\editor\dialog\dialog_bit_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_hex_value_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_message_yesno.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_move_selection_list.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_optimize.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_packing_options.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_selection_list.cpp" />
@@ -423,6 +424,7 @@
     <ClInclude Include="source\runtime\editor\dialog\dialog_bit_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_hex_value_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_message_yesno.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_move_selection_list.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_optimize.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_packing_options.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_selection_list.h" />
