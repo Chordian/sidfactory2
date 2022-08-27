@@ -17,6 +17,8 @@ namespace Editor
 	{
 		static constexpr int MAX_SONG_COUNT = 0x10;
 
+		void SetNoteValueKeys(const std::string& inNoteKeyListOctave1, const std::string& inNoteKeyListOctave2);
+		bool Has2ndInputOctave();
 		int GetNoteValue(SDL_Keycode inKeyCode, int inOctave);
 		int GetNoteValue(char inKeyCharacter, int inOctave);
 		unsigned char ConvertSingleCharHexValueToValue(char inKeyCharacter);

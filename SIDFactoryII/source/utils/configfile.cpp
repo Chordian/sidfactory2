@@ -304,12 +304,16 @@ namespace Utility
 		{
 			const size_t length = inValue.length();
 			unsigned int begin = 0;
+			bool inside_quotation = false;
 			
 			for (size_t i = 0; i < length; ++i)
 			{
 				const char character = inValue[i];
 
-				if (character == ',')
+				if (character == '\"')
+					inside_quotation = !inside_quotation;
+
+				if (character == ',' && !inside_quotation)
 				{
 					std::string value = inValue.substr(begin, i - begin);
 					begin = i + 1;

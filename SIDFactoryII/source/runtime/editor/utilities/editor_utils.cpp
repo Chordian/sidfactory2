@@ -14,6 +14,20 @@ namespace Editor
 {
 	namespace EditorUtils
 	{
+		static std::string g_noteKeyListOctave1 = "zsxdcvgbhnjm,l.";
+		static std::string g_noteKeyListOctave2 = "q2w3er5t6y7ui9o0p";
+
+		void SetNoteValueKeys(const std::string& inNoteKeyListOctave1, const std::string& inNoteKeyListOctave2)
+		{
+			g_noteKeyListOctave1 = inNoteKeyListOctave1;
+			g_noteKeyListOctave2 = inNoteKeyListOctave2;
+		}
+
+		bool Has2ndInputOctave()
+		{
+			return !g_noteKeyListOctave2.empty();
+		}
+
 		int GetNoteValue(SDL_Keycode inKeyEvent, int inOctave)
 		{
 			using namespace Foundation;
@@ -33,107 +47,24 @@ namespace Editor
 
 			if (character != 0)
 				return EditorUtils::GetNoteValue(character, inOctave);
-	
+
 			return -1;
 		}
 
 		int GetNoteValue(char inKey, int inOctave)
-		{
-			int note_value = -1;
-
-			switch (inKey)
+		{			
+			int note_value = [&](char inKey)
 			{
-			case 'z':
-				note_value = 0;
-				break;
-			case 's':
-				note_value = 1;
-				break;
-			case 'x':
-				note_value = 2;
-				break;
-			case 'd':
-				note_value = 3;
-				break;
-			case 'c':
-				note_value = 4;
-				break;
-			case 'v':
-				note_value = 5;
-				break;
-			case 'g':
-				note_value = 6;
-				break;
-			case 'b':
-				note_value = 7;
-				break;
-			case 'h':
-				note_value = 8;
-				break;
-			case 'n':
-				note_value = 9;
-				break;
-			case 'j':
-				note_value = 10;
-				break;
-			case 'm':
-				note_value = 11;
-				break;
-			case ',':
-			case 'q':
-				note_value = 12;
-				break;
-			case 'l':
-			case '2':
-				note_value = 13;
-				break;
-			case '.':
-			case 'w':
-				note_value = 14;
-				break;
-			case '3':
-				note_value = 15;
-				break;
-			case 'e':
-				note_value = 16;
-				break;
-			case 'r':
-				note_value = 17;
-				break;
-			case '5':
-				note_value = 18;
-				break;
-			case 't':
-				note_value = 19;
-				break;
-			case '6':
-				note_value = 20;
-				break;
-			case 'y':
-				note_value = 21;
-				break;
-			case '7':
-				note_value = 22;
-				break;
-			case 'u':
-				note_value = 23;
-				break;
-			case 'i':
-				note_value = 24;
-				break;
-			case '9':
-				note_value = 25;
-				break;
-			case 'o':
-				note_value = 26;
-				break;
-			case '0':
-				note_value = 27;
-				break;
-			case 'p':
-				note_value = 28;
-				break;
-			}
+				const size_t note_value_octave1 = g_noteKeyListOctave1.find_first_of(inKey);
+				if (note_value_octave1 != -1)
+					return static_cast<int>(note_value_octave1);
+
+				const size_t note_value_octave2 = g_noteKeyListOctave2.find_first_of(inKey);
+				if (note_value_octave2 != -1)
+					return static_cast<int>(note_value_octave2) + 12;
+
+				return -1;
+			}(inKey);
 
 			if (note_value >= 0)
 			{

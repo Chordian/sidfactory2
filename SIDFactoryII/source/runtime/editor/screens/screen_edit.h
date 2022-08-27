@@ -167,6 +167,7 @@ namespace Editor
 
 		void ConfigureKeyHooks();
 		void ConfigureDynamicKeyHooks();
+		void ConfigureNoteKeys();
 
 		template<typename EXECUTION_CALLBACK>
 		void StartSongsDialogWithSelectionExecution(const std::string& headline, EXECUTION_CALLBACK&& inExecutionCallback);

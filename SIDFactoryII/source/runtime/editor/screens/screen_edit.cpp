@@ -52,6 +52,9 @@
 #include "utils/keyhook.h"
 #include "utils/keyhookstore.h"
 #include "utils/usercolors.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/global.h"
 
 #include "SDL.h"
 #include <cctype>
@@ -150,6 +153,7 @@ namespace Editor
 		// Configure keys
 		ConfigureKeyHooks();
 		ConfigureDynamicKeyHooks();
+		ConfigureNoteKeys();
 
 		// Prepare the layout
 		PrepareLayout();
@@ -692,7 +696,9 @@ namespace Editor
 
 		if (inUp)
 		{
-			if (octave < 6)
+			const unsigned int max_octave = EditorUtils::Has2ndInputOctave() ? 6 : 7;
+
+			if (octave < max_octave)
 				m_EditState.SetOctave(octave + 1);
 		}
 		else
@@ -1679,6 +1685,23 @@ namespace Editor
 
 			m_CPUMemory->Unlock();
 		}
+	}
+
+
+	void ScreenEdit::ConfigureNoteKeys()
+	{
+		using namespace Utility::Config;
+
+		ConfigFile& config = Global::instance().GetConfig();
+
+		if (config.HasKey("Key.Input.Notes.Octave1"))
+		{
+			std::string note_keys_octave1 = GetSingleConfigurationValue<ConfigValueString>(config, "Key.Input.Notes.Octave1", std::string(""));
+			std::string note_keys_octave2 = GetSingleConfigurationValue<ConfigValueString>(config, "Key.Input.Notes.Octave2", std::string(""));
+
+			EditorUtils::SetNoteValueKeys(note_keys_octave1, note_keys_octave2);
+		}
+
 	}
 
 
