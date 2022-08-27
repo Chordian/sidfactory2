@@ -953,7 +953,7 @@ namespace Editor
 					{
 						const auto do_add_song = [&](std::string inName)
 						{
-							EditorUtils::AddSong(inName, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID, &(*m_ComponentsManager));
+							EditorUtils::AddSong(inName, *m_DriverInfo, *m_CPUMemory, &(*m_ComponentsManager), OrderListOverviewID);
 							m_ConfigReconfigure(3);
 						};
 
@@ -979,7 +979,7 @@ namespace Editor
 						{
 							const auto do_remove_song = [&, selection = inSelection]()
 							{
-								EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID);
+								EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory, &(*m_ComponentsManager), OrderListOverviewID);
 								m_ConfigReconfigure(3);
 							};
 
@@ -1095,15 +1095,15 @@ namespace Editor
 
 			return first_free_sequence_index;
 		};
-        
-        auto get_first_empty_sequence_index = [&]() -> unsigned char
-        {
-            m_CPUMemory->Lock();
-            unsigned char first_free_sequence_index = DriverUtils::GetFirstEmptySequenceIndex(*m_DriverInfo, *m_CPUMemory);
-            m_CPUMemory->Unlock();
+		
+		auto get_first_empty_sequence_index = [&]() -> unsigned char
+		{
+			m_CPUMemory->Lock();
+			unsigned char first_free_sequence_index = DriverUtils::GetFirstEmptySequenceIndex(*m_DriverInfo, *m_CPUMemory);
+			m_CPUMemory->Unlock();
 
-            return first_free_sequence_index;
-        };
+			return first_free_sequence_index;
+		};
 
 		// Create data container for music data (which is all tracks and sequences combined)
 		std::vector<std::shared_ptr<ComponentTrack>> tracks;
@@ -1122,7 +1122,7 @@ namespace Editor
 					m_DriverInfo->GetAuxilaryDataCollection(),
 					sequence_editing_status_report,
 					get_first_free_sequence_index,
-                    get_first_empty_sequence_index,
+					get_first_empty_sequence_index,
 					0, 0, 0
 				)
 			);

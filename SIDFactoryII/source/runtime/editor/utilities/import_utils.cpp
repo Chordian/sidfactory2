@@ -292,14 +292,14 @@ namespace Editor
 					unsigned char add_count = import_driver_song_count - loaded_driver_song_count;
 
 					for(int i = 0; i < add_count; ++i)
-						EditorUtils::AddSong(std::string(), inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID, nullptr);
+						EditorUtils::AddSong(std::string(), inLoadedDriverInfo, inCPUMemory, nullptr, ScreenEdit::OrderListOverviewID);
 				}
 				else
 				{
 					unsigned char remove_count = loaded_driver_song_count - import_driver_song_count;
 
 					for (int i = 0; i < remove_count; ++i)
-						EditorUtils::RemoveSong(0, inLoadedDriverInfo, inCPUMemory, ScreenEdit::OrderListOverviewID);
+						EditorUtils::RemoveSong(0, inLoadedDriverInfo, inCPUMemory, nullptr, ScreenEdit::OrderListOverviewID);
 				}
 			}
 

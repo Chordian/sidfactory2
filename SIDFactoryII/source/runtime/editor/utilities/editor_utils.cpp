@@ -284,7 +284,7 @@ namespace Editor
 			inCPUMemory.Unlock();
 		}
 
-		void AddSong(const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID, ComponentsManager* inComponentsManager)
+		void AddSong(const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, ComponentsManager* inComponentsManager, unsigned char inSongOverviewTableID)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 			FOUNDATION_ASSERT(song_count > 0);
@@ -363,7 +363,7 @@ namespace Editor
 			}
 		}
 
-		void RemoveSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID)
+		void RemoveSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, ComponentsManager* inComponentsManager, unsigned char inSongOverviewTableID)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
 			if (song_count < 2)
@@ -406,6 +406,39 @@ namespace Editor
 			inCPUMemory.SetWord(music_data_meta_data_addresses_in_emulation_memory.m_EmulationAddressOfSequence00Address, address_of_first_sequence - song_order_list_byte_size);
 
 			inCPUMemory.Unlock();
+
+			if (inComponentsManager != nullptr)
+			{
+				const unsigned char init_table_id = GetTableIDFromNameInTableDefinition(inDriverInfo, "init");
+				if (init_table_id != 0xff)
+				{
+					ComponentTableRowElements* component = reinterpret_cast<ComponentTableRowElements*>(inComponentsManager->GetComponent(init_table_id));
+					FOUNDATION_ASSERT(component != nullptr);
+
+					DataSourceTable* init_table_data_source = component->GetDataSource();
+					init_table_data_source->PullDataFromSource();
+
+					const int table_column_count = init_table_data_source->GetColumnCount();
+
+					const int from_row = inIndex + 1;
+					const int to_row = inIndex;
+					const int rows_to_move_count = init_table_data_source->GetRowCount() - from_row;
+					const int column_count = init_table_data_source->GetColumnCount();
+
+					int index = from_row * column_count;
+
+					for (int i = 0; i < rows_to_move_count; ++i)
+					{
+						for (int j = 0; j < column_count; ++j)
+							(*init_table_data_source)[index - column_count + j] = (*init_table_data_source)[index + j];
+
+						index += column_count;
+					}
+
+					init_table_data_source->PushDataToSource();
+				}
+			}
+
 
 			inDriverInfo.RefreshMusicData(inCPUMemory);
 			inDriverInfo.GetAuxilaryDataCollection().GetSongs().RemoveSong(inIndex);

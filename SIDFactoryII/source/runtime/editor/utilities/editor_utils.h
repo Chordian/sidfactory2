@@ -27,8 +27,8 @@ namespace Editor
 		unsigned char GetTableIDFromNameInTableDefinition(const DriverInfo& inDriverinfo, const std::string& inTableName);
 
 		void SelectSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory);
-		void AddSong(const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID, ComponentsManager* inComponentsManager);
-		void RemoveSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID);
+		void AddSong(const std::string& inName, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, ComponentsManager* inComponentsManager, unsigned char inSongOverviewTableID);
+		void RemoveSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, ComponentsManager* inComponentsManager, unsigned char inSongOverviewTableID);
 		void RenameSong(unsigned int inIndex, const std::string& inNewName, DriverInfo& inDriverInfo);
 		bool MoveSong(unsigned int inIndexFrom, unsigned int inIndexTo, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, unsigned char inSongOverviewTableID, ComponentsManager& inComponentsManager);
 	}
