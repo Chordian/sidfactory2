@@ -225,7 +225,7 @@ namespace SF2
 		m_CPUMemory->Unlock();
 
 		// Create data containers for each track
-		ScreenEditUtils::PrepareOrderListsDataSources(*m_DriverInfo, *m_CPUMemory, m_OrderListDataSources);
+		ScreenEditUtils::PrepareAllOrderListsDataSources(*m_DriverInfo, *m_CPUMemory, m_OrderListDataSources);
 
 		// Create data containers for each sequence
 		ScreenEditUtils::PrepareSequenceDataSources(*m_DriverInfo, m_DriverState, *m_CPUMemory, m_SequenceDataSources);

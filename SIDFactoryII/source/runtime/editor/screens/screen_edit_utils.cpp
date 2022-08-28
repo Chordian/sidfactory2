@@ -3,6 +3,8 @@
 #include "runtime/editor/driver/driver_state.h"
 #include "runtime/editor/driver/driver_utils.h"
 #include "runtime/editor/driver/idriver_architecture.h"
+#include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/emulation/cpumemory.h"
@@ -60,14 +62,52 @@ namespace Editor
 		}
 
 
-		void PrepareOrderListsDataSources(const Editor::DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, std::vector<std::shared_ptr<DataSourceOrderList>>& outOrderListDataSources)
+		void PrepareAllOrderListsDataSources(const Editor::DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, std::vector<std::shared_ptr<DataSourceOrderList>>& outOrderListDataSources)
 		{
 			const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 			const unsigned short order_list_data_size = music_data.m_OrderListSize;
+			const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+
+			for (int i = 0; i < music_data.m_TrackCount * song_count; ++i)
+			{
+				const unsigned short order_list_data_address = music_data.m_OrderListTrack1Address + i * order_list_data_size;
+				outOrderListDataSources.push_back(std::make_shared<DataSourceOrderList>(&inCPUMemory, order_list_data_address, order_list_data_size));
+			}
+		}
+
+
+		void PrepareNotSelectedSongOrderListsDataSources(const Editor::DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, std::vector<std::shared_ptr<DataSourceOrderList>>& outOrderListDataSources)
+		{
+			const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
+			const unsigned short order_list_data_size = music_data.m_OrderListSize;
+			const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+			const unsigned char selected_song = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+
+			for (int j = 0; j < song_count; ++j)
+			{
+				if (j != selected_song)
+				{
+					for (int i = 0; i < music_data.m_TrackCount; ++i)
+					{
+						int index = j * music_data.m_TrackCount + i;
+
+						const unsigned short order_list_data_address = music_data.m_OrderListTrack1Address + index * order_list_data_size;
+						outOrderListDataSources.push_back(std::make_shared<DataSourceOrderList>(&inCPUMemory, order_list_data_address, order_list_data_size));
+					}
+				}
+			}
+		}
+
+
+		void PrepareSelectedSongOrderListsDataSources(const Editor::DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory, std::vector<std::shared_ptr<DataSourceOrderList>>& outOrderListDataSources)
+		{
+			const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
+			const unsigned short order_list_data_size = music_data.m_OrderListSize;
+			const unsigned char selected_song = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
 
 			for (int i = 0; i < music_data.m_TrackCount; ++i)
 			{
-				const unsigned short order_list_data_address = music_data.m_OrderListTrack1Address + i * order_list_data_size;
+				const unsigned short order_list_data_address = music_data.m_OrderListTrack1Address + (i + selected_song * music_data.m_TrackCount) * order_list_data_size;
 				outOrderListDataSources.push_back(std::make_shared<DataSourceOrderList>(&inCPUMemory, order_list_data_address, order_list_data_size));
 			}
 		}

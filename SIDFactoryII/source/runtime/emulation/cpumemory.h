@@ -54,6 +54,9 @@ namespace Emulation
 		void SetWord(unsigned int inAddress, unsigned short inWordValue);
 		void SetData(unsigned int inAddress, const void* inSourceBuffer, unsigned int inSourceBufferByteCount);
 
+		void Copy(unsigned int inSourceAddress, unsigned int inLength, unsigned int inDestinationAddress);
+		void Set(unsigned char inValue, unsigned int inAddress, unsigned int inLength);
+
 		unsigned int GetAddress(const void* inMemoryOffsetPointer) const 
 		{
 			unsigned int iAddress = static_cast<unsigned int>(static_cast<const unsigned char*>(inMemoryOffsetPointer) - m_Memory);

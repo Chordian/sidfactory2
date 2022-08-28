@@ -46,7 +46,7 @@
     <key>LSMinimumSystemVersion</key>
     <string>10.9</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Copyright © 2021 Thomas Egeskov Petersen. All rights reserved.</string>
+    <string>Copyright © 2022 Thomas Egeskov Petersen. All rights reserved.</string>
     <key>NSSupportsAutomaticTermination</key>
     <true/>
     <key>NSSupportsSuddenTermination</key>

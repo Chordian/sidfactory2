@@ -13,6 +13,8 @@ namespace Editor
 		int m_CursorX;
 		int m_CursorY;
 
+		unsigned int m_ModifiedChannel;
+
 		UndoDataSource& GetDataSource() override { return m_Data; }
 		const UndoDataSource& GetDataSource() const override { return m_Data; }
 

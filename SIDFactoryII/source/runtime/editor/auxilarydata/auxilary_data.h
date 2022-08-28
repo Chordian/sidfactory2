@@ -22,7 +22,8 @@ namespace Editor
 			EditingPreferences,
 			HardwarePreferences,
 			PlayMarkers,
-			TableText
+			TableText,
+			Songs
 		};
 
 		class FileHeader

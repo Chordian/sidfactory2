@@ -46,7 +46,7 @@ namespace Editor
 			Foundation::TextField* inTextField, 
 			const Utility::KeyHookStore& inKeyHookStore,
 			std::shared_ptr<DataSourceTableText> inDataSourceTableText,
-			const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
+			std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 			const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 			int inX,
 			int inY, 
@@ -95,7 +95,7 @@ namespace Editor
 		int GetMarkingTopY() const;
 		int GetMarkingBottomY() const;
 
-		void AddUndoSequenceStep();
+		void AddUndoSequenceStep(unsigned int inChannel);
 		void AddMostRecentSequenceEdit();
 		void AddUndoTextStep();
 		void AddMostRecentTextEdit();
@@ -134,7 +134,8 @@ namespace Editor
 		std::unique_ptr<TextEditingDataSourceTableText> m_TextEditingDataSourceTableText;
 		std::shared_ptr<DataSourceTableText> m_TableText;
 
-		const std::vector<std::shared_ptr<DataSourceOrderList>>& m_OrderLists;
+		std::vector<std::shared_ptr<DataSourceOrderList>>& m_OrderLists;
+		
 		const std::vector<std::shared_ptr<DataSourceSequence>>& m_SequenceList;
 
 		std::function<void(int, bool)> m_SetTrackEventPosFunction;
@@ -155,6 +156,8 @@ namespace Editor
 		int m_MarkingX;
 		int m_MarkingFromY;
 		int m_MarkingToY;
+
+		int m_InvokeOrderListChangedEventChannel;
 
 		static const int ms_MarginWidth;
 		static const int ms_TextWidth;

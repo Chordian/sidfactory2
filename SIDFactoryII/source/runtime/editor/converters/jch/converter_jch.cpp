@@ -381,7 +381,7 @@ namespace Editor
 		std::vector<std::shared_ptr<DataSourceOrderList>> orderlist_data_sources;
 
 		// Create data containers for each track
-		ScreenEditUtils::PrepareOrderListsDataSources(*m_DriverInfo, *m_CPUMemory, orderlist_data_sources);
+		ScreenEditUtils::PrepareAllOrderListsDataSources(*m_DriverInfo, *m_CPUMemory, orderlist_data_sources);
 
 		const unsigned short orderlist_vectors[3] =
 		{

@@ -56,7 +56,7 @@ namespace Editor
 
 			SF2::Interface sf2(m_Platform, *m_Console);
 			const path driver_path = m_Platform->Storage_GetDriversHomePath();
-			const path driver_path_and_filename = driver_path / "sf2driver11_04.prg";
+			const path driver_path_and_filename = driver_path / "sf2driver11_05.prg";
 			const bool driver_loaded = sf2.LoadFile(driver_path_and_filename.string());
 
 			if (!driver_loaded)
