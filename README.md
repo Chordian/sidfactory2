@@ -21,10 +21,13 @@ Notable features:
 - Imports Goattracker, CheeseCutter and MOD files.
 - Supports both SID models 6581 and 8580 for PAL and NTSC.
 - Unlimited undo
+- Multiple songs
+- Copy / paste and modify selected area
 - Built-in packer and relocator to position the music anywhere in the Commodore
   64 memory. Relocate used zero page adresses.
 - Includes demo tunes to learn from.
-- Cross platform: Windows, macOS and Linux versions.
+- Cross platform: Windows, macOS (Intel and ARM) and Linux versions.
+- Configurable settings, shortcuts and keyboard layout
 - Open source
 
 ![SID Factory II screenshot](screenshot.png)
