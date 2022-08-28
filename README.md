@@ -24,7 +24,7 @@ Please report issues in our [issue tracker](https://github.com/issues).
 - Added: Marking and copy/paste inside sequences (even across boundaries)
 - Added: An option to set the emulation sample rate to a user defined value 
   (Thanks to Tammo Hinrichs)
-- Fixed: Scrolling in the orderlist overview using the mouse wheel
+- Fixed: Scrolling in the song list using the mouse wheel
 - Fixed: reSID won't output a click anymore when launching SID Factory II or
   loading/saving files (Thanks to Tammo Hinrichs)
 
