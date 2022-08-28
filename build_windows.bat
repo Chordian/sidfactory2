@@ -28,7 +28,7 @@ copy /Y SIDFactoryII\color_schemes\*.* artifacts\color_schemes\
 IF ERRORLEVEL 1 EXIT 1
 copy /Y SIDFactoryII\drivers\*.* artifacts\drivers\
 IF ERRORLEVEL 1 EXIT 1
-copy /Y SIDFactoryII\music\*.* artifacts\music\
+xcopy /Y /S SIDFactoryII\music\*.* artifacts\music\
 IF ERRORLEVEL 1 EXIT 1
 copy /Y SIDFactoryII\overlay\*.* artifacts\overlay\
 IF ERRORLEVEL 1 EXIT 1
