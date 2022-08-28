@@ -295,7 +295,9 @@ namespace Editor
 						for (int i = 0; i < table_column_count; ++i)
 							(*init_table_data_source)[from_row + i + table_column_count] = (*init_table_data_source)[from_row + i];
 
+						inCPUMemory.Lock();
 						init_table_data_source->PushDataToSource();
+						inCPUMemory.Unlock();
 					}
 				}
 
@@ -380,10 +382,11 @@ namespace Editor
 						index += column_count;
 					}
 
+					inCPUMemory.Lock();
 					init_table_data_source->PushDataToSource();
+					inCPUMemory.Unlock();
 				}
 			}
-
 
 			inDriverInfo.RefreshMusicData(inCPUMemory);
 			inDriverInfo.GetAuxilaryDataCollection().GetSongs().RemoveSong(inIndex);
@@ -465,7 +468,11 @@ namespace Editor
 					(*init_table_data_source)[row_2 + i] = row_1_value;
 				}
 
+
+				inCPUMemory.Lock();
 				init_table_data_source->PushDataToSource();
+				inCPUMemory.Unlock();
+
 			}
 
 			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SwapSongs(static_cast<unsigned char>(inIndex1), static_cast<unsigned char>(inIndex2));
