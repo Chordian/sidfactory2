@@ -3,6 +3,7 @@
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/editor/auxilarydata/auxilary_data_table_text.h"
+#include "runtime/editor/auxilarydata/auxilary_data_play_markers.h"
 #include "runtime/editor/components/component_table_row_elements.h"
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/components_manager.h"
@@ -204,6 +205,20 @@ namespace Editor
 		}
 
 
+		void AddMissingPlayerMarkerLayers(DriverInfo& inDriverInfo)
+		{
+			const int song_count = static_cast<int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
+			const int song_marker_layer_count = inDriverInfo.GetAuxilaryDataCollection().GetPlayMarkers().GetLayerCount();
+
+			if (song_count > song_marker_layer_count)
+			{
+				const int missing_layer_count = song_count - song_marker_layer_count;
+				for (int i = 0; i < missing_layer_count; ++i)
+					inDriverInfo.GetAuxilaryDataCollection().GetPlayMarkers().InsertLayer(song_marker_layer_count + i);
+			}
+		}
+
+
 		void SelectSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
@@ -305,6 +320,7 @@ namespace Editor
 				inDriverInfo.GetAuxilaryDataCollection().GetSongs().AddSong(new_song_index);
 				inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongName(new_song_index, inName);
 				inDriverInfo.GetAuxilaryDataCollection().GetTableText().InsertLayer(static_cast<int>(inSongOverviewTableID), new_song_index);
+				inDriverInfo.GetAuxilaryDataCollection().GetPlayMarkers().InsertLayer(new_song_index);
 
 				SelectSong(new_song_index, inDriverInfo, inCPUMemory);
 			}
@@ -391,6 +407,7 @@ namespace Editor
 			inDriverInfo.RefreshMusicData(inCPUMemory);
 			inDriverInfo.GetAuxilaryDataCollection().GetSongs().RemoveSong(inIndex);
 			inDriverInfo.GetAuxilaryDataCollection().GetTableText().RemoveLayer(static_cast<int>(inSongOverviewTableID), inIndex);
+			inDriverInfo.GetAuxilaryDataCollection().GetPlayMarkers().RemoveLayer(inIndex);
 
 			if (selected_song == inIndex)
 			{
@@ -477,6 +494,7 @@ namespace Editor
 
 			inDriverInfo.GetAuxilaryDataCollection().GetSongs().SwapSongs(static_cast<unsigned char>(inIndex1), static_cast<unsigned char>(inIndex2));
 			inDriverInfo.GetAuxilaryDataCollection().GetTableText().SwapLayers(inSongOverviewTableID, static_cast<unsigned char>(inIndex1), static_cast<unsigned char>(inIndex2));
+			inDriverInfo.GetAuxilaryDataCollection().GetPlayMarkers().SwapLayers(static_cast<unsigned char>(inIndex1), static_cast<unsigned char>(inIndex2));
 		}
 
 

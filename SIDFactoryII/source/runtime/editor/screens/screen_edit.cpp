@@ -540,7 +540,7 @@ namespace Editor
 			const int selected_marker = m_PlayMarkerListComponent->GetSelectionIndex();
 			const auto& play_markers = m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers();
 
-			return play_markers.GetPlayMarkerEventPosition(selected_marker);
+			return play_markers.GetPlayMarkerEventPosition(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong(), selected_marker);
 		}();
 
 		DoPlay(event_pos);
@@ -593,7 +593,7 @@ namespace Editor
 		const int selected_marker = m_PlayMarkerListComponent->GetSelectionIndex();
 		auto& play_markers = m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers();
 
-		const int event_pos = play_markers.GetPlayMarkerEventPosition(selected_marker);
+		const int event_pos = play_markers.GetPlayMarkerEventPosition(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong(), selected_marker);
 
 		m_TracksComponent->SetEventPosition(event_pos, false);
 	}
@@ -1180,7 +1180,7 @@ namespace Editor
 
 		// Play markers component
 		const int play_markers_width = orderlist_overview_rect.m_Dimensions.m_Width;
-		auto play_markers_data_source = std::make_shared<DataSourcePlayMarkers>(m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers(), m_DisplayState);
+		auto play_markers_data_source = std::make_shared<DataSourcePlayMarkers>(m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers(), m_DriverInfo->GetAuxilaryDataCollection().GetSongs(), m_DisplayState);
 
 		m_PlayMarkerListComponent = std::make_shared<ComponentStringListSelector>(
 			PlayMarkerListID, 0,
@@ -1903,7 +1903,7 @@ namespace Editor
 			const int selected_marker = m_PlayMarkerListComponent->GetSelectionIndex();
 			auto& play_markers = m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers();
 
-			play_markers.SetPlayMarkerEventPosition(selected_marker, m_TracksComponent->GetEventPosition());
+			play_markers.SetPlayMarkerEventPosition(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong(), selected_marker, m_TracksComponent->GetEventPosition());
 
 			m_PlayMarkerListComponent->ForceRefresh();
 

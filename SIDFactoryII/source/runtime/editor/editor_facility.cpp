@@ -542,6 +542,8 @@ namespace Editor
 
 				// Give the first song a default name, if it hasn't one and is the only song in the loaded file
 				EditorUtils::UpdateSongNameOfSingleSongPackages(*m_DriverInfo);
+				EditorUtils::AddMissingPlayerMarkerLayers(*m_DriverInfo);
+
 
 				// Store name of last read file
 				SetLastSavedPathAndFilename(inPathAndFilename);
@@ -585,6 +587,7 @@ namespace Editor
 
 					// Give the first song a default name, if it hasn't one and is the only song in the loaded file
 					EditorUtils::UpdateSongNameOfSingleSongPackages(*outDriverInfo);
+					EditorUtils::AddMissingPlayerMarkerLayers(*m_DriverInfo);
 
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
@@ -636,6 +639,7 @@ namespace Editor
 
 					// Give the first song a default name, if it hasn't one and is the only song in the loaded file
 					EditorUtils::UpdateSongNameOfSingleSongPackages(*m_DriverInfo);
+					EditorUtils::AddMissingPlayerMarkerLayers(*m_DriverInfo);
 
 					// Store name of last read file
 					SetLastSavedPathAndFilename(inPathAndFilename);
