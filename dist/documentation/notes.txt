@@ -22,6 +22,7 @@ GENERAL         Tab                         Tab                         Next inp
 
                 F3/F4                       F3/F4                       Octave down or up
                 F6                          F6                          Open utility menu
+                F7                          F7                          Open songs menu
 
                 Shift + F7                  Shift + F7                  Reload the settings
                 Ctrl + F7                   Ctrl + F7                   Select the next color scheme
@@ -66,7 +67,7 @@ TRACKS          Enter                       Enter                       Toggle b
 
                 Ctrl + 1/2/3                Ctrl + 1/2/3                Mute or unmute track 1-3
 
-                Ctrl + l                    Ctrl + l                    Set song loop position
+                Ctrl + l                    Ctrl + l                    Set song loop position or toggle loop/end markers
 
                 Shift + F3/F4               Shift + F3/F4               Transpose sequence contents one semitone up/down
                 Ctrl + F3/F4                Shift + Cmd + F3/F4         Transpose sequence contents one octave up/down

@@ -9,6 +9,7 @@ Versions
             addressing space. A linear pulse sweep has been added and the code has been
             optimized to take up as little memory as possible. Hard restart is always on
             and there are no commands available
+  o  16.02: Can now also stop a song
 
 
 Instruments
