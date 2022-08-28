@@ -486,7 +486,7 @@ namespace Editor
 						if (order_list_entry.m_Transposition == 0xff)
 							m_TextField->Print(m_Position.m_X, current_y, color_orderlist_end_loop, "loop");
 						else if(order_list_entry.m_Transposition == 0xfe)
-							m_TextField->Print(m_Position.m_X, current_y, color_orderlist_end_stop, "stop");
+							m_TextField->Print(m_Position.m_X, current_y, color_orderlist_end_stop, "end ");
 						else
 						{
 							if (m_HasControl && m_TakingOrderListInput && orderlist_index == m_EventPosDetails.OrderListIndex())
@@ -785,6 +785,19 @@ namespace Editor
 				m_RequireRefresh = true;
 			}
 		}
+		else
+		{
+			FOUNDATION_ASSERT(m_EventPos == m_MaxEventPos);
+
+			m_DataSourceOrderList->SetLoopIndex(static_cast<unsigned char>(m_DataSourceOrderList->GetLength() - 1));
+
+			OnOrderListChanged();
+
+			m_HasDataChangeOrderList = true;
+			m_HasDataChange = true;
+			m_RequireRefresh = true;
+
+		}
 	}
 
 
@@ -975,26 +988,6 @@ namespace Editor
 		}
 	}
 
-
-	void ComponentTrack::HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex)
-	{
-		int length = m_DataSourceOrderList->GetLength();
-
-		for (int i = length - 1; i >= 0; --i)
-		{
-			const auto& entry = (*m_DataSourceOrderList)[i];
-			if (entry.m_Transposition <= 0xfe && entry.m_SequenceIndex == inSequenceIndex)
-			{
-				auto new_entry = entry;
-				new_entry.m_SequenceIndex = inAddSequenceIndex;
-
-				if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, i + 1, new_entry))
-					++length;
-			}
-		}
-
-		OnOrderListChanged();
-	}
 
 	//--------------------------------------------------------------------------------------------------
 	// Draw sequence entry
@@ -2547,6 +2540,11 @@ namespace Editor
 		FOUNDATION_ASSERT(m_IsMarkingArea);
 
 		m_IsMarkingArea = false;
+	}
+
+	std::shared_ptr<DataSourceOrderList> ComponentTrack::GetDataSourceOrderList()
+	{
+		return m_DataSourceOrderList;
 	}
 
 	//--------------------------------------------------------------------------------------------------

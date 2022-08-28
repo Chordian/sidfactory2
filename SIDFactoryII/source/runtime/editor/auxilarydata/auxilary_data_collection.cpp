@@ -4,6 +4,7 @@
 #include "auxilary_data_hardware_preferences.h"
 #include "auxilary_data_play_markers.h"
 #include "auxilary_data_table_text.h"
+#include "auxilary_data_songs.h"
 
 #include "utils/c64file.h"
 
@@ -16,6 +17,7 @@ namespace Editor
 		, m_HardwarePreferences(std::make_unique<AuxilaryDataHardwarePreferences>())
 		, m_PlayMarkers(std::make_unique<AuxilaryDataPlayMarkers>())
 		, m_TableText(std::make_unique<AuxilaryDataTableText>())
+		, m_Songs(std::make_unique<AuxilaryDataSongs>())
 	{
 
 	}
@@ -33,6 +35,7 @@ namespace Editor
 		*m_HardwarePreferences = *inRHS.m_HardwarePreferences;
 		*m_PlayMarkers = *inRHS.m_PlayMarkers;
 		*m_TableText = *inRHS.m_TableText;
+		*m_Songs = *inRHS.m_Songs;
 	}
 
 
@@ -42,6 +45,7 @@ namespace Editor
 		m_HardwarePreferences->Reset();
 		m_PlayMarkers->Reset();
 		m_TableText->Reset();
+		m_Songs->Reset();
 	}
 
 
@@ -90,6 +94,16 @@ namespace Editor
 		return *m_TableText;
 	}
 
+	AuxilaryDataSongs& AuxilaryDataCollection::GetSongs()
+	{
+		return *m_Songs;
+	}
+
+	const AuxilaryDataSongs& AuxilaryDataCollection::GetSongs() const
+	{
+		return *m_Songs;
+	}
+
 	bool AuxilaryDataCollection::Save(Utility::C64FileWriter& inWriter) const
 	{
 		AuxilaryData end_mark;
@@ -98,6 +112,7 @@ namespace Editor
 		m_HardwarePreferences->Write(inWriter);
 		m_EditingPreferences->Write(inWriter);
 		m_TableText->Write(inWriter);
+		m_Songs->Write(inWriter);
 		
 		end_mark.Write(inWriter);
 
@@ -121,6 +136,7 @@ namespace Editor
 			m_HardwarePreferences->Read(header, inReader);
 			m_EditingPreferences->Read(header, inReader);
 			m_TableText->Read(header, inReader);
+			m_Songs->Read(header, inReader);
 		}
 
 		return true;

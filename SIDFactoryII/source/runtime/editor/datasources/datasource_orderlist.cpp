@@ -115,7 +115,21 @@ namespace Editor
 	void DataSourceOrderList::SetLoopIndex(unsigned char inLoopIndex)
 	{
 		if (m_Length > 0)
-			m_Events[m_Length - 1].m_SequenceIndex = inLoopIndex;
+		{
+			const bool isEnd = inLoopIndex == m_Length - 1;
+
+			if (inLoopIndex < m_Length - 1)
+			{
+				m_Events[m_Length - 1].m_Transposition = 0xff;
+				m_Events[m_Length - 1].m_SequenceIndex = inLoopIndex;
+			}
+			else
+			{
+				FOUNDATION_ASSERT(inLoopIndex == m_Length - 1);
+				m_Events[m_Length - 1].m_Transposition = 0xfe;
+				m_Events[m_Length - 1].m_SequenceIndex = static_cast<unsigned int>(m_Length - 1);
+			}
+		}
 	}
 
 
@@ -133,7 +147,9 @@ namespace Editor
 			{
 				end_index = i;
 				end_marker = val;
-				loop_index = m_Events[i].m_SequenceIndex;
+
+				if(val == 0xff)
+					loop_index = m_Events[i].m_SequenceIndex;
 
 				break;
 			}

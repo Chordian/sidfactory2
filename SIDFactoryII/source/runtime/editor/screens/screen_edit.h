@@ -6,6 +6,10 @@
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/driver/driver_state.h"
 #include "runtime/editor/undo/undo.h"
+#include "runtime/editor/dialog/dialog_selection_list.h"
+#include "runtime/editor/dialog/dialog_move_selection_list.h"
+#include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 
 #include <memory>
 #include <vector>
@@ -99,6 +103,7 @@ namespace Editor
 		void Refresh() override;
 
 		void SetActivationMessage(const std::string& inMessage);
+		void SetActivationTableFocusID(int inFocusComponentID, int inSelectedRow);
 		void SetStatusBarMessage(const std::string& inMessage, int inDisplayDuration);
 		void FlushUndo();
 
@@ -134,6 +139,7 @@ namespace Editor
 
 		void DoUtilitiesDialog();
 		void DoOptionsDialog();
+		void DoSongsDialog();
 
 		void DoLoadSong();
 		void DoLoadInstrument();
@@ -161,6 +167,12 @@ namespace Editor
 
 		void ConfigureKeyHooks();
 		void ConfigureDynamicKeyHooks();
+		void ConfigureNoteKeys();
+
+		template<typename EXECUTION_CALLBACK>
+		void StartSongsDialogWithSelectionExecution(const std::string& headline, EXECUTION_CALLBACK&& inExecutionCallback);
+		template<typename EXECUTION_CALLBACK>
+		void StartMoveSongDialogWithSelectionExecution(const std::string& inCaption, EXECUTION_CALLBACK&& inExecutionCallback);
 
 		// Load/save requests
 		std::function<void(void)> m_LoadRequestCallback;
@@ -208,6 +220,7 @@ namespace Editor
 
 		// Data sources
 		std::vector<std::shared_ptr<DataSourceOrderList>> m_OrderListDataSources;
+		std::vector<std::shared_ptr<DataSourceOrderList>> m_NotSelectedSongOrderListDataSources;
 		std::vector<std::shared_ptr<DataSourceSequence>> m_SequenceDataSources;
 		std::shared_ptr<DataSourceTable> m_InstrumentTableDataSource;
 		std::shared_ptr<DataSourceTable> m_CommandTableDataSource;
@@ -219,6 +232,10 @@ namespace Editor
 		std::shared_ptr<ComponentStringListSelector> m_PlayMarkerListComponent;
 		std::shared_ptr<ComponentTableRowElements> m_InstrumentTableComponent;
 		std::shared_ptr<ComponentTableRowElements> m_CommandTableComponent;
+
+		bool m_ActivationFocusOnComponent;
+		int m_ActivationComponentFocusID;
+		int m_ActivationSelectedRow;
 
 		// Overlay
 		std::shared_ptr<OverlayFlightRecorder> m_OverlayFlightRecorder;
@@ -244,4 +261,62 @@ namespace Editor
 		// Debug
 		std::unique_ptr<DebugViews> m_DebugViews;
 	};
+
+
+	template<typename EXECUTION_CALLBACK>
+	void ScreenEdit::StartSongsDialogWithSelectionExecution(const std::string& inCaption, EXECUTION_CALLBACK&& inExecutionCallback)
+	{
+		std::vector<std::string> selections;
+
+		const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
+		const unsigned char selected_song = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+
+		for (unsigned char i = 0; i < song_count; ++i)
+		{
+			std::string selection_string = "Song " + std::to_string(i) + (i < 10 ? "  [" : " [") + m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(i) + "]";
+			selections.push_back(selection_string);
+		}
+
+		m_ComponentsManager->StartDialog(
+			std::make_shared<DialogSelectionList>
+			(
+				60,
+				song_count + 3,
+				selected_song,
+				inCaption,
+				selections,
+				inExecutionCallback,
+				[]() {}
+			)
+		);
+	}
+
+
+	template<typename EXECUTION_CALLBACK>
+	void ScreenEdit::StartMoveSongDialogWithSelectionExecution(const std::string& inCaption, EXECUTION_CALLBACK&& inExecutionCallback)
+	{
+		std::vector<std::string> selections;
+
+		const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
+		const unsigned char selected_song = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+
+		for (unsigned char i = 0; i < song_count; ++i)
+		{
+			std::string selection_string = "Song " + std::to_string(i) + (i < 10 ? "  [" : " [") + m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(i) + "]";
+			selections.push_back(selection_string);
+		}
+
+		m_ComponentsManager->StartDialog(
+			std::make_shared<DialogMoveSelectionList>
+			(
+				60,
+				song_count + 3,
+				selected_song,
+				inCaption,
+				selections,
+				inExecutionCallback,
+				[]() {}
+				)
+		);
+	}
 }

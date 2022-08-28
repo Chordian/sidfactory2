@@ -20,13 +20,18 @@ Please report issues in our [issue tracker](https://github.com/issues).
 
 ### Upcoming build
 
+- Added: [#37](https://github.com/Chordian/sidfactory2/issues/37) Multi song
+  support! Allows you to edit multiple order lists that share the same sequences
 - Added: Marking and copy/paste functionality in the song list
 - Added: Marking and copy/paste inside sequences (even across boundaries)
-- Added: An option to set the emulation sample rate to a user defined value 
-  (Thanks to Tammo Hinrichs)
+  and sounds. Press `F7` to check it out.
+- Added: [#74](https://github.com/Chordian/sidfactory2/issues/74) Configurable
+  virtual piano keyboard layout. (Thanks to Wolfgang Kreutz for requesting)
+- Added: An option to set the emulation sample rate to a user defined value
+  (Thanks to Tammo Hinrichs for implementing)
 - Fixed: Scrolling in the song list using the mouse wheel
 - Fixed: reSID won't output a click anymore when launching SID Factory II or
-  loading/saving files (Thanks to Tammo Hinrichs)
+  loading/saving files (Thanks to Tammo Hinrichs for implementing)
 
 ### Build 20211230
 

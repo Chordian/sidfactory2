@@ -3,6 +3,8 @@
 #include "runtime/editor/datasources/datasource_table_column_major.h"
 #include "runtime/editor/datasources/datasource_table_row_major.h"
 #include "runtime/editor/driver/driver_info.h"
+#include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/imemoryrandomreadaccess.h"
 #include "utils/c64file.h"
@@ -26,13 +28,16 @@ namespace Editor
 
 			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
 			{
+				// Get song count
+				const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+
 				// Get Music data descriptor
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 
 				// Find highest used sequence index
 				unsigned short order_list_1 = music_data.m_OrderListTrack1Address;
 
-				for (unsigned char i = 0; i < music_data.m_TrackCount; ++i)
+				for (unsigned char i = 0; i < music_data.m_TrackCount * song_count; ++i)
 				{
 					unsigned short order_list_address = order_list_1 + static_cast<unsigned short>(i) * music_data.m_OrderListSize;
 					for (unsigned short j = 0; j < music_data.m_OrderListSize; ++j)
@@ -60,6 +65,10 @@ namespace Editor
 		{
 			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
 			{
+				// Get song count
+				const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+
+
 				std::vector<int> usage_count(inDriverInfo.GetMusicData().m_SequenceCount, 0);
 
 				// Get Music data descriptor
@@ -68,7 +77,7 @@ namespace Editor
 				// Find highest used sequence index
 				unsigned short order_list_1 = music_data.m_OrderListTrack1Address;
 
-				for (unsigned char i = 0; i < music_data.m_TrackCount; ++i)
+				for (unsigned char i = 0; i < music_data.m_TrackCount * song_count; ++i)
 				{
 					unsigned short order_list_address = order_list_1 + static_cast<unsigned short>(i) * music_data.m_OrderListSize;
 					for (unsigned short j = 0; j < music_data.m_OrderListSize; ++j)
@@ -263,13 +272,16 @@ namespace Editor
 
 			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
 			{
+				// Get song count
+				const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+
 				// Get Music data descriptor
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 
 				// Find highest used sequence index
 				unsigned short order_list_1 = music_data.m_OrderListTrack1Address;
 
-				for (unsigned char i = 0; i < music_data.m_TrackCount; ++i)
+				for (unsigned char i = 0; i < music_data.m_TrackCount * song_count; ++i)
 				{
 					unsigned short order_list_address = order_list_1 + static_cast<unsigned short>(i) * music_data.m_OrderListSize;
 					for (int j = 0; j < music_data.m_OrderListSize; ++j)
@@ -279,6 +291,11 @@ namespace Editor
 						{
 							// +2, because the value after $ff is used as the loop index of the order list!
 							order_list_length_list.push_back(static_cast<unsigned short>(j) + 2);
+							break;
+						}
+						else if (value == 0xfe)
+						{
+							order_list_length_list.push_back(static_cast<unsigned short>(j) + 1);
 							break;
 						}
 					}

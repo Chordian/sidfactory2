@@ -46,10 +46,13 @@ namespace Editor
 		unsigned short ComputeDestinationAddresses();
 
 		std::shared_ptr<Utility::C64File> CreateOutputDataContainer(unsigned short inTopAddress, unsigned short inEndAddress);
-		void CopyDataToOutputContainer();
+		unsigned short CopyDataToOutputContainer();
 
 		void AdjustOrderListPointers();
 		void AdjustSequencePointers();
+
+		unsigned short GetMultiSongPatchSize();
+		void ApplyMultiSongPatch(unsigned short inTargetAddress);
 
 		unsigned short GetRelocatedVector(unsigned short inVectorAddress) const;
 		void ProcessDriverCode();
@@ -74,6 +77,8 @@ namespace Editor
 
 		const DriverInfo& m_DriverInfo;
 		Emulation::CPUMemory& m_CPUMemory;
+
+		std::vector<unsigned short> m_OrderListAdressList;
 
 		std::shared_ptr<Utility::C64File> m_OutputData;
 	};

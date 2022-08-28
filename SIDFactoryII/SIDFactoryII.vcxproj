@@ -184,6 +184,7 @@
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_songs.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_base.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_button.cpp" />
@@ -243,10 +244,12 @@
     <ClCompile Include="source\runtime\editor\dialog\dialog_bit_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_hex_value_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_message_yesno.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_move_selection_list.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_optimize.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_packing_options.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_selection_list.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_sid_file_info.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_songs.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_text_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_message.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_utilities.cpp" />
@@ -358,6 +361,7 @@
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_songs.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_utils.h" />
     <ClInclude Include="source\runtime\editor\components\component_base.h" />
@@ -420,10 +424,12 @@
     <ClInclude Include="source\runtime\editor\dialog\dialog_bit_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_hex_value_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_message_yesno.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_move_selection_list.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_optimize.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_packing_options.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_selection_list.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_sid_file_info.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_songs.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_text_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_message.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_utilities.h" />

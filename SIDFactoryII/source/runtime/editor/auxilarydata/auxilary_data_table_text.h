@@ -13,9 +13,19 @@ namespace Editor
 
 		void Reset() override;
 
+		bool HasTextBucketForTable(int inTableID) const;
+
 		bool HasText(int inTableID) const;
 		const std::string GetText(int inTableID, unsigned int inIndex) const;
 		void SetText(int inTableID, unsigned int inIndex, const std::string& inText);
+
+		bool HasText(int inTableID, unsigned int inLayer) const;
+		const std::string GetText(int inTableID, unsigned int inIndex, unsigned int inLayer) const;
+		void SetText(int inTableID, unsigned int inIndex, const std::string& inText, unsigned int inLayer);
+
+		bool InsertLayer(int inTableID, unsigned int inLayer);
+		bool RemoveLayer(int inTableID, unsigned int inLayer);
+		bool SwapLayers(int inTableID, unsigned int inLayer1, unsigned int inLayer2);
 
 	protected:
 		std::vector<unsigned char> GenerateSaveData() const override;
@@ -27,7 +37,7 @@ namespace Editor
 		struct TableTextList
 		{
 			int m_TableID;
-			std::vector<std::string> m_TextEntries;
+			std::vector<std::vector<std::string>> m_TextEntryListLayers;
 		};
 
 		std::vector<TableTextList> m_TableTextLists;

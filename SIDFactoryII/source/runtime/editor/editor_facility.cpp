@@ -7,6 +7,7 @@
 #include "libraries/ghc/fs_std.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_hardware_preferences.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/editor/converters/converterbase.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/dialog/dialog_message_yesno.h"
@@ -25,6 +26,7 @@
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/import_utils.h"
+#include "runtime/editor/datacopy/copypaste.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/cpumos6510.h"
 #include "runtime/emulation/sid/sidproxy.h"
@@ -226,8 +228,8 @@ namespace Editor
 		IPlatform& platform = Global::instance().GetPlatform();
 		ConfigFile& configFile = Global::instance().GetConfig();
 
-
-		const bool file_loaded_successfully = [&]() {
+		const bool file_loaded_successfully = [&]()
+		{
 			if (inFileToLoad != nullptr)
 			{
 				std::string file_to_load(inFileToLoad);
@@ -240,7 +242,7 @@ namespace Editor
 		// Try to load the driver directly
 		if (!file_loaded_successfully)
 		{
-			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_04.prg"));
+			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_05.prg"));
 			std::string drivers_folder = platform.Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}
@@ -373,7 +375,6 @@ namespace Editor
 
 	void EditorFacility::Reconfigure(unsigned int inReconfigureOption)
 	{
-
 		ConfigFile& configFile = Global::instance().GetConfig();
 
 		if (inReconfigureOption == 0)
@@ -386,7 +387,7 @@ namespace Editor
 			m_EditScreen->SetActivationMessage("Reloaded config!");
 			ForceRequestScreen(m_EditScreen.get());
 		}
-		if (inReconfigureOption == 1)
+		else if (inReconfigureOption == 1)
 		{
 			m_SelectedColorScheme++;
 			if (m_SelectedColorScheme >= m_ColorSchemeCount)
@@ -400,7 +401,7 @@ namespace Editor
 				ForceRequestScreen(m_EditScreen.get());
 			}
 		}
-		if (inReconfigureOption == 2)
+		else if (inReconfigureOption == 2)
 		{
 			std::string selected_color_scheme_name = ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
 
@@ -409,6 +410,22 @@ namespace Editor
 				m_EditScreen->SetActivationMessage("Reloaded color scheme: " + selected_color_scheme_name);
 				ForceRequestScreen(m_EditScreen.get());
 			}
+		}
+		else if (inReconfigureOption == 3)
+		{
+			ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
+
+			const auto selected_song_index = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+			const std::string& song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(selected_song_index);
+			const std::string& song_selection_text = song_name.empty()
+				? std::to_string(selected_song_index)
+				: song_name;
+
+			m_EditScreen->SetActivationMessage("[Selected song: " + song_selection_text + "]");
+			const unsigned char initTableID = EditorUtils::GetTableIDFromNameInTableDefinition(*m_DriverInfo, "init");
+			if (initTableID != 0xff)
+				m_EditScreen->SetActivationTableFocusID(static_cast<int>(initTableID), selected_song_index);
+			ForceRequestScreen(m_EditScreen.get());
 		}
 	}
 
@@ -523,11 +540,17 @@ namespace Editor
 				m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 				m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
 
+				// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+				EditorUtils::UpdateSongNameOfSingleSongPackages(*m_DriverInfo);
+
 				// Store name of last read file
 				SetLastSavedPathAndFilename(inPathAndFilename);
 
 				// Flush undo after load
 				m_EditScreen->FlushUndo();
+
+				// Flush copy/paste
+				CopyPaste::Instance().Flush();
 
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
@@ -560,8 +583,14 @@ namespace Editor
 					// Store name of last read file
 					SetLastSavedPathAndFilename(inPathAndFilename);
 
+					// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+					EditorUtils::UpdateSongNameOfSingleSongPackages(*outDriverInfo);
+
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
+
+					// Flush copy/paste
+					CopyPaste::Instance().Flush();
 
 					return true;
 				}
@@ -605,11 +634,17 @@ namespace Editor
 					m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 					m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
 
+					// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+					EditorUtils::UpdateSongNameOfSingleSongPackages(*m_DriverInfo);
+
 					// Store name of last read file
 					SetLastSavedPathAndFilename(inPathAndFilename);
 
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
+
+					// Flush copy/paste
+					CopyPaste::Instance().Flush();
 
 					// Notify overlay
 					m_OverlayControl->OnChange(*m_DriverInfo);
@@ -731,13 +766,14 @@ namespace Editor
 				// Save PSID file to disk, also
 				const auto& driver_common = m_DriverInfo->GetDriverCommon();
 				const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+				const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
 
 				Utility::PSIDFile psid_file(
 					data,
 					data_size + 2,
 					0,
 					driver_common.m_UpdateAddress - driver_common.m_InitAddress,
-					1,
+					static_cast<unsigned short>(song_count),
 					inTitle,
 					inAuthor,
 					inCopyright,
@@ -879,6 +915,9 @@ namespace Editor
 
 				// Flush undo after load
 				m_EditScreen->FlushUndo();
+
+				// Flush copy/paste
+				CopyPaste::Instance().Flush();
 
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
