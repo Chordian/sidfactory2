@@ -346,6 +346,12 @@ namespace Editor
 	template<typename PREDICATE>
 	std::vector<unsigned char> ComponentTrack::ForEachEventInMarkedRange(PREDICATE&& inPredicate)
 	{
+		struct AlteredSequenceEvent
+		{
+			unsigned char m_SequenceIndex;
+			int m_SequenceEventPos;
+		};
+
 		int top = m_IsMarkingArea ? std::min(m_MarkingFromEventPos, m_MarkingToEventPos) : m_EventPos;
 		int bottom = m_IsMarkingArea ? std::max(m_MarkingFromEventPos, m_MarkingToEventPos) : m_EventPos;
 
@@ -380,6 +386,14 @@ namespace Editor
 		if (!found)
 			return std::vector<unsigned char>();
 
+		std::vector<AlteredSequenceEvent> altered_sequence_events;
+
+		const auto is_sequence_event_already_altered = [&](unsigned char inSequenceIndex, int inSequenceEventPos)
+		{
+			const auto it = std::find_if(altered_sequence_events.begin(), altered_sequence_events.end(), [&](const auto& data) { return data.m_SequenceIndex == inSequenceIndex && data.m_SequenceEventPos == inSequenceEventPos; });
+			return it != altered_sequence_events.end();
+		};
+
 		std::vector<unsigned char> altered_sequence_indicies;
 		unsigned char last_sequence_index = 0xff;
 
@@ -399,8 +413,13 @@ namespace Editor
 
 			const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[sequence_index];
 
-			DataSourceSequence::Event& event = (*sequence)[sequence_event_pos];
-			inPredicate(event, i);
+			if (!is_sequence_event_already_altered(sequence_index, sequence_event_pos))
+			{
+				altered_sequence_events.push_back({ sequence_index, sequence_event_pos });
+
+				DataSourceSequence::Event& event = (*sequence)[sequence_event_pos];
+				inPredicate(event, i);
+			}
 
 			++sequence_event_pos;
 			if (sequence_event_pos >= static_cast<int>(sequence->GetLength()))
