@@ -190,6 +190,20 @@ namespace Editor
 		}
 
 
+		void UpdateSongNameOfSingleSongPackages(DriverInfo& inDriverInfo)
+		{
+			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());
+			FOUNDATION_ASSERT(song_count > 0);
+
+			if (song_count == 1)
+			{
+				const std::string& song_name = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongName(0);
+				if (song_name.empty())
+					inDriverInfo.GetAuxilaryDataCollection().GetSongs().SetSongName(0, "Main");
+			}
+		}
+
+
 		void SelectSong(unsigned int inIndex, DriverInfo& inDriverInfo, Emulation::CPUMemory& inCPUMemory)
 		{
 			const unsigned int song_count = static_cast<unsigned int>(inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount());

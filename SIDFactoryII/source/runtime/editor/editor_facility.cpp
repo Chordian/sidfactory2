@@ -540,6 +540,9 @@ namespace Editor
 				m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 				m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
 
+				// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+				EditorUtils::UpdateSongNameOfSingleSongPackages(*m_DriverInfo);
+
 				// Store name of last read file
 				SetLastSavedPathAndFilename(inPathAndFilename);
 
@@ -579,6 +582,9 @@ namespace Editor
 
 					// Store name of last read file
 					SetLastSavedPathAndFilename(inPathAndFilename);
+
+					// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+					EditorUtils::UpdateSongNameOfSingleSongPackages(*outDriverInfo);
 
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
@@ -627,6 +633,9 @@ namespace Editor
 					m_ExecutionHandler->SetInitVector(m_DriverInfo->GetDriverCommon().m_InitAddress);
 					m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 					m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
+
+					// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+					EditorUtils::UpdateSongNameOfSingleSongPackages(*m_DriverInfo);
 
 					// Store name of last read file
 					SetLastSavedPathAndFilename(inPathAndFilename);
