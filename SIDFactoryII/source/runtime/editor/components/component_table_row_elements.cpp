@@ -355,7 +355,7 @@ namespace Editor
 
 					if (m_HighlightRowOfSelectedSongIndex)
 					{
-						//if(row == )
+						// TODO: Implement
 					}
 
 					TextColoring text_coloring = GetTextColoring(base_data_offset, base_text_coloring);
