@@ -126,8 +126,17 @@ namespace Editor
 			else
 			{
 				FOUNDATION_ASSERT(inLoopIndex == m_Length - 1);
-				m_Events[m_Length - 1].m_Transposition = 0xfe;
-				m_Events[m_Length - 1].m_SequenceIndex = static_cast<unsigned int>(m_Length - 1);
+
+				if (m_Events[m_Length - 1].m_Transposition != 0xfe)
+				{
+					m_Events[m_Length - 1].m_Transposition = 0xfe;
+					m_Events[m_Length - 1].m_SequenceIndex = static_cast<unsigned int>(m_Length - 1);
+				}
+				else
+				{
+					m_Events[m_Length - 1].m_Transposition = 0xff;
+					m_Events[m_Length - 1].m_SequenceIndex = 0;
+				}
 			}
 		}
 	}
