@@ -57,6 +57,7 @@ Please report issues in our [issue tracker](https://github.com/issues).
 - Fixed: Scrolling in the song list using the mouse wheel
 - Fixed: reSID won't output a click anymore when launching SID Factory II or
   loading/saving files (Thanks to Tammo Hinrichs for implementing)
+
 ### Build 20211230
 
 - Added: You can now add labels for song list rows. Left-click to edit a label.

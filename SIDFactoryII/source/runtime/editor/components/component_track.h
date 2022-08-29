@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <algorithm>
 
 namespace Foundation
 {

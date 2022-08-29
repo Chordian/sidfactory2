@@ -6,6 +6,7 @@
 #include "runtime/emulation/imemoryrandomreadaccess.h"
 #include <memory>
 #include <vector>
+#include <algorithm>
 
 namespace Emulation
 {
