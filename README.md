@@ -51,6 +51,8 @@ Please report issues in our [issue tracker](https://github.com/issues).
 - Added: Marking and copy/paste inside sequences (even across boundaries)
 - Added: [#74](https://github.com/Chordian/sidfactory2/issues/74) Configurable
   virtual piano keyboard layout. (Thanks to Wolfgang Kreutz for requesting)
+- Added: [#119](https://github.com/Chordian/sidfactory2/issues/119) A song can
+  be made top stop playing instead of looping.
 - Added: An option to set the emulation sample rate to a user defined value
   (Thanks to Tammo Hinrichs for implementing)
 - Added: More than 30+ new source tunes by JCH and Vincenzo
