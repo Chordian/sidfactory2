@@ -117,6 +117,7 @@ namespace Editor
 		, m_ActivationMessage("")
 		, m_ConvertLegacyDriverTableDefaultColors(false)
 		, m_ActivationFocusOnComponent(false)
+		, m_StopEmulationIfDriverStops(true)
 	{
 	}
 
@@ -154,6 +155,7 @@ namespace Editor
 		ConfigureKeyHooks();
 		ConfigureDynamicKeyHooks();
 		ConfigureNoteKeys();
+		ConfigurePlaybackOptions();
 
 		// Prepare the layout
 		PrepareLayout();
@@ -211,8 +213,14 @@ namespace Editor
 		m_DriverState = DriverState();
 
 		// Create the status bar
+		const auto selected_song_index = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+		const std::string& song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(selected_song_index);
+		const std::string& song_selection_text = song_name.empty()
+			? std::to_string(selected_song_index + 1)
+			: song_name;
+
 		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_context_highlight, mouse_button_follow_play);
-		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + std::to_string(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong()) + "]", 2500);
+		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500);
 		m_ActivationMessage = "";
 
 		// Create flight recorder overlay
@@ -385,7 +393,7 @@ namespace Editor
 		ScreenBase::Refresh();
 
 		// Refresh info rect
-		const int h = 4;
+		const int h = 5;
 		const int x = m_TracksComponent->GetPosition().m_X + m_TracksComponent->GetDimensions().m_Width + 1;
 		const int y = m_MainTextField->GetDimensions().m_Height - (h + 1);
 		const int w = m_MainTextField->GetDimensions().m_Width - (x + 1);
@@ -395,8 +403,13 @@ namespace Editor
 		const int minutes = m_PlayTimerSeconds / 60;
 		const int seconds = m_PlayTimerSeconds % 60;
 
+		const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
+		const unsigned char selected_song = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+		const std::string& song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(selected_song);
+
 		m_MainTextField->Print(x + 1, y + 1, ToColor(IsPlaying() ? UserColor::ScreenEditInfoRectTextTimePlaybackState : UserColor::ScreenEditInfoRectText), "Playing time: " + std::to_string(minutes) + ((seconds < 10) ? ":0" : ":") + std::to_string(seconds) + "      ");
-		m_MainTextField->Print(x + 1, y + 2, ToColor(UserColor::ScreenEditInfoRectText), m_DriverInfo->GetDescriptor().m_DriverName);
+		m_MainTextField->Print(x + 1, y + 2, ToColor(UserColor::ScreenEditInfoRectText), "Song " + std::to_string(selected_song + 1) + "/" + std::to_string(song_count) + ": " + song_name);
+		m_MainTextField->Print(x + 1, y + 3, ToColor(UserColor::ScreenEditInfoRectText), m_DriverInfo->GetDescriptor().m_DriverName);
 
 		// m_Undo->PrintDebug(*m_MainTextField);
 	}
@@ -1228,8 +1241,6 @@ namespace Editor
 
 		// Create tables as configured by the driver
 		const std::vector<DriverInfo::TableDefinition>& table_definitions = m_DriverInfo->GetTableDefinitions();
-
-		int command_and_instrument_table_ref = 0;
 		
 		int highest_table = 0;
 		int widest_table = 0;
@@ -1257,7 +1268,7 @@ namespace Editor
 				widest_table = 0;
 			}
 
-			if (table_width + current_x > tables_rect.m_Dimensions.m_Width || command_and_instrument_table_ref == 2)
+			if (table_width + current_x > tables_rect.m_Dimensions.m_Width)
 			{
 				current_x = 0;
 				current_y += highest_table + 2;
@@ -1376,8 +1387,6 @@ namespace Editor
 						m_TracksComponent->ForceRefresh();
 					})
 				);
-
-				//++command_and_instrument_table_ref;
 			}
 			else if (table_definition.m_Type == DriverInfo::TableType::Commands)
 			{
@@ -1392,8 +1401,6 @@ namespace Editor
 						m_TracksComponent->ForceRefresh();
 					})
 				);
-
-				//++command_and_instrument_table_ref;
 			}
 
 			// Print table name
@@ -1558,6 +1565,11 @@ namespace Editor
 						if (m_PlaybackCurrentEventPos >= m_TracksComponent->GetMaxEventPosition())
 							m_PlaybackCurrentEventPos = m_TracksComponent->GetLoopEventPosition();
 					}
+					else if (driver_state_value == 0x40)
+					{
+						if(m_StopEmulationIfDriverStops)
+							DoStop();
+					}
 				}
 			}
 			break;
@@ -1685,6 +1697,15 @@ namespace Editor
 
 			m_CPUMemory->Unlock();
 		}
+	}
+
+
+	void ScreenEdit::ConfigurePlaybackOptions()
+	{
+		using namespace Utility::Config;
+
+		ConfigFile& config = Global::instance().GetConfig();
+		m_StopEmulationIfDriverStops = GetSingleConfigurationValue<ConfigValueInt>(config, "Playback.StopEmulationIfDriverStops", true);
 	}
 
 

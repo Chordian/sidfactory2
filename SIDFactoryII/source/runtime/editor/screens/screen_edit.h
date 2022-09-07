@@ -168,6 +168,7 @@ namespace Editor
 		void ConfigureKeyHooks();
 		void ConfigureDynamicKeyHooks();
 		void ConfigureNoteKeys();
+		void ConfigurePlaybackOptions();
 
 		template<typename EXECUTION_CALLBACK>
 		void StartSongsDialogWithSelectionExecution(const std::string& headline, EXECUTION_CALLBACK&& inExecutionCallback);
@@ -251,6 +252,7 @@ namespace Editor
 		// Playback 
 		int m_LastPlaybackStartEventPos;
 		int m_PlaybackCurrentEventPos;
+		bool m_StopEmulationIfDriverStops;
 
 		// Added configuration
 		bool m_ConvertLegacyDriverTableDefaultColors;
@@ -273,7 +275,8 @@ namespace Editor
 
 		for (unsigned char i = 0; i < song_count; ++i)
 		{
-			std::string selection_string = "Song " + std::to_string(i) + (i < 10 ? "  [" : " [") + m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(i) + "]";
+			unsigned char song_num = i + 1;
+			std::string selection_string = "Song " + std::to_string(song_num) + (song_num < 10 ? "  [" : " [") + m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(i) + "]";
 			selections.push_back(selection_string);
 		}
 
@@ -302,7 +305,8 @@ namespace Editor
 
 		for (unsigned char i = 0; i < song_count; ++i)
 		{
-			std::string selection_string = "Song " + std::to_string(i) + (i < 10 ? "  [" : " [") + m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(i) + "]";
+			unsigned char song_num = i + 1;
+			std::string selection_string = "Song " + std::to_string(song_num) + (song_num < 10 ? "  [" : " [") + m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(i) + "]";
 			selections.push_back(selection_string);
 		}
 

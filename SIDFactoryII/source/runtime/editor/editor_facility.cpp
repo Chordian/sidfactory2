@@ -418,7 +418,7 @@ namespace Editor
 			const auto selected_song_index = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
 			const std::string& song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(selected_song_index);
 			const std::string& song_selection_text = song_name.empty()
-				? std::to_string(selected_song_index)
+				? std::to_string(selected_song_index + 1)
 				: song_name;
 
 			m_EditScreen->SetActivationMessage("[Selected song: " + song_selection_text + "]");
