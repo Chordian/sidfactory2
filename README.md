@@ -34,6 +34,7 @@ Notable features:
 
 ## Changelog
 
+![Last commit](https://img.shields.io/github/last-commit/chordian/sidfactory2)
 ![Build windows
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build macOS
@@ -43,6 +44,8 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 Please report issues in our [issue tracker](https://github.com/issues).
 
 ### Upcoming build
+
+![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20211230)
 
 - Added: [#37](https://github.com/Chordian/sidfactory2/issues/37) Multi song
   support. Allows you to edit multiple order lists that share the same sequences
