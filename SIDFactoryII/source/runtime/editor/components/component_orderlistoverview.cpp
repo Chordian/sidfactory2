@@ -452,7 +452,7 @@ namespace Editor
 					marking_rect.m_Position.m_Y += adjusted_top_marking;
 					marking_rect.m_Dimensions = { 2, marking_height };
 
-					m_TextField->ColorAreaBackground(ToColor(m_HasControl ? UserColor::SongListCursorFocus : UserColor::SongListCursorDefault), marking_rect);
+					m_TextField->ColorAreaBackground(ToColor(m_HasControl ? UserColor::SongListAreaMarkingFocus : UserColor::SongListAreaMarking), marking_rect);
 				}
 			}
 

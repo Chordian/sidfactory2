@@ -52,12 +52,16 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.SongList.Values", UserColor::SongListValues, ioViewport, Color::White);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Cursor", UserColor::SongListCursorDefault, ioViewport, Color::DarkBlue);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Cursor.Focus", UserColor::SongListCursorFocus, ioViewport, Color::Blue);
+			Details::SetUserColor(inConfigFile, "Color.SongList.AreaMarking", UserColor::SongListAreaMarking, ioViewport, Color::DarkBlue);
+			Details::SetUserColor(inConfigFile, "Color.SongList.AreaMarking.Focus", UserColor::SongListAreaMarkingFocus, ioViewport, Color::DarkBlue);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Playback.Marker", UserColor::SongListPlaybackMarker, ioViewport, Color::Red);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Loop.Marker", UserColor::SongListLoopMarker, ioViewport, Color::LightGreen);
 			Details::SetUserColor(inConfigFile, "Color.Track.Background", UserColor::TrackBackground, ioViewport, Color::DarkBlue);
 			Details::SetUserColor(inConfigFile, "Color.Track.Background.FocusLine", UserColor::TrackBackgroundFocusLine, ioViewport, Color::DarkerBlue);
 			Details::SetUserColor(inConfigFile, "Color.Track.BackgroundMuted", UserColor::TrackBackgroundMuted, ioViewport, Color::DarkGrey);
 			Details::SetUserColor(inConfigFile, "Color.Track.BackgroundMuted.FocusLine", UserColor::TrackBackgroundMutedFocusLine, ioViewport, Color::DarkerGrey);
+			Details::SetUserColor(inConfigFile, "Color.Track.MarkingArea", UserColor::TrackMarkingArea, ioViewport, Color::DarkerBlue);
+			Details::SetUserColor(inConfigFile, "Color.Track.MarkingAreaMuted", UserColor::TrackMarkingAreaMuted, ioViewport, Color::DarkerGrey);
 			Details::SetUserColor(inConfigFile, "Color.Track.Name", UserColor::TrackName, ioViewport, Color::Grey);
 			Details::SetUserColor(inConfigFile, "Color.Track.Name.Selected", UserColor::TrackNameSelected, ioViewport, Color::White);
 			Details::SetUserColor(inConfigFile, "Color.Track.Name.Focus", UserColor::TrackNameFocus, ioViewport, Color::LighterGrey);

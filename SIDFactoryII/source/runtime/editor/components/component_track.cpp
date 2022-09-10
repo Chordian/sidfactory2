@@ -363,6 +363,8 @@ namespace Editor
 			const Color background_color_muted = ToColor(UserColor::TrackBackgroundMuted);
 			const Color focus_line_background_color = ToColor(UserColor::TrackBackgroundFocusLine);
 			const Color focus_line_background_color_muted = ToColor(UserColor::TrackBackgroundMutedFocusLine);
+			const Color background_color_marking = ToColor(UserColor::TrackMarkingArea);
+			const Color background_color_marking_muted = ToColor(UserColor::TrackMarkingAreaMuted);
 
 			Rect focus_line_rect = m_Rect;
 
@@ -407,9 +409,6 @@ namespace Editor
 						marking_rect.m_Dimensions.m_Height = marking_bottom_screen_position - marking_top_screen_position;
 						marking_rect.m_Position.m_X += 5;
 						marking_rect.m_Dimensions.m_Width -= 6;
-
-						const Color background_color_marking = focus_line_background_color;
-						const Color background_color_marking_muted = focus_line_background_color_muted;
 
 						m_TextField->ColorAreaBackground(m_IsMuted ? background_color_marking_muted : background_color_marking, marking_rect);
 					}
