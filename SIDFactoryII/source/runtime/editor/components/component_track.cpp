@@ -428,14 +428,43 @@ namespace Editor
 				unsigned int sequence_index = m_FirstValidSequenceIndex;
 
 				{
-					DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
-					const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-
-					for (unsigned int i = 0; i < sequence_index; ++i)
 					{
-						const DataSourceSequence::Event& event = (*sequence)[i];
-						if ((event.m_Instrument & 0xe0) == 0xa0)
-							current_instrument = event.m_Instrument & 0x1f;
+						DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
+						const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+						for (unsigned int i = 0; i < sequence_index; ++i)
+						{
+							const DataSourceSequence::Event& event = (*sequence)[i];
+							if ((event.m_Instrument & 0xe0) == 0xa0)
+								current_instrument = event.m_Instrument & 0x1f;
+						}
+					}
+
+					if (current_instrument == 0xff)
+					{
+						// We didn't find the current instrument
+						unsigned orderlist_index_highligh_check = orderlist_index;
+
+						while (orderlist_index_highligh_check > 0 && current_instrument == 0xff)
+						{
+							--orderlist_index_highligh_check;
+
+							DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index_highligh_check];
+							const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+							if (sequence->GetLength() > 0)
+							{
+								for (int i = static_cast<int>(sequence->GetLength()); i >= 0; --i)
+								{
+									const DataSourceSequence::Event& event = (*sequence)[i];
+									if ((event.m_Instrument & 0xe0) == 0xa0)
+									{
+										current_instrument = event.m_Instrument & 0x1f;
+										break;
+									}
+								}
+							}
+						}
 					}
 				}
 
