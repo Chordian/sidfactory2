@@ -34,6 +34,7 @@ Notable features:
 
 ## Changelog
 
+![Last commit](https://img.shields.io/github/last-commit/chordian/sidfactory2)
 ![Build windows
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build macOS
@@ -44,6 +45,8 @@ Please report issues in our [issue tracker](https://github.com/issues).
 
 ### Upcoming build
 
+![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20211230)
+
 - Added: [#37](https://github.com/Chordian/sidfactory2/issues/37) Multi song
   support. Allows you to edit multiple order lists that share the same sequences
   and sounds. Press `F7` to check it out.
@@ -52,7 +55,7 @@ Please report issues in our [issue tracker](https://github.com/issues).
 - Added: [#74](https://github.com/Chordian/sidfactory2/issues/74) Configurable
   virtual piano keyboard layout. (Thanks to Wolfgang Kreutz for requesting)
 - Added: [#119](https://github.com/Chordian/sidfactory2/issues/119) A song can
-  be made top stop playing instead of looping.
+  be made to stop playing instead of looping.
 - Added: An option to set the emulation sample rate to a user defined value
   (Thanks to Tammo Hinrichs for implementing)
 - Added: More than 30+ new source tunes by JCH and Vincenzo
