@@ -879,6 +879,33 @@ namespace Editor
 
 				if (event_position.m_IsValid)
 				{
+					if (event_position.m_CurrentInstrument == 0)
+					{
+						// We didn't find the current instrument
+						unsigned orderlist_index_highligh_check = event_pos_details.OrderListIndex();
+
+						while (orderlist_index_highligh_check > 0 && event_position.m_CurrentInstrument == 0x00)
+						{
+							--orderlist_index_highligh_check;
+
+							DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index_highligh_check];
+							const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+							if (sequence->GetLength() > 0)
+							{
+								for (int i = static_cast<int>(sequence->GetLength()); i >= 0; --i)
+								{
+									const DataSourceSequence::Event& event = (*sequence)[i];
+									if ((event.m_Instrument & 0xe0) == 0xa0)
+									{
+										event_position.m_CurrentInstrument = event.m_Instrument;
+										break;
+									}
+								}
+							}
+						}
+					}
+
 					outOrderListIndices.push_back(
 						{
 							static_cast<unsigned char>(order_list_event_position.m_Index),
@@ -887,7 +914,7 @@ namespace Editor
 							event_position.m_Index,
 							event_position.m_CurrentDurationValue,
 							event_position.m_RemainingTicks,
-							event_position.m_NextInstrumentAddress,
+							event_position.m_CurrentInstrument,
 							!event_position.m_NextIsEndOfSequence
 						} );
 
