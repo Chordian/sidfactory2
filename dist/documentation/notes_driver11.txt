@@ -9,7 +9,6 @@ Versions
   o  11.02: Also includes the pulse table index, tempo table index and main volume commands
   o  11.03: Also includes additional filter enable flag
   o  11.04: Also includes note event delay
-  o  11.05: Can now also stop a song
 
 
 Instruments

@@ -8,7 +8,6 @@ Versions
             where all of the variables used by the driver have been moved to the zero page
             addressing space. A linear pulse sweep has been added and the code has been
             optimized to take up as little memory as possible. Hard restart is always on
-  o  15.03: Can now also stop a song
 
 
 Instruments

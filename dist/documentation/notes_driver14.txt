@@ -6,7 +6,6 @@ Versions
 
   o  14.00: This driver has an experimental approach to writing to the SID. It allows for
             very short durations of gate off but also has a greater chance of instability
-  o  14.01: Can now also stop a song
 
 
 Instruments
