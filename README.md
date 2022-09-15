@@ -43,7 +43,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 Please report issues in our [issue tracker](https://github.com/issues).
 
-### Upcoming build
+### Build 20220914
 
 ![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20211230)
 
