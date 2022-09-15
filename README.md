@@ -43,9 +43,9 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 Please report issues in our [issue tracker](https://github.com/issues).
 
-### Build 20220914
+![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20220914)
 
-![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20211230)
+### Build 20220914
 
 - Added: [#37](https://github.com/Chordian/sidfactory2/issues/37) Multi song
   support. Allows you to edit multiple order lists that share the same sequences
