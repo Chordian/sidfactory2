@@ -385,6 +385,24 @@ namespace Editor
 			if (m_EditState.IsFollowPlayMode() && m_PlaybackCurrentEventPos >= 0)
 				m_TracksComponent->SetEventPosition(m_PlaybackCurrentEventPos, true);
 		}
+
+		// Constantly refresh update per frame
+		unsigned char update_per_frame = [&]()
+		{
+			unsigned short updates_per_frame_vector = m_DriverInfo->GetDriverCommon().m_UpdatesPerFrameAddress;
+			if (updates_per_frame_vector != 0)
+			{
+				m_CPUMemory->Lock();
+				unsigned char value = m_CPUMemory->GetByte(updates_per_frame_vector) + 1;
+				m_CPUMemory->Unlock();
+
+				return value;
+			}
+
+			return unsigned char(0);
+		}();
+
+		m_ExecutionHandler->SetUpdatesPerFrame(update_per_frame < 1 ? 1 : update_per_frame);
 	}
 
 
