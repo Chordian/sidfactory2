@@ -89,8 +89,8 @@ namespace Editor
 			unsigned short m_TempoCounterAddress;
 			unsigned short m_TriggerSyncAddress;
 			unsigned char m_NoteEventTriggerSyncValue;
-			unsigned char m_ReservedByte;
-			unsigned short m_ReservedWord;
+			unsigned short m_UpdatesPerFrameAddress;
+			unsigned char m_MaxUpdatesPerFrame;
 		};
 
 
