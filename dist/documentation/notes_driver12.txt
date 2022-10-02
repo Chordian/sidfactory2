@@ -5,7 +5,6 @@ Versions
 --------
 
   o  12.00: An extremely simple driver that can only do the most basic effects
-  o  12.01: Can now also stop a song
 
 
 Instruments

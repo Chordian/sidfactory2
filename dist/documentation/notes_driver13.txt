@@ -5,7 +5,6 @@ Versions
 --------
 
   o  13.00: A driver that emulates the sound of Rob Hubbard's driver
-  o  13.01: Can now also stop a song
 
 
 Instruments
