@@ -34,12 +34,36 @@ namespace Editor
 		, m_SequencePointersDataSectionLowID(0)
 		, m_SequencePointersDataSectionHighID(0)
 	{
-		FOUNDATION_ASSERT(inDriverInfo.IsValid());
+		Run();
+	}
+
+
+	Packer::~Packer()
+	{
+
+	}
+
+
+	unsigned int Packer::GetResultCount() const
+	{
+		return m_OutputData == nullptr ? 0u : 1u;
+	}
+
+
+	std::shared_ptr<Utility::C64File> Packer::GetResult(unsigned int inSection) const
+	{
+		return m_OutputData;
+	}
+
+
+	bool Packer::Run()
+	{
+		FOUNDATION_ASSERT(m_DriverInfo.IsValid());
 
 		// Compute the destination address delta. The driver and data are processed for the destination address at address 0x1000 in the data container, but the load 
 		// address of the file generated is altered to the destination address before saving it to disk.
 
-		ZeroPageRange zp_range = GetZeroPageRangeFromDriver(inCPUMemory, inDriverInfo);
+		ZeroPageRange zp_range = GetZeroPageRangeFromDriver(m_CPUMemory, m_DriverInfo);
 
 		FOUNDATION_ASSERT(zp_range.m_LowestZeroPage > 0);
 		FOUNDATION_ASSERT(zp_range.m_LowestZeroPage <= zp_range.m_HighestZeroPage);
@@ -58,8 +82,8 @@ namespace Editor
 
 		// Sort data descriptors
 		std::sort(m_DataSectionList.begin(), m_DataSectionList.end(), [](const auto& inA, const auto& inB)
-		{ 
-			return (inA.m_SourceAddress < inB.m_SourceAddress); 
+		{
+			return (inA.m_SourceAddress < inB.m_SourceAddress);
 		});
 
 		const bool requires_multi_song_patch = m_DriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount() > 1;
@@ -73,8 +97,8 @@ namespace Editor
 
 		unsigned short data_address = CopyDataToOutputContainer();
 
-		AdjustOrderListPointers();
-		AdjustSequencePointers();
+		AdjustOrderListPointers();	// This only adjusts data in the top output data container.
+		AdjustSequencePointers();	// This only adjusts data in the top output data container.
 
 		ProcessDriverCode();
 
@@ -85,18 +109,14 @@ namespace Editor
 		m_OutputData->MoveDataToTopAddress(m_DestinationAddress);
 
 		m_CPUMemory.Unlock();
+
+		return true;
 	}
 
 
-	Packer::~Packer()
+	std::string Packer::GetError()
 	{
-
-	}
-
-
-	std::shared_ptr<Utility::C64File> Packer::GetResult() const
-	{
-		return m_OutputData;
+		return "No error";
 	}
 
 
@@ -252,14 +272,16 @@ namespace Editor
 		const unsigned short driver_top_address = m_DriverInfo.GetDescriptor().m_DriverCodeTop;
 		const unsigned short driver_size = m_DriverInfo.GetDescriptor().m_DriverSize;
 
-		CopyData(m_CPUMemory, *m_OutputData, driver_top_address, driver_top_address, driver_size);
+		Utility::C64File& output_data = *m_OutputData;
+
+		CopyData(m_CPUMemory, output_data, driver_top_address, driver_top_address, driver_size);
 
 		unsigned short data_address = driver_top_address + driver_size;
 
 		for (const DataSection& data_section : m_DataSectionList)
 		{
 			FOUNDATION_ASSERT(data_address == data_section.m_DestinationAddress);
-			CopyData(m_CPUMemory, *m_OutputData, data_section.m_SourceAddress, data_section.m_DestinationAddress, data_section.m_SourceSize);
+			CopyData(m_CPUMemory, output_data, data_section.m_SourceAddress, data_section.m_DestinationAddress, data_section.m_SourceSize);
 
 			data_address += data_section.m_SourceSize;
 		}
@@ -270,6 +292,10 @@ namespace Editor
 
 	void Packer::AdjustOrderListPointers()
 	{
+		FOUNDATION_ASSERT(m_OutputData != nullptr);
+
+		Utility::C64File& output_data = *m_OutputData;
+
 		const unsigned short order_list_pointers_low_address = GetDataSection(m_OrderListPointersDataSectionLowID)->m_DestinationAddress;
 		const unsigned short order_list_pointers_high_address = GetDataSection(m_OrderListPointersDataSectionHighID)->m_DestinationAddress;
 
@@ -285,8 +311,8 @@ namespace Editor
 
 			if (offset < static_cast<int>(music_data.m_TrackCount))
 			{
-				(*m_OutputData)[order_list_pointers_low_address + offset] = static_cast<unsigned char>(order_list_address & 0xff);
-				(*m_OutputData)[order_list_pointers_high_address + offset] = static_cast<unsigned char>((order_list_address >> 8) & 0xff);
+				output_data[order_list_pointers_low_address + offset] = static_cast<unsigned char>(order_list_address & 0xff);
+				output_data[order_list_pointers_high_address + offset] = static_cast<unsigned char>((order_list_address >> 8) & 0xff);
 
 				++offset;
 			}
@@ -296,6 +322,10 @@ namespace Editor
 
 	void Packer::AdjustSequencePointers()
 	{
+		FOUNDATION_ASSERT(m_OutputData != nullptr);
+
+		Utility::C64File& output_data = *m_OutputData;
+
 		const unsigned short sequence_pointers_low_address = GetDataSection(m_SequencePointersDataSectionLowID)->m_DestinationAddress;
 		const unsigned short sequence_pointers_high_address = GetDataSection(m_SequencePointersDataSectionHighID)->m_DestinationAddress;
 
@@ -305,8 +335,8 @@ namespace Editor
 		{
 			unsigned short sequence_address = GetDataSection(sequence_id)->m_DestinationAddress + m_DestinationAddressDelta;
 
-			(*m_OutputData)[sequence_pointers_low_address + offset] = static_cast<unsigned char>(sequence_address & 0xff);
-			(*m_OutputData)[sequence_pointers_high_address + offset] = static_cast<unsigned char>((sequence_address >> 8) & 0xff);
+			output_data[sequence_pointers_low_address + offset] = static_cast<unsigned char>(sequence_address & 0xff);
+			output_data[sequence_pointers_high_address + offset] = static_cast<unsigned char>((sequence_address >> 8) & 0xff);
 
 			++offset;
 		}
@@ -347,6 +377,10 @@ namespace Editor
 
 	void Packer::ApplyMultiSongPatch(unsigned short inTargetAddress)
 	{
+		FOUNDATION_ASSERT(m_OutputData != nullptr);
+
+		Utility::C64File& output_data = *m_OutputData;
+
 		static unsigned short zp_fix_offsets[] = { 0x0001, 0x0005, 0x001c };
 
 		static unsigned short order_list_pointer_low_read_fix_offset = 0x000a;
@@ -362,8 +396,8 @@ namespace Editor
 
 		for (unsigned short order_list_address : m_OrderListAdressList)
 		{
-			(*m_OutputData)[inTargetAddress + offset] = static_cast<unsigned char>(order_list_address & 0xff);
-			(*m_OutputData)[inTargetAddress + order_list_count + offset] = static_cast<unsigned char>(order_list_address >> 8);
+			output_data[inTargetAddress + offset] = static_cast<unsigned char>(order_list_address & 0xff);
+			output_data[inTargetAddress + order_list_count + offset] = static_cast<unsigned char>(order_list_address >> 8);
 		
 			++offset;
 		}
@@ -372,42 +406,42 @@ namespace Editor
 		unsigned short patch_code_size = sizeof(multi_song_patch_code);
 
 		for (unsigned short i = 0; i < patch_code_size; ++i)
-			(*m_OutputData)[code_patch_target_address + i] = multi_song_patch_code[i];
+			output_data[code_patch_target_address + i] = multi_song_patch_code[i];
 
 		// Fix zero pages in patch code
 		for (unsigned int i = 0; i < 3; ++i)
-			(*m_OutputData)[code_patch_target_address + zp_fix_offsets[i]] = m_LowestZP;
+			output_data[code_patch_target_address + zp_fix_offsets[i]] = m_LowestZP;
 
 		// Patch the orderlist read addresses
 		const unsigned short order_list_read_low_address = inTargetAddress + m_DestinationAddressDelta;
 		const unsigned short order_list_read_high_address = inTargetAddress + order_list_count + m_DestinationAddressDelta;
 
-		(*m_OutputData)[code_patch_target_address + order_list_pointer_low_read_fix_offset] = static_cast<unsigned char>(order_list_read_low_address & 0xff);
-		(*m_OutputData)[code_patch_target_address + order_list_pointer_low_read_fix_offset + 1] = static_cast<unsigned char>(order_list_read_low_address >> 8);
-		(*m_OutputData)[code_patch_target_address + order_list_pointer_high_read_fix_offset] = static_cast<unsigned char>((order_list_read_high_address) & 0xff);
-		(*m_OutputData)[code_patch_target_address + order_list_pointer_high_read_fix_offset + 1] = static_cast<unsigned char>((order_list_read_high_address) >> 8);
+		output_data[code_patch_target_address + order_list_pointer_low_read_fix_offset] = static_cast<unsigned char>(order_list_read_low_address & 0xff);
+		output_data[code_patch_target_address + order_list_pointer_low_read_fix_offset + 1] = static_cast<unsigned char>(order_list_read_low_address >> 8);
+		output_data[code_patch_target_address + order_list_pointer_high_read_fix_offset] = static_cast<unsigned char>((order_list_read_high_address) & 0xff);
+		output_data[code_patch_target_address + order_list_pointer_high_read_fix_offset + 1] = static_cast<unsigned char>((order_list_read_high_address) >> 8);
 
 		// Patch driver order list pointer destination
 		const unsigned short order_list_pointers_low_address = GetDataSection(m_OrderListPointersDataSectionLowID)->m_DestinationAddress + m_DestinationAddressDelta;
 		const unsigned short order_list_pointers_high_address = GetDataSection(m_OrderListPointersDataSectionHighID)->m_DestinationAddress + m_DestinationAddressDelta;
 
-		(*m_OutputData)[code_patch_target_address + order_list_pointer_low_write_fix_offset] = static_cast<unsigned char>(order_list_pointers_low_address & 0xff);
-		(*m_OutputData)[code_patch_target_address + order_list_pointer_low_write_fix_offset + 1] = static_cast<unsigned char>(order_list_pointers_low_address >> 8);
-		(*m_OutputData)[code_patch_target_address + order_list_pointer_high_write_fix_offset] = static_cast<unsigned char>((order_list_pointers_high_address) & 0xff);
-		(*m_OutputData)[code_patch_target_address + order_list_pointer_high_write_fix_offset + 1] = static_cast<unsigned char>((order_list_pointers_high_address) >> 8);
+		output_data[code_patch_target_address + order_list_pointer_low_write_fix_offset] = static_cast<unsigned char>(order_list_pointers_low_address & 0xff);
+		output_data[code_patch_target_address + order_list_pointer_low_write_fix_offset + 1] = static_cast<unsigned char>(order_list_pointers_low_address >> 8);
+		output_data[code_patch_target_address + order_list_pointer_high_write_fix_offset] = static_cast<unsigned char>((order_list_pointers_high_address) & 0xff);
+		output_data[code_patch_target_address + order_list_pointer_high_write_fix_offset + 1] = static_cast<unsigned char>((order_list_pointers_high_address) >> 8);
 
 
 		// Patch the jump vector
 		const unsigned short init_address = m_DriverInfo.GetDriverCommon().m_InitAddress;
-		const unsigned short init_jump_vector = m_OutputData->GetWord(init_address + 1);
+		const unsigned short init_jump_vector = output_data.GetWord(init_address + 1);
 
-		(*m_OutputData)[code_patch_target_address + jump_vector_offset] = static_cast<unsigned char>(init_jump_vector & 0xff);
-		(*m_OutputData)[code_patch_target_address + jump_vector_offset + 1] = static_cast<unsigned char>(init_jump_vector >> 8);
+		output_data[code_patch_target_address + jump_vector_offset] = static_cast<unsigned char>(init_jump_vector & 0xff);
+		output_data[code_patch_target_address + jump_vector_offset + 1] = static_cast<unsigned char>(init_jump_vector >> 8);
 
 		const unsigned short relocated_code_patch_target_address = code_patch_target_address + m_DestinationAddressDelta;
 
-		(*m_OutputData)[init_address + 1] = static_cast<unsigned char>(relocated_code_patch_target_address & 0xff);
-		(*m_OutputData)[init_address + 2] = static_cast<unsigned char>(relocated_code_patch_target_address >> 8);
+		output_data[init_address + 1] = static_cast<unsigned char>(relocated_code_patch_target_address & 0xff);
+		output_data[init_address + 2] = static_cast<unsigned char>(relocated_code_patch_target_address >> 8);
 	}
 
 
@@ -428,6 +462,10 @@ namespace Editor
 
 	void Packer::ProcessDriverCode()
 	{
+		FOUNDATION_ASSERT(m_OutputData != nullptr);
+
+		Utility::C64File& output_data = *m_OutputData;
+
 		auto requires_relocation = [](Emulation::CPUmos6510::AddressingMode inAddressingMode)
 		{
 			switch (inAddressingMode)
@@ -468,7 +506,7 @@ namespace Editor
 
 		while (address < bottom_address)
 		{
-			const unsigned char opcode = (*m_OutputData)[address];
+			const unsigned char opcode = output_data[address];
 			const unsigned char opcode_size = Emulation::CPUmos6510::GetOpcodeByteSize(opcode);
 			const Emulation::CPUmos6510::AddressingMode opcode_addressing_mode = Emulation::CPUmos6510::GetOpcodeAddressingMode(opcode);
 
@@ -476,7 +514,7 @@ namespace Editor
 			{
 				FOUNDATION_ASSERT(opcode_size == 3);
 
-				const unsigned short code_vector = m_OutputData->GetWord(address + 1);
+				const unsigned short code_vector = output_data.GetWord(address + 1);
 				const unsigned short relocated_code_vector = [&]() -> const unsigned short
 				{
 					if (code_vector >= 0xd000 && code_vector <= 0xdfff)
@@ -487,8 +525,8 @@ namespace Editor
 
 				if (code_vector != relocated_code_vector)
 				{
-					(*m_OutputData)[address + 1] = static_cast<unsigned char>(relocated_code_vector & 0xff);
-					(*m_OutputData)[address + 2] = static_cast<unsigned char>((relocated_code_vector >> 8) & 0xff);
+					output_data[address + 1] = static_cast<unsigned char>(relocated_code_vector & 0xff);
+					output_data[address + 2] = static_cast<unsigned char>((relocated_code_vector >> 8) & 0xff);
 				}
 			}
 
@@ -497,11 +535,11 @@ namespace Editor
 			{
 				FOUNDATION_ASSERT(opcode_size == 2);
             
-				const unsigned char zero_page = m_OutputData->GetByte(address + 1);
+				const unsigned char zero_page = output_data.GetByte(address + 1);
 				const unsigned char zero_page_base = zero_page - m_CurrentLowestZP;
 				const unsigned char zero_page_relocated = zero_page_base + m_LowestZP;
 
-				(*m_OutputData)[address + 1] = zero_page_relocated;
+				output_data[address + 1] = zero_page_relocated;
 			}
 
 			address += static_cast<unsigned short>(opcode_size);

@@ -734,13 +734,22 @@ namespace Editor
 
 	bool EditorFacility::SavePackedFile(const std::string& inFileName)
 	{
-		if (m_PackedData != nullptr)
+		if (!m_PackedData.empty())
 		{
-			// Create file
-			std::shared_ptr<Utility::C64File> file = Utility::C64File::CreateFromData(m_PackedData->GetTopAddress(), m_PackedData->GetData(), static_cast<unsigned short>(m_PackedData->GetDataSize()));
+			for (unsigned int i = 0; i < m_PackedData.size(); ++i)
+			{
+				const auto& packed_data = m_PackedData[i];
 
-			// Save to disk
-			Utility::WriteFile(inFileName, file);
+				// Create file
+				std::shared_ptr<Utility::C64File> file = Utility::C64File::CreateFromData(packed_data->GetTopAddress(), packed_data->GetData(), static_cast<unsigned short>(packed_data->GetDataSize()));
+
+				// Save to disk
+
+				if (i == 0)
+					Utility::WriteFile(inFileName, file);
+				else
+					Utility::WriteFile(inFileName + " section_" + std::to_string(i), file);
+			}
 
 			return true;
 		}
@@ -751,21 +760,23 @@ namespace Editor
 
 	bool EditorFacility::SavePackedFileToSID(ScreenBase* inCallerScreen, const std::string& inFileName)
 	{
-		if (m_PackedData != nullptr)
+		if (m_PackedData.size() == 1)
 		{
+			const auto packed_data = m_PackedData.front();
+
 			auto do_save = [&, inFileName](std::string inTitle, std::string inAuthor, std::string inCopyright) {
-				unsigned short top_of_file_address = m_PackedData->GetTopAddress();
-				unsigned short data_size = static_cast<unsigned short>(m_PackedData->GetDataSize());
+				unsigned short top_of_file_address = packed_data->GetTopAddress();
+				unsigned short data_size = static_cast<unsigned short>(packed_data->GetDataSize());
 
 				unsigned char* data = new unsigned char[data_size + 2];
 
 				data[0] = static_cast<unsigned char>(top_of_file_address & 0xff);
 				data[1] = static_cast<unsigned char>(top_of_file_address >> 8);
 
-				unsigned char* packed_data = m_PackedData->GetData();
+				unsigned char* packed_data_buffer = packed_data->GetData();
 
 				for (int i = 0; i < data_size; ++i)
-					data[i + 2] = packed_data[i];
+					data[i + 2] = packed_data_buffer[i];
 
 				// Save PSID file to disk, also
 				const auto& driver_common = m_DriverInfo->GetDriverCommon();
@@ -940,12 +951,31 @@ namespace Editor
 	{
 		const bool is_uppercase = m_DisplayState.IsHexUppercase();
 
-		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress, inFirstZeroPage);
-		m_PackedData = packer.GetResult();
+		m_PackedData.clear();
 
+		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress, inFirstZeroPage);
+		packer.Run();
+
+		if (packer.GetResultCount() == 0)
+		{
+			inCallerScreen->GetComponentsManager().StartDialog(
+				std::make_shared<DialogMessage>("Packing error", packer.GetError(), 30, false, [&]() {
+			}));
+
+			return;
+		}
+			
 		std::string packing_info;
-		packing_info += "Range: 0x" + EditorUtils::ConvertToHexValue(static_cast<unsigned short>(m_PackedData->GetTopAddress()), is_uppercase) + " - 0x" + EditorUtils::ConvertToHexValue(static_cast<unsigned short>(m_PackedData->GetBottomAddress()), is_uppercase) + "\n";
-		packing_info += "Size : 0x" + EditorUtils::ConvertToHexValue(static_cast<unsigned short>(m_PackedData->GetDataSize()), is_uppercase);
+
+		for (unsigned int i = 0; i < packer.GetResultCount(); ++i)
+		{
+			auto packed_data = packer.GetResult(i);
+
+			m_PackedData.push_back(packed_data);
+
+			packing_info += "Range: 0x" + EditorUtils::ConvertToHexValue(static_cast<unsigned short>(packed_data->GetTopAddress()), is_uppercase) + " - 0x" + EditorUtils::ConvertToHexValue(static_cast<unsigned short>(packed_data->GetBottomAddress()), is_uppercase) + "\n";
+			packing_info += "Size : 0x" + EditorUtils::ConvertToHexValue(static_cast<unsigned short>(packed_data->GetDataSize()), is_uppercase);
+		}
 
 		inCallerScreen->GetComponentsManager().StartDialog(
 			std::make_shared<DialogMessage>("Packing results", packing_info, 30, false, [&]() {

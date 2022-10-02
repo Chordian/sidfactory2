@@ -1,8 +1,9 @@
 #pragma once
 
-#include <memory>
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/emulation/cpumemory.h"
+#include <memory>
+#include <vector>
 
 namespace Emulation
 {
@@ -28,12 +29,23 @@ namespace Editor
 		};
 
 	public:
+		struct TargetMemorySection
+		{
+			unsigned short m_Begin;
+			unsigned short m_End;
+		};
+
 		Packer(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned short inDestinationAddress, unsigned char inLowestZP);
 		~Packer();
 
-		std::shared_ptr<Utility::C64File> GetResult() const;
+		bool Run();
+		std::string GetError();
+
+		unsigned int GetResultCount() const;
+		std::shared_ptr<Utility::C64File> GetResult(unsigned int inSection) const;
 
 	private:
+
 		const unsigned int AddDataSection(unsigned short inAddress, unsigned short inSize);
 		const DataSection* GetDataSection(int inID) const;
 
@@ -59,6 +71,8 @@ namespace Editor
 
 		unsigned short m_DestinationAddress;
 		unsigned short m_DestinationAddressDelta;
+
+		std::vector<TargetMemorySection> m_TargetMemorySections;
 
 		unsigned char m_CurrentLowestZP;
 		unsigned char m_LowestZP;

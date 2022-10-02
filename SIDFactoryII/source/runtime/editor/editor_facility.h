@@ -142,6 +142,6 @@ namespace Editor
 		std::unique_ptr<ScreenDisk> m_DiskScreen;
 		std::unique_ptr<ScreenConvert> m_ConvertScreen;
 
-		std::shared_ptr<Utility::C64File> m_PackedData;
+		std::vector<std::shared_ptr<Utility::C64File>> m_PackedData;
 	};
 }
