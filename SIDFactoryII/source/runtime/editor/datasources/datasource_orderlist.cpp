@@ -282,8 +282,8 @@ namespace Editor
 	{
 		for (int i = 0; i < MaxEntryCount; ++i)
 		{
-			m_Events->m_Transposition = 0xa0;
-			m_Events->m_SequenceIndex = 0;
+			m_Events[i].m_Transposition = 0xa0;
+			m_Events[i].m_SequenceIndex = 0;
 		}
 	}
 

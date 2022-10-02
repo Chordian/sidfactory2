@@ -66,8 +66,16 @@ namespace Editor
 		"B-"
 	};
 
-	//----------------------------------------------------------------------------------------------------------------------------------------
+	int GetSequenceLength(std::vector<std::shared_ptr<DataSourceSequence>>& inDataSourceSequenceList, unsigned char inSequenceIndex, int inFallbackReturnSize)
+	{
+		if (inSequenceIndex < 0x80)
+			return inDataSourceSequenceList[inSequenceIndex]->GetLength();
 
+		return inFallbackReturnSize;
+	}
+
+
+	//----------------------------------------------------------------------------------------------------------------------------------------
 
 	ComponentTrack::EventPosDetails::EventPosDetails()
 		: m_OrderListIndex(0)
@@ -507,7 +515,6 @@ namespace Editor
 				while (current_event < bottom_event)
 				{
 					DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
-					const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 
 					if (sequence_index == 0)
 					{
@@ -535,8 +542,12 @@ namespace Editor
 					if (current_event >= m_MaxEventPos)
 						break;
 
-					int transposition = static_cast<int>(order_list_entry.m_Transposition) - 0xa0;
-					DrawSequenceLine(m_Position.m_X + 5, current_y, sequence_colors, is_uppercase, sequence, sequence_index, transposition, current_event == m_EventPos, current_instrument);
+					int transposition = static_cast<int>(order_list_entry.m_Transposition);
+					FOUNDATION_ASSERT(transposition < 0xfe);
+
+					const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+					DrawSequenceLine(m_Position.m_X + 5, current_y, sequence_colors, is_uppercase, sequence, sequence_index, transposition - 0xa0, current_event == m_EventPos, current_instrument);
 
 					++current_y;
 					++current_event;
@@ -676,9 +687,9 @@ namespace Editor
 			for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
 			{
 				unsigned char sequence_index = (*m_DataSourceOrderList)[i].m_SequenceIndex;
-				const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[sequence_index];
+				int sequence_length = GetSequenceLength(m_DataSourceSequenceList, sequence_index, 1);
 
-				int next_event_pos = event_pos + sequence->GetLength();
+				int next_event_pos = event_pos + sequence_length;
 
 				if (!found_top_event_pos && m_TopEventPos >= event_pos && m_TopEventPos < next_event_pos)
 				{
@@ -2442,6 +2453,7 @@ namespace Editor
 		for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
 		{
 			unsigned char sequence_index = (*m_DataSourceOrderList)[i].m_SequenceIndex;
+
 			const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[sequence_index];
 
 			int next_event_pos = event_pos + sequence->GetLength();
