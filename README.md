@@ -43,7 +43,12 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 Please report issues in our [issue tracker](https://github.com/issues).
 
+### Next release
+
 ![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20220914)
+
+- Fixed: A bug where sometimes you couldn't edit sequences before hitting the
+  play button.
 
 ### Build 20220914
 
