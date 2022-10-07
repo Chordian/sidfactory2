@@ -43,9 +43,9 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 Please report issues in our [issue tracker](https://github.com/issues).
 
-### Next release
+![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20221007)
 
-![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20220914)
+### Build 20221007
 
 - Fixed: [#162](https://github.com/Chordian/sidfactory2/issues/162) Crash when
   converting NP20 and GT tunes.
