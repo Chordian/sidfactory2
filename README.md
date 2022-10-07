@@ -47,8 +47,11 @@ Please report issues in our [issue tracker](https://github.com/issues).
 
 ![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20220914)
 
-- Fixed: A bug where sometimes you couldn't edit sequences before hitting the
-  play button.
+- Fixed: [#162](https://github.com/Chordian/sidfactory2/issues/162) Crash when
+  converting NP20 and GT tunes.
+- Fixed: Crash when using a loop point beyond position 128
+- Fixed: [#161](https://github.com/Chordian/sidfactory2/pull/161) A bug where
+  sometimes you couldn't edit sequences before hitting the play button.
 
 ### Build 20220914
 
