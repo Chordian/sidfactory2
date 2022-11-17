@@ -43,8 +43,13 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 Please report issues in our [issue tracker](https://github.com/issues).
 
+### Next release
+
 ![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20221007)
 
+
+- Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to 10.0, so users can blow up the screen even bigger.
+  Values below 1.0 were not working correctly.
 ### Build 20221007
 
 - Fixed: [#162](https://github.com/Chordian/sidfactory2/issues/162) Crash when
