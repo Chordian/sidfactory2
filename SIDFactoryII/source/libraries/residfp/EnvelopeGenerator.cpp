@@ -39,7 +39,7 @@ const unsigned int DAC_BITS = 8;
  * The rate counter is a 15 bit register which is left shifted each cycle.
  * When the counter reaches a specific comparison value,
  * the envelope counter is incremented (attack) or decremented
- * (decay/release) and the rate counter is resetted.
+ * (decay/release) and the rate counter is reset.
  *
  * see [kevtris.org](http://blog.kevtris.org/?p=13)
  */

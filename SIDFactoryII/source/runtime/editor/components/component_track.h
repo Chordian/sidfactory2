@@ -278,7 +278,7 @@ namespace Editor
 		// Edit state
 		const EditState& m_EditState;
 
-		// Auxilary song data
+		// Auxiliary song data
 		const AuxilaryDataCollection& m_AuxilaryDataPlayMarkers;
 
 		// Muted

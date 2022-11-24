@@ -82,7 +82,7 @@ private:
 
 public:
     /**
-     * Use a clock freqency of 985248Hz for PAL C64, 1022730Hz for NTSC C64.
+     * Use a clock frequency of 985248Hz for PAL C64, 1022730Hz for NTSC C64.
      * The default end of passband frequency is pass_freq = 0.9*sample_freq/2
      * for sample frequencies up to ~ 44.1kHz, and 20kHz for higher sample frequencies.
      *

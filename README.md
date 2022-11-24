@@ -24,7 +24,7 @@ Notable features:
 - Multiple songs
 - Copy / paste and modify selected area
 - Built-in packer and relocator to position the music anywhere in the Commodore
-  64 memory. Relocate used zero page adresses.
+  64 memory. Relocate used zero page addresses.
 - Includes demo tunes to learn from.
 - Cross platform: Windows, macOS (Intel and ARM) and Linux versions.
 - Configurable settings, shortcuts and keyboard layout
