@@ -225,27 +225,6 @@ namespace Emulation
 		// Clock
 		int nSamplesWritten = m_pSID->clock(nInternalDeltaCycles, pBuffer/*nBufferSize*/);
 
-		// Overwrite with sine wave to test output consistency
-//		for (int i = 0; i < nSamplesWritten; ++i)
-//		{
-//			float r = (static_cast<float>(m_SampleCounter) * 2.0f * 3.1416f) / 25.0f;
-//			short v = static_cast<short>(std::sinf(r) * 65535.0f / 4.0f);
-		//
-//
-		//
-//
-		//
-//
-		//
-//
-		//
-//			pBuffer[i] = v;
-		//
-//
-		//
-		//			m_SampleCounter++;
-		//		}
-
 		if (IsRecordingToFile())
 		{
 			m_FileOutput.push_back(0);

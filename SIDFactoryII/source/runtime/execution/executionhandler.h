@@ -28,6 +28,11 @@ namespace Emulation
 	class ExecutionHandler : public Foundation::IAudioStreamFeeder
 	{
 	public:
+		struct SIDRegistersBuffer
+		{
+			unsigned char m_Buffer[0x200];
+		};
+		
 		ExecutionHandler(
 			CPUmos6510* pCPU,
 			CPUMemory* pMemory,
@@ -82,7 +87,11 @@ namespace Emulation
 		// Frame
 		unsigned int GetFrameCounter() const { return m_CPUFrameCounter; }
 
+		// Flight recorder
 		FlightRecorder* GetFlightRecorder() const { return m_SIDRegisterFlightRecorder; }
+
+		// SID registers buffer
+		SIDRegistersBuffer GetSIDRegistersBufferAfterLastDriverUpdate() const { return m_SIDRegisterLastDriverUpdate; }
 
 		// Write output to file
 		void StartWriteOutputToFile(const std::string& inFilename);
@@ -153,6 +162,9 @@ namespace Emulation
 
 		// Flight recorder
 		FlightRecorder* m_SIDRegisterFlightRecorder;
+
+		// SID Registers last update
+		SIDRegistersBuffer m_SIDRegisterLastDriverUpdate;
 
 		// Audio output
 		unsigned int m_SampleBufferSize;

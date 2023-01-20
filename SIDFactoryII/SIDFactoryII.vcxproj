@@ -195,6 +195,7 @@
     <ClCompile Include="source\runtime\editor\components\component_list_selector.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_memory_view.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_orderlistoverview.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_pulse_filter_visualizer.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_string_list_selector.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_table_row_elements_with_text.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_console.cpp" />
@@ -232,6 +233,7 @@
     <ClCompile Include="source\runtime\editor\datasources\datasource_orderlist.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_play_markers.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_sequence.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_sidregistersbuffer.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_table.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_table_column_major.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_table_memory_view.cpp" />
@@ -283,6 +285,7 @@
     <ClCompile Include="source\runtime\editor\utilities\editor_utils.cpp" />
     <ClCompile Include="source\runtime\editor\utilities\import_utils.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_base.cpp" />
+    <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.cpp" />
     <ClCompile Include="source\runtime\emulation\cpuframecapture.cpp" />
     <ClCompile Include="source\runtime\emulation\cpumemory.cpp" />
@@ -373,6 +376,7 @@
     <ClInclude Include="source\runtime\editor\components\component_list_selector.h" />
     <ClInclude Include="source\runtime\editor\components\component_memory_view.h" />
     <ClInclude Include="source\runtime\editor\components\component_orderlistoverview.h" />
+    <ClInclude Include="source\runtime\editor\components\component_pulse_filter_visualizer.h" />
     <ClInclude Include="source\runtime\editor\components\component_string_list_selector.h" />
     <ClInclude Include="source\runtime\editor\components\component_table_row_elements_with_text.h" />
     <ClInclude Include="source\runtime\editor\components\component_console.h" />
@@ -410,6 +414,7 @@
     <ClInclude Include="source\runtime\editor\datasources\datasource_orderlist.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_play_markers.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_sequence.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_sidregistersbuffer.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_table_column_major.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_table_memory_view.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_table_row_major.h" />
@@ -471,6 +476,7 @@
     <ClInclude Include="source\runtime\editor\utilities\editor_utils.h" />
     <ClInclude Include="source\runtime\editor\utilities\import_utils.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_base.h" />
+    <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.h" />
     <ClInclude Include="source\runtime\emulation\cpuframecapture.h" />
     <ClInclude Include="source\runtime\emulation\cpumemory.h" />

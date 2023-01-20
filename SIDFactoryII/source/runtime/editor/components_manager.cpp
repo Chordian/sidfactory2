@@ -369,7 +369,7 @@ namespace Editor
 			{
 				ComponentBase* component = GetComponentAt(inMouse.GetPosition());
 
-				if (component != nullptr)
+				if (component != nullptr && component->CanReceiveFocus())
 				{
 					if (component != m_FocusComponent)
 						SetComponentInFocus(component);
@@ -464,7 +464,7 @@ namespace Editor
 
 	void ComponentsManager::SetComponentInFocus(ComponentBase* inFocusComponent)
 	{
-		if (m_FocusComponent != inFocusComponent)
+		if (m_FocusComponent != inFocusComponent && (inFocusComponent == nullptr || inFocusComponent->CanReceiveFocus()))
 		{
 			if (m_FocusComponent != nullptr)
 				m_FocusComponent->ClearHasControl(*m_CursorControl);
@@ -532,7 +532,7 @@ namespace Editor
 
 		while (next_candidate != nullptr && next_candidate != m_FocusComponent)
 		{
-			if (IsTabGroupEnabled(next_candidate->GetComponentGroupID()))
+			if (IsTabGroupEnabled(next_candidate->GetComponentGroupID()) && next_candidate->CanReceiveFocus())
 			{
 				SetComponentInFocusByTabbing(next_candidate, true);
 				return;
@@ -549,7 +549,7 @@ namespace Editor
 
 		while (next_candidate != nullptr && next_candidate != m_FocusComponent)
 		{
-			if (IsTabGroupEnabled(next_candidate->GetComponentGroupID()))
+			if (IsTabGroupEnabled(next_candidate->GetComponentGroupID())  && next_candidate->CanReceiveFocus())
 			{
 				SetComponentInFocusByTabbing(next_candidate, false);
 				return;

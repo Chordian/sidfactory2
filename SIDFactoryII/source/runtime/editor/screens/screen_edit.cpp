@@ -59,6 +59,8 @@
 #include "SDL.h"
 #include <cctype>
 #include "foundation/base/assert.h"
+#include "runtime/editor/components/component_pulse_filter_visualizer.h"
+
 #include <algorithm>
 
 
@@ -71,6 +73,7 @@ namespace Editor
 	const unsigned char ScreenEdit::OrderListOverviewID = 0x40;
 	const unsigned char ScreenEdit::PlayMarkerListID = 41;
 	const unsigned char ScreenEdit::TracksTableID = 0x42;
+	const unsigned char ScreenEdit::PulseFilterVisualizerID = 0x43;
 
 	ScreenEdit::ScreenEdit(
 		Foundation::Viewport* inViewport,
@@ -1157,7 +1160,7 @@ namespace Editor
 
 		const int top = 2;
 		const int bottom = text_field_dimensions.m_Height - 1;
-		const int order_list_overview_bottom = bottom - (1 + AuxilaryDataPlayMarkers::MaxPlayMarkers);
+		const int order_list_overview_bottom = bottom - (2 + AuxilaryDataPlayMarkers::MaxPlayMarkers);
 		const int player_markers_list_top = order_list_overview_bottom + 1;
 
 		// Create orderlist overview component
@@ -1193,6 +1196,7 @@ namespace Editor
 
 		// Play markers component
 		const int play_markers_width = orderlist_overview_rect.m_Dimensions.m_Width;
+		const int play_markers_height = 4;
 		auto play_markers_data_source = std::make_shared<DataSourcePlayMarkers>(m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers(), m_DriverInfo->GetAuxilaryDataCollection().GetSongs(), m_DisplayState);
 
 		m_PlayMarkerListComponent = std::make_shared<ComponentStringListSelector>(
@@ -1203,7 +1207,7 @@ namespace Editor
 			1, 
 			player_markers_list_top, 
 			play_markers_width, 
-			bottom - player_markers_list_top, 
+			play_markers_height, 
 			1, 
 			0
 		);
@@ -1217,6 +1221,22 @@ namespace Editor
 				DoPlayFromSelectedMarker();
 		});
 		m_ComponentsManager->AddComponent(m_PlayMarkerListComponent);
+
+		// Create pulse/filter visualizer component
+		const int pulse_filter_visualzer_top = player_markers_list_top + play_markers_height + 1;
+		auto pulse_filter_visualizer = std::make_shared<ComponentPulseFilterVisualizer>(
+			PulseFilterVisualizerID, 0,
+			undo,
+			m_ExecutionHandler,
+			m_MainTextField,
+			m_Viewport,
+			m_ComponentsManager.get(),
+			1,
+			pulse_filter_visualzer_top,
+			play_markers_width,
+			4);
+
+		m_ComponentsManager->AddComponent(pulse_filter_visualizer);
 
 		// Create the tracks component for editing orderlist and sequence data
 		m_TracksComponent = std::make_shared<ComponentTracks>(
