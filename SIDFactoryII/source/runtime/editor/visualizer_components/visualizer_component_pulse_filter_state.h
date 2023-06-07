@@ -1,6 +1,7 @@
 #pragma once
 
 #include "visualizer_component_base.h"
+#include <memory>
 
 namespace Foundation
 {

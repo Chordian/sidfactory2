@@ -45,6 +45,7 @@ namespace Editor
 		int inGroupID, 
 		Undo* inUndo,
 		TextField* inTextField,
+		const EditState& inEditState,
 		const Utility::KeyHookStore& inKeyHookStore,
 		std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 		std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
@@ -55,6 +56,7 @@ namespace Editor
 		std::function<void(int, bool)> inSetTrackEventPosFunction
 	)
 		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, ComponentOrderListOverview::GetWidthFromChannelCount(static_cast<int>(inOrderLists.size())), inHeight)
+		, m_EditState(inEditState)
 		, m_TableText(inDataSourceTableText)
 		, m_OrderLists(inOrderLists)
 		, m_SequenceList(inSequenceList)
@@ -313,6 +315,12 @@ namespace Editor
 			}
 		}
 
+		if(consume)
+		{
+			if(UpdateHoveredSequence())
+				m_RequireRefresh = true;
+		}
+
 		if (m_TextEditingDataSourceTableText->RequireRefresh())
 		{
 			m_RequireRefresh = true;
@@ -340,6 +348,7 @@ namespace Editor
 				m_RequireRefresh = true;
 
 				consume = true;
+				UpdateHoveredSequence();
 			}
 			else if (inMouse.IsButtonPressed(Mouse::Left))
 			{
@@ -390,6 +399,8 @@ namespace Editor
 				}
 
 				consume = true;
+				UpdateHoveredSequence();
+
 			}
 		}
 		
@@ -477,10 +488,11 @@ namespace Editor
 			}
 
 			int local_y = 0;
-			int overview_list_size = static_cast<int>(m_Overview.size());
-
-			Color event_pos_values = ToColor(UserColor::SongListEventPos);
-
+			
+			const int overview_list_size = static_cast<int>(m_Overview.size());
+			const Color event_pos_values = ToColor(UserColor::SongListEventPos);
+			const int cursor_screen_y = cursor_position + m_Position.m_Y;
+			
 			for (int i = m_TopPosition; i < overview_list_size && local_y < m_Dimensions.m_Height; ++i)
 			{
 				OverviewEntry& entry = m_Overview[i];
@@ -504,8 +516,17 @@ namespace Editor
 					int sequence_index = sequence_entry.m_Index;
 					if (sequence_index >= 0)
 					{
-						const Color color = sequence_index < 0x100 ? ToColor(UserColor::SongListValues) : ToColor(UserColor::SongListLoopMarker);
-						m_TextField->PrintHexValue(x, y, color, is_uppercase, static_cast<unsigned char>(sequence_index & 0x0ff));
+						const unsigned char sequence_value = static_cast<unsigned char>(sequence_index & 0x0ff);
+
+						if(m_EditState.IsSequenceHighlightingEnabled() && m_HasControl && y != cursor_screen_y && m_HoveredSequenceValue.HasValue() && m_HoveredSequenceValue.GetValue() == sequence_value)
+						{
+							m_TextField->PrintHexValue(x, y, Color::Yellow, is_uppercase, sequence_value);
+						}
+						else
+						{
+							const Color color = sequence_index < 0x100 ? ToColor(UserColor::SongListValues) : ToColor(UserColor::SongListLoopMarker);
+							m_TextField->PrintHexValue(x, y, color, is_uppercase, sequence_value);
+						}
 					}
 
 					x += 3;
@@ -1171,6 +1192,27 @@ namespace Editor
 		if (m_CursorY > m_MaxCursorY)
 			m_CursorY = m_MaxCursorY;
 	}
+
+	bool ComponentOrderListOverview::UpdateHoveredSequence()
+	{
+		HoveredSequenceValue NewValue;
+
+		if(m_CursorY < static_cast<int>(m_Overview.size()))
+		{
+			const auto& Row = m_Overview[m_CursorY];
+			if(m_CursorX < static_cast<int>(Row.m_SequenceEntries.size()))
+				NewValue.SetValue(Row.m_SequenceEntries[m_CursorX].m_Index);
+		}
+
+		if(m_HoveredSequenceValue != NewValue)
+		{
+			m_HoveredSequenceValue = NewValue;
+			return true;
+		}
+
+		return false;
+	}
+	
 
 	void ComponentOrderListOverview::ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore)
 	{

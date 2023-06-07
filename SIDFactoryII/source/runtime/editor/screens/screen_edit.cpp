@@ -712,7 +712,7 @@ namespace Editor
 
 		if (inUp)
 		{
-			const unsigned int max_octave = EditorUtils::Has2ndInputOctave() ? 6 : 7;
+			const unsigned int max_octave = EditorUtils::Has2ndNoteInputOctave() ? 6 : 7;
 
 			if (octave < max_octave)
 				m_EditState.SetOctave(octave + 1);
@@ -764,6 +764,7 @@ namespace Editor
 	{
 		m_EditState.SetSequenceHighlighting(!m_EditState.IsSequenceHighlightingEnabled());
 		m_TracksComponent->ForceRefresh();
+		m_OrderListOverviewComponent->ForceRefresh();
 	}
 
 
@@ -1174,7 +1175,8 @@ namespace Editor
 		m_OrderListOverviewComponent = std::make_shared<ComponentOrderListOverview>(
 			OrderListOverviewID, 0, 
 			undo,
-			m_MainTextField, 
+			m_MainTextField,
+			m_EditState,
 			m_KeyHookStore,
 			song_view_text_buffer,
 			m_OrderListDataSources, 
@@ -1740,7 +1742,7 @@ namespace Editor
 			std::string note_keys_octave1 = GetSingleConfigurationValue<ConfigValueString>(config, "Key.Input.Notes.Octave1", std::string(""));
 			std::string note_keys_octave2 = GetSingleConfigurationValue<ConfigValueString>(config, "Key.Input.Notes.Octave2", std::string(""));
 
-			EditorUtils::SetNoteValueKeys(note_keys_octave1, note_keys_octave2);
+			EditorUtils::SetNoteInputValueKeys(note_keys_octave1, note_keys_octave2);
 		}
 
 	}

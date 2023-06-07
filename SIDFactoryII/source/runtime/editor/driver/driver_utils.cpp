@@ -65,11 +65,9 @@ namespace Editor
 		{
 			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
 			{
-				// Get song count
-				const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
-
-
-				std::vector<int> usage_count(inDriverInfo.GetMusicData().m_SequenceCount, 0);
+				// Output collection
+				const int SequenceCount = static_cast<int>(inDriverInfo.GetMusicData().m_SequenceCount);
+				std::vector<int> usage_count(SequenceCount, 0);
 
 				// Get Music data descriptor
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
@@ -77,15 +75,18 @@ namespace Editor
 				// Find highest used sequence index
 				unsigned short order_list_1 = music_data.m_OrderListTrack1Address;
 
+				// Get song count
+				const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+
 				for (unsigned char i = 0; i < music_data.m_TrackCount * song_count; ++i)
 				{
 					unsigned short order_list_address = order_list_1 + static_cast<unsigned short>(i) * music_data.m_OrderListSize;
 					for (unsigned short j = 0; j < music_data.m_OrderListSize; ++j)
 					{
 						unsigned char value = inMemoryReader[order_list_address + j];
-						if (value < 0x80)
+						if (value < SequenceCount)
 						{
-							if (value == 0x7f)
+							if (value == 0x7e)
 								break;
 
 							usage_count[value]++;
