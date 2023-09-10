@@ -6,12 +6,12 @@ Editor:
 * Marking for copy/paste functionality
 * Marking for play in loop (not sure this can be done!)
 * Remember user folder when exit and restart SF2
-* Add ".." to file menues for easier folder navigation
+* Add ".." to file menus for easier folder navigation
 * Ability to add strings to orderlist overview and instruments
 * Load and save instruments
 * Follow play functionality
 * Markers component. Single click [or ENTER], select and move to. Double click [or Ctrl + ENTER] select and play from.
-* CTRL + F on index pointers in tables will automatically find next free index in the table pointed to and insert that value before transfering focus the that table.
+* CTRL + F on index pointers in tables will automatically find next free index in the table pointed to and insert that value before transferring focus the that table.
 * Clicking somewhere in the track should move the cursor to that position
 * CTRL + Enter in sequence should add 0x10 more rows
 DONE * ½ button should fast forward the music when playing
@@ -25,7 +25,7 @@ DONE * ½ button should fast forward the music when playing
 Utilities:
 
 * Import
-	* Import auxilary data
+	* Import auxiliary data
 * Packing
 	* Run optimization analyzer on packing, and show dialogue if any optimizations are possible.
 

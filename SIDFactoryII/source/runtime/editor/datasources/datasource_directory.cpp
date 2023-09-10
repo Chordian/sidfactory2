@@ -169,7 +169,7 @@ namespace Editor
 		// Sort the list
 		std::sort(m_List.begin(), m_List.end(), [](const DirectoryEntry& inEntry1, const DirectoryEntry& inEntry2)
 			{
-				// If the types are the same, lets check the filenames against eachother (and ignore case .. which means a transformation per comparasin, not fast.. but who cares! This is disk operation stuff)
+				// If the types are the same, lets check the filenames against each other (and ignore case .. which means a transformation per comparasin, not fast.. but who cares! This is disk operation stuff)
 				if (inEntry1.m_Type == inEntry2.m_Type)
 				{
 					if (!(inEntry1.m_DisplayName.empty() ^ inEntry2.m_DisplayName.empty()))

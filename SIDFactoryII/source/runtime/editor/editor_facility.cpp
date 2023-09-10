@@ -712,7 +712,7 @@ namespace Editor
 			const unsigned short auxilary_data_vector = file_writer.GetWriteAddress();
 			m_DriverInfo->GetAuxilaryDataCollection().Save(file_writer);
 
-			// Adjust IRQ and auxilary data vectors in file
+			// Adjust IRQ and auxiliary data vectors in file
 			const unsigned short driver_init_vector = m_DriverInfo->GetDriverCommon().m_InitAddress;
 			(*file)[driver_init_vector - 2] = static_cast<unsigned char>(irq_vector & 0xff);
 			(*file)[driver_init_vector - 1] = static_cast<unsigned char>(irq_vector >> 8);

@@ -56,7 +56,7 @@ namespace SF2
 		m_CommandName[Cmd_Arpeggio]		= "Arpeggio/Chord";
 		m_CommandName[Cmd_Fret]			= "Fret";
 		m_CommandName[Cmd_ADSR_Note]	= "ADSR (Note)";
-		m_CommandName[Cmd_ADSR_Persist]	= "ADSR (Persistant)";
+		m_CommandName[Cmd_ADSR_Persist]	= "ADSR (Persistent)";
 		m_CommandName[Cmd_Index_Filter]	= "Filter Index";
 		m_CommandName[Cmd_Index_Wave]	= "Wave Index";
 		m_CommandName[Cmd_Demo_Flag]	= "Demo Flag";
@@ -159,7 +159,7 @@ namespace SF2
 			unsigned short auxilary_data_vector = file_writer.GetWriteAddress();
 			m_DriverInfo->GetAuxilaryDataCollection().Save(file_writer);
 
-			// Adjust IRQ and auxilary data vectors in file
+			// Adjust IRQ and auxiliary data vectors in file
 			const unsigned short driver_init_vector = m_DriverInfo->GetDriverCommon().m_InitAddress;
 			(*file)[driver_init_vector - 2] = static_cast<unsigned char>(irq_vector & 0xff);
 			(*file)[driver_init_vector - 1] = static_cast<unsigned char>(irq_vector >> 8);
@@ -331,7 +331,7 @@ namespace SF2
 	/**
 	 * Returns a bool whether the specified table is supported by the SF2 driver.
 	 *
-	 * If TRUE is specified as the second paramater, a message is written to the
+	 * If TRUE is specified as the second parameter, a message is written to the
 	 * console and the program stops.
 	 */
 	bool Interface::IsTableSupported(int inTableType, bool inCoutOnError)
@@ -685,7 +685,7 @@ namespace SF2
 	}
 
 	/**
-	 * Append or reuse an entire row of bytes in the specificed table.
+	 * Append or reuse an entire row of bytes in the specified table.
 	 *
 	 * This version is suitable for tables such as instruments or commands, where
 	 * the rows are completely independent.

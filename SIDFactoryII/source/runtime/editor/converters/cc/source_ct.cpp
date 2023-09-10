@@ -311,7 +311,7 @@ namespace Converter
 	}
 
 	/**
-	 * Query if convertions is possible 
+	 * Query if conversions is possible 
 	 */
 
 	bool SourceCt::CanConvert() const
@@ -496,7 +496,7 @@ namespace Converter
 		unsigned short address_pulse_table = m_RawData[0x0fc2] | m_RawData[0x0fc3] << 8;
 
 		// We cannot transfer the pulse table as is (too much action per row) so it is parked in an
-		// easy-to-access array for easier retrival when referred to from instruments and sequence
+		// easy-to-access array for easier retrieval when referred to from instruments and sequence
 		// commands later. A set of rows (usually larger) in SF2 then have to be built up.
 		for (int row = 0; row < 0x40; row++)
 			for (int col = 0; col < 4; col++)

@@ -290,7 +290,7 @@ extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path
 extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType);
 
 /**
- *  \brief Detects the device family of WinRT plattform on runtime
+ *  \brief Detects the device family of WinRT platform on runtime
  *
  *  \return Device family
  */

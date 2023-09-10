@@ -122,7 +122,7 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.ScreenEdit.InfoRect.Text.Time.PlaybackState", UserColor::ScreenEditInfoRectTextTimePlaybackState, ioViewport, Color::DarkerGrey);
 			Details::SetUserColor(inConfigFile, "Color.ScreenEdit.Table.Headline", UserColor::ScreenEditTableHeadline, ioViewport, Color::LightBlue);
 			Details::SetUserColor(inConfigFile, "Color.ScreenEdit.Table.Headline.HotkeyLetter", UserColor::ScreenEditTableHeadlineHotkeyLetter, ioViewport, Color::White);
-			Details::SetUserColor(inConfigFile, "Color.Converters.Backgroud", UserColor::ConvertersBackground, ioViewport, Color::DarkerGrey);
+			Details::SetUserColor(inConfigFile, "Color.Converters.Background", UserColor::ConvertersBackground, ioViewport, Color::DarkerGrey);
 			Details::SetUserColor(inConfigFile, "Color.Console.Background", UserColor::ConsoleBackground, ioViewport, Color::Black);
 			Details::SetUserColor(inConfigFile, "Color.Console.Text", UserColor::ConsoleText, ioViewport, Color::LightGreen);
 

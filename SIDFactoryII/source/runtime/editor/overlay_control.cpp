@@ -185,7 +185,7 @@ namespace Editor
 			}
 		}
 
-		// sort the list, so that versions of drivers are ordered. This will be usefull to display a driver overlay of a lesser minor version!
+		// sort the list, so that versions of drivers are ordered. This will be useful to display a driver overlay of a lesser minor version!
 	}
 
 

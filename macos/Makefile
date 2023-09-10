@@ -128,7 +128,7 @@ $(DMG_CONTENTS): $(APP) $(EXE_SF2C) $(ARTIFACTS_FOLDER)/keys.html
 	cp -r $(PROJECT_ROOT)/drivers ${DMG_CONTENTS}/$(APP_NAME)/drivers
 	ln -s /Applications $(DMG_CONTENTS)/Applications
 
-# Make a temporary DMG. This needs to be layed out nicely by hand before building the final DMG.
+# Make a temporary DMG. This needs to be laid out nicely by hand before building the final DMG.
 $(DMG_RAW): $(DMG_CONTENTS)
 	rm -f $(DMG_RAW)
 	hdiutil create -srcfolder "$<" -volname "$(DMG_TITLE)" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size $(DMG_SIZE)k $@
