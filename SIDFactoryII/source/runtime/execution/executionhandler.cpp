@@ -458,7 +458,7 @@ namespace Emulation
 			{
 				for (unsigned int i = 0; i < m_FastForwardUpdateCount; ++i)
 				{
-					// Break out if less than a quater of the cycles of a frame remains
+					// Break out if less than a quarter of the cycles of a frame remains
 					if (m_CyclesPerFrame - frameCapture.GetCyclesSpend() < m_CyclesPerFrame >> 2)
 						break;
 

@@ -55,7 +55,7 @@ enum
 //  pSrc_buf, src_buf_len: Pointer and size of the Deflate or zlib source data to decompress.
 // On return:
 //  Function returns a pointer to the decompressed data, or NULL on failure.
-//  *pOut_len will be set to the decompressed data's size, which could be larger than src_buf_len on uncompressible data.
+//  *pOut_len will be set to the decompressed data's size, which could be larger than src_buf_len on incompressible data.
 //  The caller must free() the returned block when it's no longer needed.
 void *tinfl_decompress_mem_to_heap(const void *pSrc_buf, size_t src_buf_len, size_t *pOut_len, int flags);
 

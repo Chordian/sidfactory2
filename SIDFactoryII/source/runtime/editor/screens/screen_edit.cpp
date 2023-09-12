@@ -1101,7 +1101,7 @@ namespace Editor
 		// Create data containers for each sequence
 		ScreenEditUtils::PrepareSequenceDataSources(*m_DriverInfo, m_DriverState, *m_CPUMemory, m_SequenceDataSources);
 
-		// Status report lamda for sequence editing
+		// Status report lambda for sequence editing
 		auto sequence_editing_status_report = [&](bool inIsSequenceReport, int inDataIndex, int inPackedSize)
 		{
 			m_IsTrackDataReportSequence = inIsSequenceReport;
