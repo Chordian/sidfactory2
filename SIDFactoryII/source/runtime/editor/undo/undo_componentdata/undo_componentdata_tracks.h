@@ -23,6 +23,11 @@ namespace Editor
 		int m_EventPosOrderListIndex;
 		int m_EventPosSequenceIndex;
 
+		// Marking
+		bool m_IsMarkingArea;
+		int m_MarkingFromEventPos;
+		int m_MarkingToEventPos;
+
 		// Order list input focus
 		bool m_FocusModeOrderList;
 

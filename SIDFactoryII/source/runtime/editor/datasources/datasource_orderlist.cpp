@@ -115,7 +115,30 @@ namespace Editor
 	void DataSourceOrderList::SetLoopIndex(unsigned char inLoopIndex)
 	{
 		if (m_Length > 0)
-			m_Events[m_Length - 1].m_SequenceIndex = inLoopIndex;
+		{
+			const bool isEnd = inLoopIndex == m_Length - 1;
+
+			if (inLoopIndex < m_Length - 1)
+			{
+				m_Events[m_Length - 1].m_Transposition = 0xff;
+				m_Events[m_Length - 1].m_SequenceIndex = inLoopIndex;
+			}
+			else
+			{
+				FOUNDATION_ASSERT(inLoopIndex == m_Length - 1);
+
+				if (m_Events[m_Length - 1].m_Transposition != 0xfe)
+				{
+					m_Events[m_Length - 1].m_Transposition = 0xfe;
+					m_Events[m_Length - 1].m_SequenceIndex = static_cast<unsigned int>(m_Length - 1);
+				}
+				else
+				{
+					m_Events[m_Length - 1].m_Transposition = 0xff;
+					m_Events[m_Length - 1].m_SequenceIndex = 0;
+				}
+			}
+		}
 	}
 
 
@@ -133,7 +156,9 @@ namespace Editor
 			{
 				end_index = i;
 				end_marker = val;
-				loop_index = m_Events[i].m_SequenceIndex;
+
+				if(val == 0xff)
+					loop_index = m_Events[i].m_SequenceIndex;
 
 				break;
 			}
@@ -224,10 +249,9 @@ namespace Editor
 				if (count == inIndex + 1)
 				{
 					const unsigned char next_event = m_Data[i + 1];
-					const int return_index = next_event < 0xfe ? i + 1 : m_Data[i + 2];
+					const int return_index = next_event == 0xff ? m_Data[i + 2] : (i + 1);	// If the next event is a loop mark, the next next event is the loop offset into the orderlist data.
 
-					// The event structure is set to invalid, if the next comming event is end of sequence. This might not actually work correctly!
-					return { next_event != 0xfe, static_cast<unsigned char>(return_index), sequence, transpose };
+					return { true, static_cast<unsigned char>(return_index), sequence, transpose };
 				}
 			}
 			else
@@ -258,8 +282,8 @@ namespace Editor
 	{
 		for (int i = 0; i < MaxEntryCount; ++i)
 		{
-			m_Events->m_Transposition = 0xa0;
-			m_Events->m_SequenceIndex = 0;
+			m_Events[i].m_Transposition = 0xa0;
+			m_Events[i].m_SequenceIndex = 0;
 		}
 	}
 

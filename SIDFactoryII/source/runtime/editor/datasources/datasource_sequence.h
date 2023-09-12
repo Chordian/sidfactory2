@@ -47,7 +47,7 @@ namespace Editor
 			unsigned char m_Index;
 			unsigned char m_RemainingTicks;
 			unsigned char m_CurrentDurationValue;
-			unsigned char m_NextInstrumentAddress;
+			unsigned char m_CurrentInstrument;
 			bool m_NextIsEndOfSequence;
 		};
 

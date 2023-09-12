@@ -9,6 +9,12 @@ namespace Utility
 	class C64File;
 	class C64FileReader;
 }
+
+namespace Emulation
+{
+	class CPUMemory;
+}
+
 namespace Editor
 {
 	class IDriverArchitecture;
@@ -106,6 +112,15 @@ namespace Editor
 		};
 
 
+		struct MusicDataMetaDataEmulationAddresses
+		{
+			unsigned short m_EmulationAddressOfSequencePointersLowAddress;
+			unsigned short m_EmulationAddressOfSequencePointersHighAddress;
+			unsigned short m_EmulationAddressOfOrderListTrack1Address;
+			unsigned short m_EmulationAddressOfSequence00Address;
+		};
+
+
 		struct TableDefinition
 		{
 			enum DataLayout : unsigned char
@@ -122,7 +137,7 @@ namespace Editor
 			};
 
 			unsigned char m_Type;						// Type of table
-			unsigned char m_ID;							// Identifier for rule targeting
+			unsigned char m_ID;							// Identifier for the table and rule targeting
 			unsigned char m_TextFieldSize;				// Size of the text field added to the table
 			std::string m_Name;							// The readable name of the table
 
@@ -239,6 +254,9 @@ namespace Editor
 		AuxilaryDataCollection& GetAuxilaryDataCollection();
 		const AuxilaryDataCollection& GetAuxilaryDataCollection() const;
 
+		const MusicDataMetaDataEmulationAddresses& GetMusicDataMetaDataEmulationAddresses() const;
+		void RefreshMusicData(Emulation::CPUMemory& inCPUMemory);
+
 	private:
 		bool HasParsedRequiredBlocks() const;
 
@@ -285,5 +303,8 @@ namespace Editor
 		std::unique_ptr<AuxilaryDataCollection> m_AuxilaryDataCollection;
 
 		InstrumentDescriptor m_InstrumentDescriptor;
+
+		// Data required to reallocated sequences when adding and removing songs
+		MusicDataMetaDataEmulationAddresses m_MusicDataMetaDataEmulationAddresses;
 	};
 }

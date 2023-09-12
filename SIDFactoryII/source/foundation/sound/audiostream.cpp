@@ -62,6 +62,7 @@ namespace Foundation
 		{
 			Utility::Logging::instance().Error("Could not open audio device. SDL Error: %s", SDL_GetError());
 		}
+		Utility::Logging::instance().Info("Audio device frequency: %d", audio_spec_created.freq);
 	}
 
 	AudioStream::~AudioStream()

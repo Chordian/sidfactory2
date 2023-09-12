@@ -174,7 +174,7 @@ extern "C" {
  * By default SDL will manage OpenGL contexts in certain situations. For example, on Android the
  * context will be automatically saved and restored when pausing the application. Additionally, some
  * platforms will assume usage of OpenGL if Vulkan isn't used. Setting this to "1" will prevent this
- * behavior, which is desireable when the application manages the graphics context, such as
+ * behavior, which is desirable when the application manages the graphics context, such as
  * an externally managed OpenGL context or attaching a Vulkan surface to the window.
  */
 #define SDL_HINT_VIDEO_EXTERNAL_CONTEXT    "SDL_VIDEO_EXTERNAL_CONTEXT"

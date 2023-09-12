@@ -9,6 +9,7 @@ namespace Editor
 		, m_SequenceHighlightingEnabled(false)
 		, m_EventHighlight( { 0, 4 })
 		, m_FollowPlayMode(false)
+		, m_PreventSequenceEdit(false)
 	{
 	}
 

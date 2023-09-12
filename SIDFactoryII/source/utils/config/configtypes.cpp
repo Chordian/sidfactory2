@@ -167,7 +167,7 @@ namespace Utility
 
 			if (!is_decimal)
 			{
-				// Check if hexdecimal
+				// Check if hexadecimal
 				if (length <= 2)
 					return false;
 

@@ -102,5 +102,6 @@ functions behind the keys, please consult the manual.
 
 | Key                     | Function                |
 | ----------------------- | ----------------------- |
+| <kbd>F7</kbd>           | Select tune number      |
 | &#9166;                 | Jump to song position   |
 | <kbd>ctrl</kbd> &#9166; | Play from song position |

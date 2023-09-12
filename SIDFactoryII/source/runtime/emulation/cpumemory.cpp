@@ -141,12 +141,32 @@ namespace Emulation
 	{
 		FOUNDATION_ASSERT(pSourceBuffer != nullptr);
 		FOUNDATION_ASSERT(m_Memory != nullptr);
-		FOUNDATION_ASSERT(nAddress < m_nSize + nSourceBufferByteCount);
+		FOUNDATION_ASSERT(nAddress + nSourceBufferByteCount <= m_nSize);
 		FOUNDATION_ASSERT(m_IsLocked);
 
 		unsigned char* pSrc = (unsigned char*)pSourceBuffer;
 
 		for (unsigned int i = 0; i < nSourceBufferByteCount; i++)
 			m_Memory[nAddress + i] = pSrc[i];
+	}
+
+	void CPUMemory::Copy(unsigned int inSourceAddress, unsigned int inLength, unsigned int inDestinationAddress)
+	{
+		FOUNDATION_ASSERT(inSourceAddress < m_nSize);
+		FOUNDATION_ASSERT(inSourceAddress + inLength <= m_nSize);
+		FOUNDATION_ASSERT(inDestinationAddress < m_nSize);
+		FOUNDATION_ASSERT(inDestinationAddress + inLength <= m_nSize);
+
+		memcpy(&m_Memory[inDestinationAddress], &m_Memory[inSourceAddress], inLength);
+	}
+
+
+	void CPUMemory::Set(unsigned char inValue, unsigned int inAddress, unsigned int inLength)
+	{
+		FOUNDATION_ASSERT(inAddress < m_nSize);
+		FOUNDATION_ASSERT(inAddress + inLength < m_nSize);
+
+		for (unsigned int i = 0; i < inLength; ++i)
+			m_Memory[inAddress + i] = inValue;
 	}
 }

@@ -8,8 +8,33 @@ To build from source, have a look [here](DEVELOPMENT.md).
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
+Notable features:
+
+- Uses the renowned reSID emulator
+- Tracker-like interface, using JCH's contiguous sequence stacking system and
+  Protracker note input layout.
+- Choice of various music drivers made by pioneer musicians
+  [Laxity](https://deepsid.chordian.net/?file=/MUSICIANS/L/Laxity) and
+  [JCH](https://deepsid.chordian.net/?file=/MUSICIANS/J/JCH) ,
+  optimized for use in demos and games on the Commodore 64.
+- A hotkey opens a surrounding overlay with help for both editor and driver.
+- Imports Goattracker, CheeseCutter and MOD files.
+- Supports both SID models 6581 and 8580 for PAL and NTSC.
+- Unlimited undo
+- Multiple songs
+- Copy / paste and modify selected area
+- Built-in packer and relocator to position the music anywhere in the Commodore
+  64 memory. Relocate used zero page addresses.
+- Includes demo tunes to learn from.
+- Cross platform: Windows, macOS (Intel and ARM) and Linux versions.
+- Configurable settings, shortcuts and keyboard layout
+- Open source
+
 ![SID Factory II screenshot](screenshot.png)
 
+## Changelog
+
+![Last commit](https://img.shields.io/github/last-commit/chordian/sidfactory2)
 ![Build windows
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build macOS
@@ -18,7 +43,38 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 Please report issues in our [issue tracker](https://github.com/issues).
 
-## Changelog
+### Next release
+
+![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20221007)
+
+
+- Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to 10.0, so users can blow up the screen even bigger.
+  Values below 1.0 were not working correctly.
+### Build 20221007
+
+- Fixed: [#162](https://github.com/Chordian/sidfactory2/issues/162) Crash when
+  converting NP20 and GT tunes.
+- Fixed: Crash when using a loop point beyond position 128
+- Fixed: [#161](https://github.com/Chordian/sidfactory2/pull/161) A bug where
+  sometimes you couldn't edit sequences before hitting the play button.
+
+### Build 20220914
+
+- Added: [#37](https://github.com/Chordian/sidfactory2/issues/37) Multi song
+  support. Allows you to edit multiple order lists that share the same sequences
+  and sounds. Press `F7` to check it out.
+- Added: Marking and copy/paste functionality in the song list
+- Added: Marking and copy/paste inside sequences (even across boundaries)
+- Added: [#74](https://github.com/Chordian/sidfactory2/issues/74) Configurable
+  virtual piano keyboard layout. (Thanks to Wolfgang Kreutz for requesting)
+- Added: [#119](https://github.com/Chordian/sidfactory2/issues/119) A song can
+  be made to stop playing instead of looping.
+- Added: An option to set the emulation sample rate to a user defined value
+  (Thanks to Tammo Hinrichs for implementing)
+- Added: More than 30+ new source tunes by JCH and Vincenzo
+- Fixed: Scrolling in the song list using the mouse wheel
+- Fixed: reSID won't output a click anymore when launching SID Factory II or
+  loading/saving files (Thanks to Tammo Hinrichs for implementing)
 
 - Added: Configuration option `Disk.Hide.Extensions` to hide files with certain
   extensions in the file browser. Default values are `.sid` and `.prg`.
@@ -31,7 +87,7 @@ Please report issues in our [issue tracker](https://github.com/issues).
 - Added: An option in the packer to specify the base for zero page addresses
   that the player uses.
 - Added: Documentation on how to customize configuration using a `user.ini`
-  file. Including a default template `/documentation/user.default.ini`.
+  file. Including a default template in `/documentation/user.default.ini`.
 - Added: Configuration options:
   - `Window.Scaling` to scale the contents of the window. (Thanks to Matty
     Seito for suggesting)
@@ -69,7 +125,7 @@ Please report issues in our [issue tracker](https://github.com/issues).
   error when starting up linux version. (Thanks to Maurizio Dall'Acqua for
   reporting)
 - Fixed: `linux` [#134](https://github.com/Chordian/sidfactory2/issues/134) SF2 won't
-  compile on Arch Linux (Thanks to jansalleine for reporting amd suggesting the
+  compile on Arch Linux (Thanks to jansalleine for reporting and suggesting the
   fix)
 - Fixed: [#137](https://github.com/Chordian/sidfactory2/issues/137) Instability
   in filter table when jumping to set command in default driver.

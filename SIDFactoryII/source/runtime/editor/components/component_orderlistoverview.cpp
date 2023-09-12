@@ -1,5 +1,6 @@
 #include "runtime/editor/components/component_orderlistoverview.h"
 #include "runtime/editor/components/utils/text_editing_data_source_table_text.h"
+#include "runtime/editor/components/utils/orderlist_utils.h"
 #include "runtime/editor/cursor_control.h"
 #include "runtime/editor/display_state.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
@@ -46,7 +47,7 @@ namespace Editor
 		TextField* inTextField,
 		const Utility::KeyHookStore& inKeyHookStore,
 		std::shared_ptr<DataSourceTableText> inDataSourceTableText,
-		const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
+		std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 		const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 		int inX,
 		int inY,
@@ -65,6 +66,7 @@ namespace Editor
 		, m_IsMarkingArea(false)
 		, m_TopPosition(0)
 		, m_SetTrackEventPosFunction(inSetTrackEventPosFunction)
+		, m_InvokeOrderListChangedEventChannel(-1)
 	{
 		m_TextEditingDataSourceTableText = std::make_unique<TextEditingDataSourceTableText>(
 			inUndo, 
@@ -356,6 +358,8 @@ namespace Editor
 				{
 					if (IsEditingText() && m_CursorY != m_TextEditingDataSourceTableText->GetTextLineIndex())
 						DoStopEditText(inCursorControl, false);
+					if (m_IsMarkingArea)
+						DoCancelMarking();
 
 					m_CursorX = m_MaxCursorX;
 
@@ -371,6 +375,8 @@ namespace Editor
 				{
 					if (IsEditingText())
 						DoStopEditText(inCursorControl, false);
+					if (m_IsMarkingArea)
+						DoCancelMarking();
 
 					for (int i = m_MaxCursorX; i >= 0; --i)
 					{
@@ -446,7 +452,7 @@ namespace Editor
 					marking_rect.m_Position.m_Y += adjusted_top_marking;
 					marking_rect.m_Dimensions = { 2, marking_height };
 
-					m_TextField->ColorAreaBackground(ToColor(m_HasControl ? UserColor::SongListCursorFocus : UserColor::SongListCursorDefault), marking_rect);
+					m_TextField->ColorAreaBackground(ToColor(m_HasControl ? UserColor::SongListAreaMarkingFocus : UserColor::SongListAreaMarking), marking_rect);
 				}
 			}
 
@@ -536,6 +542,12 @@ namespace Editor
 			m_TextEditingDataSourceTableText->ApplyDataChange();
 
 		m_HasDataChange = false;
+
+		if (m_InvokeOrderListChangedEventChannel >= 0)
+		{
+			m_OrderListChangedEvent.Execute(static_cast<unsigned int>(m_InvokeOrderListChangedEventChannel));
+			m_InvokeOrderListChangedEventChannel = -1;
+		}
 	}
 
 	
@@ -560,6 +572,8 @@ namespace Editor
 	{
 		if(IsEditingText())
 			DoStopEditText(inCursorControl, false);
+
+		ComponentBase::ClearHasControl(inCursorControl);
 	}
 
 	void ComponentOrderListOverview::ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost)
@@ -792,7 +806,9 @@ namespace Editor
 
 	bool ComponentOrderListOverview::DoCopy()
 	{
-		if (m_IsMarkingArea)
+		if (!m_IsMarkingArea)
+			DoBeginMarking();
+
 		{
 			const int channel_count = static_cast<int>(m_OrderLists.size());
 			const int channel = m_MarkingX;
@@ -845,23 +861,25 @@ namespace Editor
 
 			if (channel < channel_count)
 			{
-				AddUndoSequenceStep();
-
 				int current_event_pos = m_Overview[m_CursorY].m_EventPos;
+
+				std::shared_ptr<DataSourceOrderList>& order_list = m_OrderLists[channel];
+				const int orderlist_length = order_list->GetLength();
 
 				int order_list_destination_index = [&](const int inCurrentEventPos)
 				{
 					int event_pos = 0;
-
-					const DataSourceOrderList& order_list = *m_OrderLists[channel];
-					const int orderlist_length = order_list.GetLength();
 
 					for (int i = 0; i < orderlist_length; ++i)
 					{
 						if (inCurrentEventPos == event_pos)
 							return i;
 
-						const unsigned char current_sequence_index = order_list[i].m_SequenceIndex;
+						const unsigned char current_transposition = (*order_list)[i].m_Transposition;
+						if (current_transposition >= 0xfe)
+							return -1;
+
+						const unsigned char current_sequence_index = (*order_list)[i].m_SequenceIndex;
 						FOUNDATION_ASSERT(current_sequence_index < 0x80);
 
 						const int sequence_length = static_cast<int>(m_SequenceList[current_sequence_index]->GetLength());
@@ -874,8 +892,25 @@ namespace Editor
 					return orderlist_length;
 				}(current_event_pos);
 
+				if (order_list_destination_index < 0)
+					return false;
+
+				AddUndoSequenceStep(channel);
+
+				const DataCopyOrderList& order_list_copy = *CopyPaste::Instance().GetData<DataCopyOrderList>();
+
+				for (int i = 0; i < static_cast<int>(order_list_copy.GetEntryCount()); ++i)
+				{
+					if (!order_list->CanIncreaseSize())
+						break;
+
+					InsertSequenceIndexInOrderListAtIndex(order_list, i + order_list_destination_index, order_list_copy[i]);					
+				}
+
 				// Insert and raise events
 				m_OrderListChangedEvent.Execute(channel);
+
+				m_RequireRefresh = true;
 			}
 		}
 
@@ -891,6 +926,7 @@ namespace Editor
 
 		m_MarkingX = m_CursorX;
 		m_MarkingFromY = m_CursorY;
+		m_MarkingToY = m_CursorY;
 	}
 
 
@@ -987,10 +1023,12 @@ namespace Editor
 
 		m_HasDataChange = true;
 		m_RequireRefresh = true;
+
+		m_InvokeOrderListChangedEventChannel = static_cast<int>(undo_data.m_ModifiedChannel);
 	}
 
 
-	void ComponentOrderListOverview::AddUndoSequenceStep()
+	void ComponentOrderListOverview::AddUndoSequenceStep(unsigned int inChannel)
 	{
 		std::shared_ptr<UndoComponentDataOrderListOverview> undo_data = std::make_shared<UndoComponentDataOrderListOverview>();
 
@@ -999,6 +1037,7 @@ namespace Editor
 		undo_data->m_TopPosition = m_TopPosition;
 		undo_data->m_CursorX = m_CursorX;
 		undo_data->m_CursorY = m_CursorY;
+		undo_data->m_ModifiedChannel = inChannel;
 
 		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndoSequenceEdit(inData, inCursorControl); });
 	}

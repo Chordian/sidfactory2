@@ -72,15 +72,15 @@ void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 
 	float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0f);
 
-	if (window_scaling > 2.0)
+	if (window_scaling > 10.0)
 	{
-		Utility::Logging::instance().Warning("Window.Scaling %f is higher than 2.0. Limiting to 2.0", window_scaling);
-		window_scaling = 2.0;
+		Utility::Logging::instance().Warning("Window.Scaling %f is higher than 10.0. Limiting to 10.0", window_scaling);
+		window_scaling = 10.0;
 	}
-	else if (window_scaling < 0.5)
+	else if (window_scaling < 1.0)
 	{
-		Utility::Logging::instance().Warning("Window.Scaling is lower than 0.5. Limiting to 0.5", window_scaling);
-		window_scaling = 0.5;
+		Utility::Logging::instance().Warning("Window.Scaling is lower than 1.0 Limiting to 1.0", window_scaling);
+		window_scaling = 1.0;
 	}
 
 	Viewport viewport(width, height, window_scaling, std::string("SID Factory II"));

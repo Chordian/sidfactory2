@@ -47,7 +47,7 @@ namespace Editor
 			));
 		}
 
-		// Return true, to indicate that the convertion 
+		// Return true, to indicate that the conversion 
 		return true;
 	}
 

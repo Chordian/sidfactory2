@@ -22,6 +22,7 @@ GENERAL         Tab                         Tab                         Next inp
 
                 F3/F4                       F3/F4                       Octave down or up
                 F6                          F6                          Open utility menu
+                F7                          F7                          Open songs menu
 
                 Shift + F7                  Shift + F7                  Reload the settings
                 Ctrl + F7                   Ctrl + F7                   Select the next color scheme
@@ -65,9 +66,8 @@ TRACKS          Enter                       Enter                       Toggle b
                 Home/End                    Fn + Left/Right             Go to absolute beginning or end of song
 
                 Ctrl + 1/2/3                Ctrl + 1/2/3                Mute or unmute track 1-3
-                Ctrl + c/v                  Cmd + c/v                   Copy or paste sequence
 
-                Ctrl + l                    Ctrl + l                    Set song loop position
+                Ctrl + l                    Ctrl + l                    Set song loop position or toggle loop/end markers
 
                 Shift + F3/F4               Shift + F3/F4               Transpose sequence contents one semitone up/down
                 Ctrl + F3/F4                Shift + Cmd + F3/F4         Transpose sequence contents one octave up/down
@@ -84,6 +84,8 @@ ORDERLISTS      Arrows                      Arrows                      Move lef
                 Insert                      Shift + Backspace           Insert orderlist entry
                 Delete                                                  Delete this orderlist entry
                 Backspace                   Backspace                   Delete previous orderlist entry (i.e. moving up)
+
+                Ctrl + c/v                  Cmd + c/v                   Copy or paste an entire sequence
 
                 Ctrl + f                    Ctrl + f                    Insert first unused sequence (including previously edited)
                 Ctrl + Shift + f            Ctrl + Shift + f            Insert first unused empty sequence
@@ -115,6 +117,10 @@ SEQUENCES       Arrows                      Arrows                      Move aro
                 Backspace                   Backspace                   Delete previous row in sequence (moving up; size is unaltered)
                 Ctrl + Backspace            Ctrl + Backspace            Delete previous row in sequence (moving up; size is decreased)
                 Ctrl + Shift + Backspace    Ctrl + Shift + Backspace    Same as Ctrl + Insert in Windows
+
+                Shift + Up/Down             Shift + Up/Down             Mark an area in a sequence
+                Ctrl + c/v                  Ctrl + c/v                  Copy and paste an area in a sequence (overwriting)
+                Ctrl + Shift + v            Ctrl + Shift + v            Insert an area in a sequence (expands the sequence)
 
                 F3/F4                       F3/F4                       Octave down or up
 
@@ -158,6 +164,9 @@ SETTINGS        F9                          F9                          Toggle 6
 SONGLIST        Up/Down                     Up/Down                     Move up or down in the songlist
                 Page Up/Down                Fn + Up/Down                Move several rows up/down in the songlist
                 Home/End                    Fn + Left/Right             Go to beginning or end of visible songlist then boundaries
+
+                Shift + Up/Down             Shift + Up/Down             Mark a range of sequences
+                Ctrl + c/v                  Ctrl + c/v                  Copy and paste a range of sequences (inserting)
 
                 Enter                       Enter                       Go to the selected songlist position
                 Ctrl + Enter                Ctrl + Enter                Play from the selected songlist position

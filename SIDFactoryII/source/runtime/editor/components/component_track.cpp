@@ -6,6 +6,7 @@
 #include "runtime/editor/display_state.h"
 #include "runtime/editor/components_manager.h"
 #include "runtime/editor/components/component_tracks.h"
+#include "runtime/editor/components/utils/orderlist_utils.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
 #include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/editor/dialog/dialog_hex_value_input.h"
@@ -26,6 +27,7 @@
 
 #include <string>
 #include "foundation/base/assert.h"
+#include "utils/logging.h"
 
 using namespace Foundation;
 using namespace Utility;
@@ -64,21 +66,12 @@ namespace Editor
 		"B-"
 	};
 
-	bool OrderListInsert(std::shared_ptr<Editor::DataSourceOrderList>& inOrderList, int inAtOrderListIndex, const DataSourceOrderList::Entry& inEntryToInsert)
+	int GetSequenceLength(std::vector<std::shared_ptr<DataSourceSequence>>& inDataSourceSequenceList, unsigned char inSequenceIndex, int inFallbackReturnSize)
 	{
-		if (inOrderList->CanIncreaseSize())
-		{
-			inOrderList->IncreaseSize();
+		if (inSequenceIndex < 0x80)
+			return inDataSourceSequenceList[inSequenceIndex]->GetLength();
 
-			for (int i = inOrderList->GetLength() - 2; i >= inAtOrderListIndex; --i)
-				(*inOrderList)[i + 1] = (*inOrderList)[i];
-
-			(*inOrderList)[inAtOrderListIndex] = inEntryToInsert;
-
-			return true;
-		}
-
-		return false;
+		return inFallbackReturnSize;
 	}
 
 
@@ -145,9 +138,9 @@ namespace Editor
 		, m_HasDataChangeOrderList(false)
 		, m_LocalDataChange(false)
 		, m_IsMuted(false)
-		, m_HasMarking(false)
-		, m_MarkTop(0x40)
-		, m_MarkBottom(0x50)
+		, m_IsMarkingArea(false)
+		, m_MarkingFromEventPos(0)
+		, m_MarkingToEventPos(0)
 	{
 		UpdateMaxEventPos();
 
@@ -209,14 +202,16 @@ namespace Editor
 	{
 		ComponentBase::ClearHasControl(inCursorControl);
 
-		{
-			const unsigned int order_list_index = m_EventPosDetails.OrderListIndex();
-			const auto& order_list_entry = (*m_DataSourceOrderList)[order_list_index];
-			if (order_list_entry.m_Transposition >= 0xfe)
-				m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, 0xff);
-			else
-				m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, order_list_entry.m_SequenceIndex);
-		}
+		if (m_IsMarkingArea)
+			DoCancelMarking();
+
+		const unsigned int order_list_index = m_EventPosDetails.OrderListIndex();
+		const auto& order_list_entry = (*m_DataSourceOrderList)[order_list_index];
+	
+		if (order_list_entry.m_Transposition >= 0xfe)
+			m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, 0xff);
+		else
+			m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, order_list_entry.m_SequenceIndex);
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
@@ -376,6 +371,8 @@ namespace Editor
 			const Color background_color_muted = ToColor(UserColor::TrackBackgroundMuted);
 			const Color focus_line_background_color = ToColor(UserColor::TrackBackgroundFocusLine);
 			const Color focus_line_background_color_muted = ToColor(UserColor::TrackBackgroundMutedFocusLine);
+			const Color background_color_marking = ToColor(UserColor::TrackMarkingArea);
+			const Color background_color_marking_muted = ToColor(UserColor::TrackMarkingAreaMuted);
 
 			Rect focus_line_rect = m_Rect;
 
@@ -398,10 +395,13 @@ namespace Editor
 				int current_event = top_event;
 
 				// Draw marking
-				if (m_HasMarking)
+				if (m_IsMarkingArea)
 				{
-					int marking_top_screen_position = m_MarkTop - top_event;
-					int marking_bottom_screen_position = m_MarkBottom - top_event;
+					int top = std::min(m_MarkingFromEventPos, m_MarkingToEventPos);
+					int bottom = std::max(m_MarkingFromEventPos, m_MarkingToEventPos);
+
+					int marking_top_screen_position = top - top_event;
+					int marking_bottom_screen_position = (bottom - top_event) + 1;
 
 					const bool out_of_screen = (marking_top_screen_position < 0 && marking_bottom_screen_position < 0)
 						|| (marking_top_screen_position >= m_Dimensions.m_Height && marking_bottom_screen_position >= m_Dimensions.m_Height);
@@ -413,11 +413,10 @@ namespace Editor
 
 						Rect marking_rect = m_Rect;
 
-						marking_rect.m_Position.m_Y = m_Rect.m_Position.m_Y + marking_top_screen_position;
+						marking_rect.m_Position.m_Y += marking_top_screen_position;
 						marking_rect.m_Dimensions.m_Height = marking_bottom_screen_position - marking_top_screen_position;
-
-						const Color background_color_marking = Color::DarkRed;
-						const Color background_color_marking_muted = Color::Grey;
+						marking_rect.m_Position.m_X += 5;
+						marking_rect.m_Dimensions.m_Width -= 6;
 
 						m_TextField->ColorAreaBackground(m_IsMuted ? background_color_marking_muted : background_color_marking, marking_rect);
 					}
@@ -437,14 +436,43 @@ namespace Editor
 				unsigned int sequence_index = m_FirstValidSequenceIndex;
 
 				{
-					DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
-					const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
-
-					for (unsigned int i = 0; i < sequence_index; ++i)
 					{
-						const DataSourceSequence::Event& event = (*sequence)[i];
-						if ((event.m_Instrument & 0xe0) == 0xa0)
-							current_instrument = event.m_Instrument & 0x1f;
+						DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
+						const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+						for (unsigned int i = 0; i < sequence_index; ++i)
+						{
+							const DataSourceSequence::Event& event = (*sequence)[i];
+							if ((event.m_Instrument & 0xe0) == 0xa0)
+								current_instrument = event.m_Instrument & 0x1f;
+						}
+					}
+
+					if (current_instrument == 0xff)
+					{
+						// We didn't find the current instrument
+						unsigned orderlist_index_highligh_check = orderlist_index;
+
+						while (orderlist_index_highligh_check > 0 && current_instrument == 0xff)
+						{
+							--orderlist_index_highligh_check;
+
+							DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index_highligh_check];
+							const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+							if (sequence->GetLength() > 0)
+							{
+								for (int i = static_cast<int>(sequence->GetLength()); i >= 0; --i)
+								{
+									const DataSourceSequence::Event& event = (*sequence)[i];
+									if ((event.m_Instrument & 0xe0) == 0xa0)
+									{
+										current_instrument = event.m_Instrument & 0x1f;
+										break;
+									}
+								}
+							}
+						}
 					}
 				}
 
@@ -487,14 +515,13 @@ namespace Editor
 				while (current_event < bottom_event)
 				{
 					DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
-					const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 
 					if (sequence_index == 0)
 					{
 						if (order_list_entry.m_Transposition == 0xff)
 							m_TextField->Print(m_Position.m_X, current_y, color_orderlist_end_loop, "loop");
 						else if(order_list_entry.m_Transposition == 0xfe)
-							m_TextField->Print(m_Position.m_X, current_y, color_orderlist_end_stop, "stop");
+							m_TextField->Print(m_Position.m_X, current_y, color_orderlist_end_stop, "end ");
 						else
 						{
 							if (m_HasControl && m_TakingOrderListInput && orderlist_index == m_EventPosDetails.OrderListIndex())
@@ -515,8 +542,12 @@ namespace Editor
 					if (current_event >= m_MaxEventPos)
 						break;
 
-					int transposition = static_cast<int>(order_list_entry.m_Transposition) - 0xa0;
-					DrawSequenceLine(m_Position.m_X + 5, current_y, sequence_colors, is_uppercase, sequence, sequence_index, transposition, current_event == m_EventPos, current_instrument);
+					int transposition = static_cast<int>(order_list_entry.m_Transposition);
+					FOUNDATION_ASSERT(transposition < 0xfe);
+
+					const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+					DrawSequenceLine(m_Position.m_X + 5, current_y, sequence_colors, is_uppercase, sequence, sequence_index, transposition - 0xa0, current_event == m_EventPos, current_instrument);
 
 					++current_y;
 					++current_event;
@@ -570,7 +601,9 @@ namespace Editor
 	void ComponentTrack::PullDataFromSource(const bool inFromUndo)
 	{
 		m_DataSourceOrderList->PullDataFromSource();
+		UpdateMaxEventPos();
 	}
+
 
 	void ComponentTrack::PullSequenceDataFromSource()
 	{
@@ -654,9 +687,9 @@ namespace Editor
 			for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
 			{
 				unsigned char sequence_index = (*m_DataSourceOrderList)[i].m_SequenceIndex;
-				const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[sequence_index];
+				int sequence_length = GetSequenceLength(m_DataSourceSequenceList, sequence_index, 1);
 
-				int next_event_pos = event_pos + sequence->GetLength();
+				int next_event_pos = event_pos + sequence_length;
 
 				if (!found_top_event_pos && m_TopEventPos >= event_pos && m_TopEventPos < next_event_pos)
 				{
@@ -720,6 +753,9 @@ namespace Editor
 
 	void ComponentTrack::SetFocusModeOrderList(bool inFocusModeOrderList)
 	{
+		if (m_IsMarkingArea)
+			DoCancelMarking();
+
 		m_FocusModeOrderList = inFocusModeOrderList;
 
 		if (m_FocusModeOrderList)
@@ -788,6 +824,19 @@ namespace Editor
 				m_RequireRefresh = true;
 			}
 		}
+		else
+		{
+			FOUNDATION_ASSERT(m_EventPos == m_MaxEventPos);
+
+			m_DataSourceOrderList->SetLoopIndex(static_cast<unsigned char>(m_DataSourceOrderList->GetLength() - 1));
+
+			OnOrderListChanged();
+
+			m_HasDataChangeOrderList = true;
+			m_HasDataChange = true;
+			m_RequireRefresh = true;
+
+		}
 	}
 
 
@@ -841,6 +890,33 @@ namespace Editor
 
 				if (event_position.m_IsValid)
 				{
+					if (event_position.m_CurrentInstrument == 0)
+					{
+						// We didn't find the current instrument
+						unsigned orderlist_index_highligh_check = event_pos_details.OrderListIndex();
+
+						while (orderlist_index_highligh_check > 0 && event_position.m_CurrentInstrument == 0x00)
+						{
+							--orderlist_index_highligh_check;
+
+							DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index_highligh_check];
+							const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+							if (sequence->GetLength() > 0)
+							{
+								for (int i = static_cast<int>(sequence->GetLength()); i >= 0; --i)
+								{
+									const DataSourceSequence::Event& event = (*sequence)[i];
+									if ((event.m_Instrument & 0xe0) == 0xa0)
+									{
+										event_position.m_CurrentInstrument = event.m_Instrument;
+										break;
+									}
+								}
+							}
+						}
+					}
+
 					outOrderListIndices.push_back(
 						{
 							static_cast<unsigned char>(order_list_event_position.m_Index),
@@ -849,7 +925,7 @@ namespace Editor
 							event_position.m_Index,
 							event_position.m_CurrentDurationValue,
 							event_position.m_RemainingTicks,
-							event_position.m_NextInstrumentAddress,
+							event_position.m_CurrentInstrument,
 							!event_position.m_NextIsEndOfSequence
 						} );
 
@@ -880,6 +956,11 @@ namespace Editor
 	ComponentTrack::OrderListChangedEvent& ComponentTrack::GetOrderListChangedEvent()
 	{
 		return m_OrderListChangedEvent;
+	}
+
+	ComponentTrack::ComputeMaxEventPosEvent& ComponentTrack::GetComputeMaxEventPosEvent()
+	{
+		return m_ComputedMaxEventPosEvent;
 	}
 
 	//--------------------------------------------------------------------------------------------------
@@ -961,7 +1042,6 @@ namespace Editor
 		m_TakingOrderListInput = false;
 
 		OnOrderListChanged();
-		UpdateMaxEventPos();
 	}
 
 
@@ -974,25 +1054,6 @@ namespace Editor
 		}
 	}
 
-
-	void ComponentTrack::HandleOrderListUpdateAfterSequenceSplit(unsigned char inSequenceIndex, unsigned char inAddSequenceIndex)
-	{
-		const int length = m_DataSourceOrderList->GetLength();
-
-		for (int i = length - 1; i >= 0; --i)
-		{
-			const auto& entry = (*m_DataSourceOrderList)[i];
-			if (entry.m_Transposition <= 0xfe && entry.m_SequenceIndex == inSequenceIndex)
-			{
-				auto new_entry = entry;
-				new_entry.m_SequenceIndex = inAddSequenceIndex;
-
-				OrderListInsert(m_DataSourceOrderList, i + 1, new_entry);
-			}
-		}
-
-		OnOrderListChanged();
-	}
 
 	//--------------------------------------------------------------------------------------------------
 	// Draw sequence entry
@@ -1252,6 +1313,7 @@ namespace Editor
 			if (event.m_Note != 0x7e)
 			{
 				event.m_Note = 0x7e;
+
 				OnSequenceChanged(order_list_entry.m_SequenceIndex);
 			}
 
@@ -1262,8 +1324,27 @@ namespace Editor
 	}
 
 
+	void ComponentTrack::ToggleSequenceHoldNoteValueInMarkedArea()
+	{
+		AddUndoStep();
+
+		std::vector<unsigned char> modified_sequence_indices = ForEachEventInMarkedRange([](DataSourceSequence::Event& inEvent, int index)
+		{
+			if (inEvent.m_Note == 0x00 || inEvent.m_Note == 0x7e)
+				inEvent.m_Note ^= 0x7e;
+		});
+
+		for (auto modified_sequence_index : modified_sequence_indices)
+			OnSequenceChanged(modified_sequence_index);
+	}
+
+
+
 	bool ComponentTrack::ApplyTranspose(char inDelta)
 	{
+		if (m_IsMarkingArea)
+			return ApplyTransposeInMarkedArea(inDelta);
+
 		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
@@ -1301,11 +1382,47 @@ namespace Editor
 
 			OnSequenceChanged(order_list_entry.m_SequenceIndex);
 
-
 			return true;
 		}
 
 		return false;
+	}
+
+
+	bool ComponentTrack::ApplyTransposeInMarkedArea(char inDelta)
+	{
+		FOUNDATION_ASSERT(m_IsMarkingArea);
+
+		bool valid = true;
+
+		ForEachEventInMarkedRange([&](DataSourceSequence::Event& inEvent, int index)
+		{
+			if (inEvent.m_Note > 0 && inEvent.m_Note <= 0x60)
+			{
+				char transposed_note = static_cast<char>(inEvent.m_Note) + inDelta;
+				if (transposed_note > 0x60 || transposed_note <= 0)
+					valid = false;
+			}
+		});
+
+		if (valid)
+		{
+			AddUndoStep();
+
+			std::vector<unsigned char> modified_sequences = ForEachEventInMarkedRange([&](DataSourceSequence::Event& inEvent, int index)
+			{
+				if (inEvent.m_Note > 0 && inEvent.m_Note <= 0x60)
+				{
+					char transposed_note = static_cast<char>(inEvent.m_Note) + inDelta;
+					inEvent.m_Note = static_cast<unsigned char>(transposed_note);
+				}
+			});
+
+			for (auto modified_sequence : modified_sequences)
+				OnSequenceChanged(modified_sequence);
+		}
+
+		return valid;
 	}
 
 
@@ -1371,6 +1488,9 @@ namespace Editor
 
 	void ComponentTrack::ToggleSequenceTieNote()
 	{
+		if (m_IsMarkingArea)
+			return ToggleSequenceTieNoteInMarkedArea();
+
 		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
@@ -1378,18 +1498,36 @@ namespace Editor
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 			DataSourceSequence::Event& event = (*sequence_data_source)[m_EventPosDetails.SequenceIndex()];
 
-			if (!sequence_data_source->IsInErrorState())
-				AddUndoStep();
+			AddUndoStep();
 
 			if (event.m_Instrument != 0x90)
 				event.m_Instrument = 0x90;
-			else
+			else if (event.m_Instrument == 0x90)
 				event.m_Instrument = 0x80;
 
 			OnSequenceChanged(order_list_entry.m_SequenceIndex);
 		}
 	}
 
+
+	void ComponentTrack::ToggleSequenceTieNoteInMarkedArea()
+	{
+		AddUndoStep();
+
+		std::vector<unsigned char> modified_sequence_indices = ForEachEventInMarkedRange([](DataSourceSequence::Event& inEvent, int index)
+		{
+			if (inEvent.m_Note > 0x00 && inEvent.m_Note <= 0x60)
+			{
+				if (inEvent.m_Instrument == 0x80)
+					inEvent.m_Instrument = 0x90;
+				else if (inEvent.m_Instrument == 0x90)
+					inEvent.m_Instrument = 0x80;
+			}
+		});
+
+		for (auto modified_sequence_index : modified_sequence_indices)
+			OnSequenceChanged(modified_sequence_index);
+	}
 
 	int ComponentTrack::EraseSequenceLine(bool inValueOnlyAtCursor)
 	{
@@ -1441,6 +1579,30 @@ namespace Editor
 
 		return m_EventPos;
 	}
+
+
+	void ComponentTrack::EraseSequenceLinesInMarkedArea(bool inValueOnlyAtCursor)
+	{
+		FOUNDATION_ASSERT(m_IsMarkingArea);
+
+		AddUndoStep();
+
+		std::vector<unsigned char> altered_sequence_indices = ForEachEventInMarkedRange([&](DataSourceSequence::Event& inEvent, int index)
+		{
+			if (!inValueOnlyAtCursor)
+				inEvent.Clear();
+			else if (IsCursorAtSequenceInstrument())
+				inEvent.m_Instrument = 0x80;
+			else if (IsCursorAtSequenceCommand())
+				inEvent.m_Command = 0x80;
+			else
+				inEvent.m_Note = 0x00;
+		});
+
+		for (auto altered_sequence_index : altered_sequence_indices)
+			OnSequenceChanged(altered_sequence_index);
+	}
+
 
 
 	int ComponentTrack::DeleteSequenceLine(bool inChangeSequenceSize)
@@ -1591,7 +1753,37 @@ namespace Editor
 			UpdateMaxEventPos();
 
 			OnSequenceChanged(order_list_entry.m_SequenceIndex);
+			return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), m_DataSourceOrderList, m_DataSourceSequenceList);
+		}
 
+		return m_EventPos;
+	}
+
+
+	int ComponentTrack::PasteSequenceEventData(const DataCopySequenceEvents* inSequenceEventData, bool inInsert)
+	{
+		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
+		if (order_list_entry.m_Transposition < 0xfe)
+		{
+			if(inInsert)
+				InsertSequenceLines(inSequenceEventData->GetEventCount());
+
+			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
+
+			const int sequence_size = sequence_data_source->GetLength();
+			int destination_index = m_EventPosDetails.SequenceIndex();
+
+			for (int i = 0; i < static_cast<int>(inSequenceEventData->GetEventCount()); ++i)
+			{
+				if (i + destination_index >= sequence_size)
+					break;
+
+				(*sequence_data_source)[i + destination_index] = (*inSequenceEventData)[i];
+			}
+
+			UpdateMaxEventPos();
+
+			OnSequenceChanged(order_list_entry.m_SequenceIndex);
 			return ComponentTrackUtils::GetEventPosOf(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), m_DataSourceOrderList, m_DataSourceSequenceList);
 		}
 
@@ -1607,9 +1799,6 @@ namespace Editor
 		{
 			const std::shared_ptr<DataSourceSequence>& sequence_data_source = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 
-			if (!sequence_data_source->IsInErrorState())
-				AddUndoStep();
-
 			const unsigned int sequence_data_source_length = sequence_data_source->GetLength();
 
 			if (sequence_data_source_length + inLineCount <= DataSourceSequence::MaxEventCount)
@@ -1619,7 +1808,7 @@ namespace Editor
 				int dest_index = sequence_data_source_length + inLineCount - 1;
 
 				FOUNDATION_ASSERT(sequence_data_source_length > 0);
-				for (unsigned int i = sequence_data_source_length - 1; i > m_EventPosDetails.SequenceIndex(); --i, --dest_index)
+				for (int i = sequence_data_source_length - 1; i >= static_cast<int>(m_EventPosDetails.SequenceIndex()); --i, --dest_index)
 				{
 					DataSourceSequence::Event& event = (*sequence_data_source)[i];
 					(*sequence_data_source)[dest_index] = event;
@@ -1942,16 +2131,16 @@ namespace Editor
 				orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex() - 1];
 			}
 
-			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
-			{
+			if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
 				OnOrderListChanged();
-				UpdateMaxEventPos();
-			}
 
 			return m_EventPos;
 		}
 		else
 		{
+			if (m_IsMarkingArea)
+				DoCancelMarking();
+
 			return InsertSequenceLine(inIsControlDown);
 		}
 	}
@@ -1971,17 +2160,28 @@ namespace Editor
 				m_DataSourceOrderList->DecreaseSize();
 
 				OnOrderListChanged();
-				UpdateMaxEventPos();
 			}
 
 			return m_EventPos;
 		}
 		else
 		{
+			if (m_IsMarkingArea)
+			{
+				if (!inIsControlDown)
+				{
+					EraseSequenceLinesInMarkedArea(false);
+					DoCancelMarking();
+
+					return m_EventPos;
+				}
+
+				DoCancelMarking();
+			}
+
 			return DeleteSequenceLine(inIsControlDown);
 		}
 	}
-
 
 	int ComponentTrack::DoBackspace(bool inIsControlDown)
 	{
@@ -2000,6 +2200,14 @@ namespace Editor
 		{
 			if (m_EventPosDetails.SequenceIndex() > 0)
 			{
+				if (m_IsMarkingArea)
+				{
+					EraseSequenceLinesInMarkedArea(false);
+					DoCancelMarking();
+
+					return m_EventPos;
+				}
+
 				int event_pos = DoKeyUp();
 				SetEventPosDetails(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex() - 1);
 				DoDelete(inIsControlDown);
@@ -2033,11 +2241,8 @@ namespace Editor
 			if (first_free_sequence_index < 0x80)
 				orderlist_entry.m_SequenceIndex = first_free_sequence_index;
 
-			if (OrderListInsert(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
-			{
+			if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, m_EventPosDetails.OrderListIndex(), orderlist_entry))
 				OnOrderListChanged();
-				UpdateMaxEventPos();
-			}
 		}
 
 		return m_EventPos;
@@ -2047,6 +2252,9 @@ namespace Editor
 	{
 		if (!m_FocusModeOrderList)
 		{
+			if (m_IsMarkingArea)
+				DoCancelMarking();
+
 			DataSourceOrderList::Entry orderlist_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (orderlist_entry.m_Transposition >= 0xfe)
@@ -2118,11 +2326,9 @@ namespace Editor
 				// insert the duplicate in the order list right after the original
 				auto new_entry = orderlist_entry;
 				new_entry.m_SequenceIndex = duplicate_sequence_index;
-				if (OrderListInsert(m_DataSourceOrderList, order_index + 1, new_entry))
-				{
+				
+				if (InsertSequenceIndexInOrderListAtIndex(m_DataSourceOrderList, order_index + 1, new_entry))
 					OnOrderListChanged();
-					UpdateMaxEventPos();
-				};
 			}
 		}
 	}
@@ -2152,6 +2358,9 @@ namespace Editor
 	{
 		if (!m_FocusModeOrderList)
 		{
+			if (m_IsMarkingArea)
+				DoCancelMarking();
+
 			DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 			if (order_list_entry.m_Transposition < 0xfe)
@@ -2184,8 +2393,13 @@ namespace Editor
 	{
 		if (!m_FocusModeOrderList)
 		{
+			if (m_IsMarkingArea)
+				DoCancelMarking();
+
 			auto dialog_ok = [this](unsigned int inValue)
 			{
+				AddUndoStep();
+
 				int event_pos = InsertSequenceLines(inValue);
 
 				// Set the new event position
@@ -2206,8 +2420,10 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::DoCopySequenceData()
+	void ComponentTrack::DoCopyFullSequenceData()
 	{
+		FOUNDATION_ASSERT(m_FocusModeOrderList);
+
 		DataSourceOrderList::Entry order_list_entry = (*m_DataSourceOrderList)[m_EventPosDetails.OrderListIndex()];
 
 		if (order_list_entry.m_Transposition < 0xfe)
@@ -2218,23 +2434,106 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::DoPasteSequenceData()
+	void ComponentTrack::DoCopyMarkedSequenceData()
+	{
+		FOUNDATION_ASSERT(!m_FocusModeOrderList);
+
+		int top = m_IsMarkingArea ? std::min(m_MarkingFromEventPos, m_MarkingToEventPos) : m_EventPos;
+		int bottom = m_IsMarkingArea ? std::max(m_MarkingFromEventPos, m_MarkingToEventPos) : m_EventPos;
+
+		// Find sequence and index of top position
+		int find_event_pos = top;
+		int event_pos = 0;
+
+		int orderlist_index = 0;
+		int sequence_event_pos = 0;
+
+		bool found = false;
+		
+		for (unsigned int i = 0; i < m_DataSourceOrderList->GetLength(); ++i)
+		{
+			unsigned char sequence_index = (*m_DataSourceOrderList)[i].m_SequenceIndex;
+
+			const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[sequence_index];
+
+			int next_event_pos = event_pos + sequence->GetLength();
+
+			if (find_event_pos >= event_pos && find_event_pos < next_event_pos)
+			{
+				orderlist_index = i;
+				sequence_event_pos = find_event_pos - event_pos;
+
+				found = true;
+				break;
+			}
+
+			event_pos = next_event_pos;
+		}
+
+		if(found)
+		{
+			std::vector<DataSourceSequence::Event> events_copy;
+
+			for (int event_pos = top; event_pos <= bottom; ++event_pos)
+			{
+				const auto& orderlist_entry = (*m_DataSourceOrderList)[orderlist_index];
+				if (orderlist_entry.m_Transposition >= 0xfe)
+					break;
+
+				unsigned char sequence_index = orderlist_entry.m_SequenceIndex;
+				const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[sequence_index];
+
+				DataSourceSequence::Event event_to_copy = (*sequence)[sequence_event_pos];
+				events_copy.push_back(event_to_copy);
+
+				// Logging
+				std::string output = std::to_string(event_to_copy.m_Instrument) + ": " + std::to_string(event_to_copy.m_Command) + " - " + std::to_string(event_to_copy.m_Note) + "\n";
+				Logging::instance().Info(output.c_str());
+
+				++sequence_event_pos;
+				if (sequence_event_pos >= static_cast<int>(sequence->GetLength()))
+				{
+					++orderlist_index;
+					sequence_event_pos = 0;
+				}
+			}
+
+			if (!events_copy.empty())
+				CopyPaste::Instance().SetData(new DataCopySequenceEvents(events_copy));
+		}
+	}
+
+
+	void ComponentTrack::DoPaste(bool inCtrlPressed)
 	{
 		if (CopyPaste::Instance().HasData<DataCopySequence>())
 		{
-			AddUndoStep();
-
 			const auto* data = CopyPaste::Instance().GetData<DataCopySequence>();
-			const bool is_full_sequence = data->IsFullSequenceCopy();
 
-			if (is_full_sequence)
+			if (!inCtrlPressed)
 			{
+				AddUndoStep();
+
 				int event_pos = ResizeAndReplaceData(data);
 
 				// Set the new event position
 				if (m_EventPos != event_pos)
 					SetEventPosition(event_pos);
+
+				OnOrderListChanged();
 			}
+		}
+
+		if (CopyPaste::Instance().HasData<DataCopySequenceEvents>() && !m_FocusModeOrderList)
+		{
+			const auto* data = CopyPaste::Instance().GetData<DataCopySequenceEvents>();
+			AddUndoStep();
+
+			int event_pos = PasteSequenceEventData(data, inCtrlPressed);
+
+			// Set the new event position
+			if (m_EventPos != event_pos)
+				SetEventPosition(event_pos);
 
 			OnOrderListChanged();
 		}
@@ -2295,12 +2594,34 @@ namespace Editor
 	}
 
 
+	void ComponentTrack::DoBeginMarking(int inBeginMarkingEventPos)
+	{
+		FOUNDATION_ASSERT(!m_IsMarkingArea);
+
+		m_MarkingFromEventPos = inBeginMarkingEventPos;
+		m_IsMarkingArea = true;
+	}
+
+	void ComponentTrack::DoCancelMarking()
+	{
+		FOUNDATION_ASSERT(m_IsMarkingArea);
+
+		m_IsMarkingArea = false;
+	}
+
+	std::shared_ptr<DataSourceOrderList> ComponentTrack::GetDataSourceOrderList()
+	{
+		return m_DataSourceOrderList;
+	}
+
 	//--------------------------------------------------------------------------------------------------
 	// Data change
 	//--------------------------------------------------------------------------------------------------
 
 	void ComponentTrack::OnOrderListChanged()
 	{
+		UpdateMaxEventPos();
+
 		// Pack orderlist
 		DataSourceOrderList::PackResult packed_result = m_DataSourceOrderList->Pack();
 
@@ -2399,6 +2720,9 @@ namespace Editor
 		undo_data->m_EventPosDetailsSequenceIndex = m_EventPosDetails.SequenceIndex();
 		undo_data->m_EventPosOrderListIndex = m_EventPosOrderListIndex;
 		undo_data->m_EventPosSequenceIndex = m_EventPosSequenceIndex;
+		undo_data->m_IsMarkingArea = m_IsMarkingArea;
+		undo_data->m_MarkingFromEventPos = m_MarkingFromEventPos;
+		undo_data->m_MarkingToEventPos = m_MarkingToEventPos;;
 
 		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
 
@@ -2418,6 +2742,9 @@ namespace Editor
 		undo_data->m_EventPosDetailsSequenceIndex = m_EventPosDetails.SequenceIndex();
 		undo_data->m_EventPosOrderListIndex = m_EventPosOrderListIndex;
 		undo_data->m_EventPosSequenceIndex = m_EventPosSequenceIndex;
+		undo_data->m_IsMarkingArea = m_IsMarkingArea;
+		undo_data->m_MarkingFromEventPos = m_MarkingFromEventPos;
+		undo_data->m_MarkingToEventPos = m_MarkingToEventPos;
 
 		m_Undo->AddMostRecentEdit(inLockCPU, undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
 	}
@@ -2434,11 +2761,20 @@ namespace Editor
 		m_MaxEventPos = undo_data.m_MaxEventPos;
 		m_EventPosOrderListIndex = undo_data.m_EventPosOrderListIndex;
 		m_EventPosSequenceIndex = undo_data.m_EventPosSequenceIndex;
+
 		SetEventPosDetails(undo_data.m_EventPosDetailsOrderListIndex, undo_data.m_EventPosDetailsSequenceIndex);
+
+		m_IsMarkingArea = undo_data.m_IsMarkingArea;
+		m_MarkingFromEventPos = undo_data.m_MarkingFromEventPos;
+		m_MarkingToEventPos = undo_data.m_MarkingToEventPos;
 
 		m_OnUndoHandler(undo_data, inCursorControl);
 
 		PullSequenceDataFromSource();
+		PullDataFromSource(true);
+
+		GetComputeMaxEventPosEvent().Execute();
+
 		m_RequireRefresh = true;
 	}
 
@@ -2453,6 +2789,9 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
+				if (m_IsMarkingArea)
+					DoCancelMarking();
+
 				inKeyHookContext.m_NewEventPos = DoKeyUp();
 				return true;
 			}
@@ -2463,12 +2802,57 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
+				if (m_IsMarkingArea)
+					DoCancelMarking();
+
 				inKeyHookContext.m_NewEventPos = DoKeyDown();
 				return true;
 			}
 
 			return false;
 		} });
+	
+		m_KeyHooks.push_back({ "Key.Track.MarkingCursorUp", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (!m_TakingOrderListInput)
+			{
+				if (!m_FocusModeOrderList)
+				{
+					if (!m_IsMarkingArea)
+						DoBeginMarking(m_EventPos);
+
+					int new_event_pos = DoKeyUp();
+
+					m_MarkingToEventPos = new_event_pos;
+					inKeyHookContext.m_NewEventPos = new_event_pos;
+
+					return true;
+				}
+			}
+
+			return false;
+		} });
+		m_KeyHooks.push_back({"Key.Track.MarkingCursorDown", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (!m_TakingOrderListInput)
+			{
+				if (!m_FocusModeOrderList)
+				{
+					if (!m_IsMarkingArea)
+						DoBeginMarking(m_EventPos);
+
+					int new_event_pos = DoKeyDown();
+
+					m_MarkingToEventPos = new_event_pos;
+					inKeyHookContext.m_NewEventPos = new_event_pos;
+
+					return true;
+				}
+			}
+
+			return false;
+		} });
+
 		m_KeyHooks.push_back({"Key.Track.ToggleGateUntilNextEvent", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
 		{
 			if (!m_FocusModeOrderList)
@@ -2514,6 +2898,7 @@ namespace Editor
 			if (!m_TakingOrderListInput)
 			{
 				ApplyTranspose(-1);
+
 				return true;
 			}
 
@@ -2524,6 +2909,7 @@ namespace Editor
 			if (!m_TakingOrderListInput)
 			{
 				ApplyTranspose(-12);
+
 				return true;
 			}
 
@@ -2573,7 +2959,11 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				inKeyHookContext.m_NewEventPos = EraseSequenceLine(true);
+				if (m_IsMarkingArea)
+					EraseSequenceLinesInMarkedArea(true);
+				else
+					inKeyHookContext.m_NewEventPos = EraseSequenceLine(true);
+
 				return true;
 			}
 
@@ -2583,7 +2973,10 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				inKeyHookContext.m_NewEventPos = EraseSequenceLine(false);
+				if (m_IsMarkingArea)
+					EraseSequenceLinesInMarkedArea(false);
+				else
+					inKeyHookContext.m_NewEventPos = EraseSequenceLine(false);
 				return true;
 			}
 
@@ -2593,7 +2986,10 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				inKeyHookContext.m_NewEventPos = ApplySequenceHoldNoteValue();
+				if (m_IsMarkingArea)
+					ToggleSequenceHoldNoteValueInMarkedArea();
+				else
+					inKeyHookContext.m_NewEventPos = ApplySequenceHoldNoteValue();
 				return true;
 			}
 
@@ -2713,7 +3109,13 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				DoCopySequenceData();
+				if (m_FocusModeOrderList)
+					DoCopyFullSequenceData();
+				else
+					DoCopyMarkedSequenceData();
+
+				m_RequireRefresh = true;
+				
 				return true;
 			}
 
@@ -2723,7 +3125,19 @@ namespace Editor
 		{
 			if (!m_TakingOrderListInput)
 			{
-				DoPasteSequenceData();
+				DoPaste(false);
+
+				return true;
+			}
+
+			return false;
+		} });
+		m_KeyHooks.push_back({ "Key.Track.InsertPaste", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			if (!m_TakingOrderListInput)
+			{
+				DoPaste(true);
+
 				return true;
 			}
 

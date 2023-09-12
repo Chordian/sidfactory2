@@ -102,24 +102,35 @@ namespace Editor
 			const auto& descriptor = inDriverInfo.GetDescriptor();
 
 			const bool non_standard_driver = (descriptor.m_DriverVersionMajor & 0x80) != 0;
+			const bool demo_driver = (descriptor.m_DriverVersionMinor & 0x80) != 0;
 
 			const unsigned char major_version = descriptor.m_DriverVersionMajor & 0x7f;
-			const unsigned char minor_version = descriptor.m_DriverVersionMinor;
+			const unsigned char minor_version = std::min<unsigned char>(descriptor.m_DriverVersionMinor, 99);
 
-			std::string version = std::to_string(major_version) + "_" + std::to_string(minor_version / 10) + std::to_string(minor_version % 10);
-
-			if (non_standard_driver)
+			const auto VersionPrefix = [&]() -> std::string
 			{
-				if (descriptor.m_DriverName.find("NP") != std::string::npos)
-					version = "np" + version;
-			}
-
-			for (const std::string& filename : m_OverlayFileList)
-			{
-				if (filename.find(version) != std::string::npos)
+				if (non_standard_driver)
 				{
-					LoadOverlay(false, filename);
-					return;
+					if (descriptor.m_DriverName.find("NP") != std::string::npos)
+						return "np";
+				}
+
+				return "";
+			};
+
+			std::string version_base = VersionPrefix() + std::to_string(major_version) + "_"; 
+
+			for (int minor = static_cast<int>(minor_version); minor >= 0; --minor)
+			{
+				std::string version = version_base + std::to_string(minor / 10) + std::to_string(minor % 10);
+
+				for (const std::string& filename : m_OverlayFileList)
+				{
+					if (filename.find(version) != std::string::npos)
+					{
+						LoadOverlay(false, filename);
+						return;
+					}
 				}
 			}
 		}
@@ -174,7 +185,7 @@ namespace Editor
 			}
 		}
 
-		// sort the list, so that versions of drivers are ordered. This will be usefull to display a driver overlay of a lesser minor version!
+		// sort the list, so that versions of drivers are ordered. This will be useful to display a driver overlay of a lesser minor version!
 	}
 
 

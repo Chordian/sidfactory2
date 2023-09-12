@@ -123,10 +123,10 @@
 /* Enable the stub audio driver (src/audio/psp/\*.c) */
 #define SDL_AUDIO_DRIVER_PSP    1
 
-/* PSP video dirver */
+/* PSP video driver */
 #define SDL_VIDEO_DRIVER_PSP   1
 
-/* PSP render dirver */
+/* PSP render driver */
 #define SDL_VIDEO_RENDER_PSP   1
 
 #define SDL_POWER_PSP          1

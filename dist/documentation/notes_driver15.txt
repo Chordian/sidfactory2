@@ -1,4 +1,4 @@
-Driver 15.00 - Tiny, mark I
+Driver 15.02 - Tiny, mark I
 ===========================
 
 Versions
@@ -8,6 +8,14 @@ Versions
             where all of the variables used by the driver have been moved to the zero page
             addressing space. A linear pulse sweep has been added and the code has been
             optimized to take up as little memory as possible. Hard restart is always on
+
+  o  15.02: There are several updates for this minor version:
+
+            o  Changed hard restart settings to not only setting SR to 00, but now also ADSR to 0f00
+            o  Changed programs running during next note phase - they were previously suspended for performance
+               reasons, but it caused too many artifacts
+            o  Added command 3x yy, for setting the wave program pointer to yy
+            o  Adding support for the stop marker (orderlist) as in all other drivers
 
 
 Instruments
@@ -26,6 +34,7 @@ Commands
    0X XX - Slide up             XXX  = 12-bit speed
    1X XX - Slide down           XXX  = 12-bit speed
    2X -Y - Vibrato              X    = frequency            Y   = amplitude
+   3X YY - Wave program         YY   = table index
 
 
 Wave

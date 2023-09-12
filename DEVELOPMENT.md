@@ -91,7 +91,7 @@ nightly builds.
 ## Branching and merging
 
 The 'master' branch should be a stable branch. The nightly 'beta' versions built
-from the master branch should be useable and a potential candidate for an
+from the master branch should be usable and a potential candidate for an
 official release.
 
 Bugfixes and features are developed in separate branches. These branches are
@@ -101,7 +101,7 @@ changes are done directly in master (spelling errors etc.).
 ### Merge requests
 
 Once approved, a MR is merged to master. It should be complete so that no
-further work is neccesary in the master branch, so:
+further work is necessary in the master branch, so:
 
 - Basic functionality is tested (with the latest master branch merged into it)
 - The changelog in `README.md` is updated
@@ -118,6 +118,7 @@ For official releases
 - The manual is updated in the master branch
 - The release candidate is more thorougly tested
 - The release is officially announced
+- The release is given a git tag
 
 ## Issue tracking
 

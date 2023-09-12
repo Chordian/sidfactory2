@@ -386,19 +386,19 @@ namespace Editor
 		int event_position = 0;
 		int index = 0;
 		unsigned char current_delta_tick = 0;
-		unsigned char next_instrument = 0;
+		unsigned char current_instrument = 0;
 
 		while (index < static_cast<int>(m_PackedSize))
 		{
 			if (event_position >= inEventPosition)
-				return { true, static_cast<unsigned char>(index), static_cast<unsigned char>(event_position - inEventPosition), current_delta_tick, next_instrument, m_Data[index] == 0x7f };
+				return { true, static_cast<unsigned char>(index), static_cast<unsigned char>(event_position - inEventPosition), current_delta_tick, current_instrument, m_Data[index] == 0x7f };
 
 			while (m_Data[index] >= 0x80)
 			{
 				if (m_Data[index] < 0xa0)
 					current_delta_tick = m_Data[index] & 0x0f;
 				else if (m_Data[index] < 0xc0)
-					next_instrument = m_Data[index];
+					current_instrument = m_Data[index];
 
 				++index;
 			}

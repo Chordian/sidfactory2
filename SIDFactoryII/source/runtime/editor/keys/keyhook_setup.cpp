@@ -67,6 +67,7 @@ namespace Editor
 		definitions.push_back({ "Key.ScreenEdit.OctaveUp", {{ SDLK_F4, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.OpenUtilitiesDialog", {{ SDLK_F6, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.OpenOptionsDialog", {{ SDLK_F6, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.OpenSongsDialog", {{ SDLK_F7, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.Config.Reload", {{ SDLK_F7, Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleSIDModel", {{ SDLK_F9, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleRegion", {{ SDLK_F9, Keyboard::Shift }} });
@@ -104,6 +105,8 @@ namespace Editor
 
 		definitions.push_back({ "Key.Track.CursorUp", {{ SDLK_UP, Keyboard::None }} });
 		definitions.push_back({ "Key.Track.CursorDown", {{ SDLK_DOWN, Keyboard::None }} });
+		definitions.push_back({ "Key.Track.MarkingCursorUp", {{ SDLK_UP, Keyboard::Shift }} });
+		definitions.push_back({ "Key.Track.MarkingCursorDown", {{ SDLK_DOWN, Keyboard::Shift }} });
 		definitions.push_back({ "Key.Track.ToggleGateUntilNextEvent", {{ SDLK_DOWN, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.ToggleGateSincePreviousEvent", {{ SDLK_UP, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.PageUp", {{ SDLK_PAGEUP, Keyboard::None }} });
@@ -136,6 +139,7 @@ namespace Editor
 		definitions.push_back({ "Key.Track.ToggleTieNote", {{ SDLK_RETURN, Keyboard::Shift }} });
 		definitions.push_back({ "Key.Track.Copy", {{ SDLK_c, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.Paste", {{ SDLK_v, Keyboard::Control }} });
+		definitions.push_back({ "Key.Track.InsertPaste", {{ SDLK_v, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.DuplicateAndReplaceSequence", {{ SDLK_d, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.DuplicateAndAppendSequence", {{ SDLK_d, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.InsertFirstFreeSequence", {{ SDLK_f, Keyboard::Control }} });
@@ -143,7 +147,6 @@ namespace Editor
 		definitions.push_back({ "Key.Track.SplitSequenceAtEventPosition", {{ SDLK_b, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedInstrumentIndexValue", {{ SDLK_i, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetSelectedCommandIndexValue", {{ SDLK_o, Keyboard::Control }} });
-		definitions.push_back({ "Key.Track.ShowSequenceInfo", {{ SDLK_i, Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.SetOrderlistLoopPoint", {{ SDLK_l, Keyboard::Shift | Keyboard::Control }} });
 		definitions.push_back({ "Key.Track.Debug", {{ SDLK_F12, Keyboard::Alt }} });
 		definitions.push_back({ "Key.OrderListOverview.Copy", {{ SDLK_c, Keyboard::Control }} });
@@ -168,6 +171,7 @@ namespace Editor
 		m_KeyHookStore.OverrideDefinition({ "Key.Track.CursorRightColumn", {{ SDLK_RIGHT, Keyboard::Cmd }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.Track.Copy", {{ SDLK_c, Keyboard::Cmd }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.Track.Paste", {{ SDLK_v, Keyboard::Cmd }} });
+		m_KeyHookStore.OverrideDefinition({ "Key.Track.InsertPaste", {{ SDLK_v, Keyboard::Cmd | Keyboard::Shift }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.ScreenEdit.Undo", {{ SDLK_z, Keyboard::Cmd }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.ScreenEdit.Redo", {{ SDLK_z, Keyboard::Cmd | Keyboard::Shift }} });
 		m_KeyHookStore.OverrideDefinition({ "Key.OrderListOverview.Copy", {{ SDLK_c, Keyboard::Cmd }} });
