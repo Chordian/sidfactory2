@@ -50,7 +50,7 @@ namespace Editor
 			const Color color_bar_fill_filter = ToColor(UserColor::StateBarFillColorFilter);
 
 			m_DataSource->PullDataFromSource();
-			
+
 			m_DrawField->DrawBox(color_background, 0, 0, m_Dimensions.m_Width, m_Dimensions.m_Height);
 
 			const int bar_width = m_Dimensions.m_Width - 4;
@@ -61,19 +61,19 @@ namespace Editor
 			int bar_y = 2;
 
 			const auto& data_source = *m_DataSource;
-				
+
 			const auto get_pulse_value = [&data_source](unsigned int inChannel) -> unsigned short
 			{
 				if(inChannel > 2)
 					return 0;
-				
+
 				const unsigned int offset = inChannel * 7;
-				
+
 				const unsigned short pulse_high = data_source[offset + 3] & 0x0f;
 				const unsigned short pulse_low = data_source[offset + 2];
 
-				const unsigned short value = (pulse_high << 8) | pulse_low; 
-				
+				const unsigned short value = (pulse_high << 8) | pulse_low;
+
 				return value;
 			};
 
@@ -97,7 +97,7 @@ namespace Editor
 				const unsigned short filter_low = data_source[0x15] & 7;
 
 				const unsigned short value = (filter_high << 3) | filter_low;
-				
+
 				return value;
 			};
 
@@ -143,10 +143,12 @@ namespace Editor
 
 		if(inValue > 0)
 		{
-			float width_fraction = static_cast<float>(inValue) / static_cast<float>(inMaxValue);
+			int abs_value = inValue > 0x800 ? 0x1000 - inValue : inValue;
+			float width_fraction = static_cast<float>(abs_value) / static_cast<float>(inMaxValue);
 			int width = static_cast<int>(static_cast<float>(inWidth) * (width_fraction < 0 ? 0 : (width_fraction > 1.0f ? 1.0f : width_fraction)));
 
-			m_DrawField->DrawBox(inBarColorFill, inX, inY + 1, width, inHeight - 2);
+			int x = inValue > 0x800 ? inX + (inWidth - width) : inX;
+			m_DrawField->DrawBox(inBarColorFill, x, inY + 1, width, inHeight - 2);
 		}
 
 		m_DrawField->DrawVerticalLine(inDividerColor, inX + inWidth / 2, inY, inY + inHeight);
