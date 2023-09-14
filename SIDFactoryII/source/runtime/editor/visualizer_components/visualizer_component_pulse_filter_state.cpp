@@ -87,7 +87,7 @@ namespace Editor
 
 			for(unsigned int i = 0; i < 3; ++i)
 			{
-				DrawBar(bar_x, bar_y, bar_width, bar_height, get_pulse_value(i), 0x0fff, is_channel_filtered(i) ? color_bar_filtered_channel : color_bar, color_bar_fill);
+				DrawBarWithCenterDivider(bar_x, bar_y, bar_width, bar_height, get_pulse_value(i), 0x0fff, is_channel_filtered(i) ? color_bar_filtered_channel : color_bar, color_bar_fill, color_background);
 				bar_y += bar_spacing;
 			}
 
@@ -127,4 +127,28 @@ namespace Editor
 		}
 	}
 
+
+	void VisualizerComponentPulseFilterState::DrawBarWithCenterDivider(
+		int inX,
+		int inY,
+		int inWidth,
+		int inHeight,
+		int inValue,
+		int inMaxValue,
+		const Foundation::Color& inBarColor,
+		const Foundation::Color& inBarColorFill,
+		const Foundation::Color& inDividerColor)
+	{
+		m_DrawField->DrawBox(inBarColor, inX, inY, inWidth, inHeight);
+
+		if(inValue > 0)
+		{
+			float width_fraction = static_cast<float>(inValue) / static_cast<float>(inMaxValue);
+			int width = static_cast<int>(static_cast<float>(inWidth) * (width_fraction < 0 ? 0 : (width_fraction > 1.0f ? 1.0f : width_fraction)));
+
+			m_DrawField->DrawBox(inBarColorFill, inX, inY + 1, width, inHeight - 2);
+		}
+
+		m_DrawField->DrawVerticalLine(inDividerColor, inX + inWidth / 2, inY, inY + inHeight);
+	}
 }

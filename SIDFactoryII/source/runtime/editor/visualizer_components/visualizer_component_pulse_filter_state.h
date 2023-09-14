@@ -30,7 +30,27 @@ namespace Editor
 		void Refresh(const DisplayState& inDisplayState) override;
 
 	private:
-		void DrawBar(int inX, int inY, int inWidth, int inHeight, int inValue, int inMaxValue, const Foundation::Color& inBarColor, const Foundation::Color& inBarColorFill);
+		void DrawBar(
+			int inX,
+			int inY,
+			int inWidth,
+			int inHeight,
+			 int inValue,
+			 int inMaxValue,
+			 const Foundation::Color& inBarColor,
+			 const Foundation::Color& inBarColorFill);
+
+		void DrawBarWithCenterDivider(
+			int inX,
+			int inY,
+			int inWidth,
+			int inHeight,
+			int inValue,
+			int inMaxValue,
+			const Foundation::Color& inBarColor,
+			const Foundation::Color& inBarColorFill,
+			const Foundation::Color& inDividerColor);
+		
 		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> m_DataSource;
 	};
 }
