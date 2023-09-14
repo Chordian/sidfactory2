@@ -390,7 +390,7 @@ namespace Editor
 					return true;
 			}
 
-			// Consume non exlusive input
+			// Consume non exclusive input
 			if (m_FocusComponent == nullptr || !m_FocusComponent->ConsumeNonExclusiveInput(inMouse))
 			{
 				for (auto& component : m_Components)

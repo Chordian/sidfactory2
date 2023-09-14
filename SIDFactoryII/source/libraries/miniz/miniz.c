@@ -9,7 +9,7 @@
    * Change History
      10/13/13 v1.15 r4 - Interim bugfix release while I work on the next major release with Zip64 support (almost there!):
        - Critical fix for the MZ_ZIP_FLAG_DO_NOT_SORT_CENTRAL_DIRECTORY bug (thanks kahmyong.moon@hp.com) which could cause locate files to not find files. This bug
-        would only have occured in earlier versions if you explicitly used this flag, OR if you used mz_zip_extract_archive_file_to_heap() or mz_zip_add_mem_to_archive_file_in_place()
+        would only have occurred in earlier versions if you explicitly used this flag, OR if you used mz_zip_extract_archive_file_to_heap() or mz_zip_add_mem_to_archive_file_in_place()
         (which used this flag). If you can't switch to v1.15 but want to fix this bug, just remove the uses of this flag from both helper funcs (and of course don't use the flag).
        - Bugfix in mz_zip_reader_extract_to_mem_no_alloc() from kymoon when pUser_read_buf is not NULL and compressed size is > uncompressed size
        - Fixing mz_zip_reader_extract_*() funcs so they don't try to extract compressed data from directory entries, to account for weird zipfiles which contain zero-size compressed data on dir entries.
@@ -699,7 +699,7 @@ enum
 //  pSrc_buf, src_buf_len: Pointer and size of the Deflate or zlib source data to decompress.
 // On return:
 //  Function returns a pointer to the decompressed data, or NULL on failure.
-//  *pOut_len will be set to the decompressed data's size, which could be larger than src_buf_len on uncompressible data.
+//  *pOut_len will be set to the decompressed data's size, which could be larger than src_buf_len on incompressible data.
 //  The caller must call mz_free() on the returned block when it's no longer needed.
 void *tinfl_decompress_mem_to_heap(const void *pSrc_buf, size_t src_buf_len, size_t *pOut_len, int flags);
 
@@ -811,7 +811,7 @@ enum
 //  flags: The max match finder probes (default is 128) logically OR'd against the above flags. Higher probes are slower but improve compression.
 // On return:
 //  Function returns a pointer to the compressed data, or NULL on failure.
-//  *pOut_len will be set to the compressed data's size, which could be larger than src_buf_len on uncompressible data.
+//  *pOut_len will be set to the compressed data's size, which could be larger than src_buf_len on incompressible data.
 //  The caller must free() the returned block when it's no longer needed.
 void *tdefl_compress_mem_to_heap(const void *pSrc_buf, size_t src_buf_len, size_t *pOut_len, int flags);
 

@@ -263,7 +263,7 @@ namespace Editor
 		m_CPUMemory.GetData(m_DataSnapshotAddressBegin, static_cast<void*>(data), m_DataSnapshotSize);
 		inData.SetCPUMemoryData(data);
 
-		// Auxilary data table text
+		// Auxiliary data table text
 		const auto& table_text = m_DriverInfo.GetAuxilaryDataCollection().GetTableText();
 		inData.SetAuxilaryDataTableText(table_text);
 	}
@@ -274,7 +274,7 @@ namespace Editor
 		// CPU Memory
 		m_CPUMemory.SetData(m_DataSnapshotAddressBegin, static_cast<const void*>(inData.GetCPUMemoryData()), m_DataSnapshotSize);
 
-		// Auxilary data table text
+		// Auxiliary data table text
 		auto& table_text = m_DriverInfo.GetAuxilaryDataCollection().GetTableText();
 		table_text = inData.GetAuxilaryDataTableText();
 	}
