@@ -1,6 +1,7 @@
 #include "visualizer_component_pulse_filter_state.h"
 
 #include "foundation/graphics/drawfield.h"
+#include "foundation/input/mouse.h"
 #include "runtime/editor/components/component_file_selector.h"
 #include "runtime/editor/datasources/datasource_sidregistersbuffer.h"
 #include "runtime/execution/executionhandler.h"
@@ -40,6 +41,12 @@ namespace Editor
 
 	bool VisualizerComponentPulseFilterState::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
+		if(inMouse.IsButtonPressed(Mouse::Button::Left))
+		{
+			m_PulseWidthStyle = (m_PulseWidthStyle + 1) & 1;
+			return true;
+		}
+		
 		return false;
 	}
 
