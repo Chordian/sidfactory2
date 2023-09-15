@@ -5,9 +5,9 @@
 #include "foundation/graphics/viewport.h"
 #include "runtime/editor/components_manager.h"
 #include "runtime/editor/datasources/datasource_sidregistersbuffer.h"
+#include "runtime/editor/datasources/datasource_track_components.h"
 #include "runtime/editor/visualizer_components/visualizer_component_pulse_filter_state.h"
 #include "runtime/execution/executionhandler.h"
-#include "runtime/editor/datasources/datasource_track_components.h"
 
 namespace Editor
 {

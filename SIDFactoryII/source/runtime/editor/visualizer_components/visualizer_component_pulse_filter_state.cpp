@@ -56,10 +56,11 @@ namespace Editor
 		if (m_Enabled)
 		{
 			const Color color_background = ToColor(UserColor::StateBarArea);
-			const Color color_bar = ToColor(UserColor::StateBarBackground);
+			const Color color_bar = ToColor(UserColor::TrackBackground);
 			const Color color_bar_filtered_channel = ToColor(UserColor::StateBarBackgroundFilteredChannel);
 			const Color color_bar_fill = ToColor(UserColor::StateBarFillColorPulse);
 			const Color color_bar_fill_filter = ToColor(UserColor::StateBarFillColorFilter);
+			const Color color_muted = ToColor(UserColor::TrackBackgroundMuted);
 
 			m_DataSource->PullDataFromSource();
 
@@ -99,7 +100,11 @@ namespace Editor
 
 			for (unsigned int i = 0; i < 3; ++i)
 			{
-				if (!(*m_Tracks)[i]->IsMuted())
+				if ((*m_Tracks)[i]->IsMuted())
+				{
+					m_DrawField->DrawBox(color_muted, bar_x, bar_y, bar_width, bar_height);
+				}
+				else
 				{
 					DrawBarWithCenterDivider(bar_x, bar_y, bar_width, bar_height, get_pulse_value(i), 0x0fff, is_channel_filtered(i) ? color_bar_filtered_channel : color_bar, color_bar_fill, color_background);
 				}
