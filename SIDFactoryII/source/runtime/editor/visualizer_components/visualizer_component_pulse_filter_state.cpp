@@ -98,9 +98,12 @@ namespace Editor
 				return (data_source[0x17] & (1 << inChannel)) != 0;
 			};
 
+			bool any_enabled_channel_filtered = false;
 			for (unsigned int i = 0; i < 3; ++i)
 			{
-				if ((*m_Tracks)[i]->IsMuted())
+				bool is_muted = (*m_Tracks)[i]->IsMuted();
+				any_enabled_channel_filtered = any_enabled_channel_filtered | (is_channel_filtered(i) & !is_muted);
+				if (is_muted)
 				{
 					m_DrawField->DrawBox(color_muted, bar_x, bar_y, bar_width, bar_height);
 				}
@@ -121,7 +124,14 @@ namespace Editor
 				return value;
 			};
 
-			DrawBar(bar_x, bar_y, bar_width, bar_height, get_filter_value(), 0x07ff, color_bar, color_bar_fill_filter);
+			if (any_enabled_channel_filtered)
+			{
+				DrawBar(bar_x, bar_y, bar_width, bar_height, get_filter_value(), 0x07ff, color_bar, color_bar_fill_filter);
+			}
+			else
+			{
+				m_DrawField->DrawBox(color_muted, bar_x, bar_y, bar_width, bar_height);
+			}
 		}
 	}
 
