@@ -48,10 +48,14 @@ Please report issues in our [issue tracker](https://github.com/issues).
 ![Commits since last
 release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20221007)
 
-- Added: [#102](https://github.com/Chordian/sidfactory2/issues/102) Visualizers for pulse width (per channel), filter cutoff and an
-  indication per channel if it is being filtered.
-- Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to 10.0, so users can blow up the screen even bigger.
-  Values below 1.0 were not working correctly.
+- Added: [#102](https://github.com/Chordian/sidfactory2/issues/102) Visualizers
+  for pulse width (per channel), filter cutoff and an indication per channel if
+  it is being filtered.
+- Added: Config option `Visualizer.PulseWidth.Style` to set the default style
+  for the pulse width visualizer.
+- Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to
+  10.0, so users can blow up the screen even bigger. Values below 1.0 were not
+  working correctly.
 
 ### Build 20221007
 
