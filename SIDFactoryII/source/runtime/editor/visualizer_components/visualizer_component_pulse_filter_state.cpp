@@ -23,7 +23,8 @@ namespace Editor
 		int inY,
 		int inWidth,
 		int inHeight,
-		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource)
+		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource
+	)
 		: VisualizerComponentBase(inID, inDrawField, inX, inY, inWidth, inHeight)
 		, m_DataSource(inDataSource
 	)
