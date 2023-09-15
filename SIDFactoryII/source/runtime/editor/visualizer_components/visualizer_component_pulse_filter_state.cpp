@@ -17,15 +17,15 @@ namespace Editor
 {
 	VisualizerComponentPulseFilterState::VisualizerComponentPulseFilterState
 	(
-	  int inID,
-	  Foundation::DrawField* inDrawField,
-	  int inX,
-	  int inY,
-	  int inWidth,
-	  int inHeight,
-	  std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource)
-	  : VisualizerComponentBase(inID, inDrawField, inX, inY, inWidth, inHeight)
-	  , m_DataSource(inDataSource)
+		int inID,
+		Foundation::DrawField* inDrawField,
+		int inX,
+		int inY,
+		int inWidth,
+		int inHeight,
+		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource)
+		: VisualizerComponentBase(inID, inDrawField, inX, inY, inWidth, inHeight)
+		, m_DataSource(inDataSource)
 	{
 		ConfigFile& config_file = Global::instance().GetConfig();
 		m_PulseWidthStyle = GetSingleConfigurationValue<ConfigValueInt>(config_file, "Visualizer.PulseWidth.Style", 0);
@@ -111,14 +111,14 @@ namespace Editor
 
 
 	void VisualizerComponentPulseFilterState::DrawBar(
-	  int inX,
-	  int inY,
-	  int inWidth,
-	  int inHeight,
-	  int inValue,
-	  int inMaxValue,
-	  const Foundation::Color& inBarColor,
-	  const Foundation::Color& inBarColorFill)
+		int inX,
+		int inY,
+		int inWidth,
+		int inHeight,
+		int inValue,
+		int inMaxValue,
+		const Foundation::Color& inBarColor,
+		const Foundation::Color& inBarColorFill)
 	{
 		m_DrawField->DrawBox(inBarColor, inX, inY, inWidth, inHeight);
 
@@ -133,15 +133,15 @@ namespace Editor
 
 
 	void VisualizerComponentPulseFilterState::DrawBarWithCenterDivider(
-	  int inX,
-	  int inY,
-	  int inWidth,
-	  int inHeight,
-	  int inValue,
-	  int inMaxValue,
-	  const Foundation::Color& inBarColor,
-	  const Foundation::Color& inBarColorFill,
-	  const Foundation::Color& inDividerColor)
+		int inX,
+		int inY,
+		int inWidth,
+		int inHeight,
+		int inValue,
+		int inMaxValue,
+		const Foundation::Color& inBarColor,
+		const Foundation::Color& inBarColorFill,
+		const Foundation::Color& inDividerColor)
 	{
 		m_DrawField->DrawBox(inBarColor, inX, inY, inWidth, inHeight);
 
