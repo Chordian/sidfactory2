@@ -26,8 +26,7 @@ namespace Editor
 		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource
 	)
 		: VisualizerComponentBase(inID, inDrawField, inX, inY, inWidth, inHeight)
-		, m_DataSource(inDataSource
-	)
+		, m_DataSource(inDataSource)
 	{
 		ConfigFile& config_file = Global::instance().GetConfig();
 		m_PulseWidthStyle = GetSingleConfigurationValue<ConfigValueInt>(config_file, "Visualizer.PulseWidth.Style", 0);
