@@ -16,18 +16,18 @@ using namespace Utility::Config;
 
 namespace Editor
 {
-	VisualizerComponentPulseFilterState::VisualizerComponentPulseFilterState
-	(
+	VisualizerComponentPulseFilterState::VisualizerComponentPulseFilterState(
 		int inID,
 		Foundation::DrawField* inDrawField,
 		int inX,
 		int inY,
 		int inWidth,
 		int inHeight,
-		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource
-	)
+		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource,
+		std::shared_ptr<DataSourceTrackComponents> inTracks)
 		: VisualizerComponentBase(inID, inDrawField, inX, inY, inWidth, inHeight)
 		, m_DataSource(inDataSource)
+		, m_Tracks(inTracks)
 	{
 		ConfigFile& config_file = Global::instance().GetConfig();
 		m_PulseWidthStyle = GetSingleConfigurationValue<ConfigValueInt>(config_file, "Visualizer.PulseWidth.Style", 0);
@@ -41,12 +41,12 @@ namespace Editor
 
 	bool VisualizerComponentPulseFilterState::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-		if(inMouse.IsButtonPressed(Mouse::Button::Left))
+		if (inMouse.IsButtonPressed(Mouse::Button::Left))
 		{
 			m_PulseWidthStyle = (m_PulseWidthStyle + 1) & 1;
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -99,7 +99,10 @@ namespace Editor
 
 			for (unsigned int i = 0; i < 3; ++i)
 			{
-				DrawBarWithCenterDivider(bar_x, bar_y, bar_width, bar_height, get_pulse_value(i), 0x0fff, is_channel_filtered(i) ? color_bar_filtered_channel : color_bar, color_bar_fill, color_background);
+				if (!(*m_Tracks)[i]->IsMuted())
+				{
+					DrawBarWithCenterDivider(bar_x, bar_y, bar_width, bar_height, get_pulse_value(i), 0x0fff, is_channel_filtered(i) ? color_bar_filtered_channel : color_bar, color_bar_fill, color_background);
+				}
 				bar_y += bar_spacing;
 			}
 

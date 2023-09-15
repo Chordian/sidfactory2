@@ -2,6 +2,7 @@
 
 #include "visualizer_component_base.h"
 #include <memory>
+#include "runtime/editor/datasources/datasource_track_components.h"
 
 namespace Foundation
 {
@@ -22,7 +23,8 @@ namespace Editor
 			int inY,
 			int inWidth,
 			int inHeight,
-			std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource
+			std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource,
+			std::shared_ptr<DataSourceTrackComponents> inTracks
 		);
 		virtual ~VisualizerComponentPulseFilterState();
 
@@ -52,6 +54,8 @@ namespace Editor
 			const Foundation::Color& inDividerColor);
 
 		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> m_DataSource;
+		std::shared_ptr<DataSourceTrackComponents> m_Tracks;
+
 		int m_PulseWidthStyle;
 	};
 }

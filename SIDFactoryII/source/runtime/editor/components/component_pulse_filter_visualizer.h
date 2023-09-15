@@ -1,7 +1,9 @@
 #pragma once
 #include "component_base.h"
+#include "runtime/editor/datasources/datasource_track_components.h"
 
-namespace Emulation {
+namespace Emulation
+{
 	class ExecutionHandler;
 }
 
@@ -11,7 +13,8 @@ namespace Editor
 	class VisualizerComponentPulseFilterState;
 }
 
-namespace Foundation {
+namespace Foundation
+{
 	class DrawField;
 }
 
@@ -24,24 +27,24 @@ namespace Editor
 {
 	class ComponentPulseFilterVisualizer : public ComponentBase
 	{
-	public:
+	  public:
 		ComponentPulseFilterVisualizer(
-			int inID, 
-			int inGroupID, 
+			int inID,
+			int inGroupID,
 			Undo* inUndo,
-			Emulation::ExecutionHandler* inExecutionHandler, 
+			Emulation::ExecutionHandler* inExecutionHandler,
 			Foundation::TextField* inTextField,
 			Foundation::Viewport* inViewport,
 			ComponentsManager* inComponentsManager,
-			int inX, 
-			int inY, 
+			std::shared_ptr<DataSourceTrackComponents> inTracks,
+			int inX,
+			int inY,
 			int inWidth,
-			int inHeight
-		);
+			int inHeight);
 		virtual ~ComponentPulseFilterVisualizer();
 
 		bool CanReceiveFocus() const override { return false; }
-		
+
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
@@ -53,10 +56,10 @@ namespace Editor
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;
 
-	private:
+	  private:
 		Foundation::Viewport* m_Viewport;
 		Foundation::DrawField* m_DrawField;
-		
+
 		ComponentsManager* m_ComponentsManager;
 
 		Emulation::ExecutionHandler* m_ExecutionHandler;

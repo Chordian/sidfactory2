@@ -700,7 +700,7 @@ namespace Editor
 
 		AuxilaryDataEditingPreferences::NotationMode notation_mode = editing_preferences.GetNotationMode();
 		editing_preferences.SetNotationMode(notation_mode == AuxilaryDataEditingPreferences::NotationMode::Sharp
-			? AuxilaryDataEditingPreferences::NotationMode::Flat 
+			? AuxilaryDataEditingPreferences::NotationMode::Flat
 			: AuxilaryDataEditingPreferences::NotationMode::Sharp);
 
 		m_TracksComponent->ForceRefresh();
@@ -730,8 +730,8 @@ namespace Editor
 
 		if (!inToggleRegion)
 		{
-			const AuxilaryDataHardwarePreferences::SIDModel sid_model = hardware_preferences.GetSIDModel() == AuxilaryDataHardwarePreferences::SIDModel::MOS6581 
-				? AuxilaryDataHardwarePreferences::SIDModel::MOS8580 
+			const AuxilaryDataHardwarePreferences::SIDModel sid_model = hardware_preferences.GetSIDModel() == AuxilaryDataHardwarePreferences::SIDModel::MOS6581
+				? AuxilaryDataHardwarePreferences::SIDModel::MOS8580
 				: AuxilaryDataHardwarePreferences::SIDModel::MOS6581;
 
 			hardware_preferences.SetSIDModel(sid_model);
@@ -745,8 +745,8 @@ namespace Editor
 		}
 		else
 		{
-			const AuxilaryDataHardwarePreferences::Region hardware_region = hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::Region::PAL 
-				? AuxilaryDataHardwarePreferences::Region::NTSC 
+			const AuxilaryDataHardwarePreferences::Region hardware_region = hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::Region::PAL
+				? AuxilaryDataHardwarePreferences::Region::NTSC
 				: AuxilaryDataHardwarePreferences::Region::PAL;
 
 			hardware_preferences.SetRegion(hardware_region);
@@ -842,7 +842,7 @@ namespace Editor
 
 						m_CPUMemory->Unlock();
 
-						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Statistics", text, 60, false, []() {}));						
+						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Statistics", text, 60, false, []() {}));
 					}
 					break;
 				case DialogUtilities::Selection::Optimize:
@@ -893,10 +893,10 @@ namespace Editor
 						{
 							const unsigned short default_destination_address = 0x1000;
 							m_ComponentsManager->StartDialog(std::make_shared<DialogPackingOptions>(
-								default_destination_address, 
-								zp_range.m_LowestZeroPage, 
-								zp_range, 
-								dialog_ok, 
+								default_destination_address,
+								zp_range.m_LowestZeroPage,
+								zp_range,
+								dialog_ok,
 								dialog_cancel
 							));
 						}
@@ -929,7 +929,7 @@ namespace Editor
 							m_CPUMemory->Lock();
 
 							DataSourceUtils::ExpandSequences(m_SequenceDataSources);
-		
+
 							m_CPUMemory->Unlock();
 
 							m_ComponentsManager->ForceRefresh();
@@ -1118,7 +1118,7 @@ namespace Editor
 
 			return first_free_sequence_index;
 		};
-		
+
 		auto get_first_empty_sequence_index = [&]() -> unsigned char
 		{
 			m_CPUMemory->Lock();
@@ -1173,20 +1173,20 @@ namespace Editor
 		);
 
 		m_OrderListOverviewComponent = std::make_shared<ComponentOrderListOverview>(
-			OrderListOverviewID, 0, 
+			OrderListOverviewID, 0,
 			undo,
 			m_MainTextField,
 			m_EditState,
 			m_KeyHookStore,
 			song_view_text_buffer,
-			m_OrderListDataSources, 
-			m_SequenceDataSources, 
-			1, 
-			top, 
-			order_list_overview_bottom - top, 
+			m_OrderListDataSources,
+			m_SequenceDataSources,
+			1,
+			top,
+			order_list_overview_bottom - top,
 			[&](int inEventPosition, bool inStartPlayingFromPosition)
 			{
-				m_TracksComponent->SetEventPosition(inEventPosition, false); 
+				m_TracksComponent->SetEventPosition(inEventPosition, false);
 				if(inStartPlayingFromPosition)
 					DoPlay(inEventPosition);
 			}
@@ -1203,14 +1203,14 @@ namespace Editor
 
 		m_PlayMarkerListComponent = std::make_shared<ComponentStringListSelector>(
 			PlayMarkerListID, 0,
-			undo, 
-			play_markers_data_source, 
-			m_MainTextField, 
-			1, 
-			player_markers_list_top, 
-			play_markers_width, 
-			play_markers_height, 
-			1, 
+			undo,
+			play_markers_data_source,
+			m_MainTextField,
+			1,
+			player_markers_list_top,
+			play_markers_width,
+			play_markers_height,
+			1,
 			0
 		);
 		m_PlayMarkerListComponent->SetColors(ToColor(UserColor::MarkerListBackground), ToColor(UserColor::MarkerListCursorFocus), ToColor(UserColor::MarkerListCursorNoFocus));
@@ -1233,6 +1233,7 @@ namespace Editor
 			m_MainTextField,
 			m_Viewport,
 			m_ComponentsManager.get(),
+			m_TracksDataSource,
 			1,
 			pulse_filter_visualzer_top,
 			play_markers_width,
@@ -1242,15 +1243,15 @@ namespace Editor
 
 		// Create the tracks component for editing orderlist and sequence data
 		m_TracksComponent = std::make_shared<ComponentTracks>(
-			TracksTableID, 0, 
-			undo, 
-			m_TracksDataSource, 
+			TracksTableID, 0,
+			undo,
+			m_TracksDataSource,
 			m_NotSelectedSongOrderListDataSources,
-			m_MainTextField, 
-			m_DriverInfo->GetAuxilaryDataCollection(), 
+			m_MainTextField,
+			m_DriverInfo->GetAuxilaryDataCollection(),
 			m_EditState,
-			tracks_table_x, 
-			top, 
+			tracks_table_x,
+			top,
 			bottom - top);
 		m_ComponentsManager->AddComponent(m_TracksComponent);
 
@@ -1263,7 +1264,7 @@ namespace Editor
 
 		// Create tables as configured by the driver
 		const std::vector<DriverInfo::TableDefinition>& table_definitions = m_DriverInfo->GetTableDefinitions();
-		
+
 		int highest_table = 0;
 		int widest_table = 0;
 
@@ -1403,9 +1404,9 @@ namespace Editor
 
 				table->GetSelectedRowChangedEvent().Add(
 					nullptr,
-					Utility::TDelegate<void(int)>([&](int inSelectedRow) 
-					{ 
-						m_EditState.SetSelectedInstrument(static_cast<unsigned char>(inSelectedRow)); 
+					Utility::TDelegate<void(int)>([&](int inSelectedRow)
+					{
+						m_EditState.SetSelectedInstrument(static_cast<unsigned char>(inSelectedRow));
 						m_TracksComponent->ForceRefresh();
 					})
 				);
@@ -1417,9 +1418,9 @@ namespace Editor
 
 				table->GetSelectedRowChangedEvent().Add(
 					nullptr,
-					Utility::TDelegate<void(int)>([&](int inSelectedRow) 
-					{ 
-						m_EditState.SetSelectedCommand(static_cast<unsigned char>(inSelectedRow)); 
+					Utility::TDelegate<void(int)>([&](int inSelectedRow)
+					{
+						m_EditState.SetSelectedCommand(static_cast<unsigned char>(inSelectedRow));
 						m_TracksComponent->ForceRefresh();
 					})
 				);
@@ -1774,7 +1775,7 @@ namespace Editor
 
 			return true;
 		} });
- 
+
 		m_KeyHooks.push_back({ "Key.ScreenEdit.PlayFromMarker", m_KeyHookStore, [&]()
 		{
 			if (IsPlaying())
@@ -1843,31 +1844,31 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.OctaveDown", m_KeyHookStore, [&]()
-		{ 
-			DoOctaveChange(false); 
+		{
+			DoOctaveChange(false);
 			return true;
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.OctaveUp", m_KeyHookStore, [&]()
-		{ 
-			DoOctaveChange(true); 
+		{
+			DoOctaveChange(true);
 			return true;
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleSIDModel", m_KeyHookStore, [&]()
-		{ 
-			DoToggleSIDModelAndRegion(false); 
+		{
+			DoToggleSIDModelAndRegion(false);
 			return true;
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleRegion", m_KeyHookStore, [&]()
-		{ 
-			DoToggleSIDModelAndRegion(true); 
+		{
+			DoToggleSIDModelAndRegion(true);
 			return true;
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.LoadSong", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoLoadSong();
 
@@ -1875,7 +1876,7 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.LoadInstrument", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoLoadInstrument();
 
@@ -1883,7 +1884,7 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ImportSong", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoLoadImportSong();
 
@@ -1891,7 +1892,7 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.SaveSong", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoSaveSong();
 
@@ -1899,7 +1900,7 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.SaveInstrument", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoSaveInstrument();
 
@@ -1989,7 +1990,7 @@ namespace Editor
 		{
 			if (m_Undo->HasRedoStep())
 			{
-				m_Undo->DoRedo(*m_CursorControl);			
+				m_Undo->DoRedo(*m_CursorControl);
 				m_ComponentsManager->PullDataFromAllSources(true);
 			}
 
@@ -2135,7 +2136,7 @@ namespace Editor
 					if (it == m_KeyTableIDPairs.end())
 						return static_cast<int>(i);
 				}
-				
+
 				return -1;
 			}(table_definition.m_Name);
 
