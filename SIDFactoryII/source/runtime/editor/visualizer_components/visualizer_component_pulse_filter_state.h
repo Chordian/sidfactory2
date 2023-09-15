@@ -16,11 +16,11 @@ namespace Editor
 	{
 	public:
 		VisualizerComponentPulseFilterState(
-			int inID, 
-			Foundation::DrawField* inDrawField, 
-			int inX, 
-			int inY, 
-			int inWidth, 
+			int inID,
+			Foundation::DrawField* inDrawField,
+			int inX,
+			int inY,
+			int inWidth,
 			int inHeight,
 			std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> inDataSource
 		);
@@ -50,7 +50,8 @@ namespace Editor
 			const Foundation::Color& inBarColor,
 			const Foundation::Color& inBarColorFill,
 			const Foundation::Color& inDividerColor);
-		
+
 		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> m_DataSource;
+		int m_PulseWidthStyle;
 	};
 }

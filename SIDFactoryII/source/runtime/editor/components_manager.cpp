@@ -402,6 +402,12 @@ namespace Editor
 					}
 				}
 			}
+
+			// Let visualizer components consume non exclusive mouse input (if the mouse is over them)
+			auto* VisualComponent = GetVisualizerComponentAt(inMouse.GetPosition());
+
+			if(VisualComponent != nullptr)
+				VisualComponent->ConsumeNonExclusiveInput(inMouse);
 		}
 
 		return false;
@@ -635,4 +641,17 @@ namespace Editor
 
 		return nullptr;
 	}
+
+
+	VisualizerComponentBase* ComponentsManager::GetVisualizerComponentAt(const Foundation::Point& inPosition) const
+	{
+		for (auto visualizerComponent : m_VisualizerComponents)
+		{
+			if (visualizerComponent->ContainsPosition(inPosition))
+				return &*visualizerComponent;
+		}
+
+		return nullptr;
+	}
+
 }

@@ -62,7 +62,8 @@ namespace Editor
 
 	bool VisualizerComponentBase::ContainsPosition(const Foundation::Point& inPixelPosition) const
 	{
-		return m_Rect.Contains(inPixelPosition);
+		Foundation::Rect Rect = { m_DrawField->GetPosition(), m_Rect.m_Dimensions };
+		return Rect.Contains(inPixelPosition);
 	}
 
 
