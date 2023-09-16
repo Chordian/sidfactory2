@@ -27,3 +27,4 @@ SIDFactoryII/*.vcxproj.user
 artifacts
 xcuserdata
 .ccls-cache
+/SIDFactoryII/x64/Debug
