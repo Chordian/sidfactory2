@@ -50,7 +50,7 @@ namespace Editor
 			int inValue,
 			const Foundation::Color& inBarColor,
 			const Foundation::Color& inBarColorFill,
-			const Foundation::Color& inDividerColor);
+			const Foundation::Color& inSeparatorColor);
 
 		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> m_DataSource;
 		std::shared_ptr<DataSourceTrackComponents> m_Tracks;
