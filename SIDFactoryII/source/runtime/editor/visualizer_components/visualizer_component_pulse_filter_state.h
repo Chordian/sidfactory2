@@ -42,13 +42,12 @@ namespace Editor
 			 const Foundation::Color& inBarColor,
 			 const Foundation::Color& inBarColorFill);
 
-		void DrawBarWithCenterDivider(
+		void DrawPulseWidthBar(
 			int inX,
 			int inY,
 			int inWidth,
 			int inHeight,
 			int inValue,
-			int inMaxValue,
 			const Foundation::Color& inBarColor,
 			const Foundation::Color& inBarColorFill,
 			const Foundation::Color& inDividerColor);
