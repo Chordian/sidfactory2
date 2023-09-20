@@ -48,6 +48,7 @@ Please report issues in our [issue tracker](https://github.com/Chordian/sidfacto
 ![Commits since last
 release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20221007)
 
+- Changed: New default driver 11.05
 - Added: [#156](https://github.com/Chordian/sidfactory2/issues/156)
   Configuration option `Disk.Hide.Extensions` to hide files with certain
   extensions in the file browser. Default values are `.sid`, `.wav` and `.mp3`
