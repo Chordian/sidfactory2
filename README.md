@@ -41,7 +41,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20bi
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-Please report issues in our [issue tracker](https://github.com/issues).
+Please report issues in our [issue tracker](https://github.com/Chordian/sidfactory2/issues).
 
 ### Next release
 
