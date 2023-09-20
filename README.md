@@ -45,10 +45,15 @@ Please report issues in our [issue tracker](https://github.com/Chordian/sidfacto
 
 ### Next release
 
-![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20221007)
+![Commits since last
+release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20221007)
 
-- Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to 10.0, so users can blow up the screen even bigger.
-  Values below 1.0 were not working correctly.
+- Added: [#156](https://github.com/Chordian/sidfactory2/issues/156)
+  Configuration option `Disk.Hide.Extensions` to hide files with certain
+  extensions in the file browser. Default values are `.sid`, `.wav` and `.mp3`
+- Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to
+  10.0, so users can blow up the screen even bigger. Values below 1.0 were not
+  working correctly.
 
 ### Build 20221007
 

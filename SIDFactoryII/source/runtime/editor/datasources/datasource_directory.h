@@ -68,6 +68,7 @@ namespace Editor
 		const Utility::ConfigFile& m_ConfigFile;
 
 		std::vector<Drive> m_Drives;
+		std::vector<std::string> m_ExtensionFilter;
 
 		bool m_HasFileSelection;
 		int m_SelectedFileIndex;
