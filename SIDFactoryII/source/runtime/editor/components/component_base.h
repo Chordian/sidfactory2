@@ -52,6 +52,7 @@ namespace Editor
 
 		virtual bool HasDataChange() const;
 
+		virtual bool CanReceiveFocus() const;
 		virtual bool MayTabOutOfFocus(bool inForward) const;
 		virtual bool IsNoteInputSilenced() const;
 		virtual bool IsFastForwardAllowed() const;

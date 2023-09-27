@@ -17,9 +17,9 @@ namespace Emulation
 	public:
 		struct Frame
 		{
-			unsigned int m_nFrameNumber;
-			unsigned int m_nCyclesSpend;
-			unsigned char m_TempoCounter;
+			unsigned int m_nFrameNumber = 0;
+			unsigned int m_nCyclesSpend = 0;
+			unsigned char m_TempoCounter = 0;
 			unsigned char m_DriverSync[3];
 			unsigned char m_SIDData[0x19];
 
@@ -53,6 +53,7 @@ namespace Emulation
 
 		unsigned int RecordedFrameCount() const;
 		const Frame& GetFrame(unsigned int inIndex) const;
+		const Frame& GetNewestFrame() const;
 
 		const unsigned int GetCapacity() const { return m_FrameCapacity; }
 
@@ -73,6 +74,7 @@ namespace Emulation
 
 		bool m_Locked;
 
+		Frame m_LastRecordedFrame;
 		Frame* m_Frames;
 	};
 }

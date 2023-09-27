@@ -33,6 +33,7 @@ namespace Foundation
 		m_Colors[0x14] = 0xff004800;		// Darker Green
 		m_Colors[0x15] = 0xff000060;		// Darker Blue
 		m_Colors[0x16] = 0xff4c4c00;		// Darker Yellow
+		m_Colors[0x17] = 0xff101010;		// Darkest Grey
 	}
 
 

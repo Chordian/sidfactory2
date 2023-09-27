@@ -56,10 +56,14 @@ namespace Emulation
 		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", -1.0f);
 
 		Logging::instance().Info("Sound.Output.Gain = %f", m_OutputGain);
+
 		// Set default action vector
 		m_InitVector = 0x1000;
 		m_StopVector = 0x1003;
 		m_UpdateVector = 0x1006;
+
+		// Clear SID registers after last driver update
+		memset(m_SIDRegisterLastDriverUpdate.m_Buffer, 0, sizeof(m_SIDRegisterLastDriverUpdate.m_Buffer));
 	}
 
 	ExecutionHandler::~ExecutionHandler()
@@ -486,6 +490,9 @@ namespace Emulation
 			m_SIDRegisterFlightRecorder->Record(m_CPUFrameCounter, m_Memory, frameCapture.GetCyclesSpend());
 			m_SIDRegisterFlightRecorder->Unlock();
 		}
+
+		// Copy sid registers after driver update
+		m_Memory->GetData(0xd400, m_SIDRegisterLastDriverUpdate.m_Buffer, sizeof(m_SIDRegisterLastDriverUpdate.m_Buffer));
 
 		// Unlock memory access
 		m_Memory->Unlock();

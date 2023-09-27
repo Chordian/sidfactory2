@@ -102,6 +102,15 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.Orderlist.Value", UserColor::OrderlistValue, ioViewport, Color::LightGrey);
 			Details::SetUserColor(inConfigFile, "Color.Orderlist.Value.Loop.Marker", UserColor::OrderlistValueLoopMarker, ioViewport, Color::LightGreen);
 			Details::SetUserColor(inConfigFile, "Color.Orderlist.Value.Input", UserColor::OrderlistValueInput, ioViewport, Color::White);
+
+			Details::SetUserColor(inConfigFile, "Color.Visualizer.Area", UserColor::VisualizerArea, ioViewport, Color::DarkestGrey);
+			Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.Background", UserColor::VisualizerBarBackground, ioViewport, Color::DarkGrey);
+			Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.BackgroundMuted", UserColor::VisualizerBarBackgroundMuted, ioViewport, Color::DarkerGrey);
+      		Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.BackgroundFilteredChannel", UserColor::VisualizerBarBackgroundFilteredChannel, ioViewport, Color::Grey);
+      		Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.Separator", UserColor::VisualizerBarSeparator, ioViewport, Color::DarkestGrey);
+      		Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.FillColorPulse", UserColor::VisualizerBarFillColorPulse, ioViewport, Color::White);
+      		Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.FillColorFilter", UserColor::VisualizerBarFillColorFilter, ioViewport, Color::LightGrey);
+
 			Details::SetUserColor(inConfigFile, "Color.Dialog.Background", UserColor::DialogBackground, ioViewport, Color::DarkRed);
 			Details::SetUserColor(inConfigFile, "Color.Dialog.Header", UserColor::DialogHeader, ioViewport, Color::Red);
 			Details::SetUserColor(inConfigFile, "Color.Dialog.Header.Text", UserColor::DialogHeaderText, ioViewport, Color::White);
