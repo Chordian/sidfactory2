@@ -53,6 +53,7 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
   it is being filtered.
 - Added: Config option `Visualizer.PulseWidth.Style` to set the default style
   for the pulse width visualizer.
+- Changed: New default driver is 11.05.00
 - Added: [#156](https://github.com/Chordian/sidfactory2/issues/156)
   Configuration option `Disk.Hide.Extensions` to hide files with certain
   extensions in the file browser. Default values are `.sid`, `.wav` and `.mp3`

@@ -115,7 +115,7 @@ clean:
 
 .PHONY: run
 run: $(EXE)
-	$(EXE)
+	cd $(ARTIFACTS_FOLDER) && ./$(APP_NAME)
 
 .PHONY: debug
 debug: $(EXE)
