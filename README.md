@@ -41,7 +41,7 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20bi
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-Please report issues in our [issue tracker](https://github.com/issues).
+Please report issues in our [issue tracker](https://github.com/Chordian/sidfactory2/issues).
 
 ### Next release
 
@@ -53,6 +53,9 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
   it is being filtered.
 - Added: Config option `Visualizer.PulseWidth.Style` to set the default style
   for the pulse width visualizer.
+- Added: [#156](https://github.com/Chordian/sidfactory2/issues/156)
+  Configuration option `Disk.Hide.Extensions` to hide files with certain
+  extensions in the file browser. Default values are `.sid`, `.wav` and `.mp3`
 - Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to
   10.0, so users can blow up the screen even bigger. Values below 1.0 were not
   working correctly.

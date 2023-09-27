@@ -47,11 +47,6 @@ LINKER_FLAGS=\
 	-Wl,-rpath,@executable_path/../Frameworks \
 	-target $(TARGET)
 
-.PHONY: clean
-.PHONY: tmp
-.PHONY: dmg
-.PHONY: app
-
 # Rule to compile .o from .cpp
 %.o: %.cpp
 	$(CC) $(CC_FLAGS) -c $< -o $@
@@ -69,6 +64,7 @@ $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
 	strip $(EXE)
 
 # Make universal binary
+.PHONY: universal
 universal: | clean $(EXE)
 	rm ${OBJ} || true
 	mv $(EXE) $(EXE)_x86
@@ -77,16 +73,19 @@ universal: | clean $(EXE)
 	lipo -create -output $(EXE) $(EXE)_x86 $(EXE)_arm
 	rm $(EXE)_x86 $(EXE)_arm
 
+.PHONY: app
 app: $(APP)
 
 # ----------------------------------------------------
 
 # Step 1: "make raw" to create a "raw" DMG
+.PHONY: raw
 raw: $(DMG_RAW)
 
 # Step 2: Mount tmp.dmg, lay it out manually, unmount
 
 # Step 3: "make dmg" to finalize the DMG
+.PHONY: dmg
 dmg: $(DMG)
 
 # ---------------------------------------------------
@@ -156,6 +155,7 @@ $(ARTIFACTS_FOLDER)/%.html: %.md
 $(ARTIFACTS_FOLDER):
 	mkdir -p $@
 
+.PHONY: clean
 clean:
 	rm ${OBJ} || true
 	rm -rf $(ARTIFACTS_FOLDER)
