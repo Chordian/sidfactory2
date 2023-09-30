@@ -161,7 +161,7 @@ namespace Editor
 					m_List.push_back({ DirectoryEntry::Folder, path });
 				else if (is_regular_file(path, error_code))
 				{
-					std::string extension = fs::path(path).extension();
+					std::string extension = fs::path(path).extension().string();
 
 					// filter out files with extensions on the hide list
 					bool showFile = true;
@@ -185,7 +185,8 @@ namespace Editor
 			m_List.push_back({ DirectoryEntry::File, file });
 
 		// Sort the list
-		std::sort(m_List.begin(), m_List.end(), [](const DirectoryEntry& inEntry1, const DirectoryEntry& inEntry2) {
+		std::sort(m_List.begin(), m_List.end(), [](const DirectoryEntry& inEntry1, const DirectoryEntry& inEntry2)
+			{
 			// If the types are the same, lets check the filenames against each other (and ignore case .. which means a transformation per comparison, not fast.. but who cares! This is disk operation stuff)
 			if (inEntry1.m_Type == inEntry2.m_Type)
 			{
@@ -209,7 +210,6 @@ namespace Editor
 			}
 
 			// Otherwise just prefer one type over the other
-			return inEntry1.m_Type < inEntry2.m_Type;
-		});
+			return inEntry1.m_Type < inEntry2.m_Type; });
 	}
 }
