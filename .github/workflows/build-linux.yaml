@@ -6,6 +6,12 @@ on:
     paths-ignore:
       - 'README.md'
       - 'tools/**'
+  workflow_dispatch:
+    branches:
+      - master
+    paths-ignore:
+      - 'README.md'
+      - 'tools/**'
 jobs:
   build:
     name: Build executable
