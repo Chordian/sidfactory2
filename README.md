@@ -43,10 +43,10 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 
 Please report issues in our [issue tracker](https://github.com/Chordian/sidfactory2/issues).
 
-### Next release
-
 ![Commits since last
-release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20221007)
+release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20231002)
+
+### Build 20231002
 
 - Added: [#102](https://github.com/Chordian/sidfactory2/issues/102) Visualizers
   for pulse width (per channel), filter cutoff and an indication per channel if
