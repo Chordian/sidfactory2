@@ -399,7 +399,7 @@ namespace Editor
 				return value;
 			}
 
-			return unsigned char(0);
+			return (unsigned char)(0);
 		}();
 
 		m_ExecutionHandler->SetUpdatesPerFrame(update_per_frame < 1 ? 1 : update_per_frame);
