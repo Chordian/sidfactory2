@@ -63,9 +63,10 @@ namespace Editor
 		};
 
 	public:
-        static const unsigned char OrderListOverviewID;
+		static const unsigned char OrderListOverviewID;
 		static const unsigned char PlayMarkerListID;
-        static const unsigned char TracksTableID;
+		static const unsigned char TracksTableID;
+		static const unsigned char PulseFilterVisualizerID;
 
 		ScreenEdit(
 			Foundation::Viewport* inViewport, 

@@ -24,7 +24,7 @@ Notable features:
 - Multiple songs
 - Copy / paste and modify selected area
 - Built-in packer and relocator to position the music anywhere in the Commodore
-  64 memory. Relocate used zero page adresses.
+  64 memory. Relocate used zero page addresses.
 - Includes demo tunes to learn from.
 - Cross platform: Windows, macOS (Intel and ARM) and Linux versions.
 - Configurable settings, shortcuts and keyboard layout
@@ -41,9 +41,33 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20bi
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-Please report issues in our [issue tracker](https://github.com/issues).
+Please report issues in our [issue tracker](https://github.com/Chordian/sidfactory2/issues).
 
-![Commits since last release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20220914)
+![Commits since last
+release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20231002)
+
+### Build 20231002
+
+- Added: [#102](https://github.com/Chordian/sidfactory2/issues/102) Visualizers
+  for pulse width (per channel), filter cutoff and an indication per channel if
+  it is being filtered.
+- Added: Config option `Visualizer.PulseWidth.Style` to set the default style
+  for the pulse width visualizer.
+- Changed: New default driver is 11.05.00
+- Added: [#156](https://github.com/Chordian/sidfactory2/issues/156)
+  Configuration option `Disk.Hide.Extensions` to hide files with certain
+  extensions in the file browser. Default values are `.sid`, `.wav` and `.mp3`
+- Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to
+  10.0, so users can blow up the screen even bigger. Values below 1.0 were not
+  working correctly.
+
+### Build 20221007
+
+- Fixed: [#162](https://github.com/Chordian/sidfactory2/issues/162) Crash when
+  converting NP20 and GT tunes.
+- Fixed: Crash when using a loop point beyond position 128
+- Fixed: [#161](https://github.com/Chordian/sidfactory2/pull/161) A bug where
+  sometimes you couldn't edit sequences before hitting the play button.
 
 ### Build 20220914
 

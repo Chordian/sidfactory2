@@ -154,7 +154,7 @@ class Integrator;
  * in triode mode (a.k.a. linear mode or ohmic mode).
  *
  * Even in "linear mode", an NMOS FET is only an approximation of a resistor,
- * as the apparant resistance increases with increasing drain-to-source
+ * as the apparent resistance increases with increasing drain-to-source
  * voltage. If the drain-to-source voltage should approach the gate voltage
  * of 12V, the NMOS FET will enter saturation mode (a.k.a. active mode), and
  * the NMOS FET will not operate anywhere like a resistor.

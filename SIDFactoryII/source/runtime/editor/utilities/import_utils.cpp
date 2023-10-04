@@ -325,7 +325,7 @@ namespace Editor
 			// Copy music data
 			CopyMusicData(inLoadedDriverInfo, inCPUMemory, inImportDriverInfo, inImportFile);
 
-			// Copy auxilary data
+			// Copy auxiliary data
 			inLoadedDriverInfo.GetAuxilaryDataCollection() = inImportDriverInfo.GetAuxilaryDataCollection();
 
 			// Lock CPU memory for writing

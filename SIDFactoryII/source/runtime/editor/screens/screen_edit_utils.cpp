@@ -66,7 +66,7 @@ namespace Editor
 		{
 			const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 			const unsigned short order_list_data_size = music_data.m_OrderListSize;
-			const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+			const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
 
 			for (int i = 0; i < music_data.m_TrackCount * song_count; ++i)
 			{

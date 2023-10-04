@@ -23,7 +23,7 @@ version is correct)
 ### Build "raw" DMG image
 
 This creates a DMG image that is ready for distribution, except that the window
-not nicely layed out when you open it, and it isn't compressed. The created
+not nicely laid out when you open it, and it isn't compressed. The created
 image is in the `artifacts` folder.
 
 From `sidfactory2/macos`:

@@ -308,7 +308,7 @@ namespace Editor
 
 	bool ConverterJCH::BuildTempoTableAndCorrectTempoCommands(const DriverInfo::TableDefinition& inCommandTable)
 	{
-		FOUNDATION_ASSERT(inCommandTable.m_Name == "Command");
+		FOUNDATION_ASSERT(inCommandTable.m_Name == "Commands");
 		FOUNDATION_ASSERT(inCommandTable.m_ColumnCount == 2);
 
 		const unsigned short row_count = inCommandTable.m_RowCount;
@@ -555,7 +555,7 @@ namespace Editor
 
 	void ConverterJCH::GatherCommandInfoFromRowMajorDestinationTable(const DriverInfo::TableDefinition& inCommandTable)
 	{
-		FOUNDATION_ASSERT(inCommandTable.m_Name == "Command");
+		FOUNDATION_ASSERT(inCommandTable.m_Name == "Commands");
 		FOUNDATION_ASSERT(inCommandTable.m_ColumnCount == 2);
 
 		const unsigned short row_count = inCommandTable.m_RowCount;

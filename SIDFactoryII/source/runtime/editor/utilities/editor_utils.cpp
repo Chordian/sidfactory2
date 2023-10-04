@@ -18,13 +18,13 @@ namespace Editor
 		static std::string g_noteKeyListOctave1 = "zsxdcvgbhnjm,l.";
 		static std::string g_noteKeyListOctave2 = "q2w3er5t6y7ui9o0p";
 
-		void SetNoteValueKeys(const std::string& inNoteKeyListOctave1, const std::string& inNoteKeyListOctave2)
+		void SetNoteInputValueKeys(const std::string& inNoteKeyListOctave1, const std::string& inNoteKeyListOctave2)
 		{
 			g_noteKeyListOctave1 = inNoteKeyListOctave1;
 			g_noteKeyListOctave2 = inNoteKeyListOctave2;
 		}
 
-		bool Has2ndInputOctave()
+		bool Has2ndNoteInputOctave()
 		{
 			return !g_noteKeyListOctave2.empty();
 		}

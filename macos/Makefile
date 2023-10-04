@@ -47,11 +47,6 @@ LINKER_FLAGS=\
 	-Wl,-rpath,@executable_path/../Frameworks \
 	-target $(TARGET)
 
-.PHONY: clean
-.PHONY: tmp
-.PHONY: dmg
-.PHONY: app
-
 # Rule to compile .o from .cpp
 %.o: %.cpp
 	$(CC) $(CC_FLAGS) -c $< -o $@
@@ -69,6 +64,7 @@ $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
 	strip $(EXE)
 
 # Make universal binary
+.PHONY: universal
 universal: | clean $(EXE)
 	rm ${OBJ} || true
 	mv $(EXE) $(EXE)_x86
@@ -77,16 +73,19 @@ universal: | clean $(EXE)
 	lipo -create -output $(EXE) $(EXE)_x86 $(EXE)_arm
 	rm $(EXE)_x86 $(EXE)_arm
 
+.PHONY: app
 app: $(APP)
 
 # ----------------------------------------------------
 
 # Step 1: "make raw" to create a "raw" DMG
+.PHONY: raw
 raw: $(DMG_RAW)
 
 # Step 2: Mount tmp.dmg, lay it out manually, unmount
 
 # Step 3: "make dmg" to finalize the DMG
+.PHONY: dmg
 dmg: $(DMG)
 
 # ---------------------------------------------------
@@ -128,7 +127,7 @@ $(DMG_CONTENTS): $(APP) $(EXE_SF2C) $(ARTIFACTS_FOLDER)/keys.html
 	cp -r $(PROJECT_ROOT)/drivers ${DMG_CONTENTS}/$(APP_NAME)/drivers
 	ln -s /Applications $(DMG_CONTENTS)/Applications
 
-# Make a temporary DMG. This needs to be layed out nicely by hand before building the final DMG.
+# Make a temporary DMG. This needs to be laid out nicely by hand before building the final DMG.
 $(DMG_RAW): $(DMG_CONTENTS)
 	rm -f $(DMG_RAW)
 	hdiutil create -srcfolder "$<" -volname "$(DMG_TITLE)" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size $(DMG_SIZE)k $@
@@ -156,6 +155,7 @@ $(ARTIFACTS_FOLDER)/%.html: %.md
 $(ARTIFACTS_FOLDER):
 	mkdir -p $@
 
+.PHONY: clean
 clean:
 	rm ${OBJ} || true
 	rm -rf $(ARTIFACTS_FOLDER)

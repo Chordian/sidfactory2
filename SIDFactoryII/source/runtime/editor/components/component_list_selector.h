@@ -51,6 +51,8 @@ namespace Editor
 		void DoPageHome();
 		void DoPageEnd();
 
+		void AdjustTopVisibleToSelected();
+
 		std::string CondenseString(const std::string& inString, const char* inPostFix, int inMaxLength) const;
 
 		Foundation::Color m_TextColor;

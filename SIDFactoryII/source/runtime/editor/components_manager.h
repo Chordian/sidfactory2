@@ -84,6 +84,7 @@ namespace Editor
 		ComponentBase* GetComponentAfter(ComponentBase* inComponent) const;
 		ComponentBase* GetComponentBefore(ComponentBase* inComponent) const;
 		ComponentBase* GetComponentAt(const Foundation::Point& inPosition) const;
+		VisualizerComponentBase* GetVisualizerComponentAt(const Foundation::Point& inPosition) const;
 
 		bool m_Suspended;
 

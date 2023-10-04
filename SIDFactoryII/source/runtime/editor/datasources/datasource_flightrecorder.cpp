@@ -38,6 +38,14 @@ namespace Editor
 		return m_FlightRecorder->GetFrame(inIndex);
 	}
 
+	const Emulation::FlightRecorder::Frame& DataSourceFlightRecorder::GetMostRecentFrame() const
+	{
+		FOUNDATION_ASSERT(m_FlightRecorder != nullptr);
+		FOUNDATION_ASSERT(m_FlightRecorder->GetCapacity() > 0);
+
+		return m_FlightRecorder->GetNewestFrame();
+	}
+
 
 	const bool DataSourceFlightRecorder::IsRecording() const
 	{

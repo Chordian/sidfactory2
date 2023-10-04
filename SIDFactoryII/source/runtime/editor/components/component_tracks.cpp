@@ -211,7 +211,7 @@ namespace Editor
 			// Consume input on focus track
 			consume |= (*m_DataSource)[m_FocusTrackIndex]->ConsumeInput(inKeyboard, inCursorControl, inComponentsManager);
 
-			// Syncronize event track position
+			// Synchronize event track position
 			int focus_track_event_pos = (*m_DataSource)[m_FocusTrackIndex]->GetEventPosition();
 			if (m_EventPos != focus_track_event_pos)
 			{
