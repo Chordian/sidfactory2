@@ -575,6 +575,7 @@ namespace Editor
 	void ComponentOrderListOverview::PullDataFromSource(const bool inFromUndo)
 	{
 		m_TableText->PullDataFromSource();
+		m_RequireRefresh |= inFromUndo;
 	}
 
 

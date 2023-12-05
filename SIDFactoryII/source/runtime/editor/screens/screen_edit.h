@@ -171,11 +171,13 @@ namespace Editor
 		void ConfigureNoteKeys();
 		void ConfigurePlaybackOptions();
 
+		void ShowSequenceUsageCount(unsigned char inSequenceIndex);
+
 		template<typename EXECUTION_CALLBACK>
 		void StartSongsDialogWithSelectionExecution(const std::string& headline, EXECUTION_CALLBACK&& inExecutionCallback);
 		template<typename EXECUTION_CALLBACK>
 		void StartMoveSongDialogWithSelectionExecution(const std::string& inCaption, EXECUTION_CALLBACK&& inExecutionCallback);
-
+		
 		// Load/save requests
 		std::function<void(void)> m_LoadRequestCallback;
 		std::function<void(void)> m_SaveRequestCallback;

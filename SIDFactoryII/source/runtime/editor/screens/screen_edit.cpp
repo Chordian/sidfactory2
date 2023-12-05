@@ -223,7 +223,7 @@ namespace Editor
 			: song_name;
 
 		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_context_highlight, mouse_button_follow_play);
-		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500);
+		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500, false);
 		m_ActivationMessage = "";
 
 		// Create flight recorder overlay
@@ -1460,8 +1460,22 @@ namespace Editor
 			Utility::TDelegate<void(int)>([&](int inChannel) { m_TracksComponent->OnOrderListChanged(inChannel); })
 		);
 
+		// Hook up tracks for when order list index changes
+		m_TracksComponent->GetOrderListIndexChangedEvent().Add(
+			nullptr,
+			Utility::TDelegate<void(bool, unsigned int, unsigned char)>([this](bool InHasFocus, unsigned int InOrderlistIndex, unsigned char InSequenceIndex)
+			{
+				const bool is_playing = m_DriverState.GetPlayState() == Editor::DriverState::PlayState::Playing;
+
+				if(m_EditState.IsFollowPlayMode() && is_playing)
+					return;
+				
+				if(InHasFocus)
+					this->ShowSequenceUsageCount(InSequenceIndex);
+			})
+		);
+
 		// Enable groups
-		//m_ComponentsManager->SetGroupEnabledForTabbing(0);
 		m_ComponentsManager->SetGroupEnabledForInput(0, true);
 
 		if (m_ActivationFocusOnComponent)
@@ -1745,7 +1759,6 @@ namespace Editor
 
 			EditorUtils::SetNoteInputValueKeys(note_keys_octave1, note_keys_octave2);
 		}
-
 	}
 
 
@@ -2148,6 +2161,19 @@ namespace Editor
 				m_KeyTableIDPairs.push_back({ associated_key_code, associated_character_index, table_definition.m_ID });
 				m_DynamicKeyHooks.push_back({ table_definition.m_Name, { associated_key_code, Keyboard::Alt }, focus_toggle_function });
 			}
+		}
+	}
+
+	void ScreenEdit::ShowSequenceUsageCount(unsigned char inSequenceIndex)
+	{
+		if(inSequenceIndex < 0x80)
+		{
+			m_CPUMemory->Lock();
+			std::vector<int> sequence_index_use_count = DriverUtils::GetSequenceUsageCount(*m_DriverInfo, *m_CPUMemory);
+			m_CPUMemory->Unlock();
+			std::string text = " Sequence index: " + EditorUtils::ConvertToHexValue(inSequenceIndex, m_DisplayState.IsHexUppercase()) + " use count: " + std::to_string(sequence_index_use_count[inSequenceIndex]);
+				
+			SetStatusBarMessage(text, 5000);
 		}
 	}
 }

@@ -80,6 +80,8 @@ namespace Editor
 
 		void OnOrderListChanged(int inChannel);
 
+		ComponentTrack::OrderListIndexChangedEvent& GetOrderListIndexChangedEvent();
+
 	private:
 		void AlignTracks();
 		void HandleSequenceSplit(unsigned char inSequence, unsigned char inSequenceToAdd);
@@ -106,6 +108,8 @@ namespace Editor
 		const EditState& m_EditState;
 		const AuxilaryDataCollection& m_AuxilaryData;
 		ComponentTrackUtils::FocusRow m_FocusRow;
+
+		ComponentTrack::OrderListIndexChangedEvent m_OrderListIndexChangedEvent;
 
 		std::shared_ptr<DataSourceTrackComponents> m_DataSource;
 		std::vector<std::shared_ptr<DataSourceOrderList>> m_OtherOrderListDataSources;

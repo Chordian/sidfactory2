@@ -84,13 +84,11 @@ namespace Editor
 					for (unsigned short j = 0; j < music_data.m_OrderListSize; ++j)
 					{
 						unsigned char value = inMemoryReader[order_list_address + j];
-						if (value < SequenceCount)
-						{
-							if (value == 0x7e)
-								break;
 
+						if (value < SequenceCount)
 							usage_count[value]++;
-						}
+						else if (value >= 0xfe)
+							break;
 					}
 				}
 
