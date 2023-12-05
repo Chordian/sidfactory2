@@ -213,6 +213,7 @@ namespace Editor
 	void ComponentListSelector::SetSelectionIndex(int inSelectionIndex)
 	{
 		m_CursorPos = inSelectionIndex;
+		AdjustTopVisibleToSelected();
 		m_RequireRefresh = true;
 	}
 
@@ -285,9 +286,7 @@ namespace Editor
 		if (m_CursorPos < m_DataSource->GetSize() - 1)
 		{
 			++m_CursorPos;
-
-			if (m_CursorPos >= m_TopVisibleIndex + m_ContentHeight)
-				m_TopVisibleIndex = m_CursorPos - m_ContentHeight + 1;
+			AdjustTopVisibleToSelected();
 		}
 	}
 
@@ -297,9 +296,7 @@ namespace Editor
 		if (m_CursorPos > 0)
 		{
 			--m_CursorPos;
-
-			if (m_TopVisibleIndex > m_CursorPos)
-				m_TopVisibleIndex = m_CursorPos;
+			AdjustTopVisibleToSelected();
 		}
 	}
 
@@ -314,9 +311,7 @@ namespace Editor
 		if (m_CursorPos != new_cursor_pos)
 		{
 			m_CursorPos = new_cursor_pos;
-
-			if (m_CursorPos >= m_TopVisibleIndex + m_ContentHeight)
-				m_TopVisibleIndex = m_CursorPos - m_ContentHeight + 1;
+			AdjustTopVisibleToSelected();
 		}
 	}
 
@@ -331,9 +326,7 @@ namespace Editor
 		if (m_CursorPos != new_cursor_pos)
 		{
 			m_CursorPos = new_cursor_pos;
-
-			if (m_TopVisibleIndex > m_CursorPos)
-				m_TopVisibleIndex = m_CursorPos;
+			AdjustTopVisibleToSelected();
 		}
 	}
 
@@ -343,9 +336,7 @@ namespace Editor
 		if (m_CursorPos != 0)
 		{
 			m_CursorPos = 0;
-
-			if (m_TopVisibleIndex > m_CursorPos)
-				m_TopVisibleIndex = m_CursorPos;
+			AdjustTopVisibleToSelected();
 		}
 	}
 
@@ -357,10 +348,17 @@ namespace Editor
 		if (m_CursorPos != new_cursor_pos)
 		{
 			m_CursorPos = new_cursor_pos;
-
-			if (m_CursorPos >= m_TopVisibleIndex + m_ContentHeight)
-				m_TopVisibleIndex = m_CursorPos - m_ContentHeight + 1;
+			AdjustTopVisibleToSelected();
 		}
+	}
+
+
+	void ComponentListSelector::AdjustTopVisibleToSelected()
+	{
+		if (m_CursorPos >= m_TopVisibleIndex + m_ContentHeight)
+			m_TopVisibleIndex = m_CursorPos - m_ContentHeight + 1;
+		if (m_TopVisibleIndex > m_CursorPos)
+			m_TopVisibleIndex = m_CursorPos;
 	}
 
 

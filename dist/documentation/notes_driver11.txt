@@ -9,6 +9,7 @@ Versions
   o  11.02: Also includes the pulse table index, tempo table index and main volume commands
   o  11.03: Also includes additional filter enable flag
   o  11.04: Also includes note event delay
+  o  11.05: Fret slide removed, HR table size decreased from 16 to 8 rows, skip pulse reset flag added
 
 
 Instruments
@@ -27,7 +28,8 @@ Flags:
       40 - Start filter program (filter table index in byte 3 is then used)
       20 - [11.03] Enable filter on channel (combined with bitmask set in filter program)
       10 - Oscillator reset (waveform 09 is used in the first frame of a note)
-      0X - Hard restart table index
+      08 - Skip resetting the pulse program on note on, unless the instrument is being set explicitly
+      0X - Hard restart table index (0-7)
 
 
 Commands
@@ -37,7 +39,7 @@ T0 XX YY - Slide up/down        XXYY = 16-bit speed
 T1 XX YY - Vibrato              XX   = frequency            YY  = amplitude             (use smaller amplitude values for stronger vibrato)
 T2 XX YY - Portamento           XXYY = 16-bit speed                                     (use 02 80 00 to disable a portamento running wild)
 T3 XX YY - Arpeggio             XX   = arpeggio speed       YY  = arpeggio table index  (use this for chords)
-T4 XX YY - [11.01] Fret slide   XX   = 00-7f speed up       YY  = semitones to slide    (only available in driver 11.01+)
+T4 XX YY - [11.01] Fret slide   XX   = 00-7f speed up       YY  = semitones to slide    (only available in driver 11.01 to 11.04)
                                        80-ff speed down
 T8 XX YY - Set local ADSR                                                               (lasts until next note is triggered)
 T9 XX YY - Set instrument ADSR                                                          (lasts until a different instrument is used)

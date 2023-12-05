@@ -15,6 +15,7 @@ namespace Editor
 		void Unlock();
 
 		const Emulation::FlightRecorder::Frame& operator [](unsigned int inIndex) const;
+		const Emulation::FlightRecorder::Frame& GetMostRecentFrame() const;
 		const int GetSize() const override;
 		const bool IsRecording() const;
 		const unsigned int GetNewestRecordingIndex() const;

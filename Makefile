@@ -51,9 +51,6 @@ ifneq ($(TARGET),DEBUG)
 	CC_FLAGS := $(CC_FLAGS) -O2 -flto -DNDEBUG
 endif
 
-.PHONY: clean
-.PHONY: ubuntu
-.PHONY: dist
 
 # Rule to compile .o from .cpp
 %.o: %.cpp
@@ -90,6 +87,7 @@ $(ARTIFACTS_FOLDER)/config:
 	mkdir -p $@
 
 # Create a distribution folder with executables and resources
+.PHONY: dist
 dist: $(EXE) $(DIST_FOLDER)
 	strip $(EXE)
 	mv $(EXE) $(DIST_FOLDER)
@@ -108,9 +106,24 @@ $(ARTIFACTS_FOLDER):
 $(DIST_FOLDER):
 	mkdir -p $@
 
+.PHONY: clean
 clean:
 	rm ${OBJ} || true
 	rm -rf $(ARTIFACTS_FOLDER) || true
+
+# Local development specific
+
+.PHONY: run
+run: $(EXE)
+	cd $(ARTIFACTS_FOLDER) && ./$(APP_NAME)
+
+.PHONY: debug
+debug: $(EXE)
+	cd $(ARTIFACTS_FOLDER) && lldb $(APP_NAME)
+
+# For local development with ccls, make this file first
+compile_commands.json: clean
+	bear -- make TARGET=DEBUG PLATFORM=$(PLATFORM)
 
 # --- DOCKER BUILDS ---
 
@@ -119,6 +132,7 @@ TMP_CONTAINER=sf2_build_tmp
 # Compile with the Ubuntu image
 BUILD_IMAGE_UBUNTU=sidfactory2/build-ubuntu
 
+.PHONY: ubuntu
 ubuntu:
 	docker container rm $(TMP_CONTAINER) || true
 	docker build -t $(BUILD_IMAGE_UBUNTU) .
@@ -129,6 +143,7 @@ ubuntu:
 # Compile with the Archlinux image
 BUILD_IMAGE_ARCHLINUX=sidfactory2/build-archlinux
 
+.PHONY: archlinux
 archlinux:
 	docker container rm $(TMP_CONTAINER) || true
 	docker build -t $(BUILD_IMAGE_ARCHLINUX) -f Dockerfile.Archlinux .

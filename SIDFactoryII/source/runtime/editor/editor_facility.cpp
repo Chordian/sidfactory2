@@ -9,6 +9,7 @@
 #include "runtime/editor/auxilarydata/auxilary_data_hardware_preferences.h"
 #include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/editor/converters/converterbase.h"
+#include "runtime/editor/datacopy/copypaste.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/dialog/dialog_message_yesno.h"
 #include "runtime/editor/dialog/dialog_sid_file_info.h"
@@ -26,7 +27,6 @@
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/import_utils.h"
-#include "runtime/editor/datacopy/copypaste.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/cpumos6510.h"
 #include "runtime/emulation/sid/sidproxy.h"
@@ -102,12 +102,12 @@ namespace Editor
 		SIDConfiguration sid_configuration; // Default settings are applicable
 
 		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.Resample", 1) != 0;
-		
+
 		int sid_sample_frequency = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.SampleFrequency", 44100);
 		if (sid_sample_frequency < 11025)
 		{
 			// In resampling mode reSID can downsample down to clock/125 Hz. With NTSC this puts us at min. 8200Hz,
-			// so let's use 11025 which is the next higher usual rate. 
+			// so let's use 11025 which is the next higher usual rate.
 			Logging::instance().Warning("Sound.Emulation.SampleFrequency (%d) is too low, using 11025 instead", sid_sample_frequency);
 			sid_sample_frequency = 11025;
 		}
@@ -228,8 +228,7 @@ namespace Editor
 		IPlatform& platform = Global::instance().GetPlatform();
 		ConfigFile& configFile = Global::instance().GetConfig();
 
-		const bool file_loaded_successfully = [&]()
-		{
+		const bool file_loaded_successfully = [&]() {
 			if (inFileToLoad != nullptr)
 			{
 				std::string file_to_load(inFileToLoad);
@@ -242,7 +241,7 @@ namespace Editor
 		// Try to load the driver directly
 		if (!file_loaded_successfully)
 		{
-			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_04_01.prg"));
+			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_05.prg"));
 			std::string drivers_folder = platform.Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}
@@ -1050,7 +1049,7 @@ namespace Editor
 		else
 		{
 			const bool confirm_quick_save = GetSingleConfigurationValue<ConfigValueInt>(Global::instance().GetConfig(), "Editor.Confirm.QuickSave", 1) != 0;
-			
+
 			auto do_save = [save_path_and_filename, inCallerScreen, this]() {
 				if (SaveFile(save_path_and_filename.string()))
 					this->m_EditScreen->SetStatusBarMessage(" Quick saved to: " + save_path_and_filename.filename().string(), 5000);
@@ -1058,15 +1057,15 @@ namespace Editor
 					this->OnSaveError(inCallerScreen);
 			};
 
-			if (confirm_quick_save) {
+			if (confirm_quick_save)
+			{
 				inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessageYesNo>("Warning", "Do you want to perform a quick save to:\n" + save_path_and_filename.string() + "?", DefaultDialogWidth, do_save, []() {}));
 			}
-			else {
+			else
+			{
 				do_save();
 			}
-		
 		}
-
 	}
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "component_base.h"
+#include "runtime/editor/edit_state.h"
 #include "utils/event.h"
 
 #include <memory>
@@ -36,6 +37,46 @@ namespace Editor
 			ComponentsManager& m_ComponentsManager;
 		};
 
+		struct HoveredSequenceValue
+		{
+			bool operator == (const HoveredSequenceValue& InRhs) const
+			{
+				return m_Value == InRhs.m_Value;
+			}
+
+			bool operator != (const HoveredSequenceValue& InRhs) const
+			{
+				return m_Value != InRhs.m_Value;
+			}
+			
+			void Reset()
+			{
+				m_Value = 0x80;
+			}
+			
+			bool HasValue() const
+			{
+				return (m_Value & 0x80) == 0;
+			}
+			
+			void SetValue(int inValue)
+			{
+				if(inValue >= 0 && inValue < 0x7f)
+					m_Value = inValue;
+				else
+					m_Value = 0x80;
+			}
+			
+			unsigned char GetValue() const
+			{
+				FOUNDATION_ASSERT(HasValue());
+				return m_Value;
+			}
+		
+		private:
+			unsigned char m_Value = 0x80;
+		};
+
 	public:
 		using OrderListChangedEvent = Utility::TEvent<void(int)>;
 
@@ -43,7 +84,8 @@ namespace Editor
 			int inID, 
 			int inGroupID, 
 			Undo* inUndo,
-			Foundation::TextField* inTextField, 
+			Foundation::TextField* inTextField,
+			const EditState& inEditState,
 			const Utility::KeyHookStore& inKeyHookStore,
 			std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 			std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
@@ -110,6 +152,9 @@ namespace Editor
 
 		void RebuildOverview();
 
+		// Update hovered sequence
+		bool UpdateHoveredSequence();
+		
 		// Key hooks
 		void ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore);
 
@@ -144,6 +189,9 @@ namespace Editor
 		std::vector<Utility::KeyHook<bool(KeyHookContext&)>> m_KeyHooks;
 
 		OrderListChangedEvent m_OrderListChangedEvent;
+
+		const EditState& m_EditState;
+		HoveredSequenceValue m_HoveredSequenceValue;
 
 		int m_CursorY;
 		int m_CursorX;
