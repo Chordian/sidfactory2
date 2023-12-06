@@ -2171,8 +2171,11 @@ namespace Editor
 			m_CPUMemory->Lock();
 			std::vector<int> sequence_index_use_count = DriverUtils::GetSequenceUsageCount(*m_DriverInfo, *m_CPUMemory);
 			m_CPUMemory->Unlock();
-			std::string text = " Sequence index: " + EditorUtils::ConvertToHexValue(inSequenceIndex, m_DisplayState.IsHexUppercase()) + " use count: " + std::to_string(sequence_index_use_count[inSequenceIndex]);
-				
+
+			const int usage_count = sequence_index_use_count[inSequenceIndex];
+			const bool usage_count_plural = usage_count > 1;
+			
+			const std::string text = " Sequence " + EditorUtils::ConvertToHexValue(inSequenceIndex, m_DisplayState.IsHexUppercase()) + " referenced " + std::to_string(sequence_index_use_count[inSequenceIndex]) + (usage_count_plural ? " times." : " time.");
 			SetStatusBarMessage(text, 5000);
 		}
 	}
