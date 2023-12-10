@@ -112,7 +112,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SF2_WINDOWS;__SSE__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;__WINDOWS_MM__;_SF2_WINDOWS;__SSE__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -121,7 +121,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\libs\SDL2-2.0.12\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -293,6 +293,7 @@
     <ClCompile Include="source\runtime\emulation\sid\sidproxy.cpp" />
     <ClCompile Include="source\runtime\execution\executionhandler.cpp" />
     <ClCompile Include="source\runtime\execution\flightrecorder.cpp" />
+    <ClCompile Include="source\runtime\execution\RtMidi.cpp" />
     <ClCompile Include="source\utils\bit_array.cpp" />
     <ClCompile Include="source\utils\c64file.cpp" />
     <ClCompile Include="source\utils\configfile.cpp" />
@@ -488,6 +489,7 @@
     <ClInclude Include="source\runtime\environmentdefines.h" />
     <ClInclude Include="source\runtime\execution\executionhandler.h" />
     <ClInclude Include="source\runtime\execution\flightrecorder.h" />
+    <ClInclude Include="source\runtime\execution\RtMidi.h" />
     <ClInclude Include="source\utils\bit_array.h" />
     <ClInclude Include="source\utils\c64file.h" />
     <ClInclude Include="source\utils\configfile.h" />
