@@ -1177,6 +1177,7 @@ namespace Editor
 			undo,
 			m_MainTextField,
 			m_EditState,
+			m_DriverState,
 			m_KeyHookStore,
 			song_view_text_buffer,
 			m_OrderListDataSources,
@@ -1471,7 +1472,10 @@ namespace Editor
 					return;
 				
 				if(InHasFocus)
+				{
 					this->ShowSequenceUsageCount(InSequenceIndex);
+					this->m_OrderListOverviewComponent->SetHighlitSequenceValue(InSequenceIndex);
+				}
 			})
 		);
 

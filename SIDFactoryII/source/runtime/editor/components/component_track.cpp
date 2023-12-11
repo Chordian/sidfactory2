@@ -509,7 +509,7 @@ namespace Editor
 				const Color color_orderlist_value = ToColor(UserColor::OrderlistValue);
 				const Color color_orderlist_value_loop_marker = ToColor(UserColor::OrderlistValueLoopMarker);
 				const Color color_orderlist_value_input = ToColor(UserColor::OrderlistValueInput);
-
+				
 				while (current_event < bottom_event)
 				{
 					DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
