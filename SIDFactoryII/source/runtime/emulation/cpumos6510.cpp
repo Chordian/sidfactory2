@@ -383,6 +383,12 @@ namespace Emulation
 	}
 
 
+	const unsigned char CPUmos6510::GetOpcodeCycles(const unsigned char inOpcode) 
+	{
+		return ms_aInstructions[inOpcode].m_ucBaseCycles;
+	}
+
+
 	//------------------------------------------------------------------------------------------------------------------------------
 
 	//---------------------------------------------------------------------------
