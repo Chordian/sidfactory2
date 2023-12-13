@@ -6,6 +6,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "RtMidi.h"
+
+#define ASID_NUM_REGS 28
 
 namespace Utility
 {
@@ -118,6 +121,8 @@ namespace Emulation
 		const unsigned short GetAddressFromActionType(ActionType inActionType) const;
 
 		void SimulateSID(int inDeltaCycles);
+		void ASIDWrite(unsigned char ucSidReg, unsigned char ucData);
+		void ASIDSend();
 		void CaptureNewFrame();
 
 		// Audio stream feeding
@@ -170,6 +175,11 @@ namespace Emulation
 		unsigned int m_SampleBufferSize;
 		short* m_SampleBuffer;
 		float m_OutputGain;
+
+		// ASID
+		RtMidiOut* m_pRtMidiOut;
+		unsigned char m_aucAsidRegisterBuffer[ASID_NUM_REGS];
+		unsigned char m_aucAsidRegisterUpdated[ASID_NUM_REGS];
 	};
 }
 

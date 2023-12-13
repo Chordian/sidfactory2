@@ -64,6 +64,60 @@ namespace Emulation
 
 		// Clear SID registers after last driver update
 		memset(m_SIDRegisterLastDriverUpdate.m_Buffer, 0, sizeof(m_SIDRegisterLastDriverUpdate.m_Buffer));
+
+		// ASID MIDI handling
+		std::string config_asid_midi_port_name = GetSingleConfigurationValue<Utility::Config::ConfigValueString>(Global::instance().GetConfig(), "Playback.ASID.MidiInterface", std::string(""));
+		m_pRtMidiOut = new RtMidiOut();
+
+		// Check available MIDI outputs
+		unsigned int uiAvailablePorts = m_pRtMidiOut->getPortCount();
+		unsigned int uiSelectedPort = 0;
+		std::string portName;
+
+		for ( unsigned int i = 0; i < uiAvailablePorts; i++ )
+		{
+			try {
+				portName = m_pRtMidiOut->getPortName(i);
+				Logging::instance().Info("MIDI output port %d: %s", i, portName.c_str());
+
+				// Check if the port name corresponds to the start of the configured name (as sometimes, the OS adds info after)
+				if ((config_asid_midi_port_name.length() > 0) && (portName.rfind(config_asid_midi_port_name, 0) == 0))
+				{
+					uiSelectedPort = i;
+				}
+			}
+			catch (RtMidiError &error) {
+				Logging::instance().Error("MIDI output port %d: Error: %s", i, error.getMessage().c_str());
+			}
+		}
+
+		// Choose the port, if available
+		if ((uiAvailablePorts > 0) && (config_asid_midi_port_name.length() > 0))
+		{
+			m_pRtMidiOut->openPort(uiSelectedPort);
+			std::string selected_midi_port_name = m_pRtMidiOut->getPortName(uiSelectedPort);
+
+			if (selected_midi_port_name.rfind(config_asid_midi_port_name, 0) != 0)
+			{
+				Logging::instance().Info("Could not find MIDI output '%s'", config_asid_midi_port_name.c_str());
+			}
+			Logging::instance().Info("Selecting ASID MIDI output port %d: %s", uiSelectedPort, selected_midi_port_name.c_str());
+		}
+		else if (config_asid_midi_port_name.length() > 0)
+		{
+			Logging::instance().Info("ASID MIDI output disabled, no MIDI interfaces found");
+		}
+		else
+		{
+			Logging::instance().Info("ASID MIDI output disabled by config");
+		}
+
+		// Reset the ASID buffer
+		for (int i = 0; i < ASID_NUM_REGS; i++)
+		{
+			m_aucAsidRegisterBuffer[i] = 0;
+			m_aucAsidRegisterUpdated[i] = false;
+		}
 	}
 
 	ExecutionHandler::~ExecutionHandler()
@@ -72,6 +126,8 @@ namespace Emulation
 
 		if (m_SampleBuffer != nullptr)
 			delete[] m_SampleBuffer;
+
+		delete m_pRtMidiOut;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -387,6 +443,131 @@ namespace Emulation
 		}
 	}
 
+	void ExecutionHandler::ASIDWrite(unsigned char ucSidReg, unsigned char ucData)
+	{
+		// Conversion between SID register and ASID position
+		const unsigned char aucAsidRegMap[] = {
+			0x00, 0x01, 0x02, 0x03, 0x16, 0x04, 0x05,
+			0x06, 0x07, 0x08, 0x09, 0x17, 0x0a, 0x0b,
+			0x0c, 0x0d, 0x0e, 0x0f, 0x18, 0x10, 0x11,
+			0x12, 0x13, 0x14, 0x15, 0x19, 0x1a, 0x1b
+		};
+
+		if (ucSidReg > 0x18) {
+			return;
+		}
+
+		// Get the ASID transformed register
+		unsigned char ucMappedAddr = aucAsidRegMap[ucSidReg];
+
+		// If a write occurs to a waveform register, check if first block is already allocated
+		if ((ucMappedAddr >= 0x16) && (ucMappedAddr <= 0x18) && m_aucAsidRegisterUpdated[ucMappedAddr])
+		{
+			ucMappedAddr += 3;
+
+			// If second block is also updated, move it to the first to make sure to always keep the last one
+			if( m_aucAsidRegisterUpdated[ucMappedAddr])
+			{
+				m_aucAsidRegisterBuffer[ucMappedAddr-3] = m_aucAsidRegisterBuffer[ucMappedAddr];
+			}
+		}
+
+		// If we're trying to update a control register that is already mapped, flush it directly
+		if( m_aucAsidRegisterUpdated[ucMappedAddr])
+		{
+			if( ucMappedAddr >= 0x16)
+			{
+				ASIDSend();
+			}
+		}
+
+		// Store the data
+		m_aucAsidRegisterBuffer[ucMappedAddr] = ucData;
+		m_aucAsidRegisterUpdated[ucMappedAddr] = true;
+
+	}
+
+	void ExecutionHandler::ASIDSend()
+	{
+		// Physical out buffer, including protocol overhead
+		static unsigned char aucAsidOutBuffer[ASID_NUM_REGS+12];
+
+		// Update needed?
+		unsigned char ucUpdate = false;
+		for (int i = 0; i < ASID_NUM_REGS; i++)
+		{
+			if (m_aucAsidRegisterUpdated[i])
+			{
+				ucUpdate = true;
+				break;
+			}
+		}
+		if (!ucUpdate)
+		{
+			return;
+		}
+
+		// Sysex start data for an ASID message
+		aucAsidOutBuffer[0] = 0xf0;
+		aucAsidOutBuffer[1] = 0x2d;
+		aucAsidOutBuffer[2] = 0x4e;
+		size_t index = 3;
+
+		// Setup mask bytes (one bit per register)
+		unsigned char ucReg;
+		for (unsigned char ucMask = 0; ucMask<4; ucMask++)
+		{
+			ucReg = 0x00;
+			for (unsigned char ucRegOffset = 0; ucRegOffset < 7; ucRegOffset++)
+			{
+				if (m_aucAsidRegisterUpdated[ucMask*7+ucRegOffset])
+				{
+					ucReg |= (1<<ucRegOffset);
+				}
+			}
+			aucAsidOutBuffer[index++] = ucReg;
+		}
+
+		// Setup the MSB bits, one per register (since MIDI only allows for 7-bit data bytes)
+		for (unsigned char ucMsb=0; ucMsb<4; ucMsb++)
+		{
+			ucReg = 0x00;
+			for (unsigned char ucRegOffset = 0; ucRegOffset < 7; ucRegOffset++)
+			{
+				if (m_aucAsidRegisterBuffer[ucMsb*7 + ucRegOffset] & 0x80)
+				{
+					ucReg |= (1 << ucRegOffset);
+				}
+			}
+			aucAsidOutBuffer[index++] = ucReg;
+		}
+
+		// Add data for all updated registers (the 7 LSB bits)
+		for (int i = 0; i < ASID_NUM_REGS; i++)
+		{
+			if (m_aucAsidRegisterUpdated[i])
+			{
+				aucAsidOutBuffer[index++] = m_aucAsidRegisterBuffer[i] & 0x7f;
+			}
+		}
+
+		// Sysex end marker
+		aucAsidOutBuffer[index++] = 0xf7;
+
+		// Send to physical MIDI port
+		if (m_pRtMidiOut->isPortOpen())
+		{
+			m_pRtMidiOut->sendMessage(aucAsidOutBuffer, index);
+		}
+
+		// Prepare for next buffer
+		for (int i = 0; i < ASID_NUM_REGS; i++)
+		{
+			m_aucAsidRegisterUpdated[i] = false;
+		}
+	}
+
+
 	void ExecutionHandler::CaptureNewFrame()
 	{
 		FOUNDATION_ASSERT(m_CPU != nullptr);
@@ -513,9 +694,12 @@ namespace Emulation
 			SimulateSID(deltaCycles);
 			m_SIDProxy->Write((unsigned char)(capture.m_usReg & 0xff), capture.m_ucVal);
 			nCycle += deltaCycles;
+
+			ASIDWrite((unsigned char)(capture.m_usReg & 0xff), capture.m_ucVal);
 		}
 
 		// Do the rest of the frame
+		ASIDSend();
 		while (nCycle < (int)m_CyclesPerFrame)
 		{
 			const int deltaCycles = m_CyclesPerFrame - nCycle;

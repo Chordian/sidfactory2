@@ -623,6 +623,18 @@
     <ClCompile Include="source\runtime\editor\dialog\dialog_move_selection_list.cpp">
       <Filter>source\runtime\editor\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\component_pulse_filter_visualizer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\datasources\datasource_sidregistersbuffer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\execution\RtMidi.cpp">
+      <Filter>source\runtime\execution</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\utils\utilities.h">
@@ -1196,6 +1208,12 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\dialog\dialog_move_selection_list.h">
       <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\component_pulse_filter_visualizer.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_sidregistersbuffer.h" />
+    <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.h" />
+    <ClInclude Include="source\runtime\execution\RtMidi.h">
+      <Filter>source\runtime\execution</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
