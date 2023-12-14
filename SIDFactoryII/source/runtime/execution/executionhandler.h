@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include "RtMidi.h"
+#include "runtime/editor/driver/driver_utils.h"
 
 #define ASID_NUM_REGS 28
 
@@ -101,6 +102,8 @@ namespace Emulation
 		void StopWriteOutputToFile();
 		bool IsWritingOutputToFile() const;
 
+		void SendASIDWriteOrder(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList);
+
 	private:
 		enum class ActionType : int
 		{
@@ -121,6 +124,7 @@ namespace Emulation
 		const unsigned short GetAddressFromActionType(ActionType inActionType) const;
 
 		void SimulateSID(int inDeltaCycles);
+		unsigned char GetASIDposFromSIDreg(unsigned char ucSIDReg);
 		void ASIDWrite(unsigned char ucSidReg, unsigned char ucData);
 		void ASIDSend();
 		void CaptureNewFrame();

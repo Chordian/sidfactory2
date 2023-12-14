@@ -15,6 +15,7 @@
 #include "utils/logging.h"
 #include "utils/global.h"
 
+#include <array>
 #include <algorithm>
 #include <iostream>
 
@@ -445,20 +446,12 @@ namespace Emulation
 
 	void ExecutionHandler::ASIDWrite(unsigned char ucSidReg, unsigned char ucData)
 	{
-		// Conversion between SID register and ASID position
-		const unsigned char aucAsidRegMap[] = {
-			0x00, 0x01, 0x02, 0x03, 0x16, 0x04, 0x05,
-			0x06, 0x07, 0x08, 0x09, 0x17, 0x0a, 0x0b,
-			0x0c, 0x0d, 0x0e, 0x0f, 0x18, 0x10, 0x11,
-			0x12, 0x13, 0x14, 0x15, 0x19, 0x1a, 0x1b
-		};
-
 		if (ucSidReg > 0x18) {
 			return;
 		}
 
 		// Get the ASID transformed register
-		unsigned char ucMappedAddr = aucAsidRegMap[ucSidReg];
+		unsigned char ucMappedAddr = GetASIDposFromSIDreg(ucSidReg);
 
 		// If a write occurs to a waveform register, check if first block is already allocated
 		if ((ucMappedAddr >= 0x16) && (ucMappedAddr <= 0x18) && m_aucAsidRegisterUpdated[ucMappedAddr])
@@ -567,6 +560,18 @@ namespace Emulation
 		}
 	}
 
+	unsigned char ExecutionHandler::GetASIDposFromSIDreg(unsigned char ucSIDReg)
+	{
+		// Conversion between SID register and ASID position
+		const unsigned char aucAsidRegMap[] = {
+			0x00, 0x01, 0x02, 0x03, 0x16, 0x04, 0x05,
+			0x06, 0x07, 0x08, 0x09, 0x17, 0x0a, 0x0b,
+			0x0c, 0x0d, 0x0e, 0x0f, 0x18, 0x10, 0x11,
+			0x12, 0x13, 0x14, 0x15, 0x19, 0x1a, 0x1b
+		};
+
+		return aucAsidRegMap[ucSIDReg];
+	}
 
 	void ExecutionHandler::CaptureNewFrame()
 	{
@@ -712,5 +717,82 @@ namespace Emulation
 
 		// Unlock execution handler
 		Unlock();
+	}
+
+	void ExecutionHandler::SendASIDWriteOrder(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList)
+	{
+		#define WRITE_ORDER_UNUSED 0xff
+		// Physical out buffer, including protocol overhead
+		unsigned char aucAsidOutBuffer[ASID_NUM_REGS*2+4];
+
+		struct write_order
+		{
+			unsigned char ucIndex;
+			unsigned char ucCycles;
+		};
+
+		// Write order list, initialized with all slots unused
+		std::array<struct write_order, ASID_NUM_REGS> aWriteOrder;
+		aWriteOrder.fill({0, WRITE_ORDER_UNUSED});
+
+		// Get the write order from the analysis, for all the three voices
+		int index = 0;
+		int iPrevASIDreg = -1;
+		for (int voice = 0; voice < 3 ; voice++)
+		{
+			unsigned char ucLastCycleOffset = 0;
+			for (const auto& SIDWriteInfo : SIDWriteInfoList)
+			{
+				unsigned char ucASIDreg;
+				ucASIDreg = GetASIDposFromSIDreg((SIDWriteInfo.m_AddressLow & 0xff)+7*voice);
+				aWriteOrder[ucASIDreg].ucIndex = index;
+
+				// The cycles are specified as "post wait times", so will be used on the next cycle value
+				if (iPrevASIDreg >= 0)
+				{
+					aWriteOrder[iPrevASIDreg].ucCycles = SIDWriteInfo.m_CycleOffset-ucLastCycleOffset;
+					ucLastCycleOffset = SIDWriteInfo.m_CycleOffset;
+				}
+				iPrevASIDreg = ucASIDreg;
+
+				index++;
+			}
+		}
+		// Last register does not need to wait any cycles
+		aWriteOrder[iPrevASIDreg].ucCycles = 0;
+
+		// Add the remaining registers last, without waits
+		for (auto& wo : aWriteOrder)
+		{
+			if (wo.ucCycles == WRITE_ORDER_UNUSED)
+			{
+				wo.ucIndex = index++;
+				wo.ucCycles = 0;
+			}
+		}
+
+		// Sysex start data for an ASID message
+		index = 0;
+		aucAsidOutBuffer[index++] = 0xf0;
+		aucAsidOutBuffer[index++] = 0x2d;
+		aucAsidOutBuffer[index++] = 0x30; // Write order
+
+		// Fill in the write order payload. Only 7 bits may be used in MIDI
+		for (auto& wo : aWriteOrder)
+		{
+			// Index serves double duty as index (5 bits) and msb (1 bit) of cycles
+			aucAsidOutBuffer[index++] = (wo.ucIndex & 0x1f) + ((wo.ucCycles & 0x80)>>1);
+			aucAsidOutBuffer[index++] = wo.ucCycles & 0x7f;
+		}
+
+		// Sysex end marker
+		aucAsidOutBuffer[index++] = 0xf7;
+
+		// Send to physical MIDI port
+		if (m_pRtMidiOut->isPortOpen())
+		{
+			m_pRtMidiOut->sendMessage(aucAsidOutBuffer, index);
+		}
+
 	}
 }
