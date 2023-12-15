@@ -40,10 +40,21 @@ EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 
 # Compiler
 CC=g++
-CC_FLAGS=$(shell sdl2-config --cflags) -I$(SOURCE) -D_SF2_$(PLATFORM) -DUNIX_JACK -D_BUILD_NR=\"$(BUILD_NR)\" -std=gnu++14 -g
-LINKER_FLAGS=$(shell sdl2-config --libs) -lstdc++ -ljack -flto
+CC_FLAGS=$(shell sdl2-config --cflags) -I$(SOURCE) -D_SF2_$(PLATFORM) -D_BUILD_NR=\"$(BUILD_NR)\" -std=gnu++14 -g
+LINKER_FLAGS=$(shell sdl2-config --libs) -lstdc++ -flto
+
+ifeq ($(PLATFORM),LINUX)
+	CC_FLAGS := $(CC_FLAGS) -DUNIX_JACK
+	LINKER_FLAGS := $(LINKER_FLAGS) -ljack
+endif
+
 ifeq ($(PLATFORM),MACOS)
-	LINKER_FLAGS := $(LINKER_FLAGS) -framework ApplicationServices
+	CC_FLAGS := $(CC_FLAGS) -D__MACOSX_CORE__
+	LINKER_FLAGS := $(LINKER_FLAGS) \
+	-framework ApplicationServices \
+	-framework CoreMIDI \
+	-framework CoreAudio \
+	-framework CoreFoundation
 endif
 
 ifneq ($(TARGET),DEBUG)
