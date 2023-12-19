@@ -2,6 +2,7 @@
 #include "foundation/platform/iplatform.h"
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
+#include "utils/logging.h"
 #include <cctype>
 
 using namespace fs;
@@ -27,6 +28,12 @@ namespace Editor
 
 		const size_t user_folder_count = user_folders.size();
 		const bool has_aliases = user_folders_alias.size() == user_folder_count;
+
+		if (!has_aliases)
+		{
+			Logging::instance().Warning("Number of user folders (%d) does not match number of aliases (%d). Ignoring aliases.", user_folder_count, user_folders_alias.size());
+		}
+
 
 		for (size_t i = 0; i < user_folder_count; ++i)
 		{
