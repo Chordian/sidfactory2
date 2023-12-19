@@ -10,7 +10,7 @@
 #include "foundation/base/assert.h"
 #include "foundation/platform/imutex.h"
 #include "foundation/platform/iplatform.h"
-#include "rtmidi/RtMidi.h"
+#include "libraries/rtmidi/RtMidi.h"
 
 #include "utils/configfile.h"
 #include "utils/logging.h"
