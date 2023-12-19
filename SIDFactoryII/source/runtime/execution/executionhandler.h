@@ -6,10 +6,11 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "RtMidi.h"
 #include "runtime/editor/driver/driver_utils.h"
 
 #define ASID_NUM_REGS 28
+
+class RtMidiOut;
 
 namespace Utility
 {

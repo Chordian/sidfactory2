@@ -10,6 +10,7 @@
 #include "foundation/base/assert.h"
 #include "foundation/platform/imutex.h"
 #include "foundation/platform/iplatform.h"
+#include "rtmidi/RtMidi.h"
 
 #include "utils/configfile.h"
 #include "utils/logging.h"
@@ -66,6 +67,8 @@ namespace Emulation
 		// Clear SID registers after last driver update
 		memset(m_SIDRegisterLastDriverUpdate.m_Buffer, 0, sizeof(m_SIDRegisterLastDriverUpdate.m_Buffer));
 
+		// [begin] ------------- ASID - move -------------
+		
 		// ASID MIDI handling
 		std::string config_asid_midi_port_name = GetSingleConfigurationValue<Utility::Config::ConfigValueString>(Global::instance().GetConfig(), "Playback.ASID.MidiInterface", std::string(""));
 		m_pRtMidiOut = new RtMidiOut();
@@ -119,6 +122,8 @@ namespace Emulation
 			m_aucAsidRegisterBuffer[i] = 0;
 			m_aucAsidRegisterUpdated[i] = false;
 		}
+
+		// [end] ------------- ASID - move -------------
 	}
 
 	ExecutionHandler::~ExecutionHandler()
@@ -128,7 +133,9 @@ namespace Emulation
 		if (m_SampleBuffer != nullptr)
 			delete[] m_SampleBuffer;
 
+		// [begin] ------------- ASID - move -------------
 		delete m_pRtMidiOut;
+		// [end] ------------- ASID - move -------------
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -444,6 +451,8 @@ namespace Emulation
 		}
 	}
 
+	// [begin] ------------- ASID - move -------------
+
 	void ExecutionHandler::ASIDWrite(unsigned char ucSidReg, unsigned char ucData)
 	{
 		if (ucSidReg > 0x18) {
@@ -572,6 +581,8 @@ namespace Emulation
 
 		return aucAsidRegMap[ucSIDReg];
 	}
+
+	// [end] ------------- ASID - move -------------
 
 	void ExecutionHandler::CaptureNewFrame()
 	{
@@ -788,11 +799,14 @@ namespace Emulation
 		// Sysex end marker
 		aucAsidOutBuffer[index++] = 0xf7;
 
+		// [begin] ------------- ASID - move -------------
+
 		// Send to physical MIDI port
 		if (m_pRtMidiOut->isPortOpen())
 		{
 			m_pRtMidiOut->sendMessage(aucAsidOutBuffer, index);
 		}
 
+		// [end] ------------- ASID - move -------------
 	}
 }

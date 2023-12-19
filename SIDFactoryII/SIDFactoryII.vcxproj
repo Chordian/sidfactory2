@@ -179,6 +179,83 @@
     <ClCompile Include="source\libraries\residfp\version.cc" />
     <ClCompile Include="source\libraries\residfp\WaveformCalculator.cpp" />
     <ClCompile Include="source\libraries\residfp\WaveformGenerator.cpp" />
+    <ClCompile Include="source\libraries\rtmidi\RtMidi.cpp">
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>Release\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>Release\</BrowseInformationFile>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFuzzer>false</EnableFuzzer>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>Release\</ModuleDependenciesFile>
+      <ModuleOutputFile>Release\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <Optimization>MaxSpeed</Optimization>
+      <ObjectFileName>Release\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>Release\vc143.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>Release\SIDFactoryII.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>Release\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <TrackerLogDirectory>Release\SIDFactoryII.tlog\</TrackerLogDirectory>
+      <TranslateIncludes>false</TranslateIncludes>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>Release\</XMLDocumentationFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
+      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
+      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;__WINDOWS_MM__;_SF2_WINDOWS;__SSE__;_MBCS;</PreprocessorDefinitions>
+      <EnablePREfast>false</EnablePREfast>
+      <OmitFramePointers>false</OmitFramePointers>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.0.12\include;</AdditionalIncludeDirectories>
+      <LinkCompiled>true</LinkCompiled>
+    </ClCompile>
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_collection.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.cpp" />
@@ -293,7 +370,6 @@
     <ClCompile Include="source\runtime\emulation\sid\sidproxy.cpp" />
     <ClCompile Include="source\runtime\execution\executionhandler.cpp" />
     <ClCompile Include="source\runtime\execution\flightrecorder.cpp" />
-    <ClCompile Include="source\runtime\execution\RtMidi.cpp" />
     <ClCompile Include="source\utils\bit_array.cpp" />
     <ClCompile Include="source\utils\c64file.cpp" />
     <ClCompile Include="source\utils\configfile.cpp" />
@@ -358,6 +434,7 @@
     <ClInclude Include="source\libraries\residfp\Voice.h" />
     <ClInclude Include="source\libraries\residfp\WaveformCalculator.h" />
     <ClInclude Include="source\libraries\residfp\WaveformGenerator.h" />
+    <ClInclude Include="source\libraries\rtmidi\RtMidi.h" />
     <ClInclude Include="source\resources\data_char.h" />
     <ClInclude Include="source\resources\data_logo.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data.h" />
@@ -489,7 +566,6 @@
     <ClInclude Include="source\runtime\environmentdefines.h" />
     <ClInclude Include="source\runtime\execution\executionhandler.h" />
     <ClInclude Include="source\runtime\execution\flightrecorder.h" />
-    <ClInclude Include="source\runtime\execution\RtMidi.h" />
     <ClInclude Include="source\utils\bit_array.h" />
     <ClInclude Include="source\utils\c64file.h" />
     <ClInclude Include="source\utils\configfile.h" />
