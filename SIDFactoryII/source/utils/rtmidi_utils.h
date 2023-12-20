@@ -6,7 +6,7 @@
 
 class RtMidiOut;
 
-namespace Editor
+namespace Utility
 {
 	namespace RtMidiUtils
 	{

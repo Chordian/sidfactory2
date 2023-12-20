@@ -1,10 +1,10 @@
 #include "rtmidi_utils.h"
 
 #include "foundation/base/assert.h"
-#include "rtmidi/RtMidi.h"
+#include "libraries/rtmidi/RtMidi.h"
 #include "utils/logging.h"
 
-namespace Editor
+namespace Utility
 {
 	namespace RtMidiUtils
 	{

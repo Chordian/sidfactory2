@@ -362,7 +362,6 @@
     <ClCompile Include="source\runtime\editor\utilities\datasource_utils.cpp" />
     <ClCompile Include="source\runtime\editor\utilities\editor_utils.cpp" />
     <ClCompile Include="source\runtime\editor\utilities\import_utils.cpp" />
-    <ClCompile Include="source\runtime\editor\utilities\rtmidi_utils.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_base.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.cpp" />
@@ -384,6 +383,83 @@
     <ClCompile Include="source\utils\keyhookstore.cpp" />
     <ClCompile Include="source\utils\logging.cpp" />
     <ClCompile Include="source\utils\psidfile.cpp" />
+    <ClCompile Include="source\utils\rtmidi_utils.cpp">
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>Release\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>Release\</BrowseInformationFile>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFuzzer>false</EnableFuzzer>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>Release\</ModuleDependenciesFile>
+      <ModuleOutputFile>Release\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <Optimization>MaxSpeed</Optimization>
+      <ObjectFileName>Release\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>Release\vc143.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>Release\SIDFactoryII.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>Release\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <TrackerLogDirectory>Release\SIDFactoryII.tlog\</TrackerLogDirectory>
+      <TranslateIncludes>false</TranslateIncludes>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>Release\</XMLDocumentationFileName>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
+      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
+      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
+      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;__WINDOWS_MM__;_SF2_WINDOWS;__SSE__;_MBCS;</PreprocessorDefinitions>
+      <EnablePREfast>false</EnablePREfast>
+      <OmitFramePointers>false</OmitFramePointers>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.0.12\include;</AdditionalIncludeDirectories>
+      <LinkCompiled>true</LinkCompiled>
+    </ClCompile>
     <ClCompile Include="source\utils\usercolors.cpp" />
     <ClCompile Include="source\utils\utilities.cpp" />
   </ItemGroup>
@@ -557,7 +633,6 @@
     <ClInclude Include="source\runtime\editor\utilities\datasource_utils.h" />
     <ClInclude Include="source\runtime\editor\utilities\editor_utils.h" />
     <ClInclude Include="source\runtime\editor\utilities\import_utils.h" />
-    <ClInclude Include="source\runtime\editor\utilities\rtmidi_utils.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_base.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.h" />
@@ -585,6 +660,7 @@
     <ClInclude Include="source\utils\keyhookstore.h" />
     <ClInclude Include="source\utils\logging.h" />
     <ClInclude Include="source\utils\psidfile.h" />
+    <ClInclude Include="source\utils\rtmidi_utils.h" />
     <ClInclude Include="source\utils\usercolors.h" />
     <ClInclude Include="source\utils\utilities.h" />
   </ItemGroup>

@@ -10,15 +10,16 @@
 #include "utils/utilities.h"
 
 #include "foundation/base/assert.h"
-#include "rtmidi/RtMidi.h"
-#include "runtime/editor/dialog/dialog_message_yesno.h"
+#include "libraries/rtmidi/RtMidi.h"
 #include "runtime/editor/dialog/dialog_selection_list.h"
-#include "runtime/editor/utilities/rtmidi_utils.h"
+#include "utils/rtmidi_utils.h"
 
 #include <string>
 
 namespace Editor
 {
+	using namespace Utility;
+	
 	ScreenIntro::ScreenIntro(
 		Foundation::Viewport* inViewport,
 		Foundation::TextField* inMainTextField,

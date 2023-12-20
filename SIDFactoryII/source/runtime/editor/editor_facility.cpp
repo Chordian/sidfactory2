@@ -52,8 +52,8 @@
 
 // System
 #include "foundation/base/assert.h"
-#include "rtmidi/RtMidi.h"
-#include "utilities/rtmidi_utils.h"
+#include "libraries/rtmidi/RtMidi.h"
+#include "utils/rtmidi_utils.h"
 
 using namespace Foundation;
 using namespace Emulation;
