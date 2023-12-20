@@ -25,7 +25,7 @@ namespace Editor
 		Foundation::TextField* inMainTextField,
 		CursorControl* inCursorControl,
 		DisplayState& inDisplayState,
-		Utility::KeyHookStore& inKeyHookStore,
+		KeyHookStore& inKeyHookStore,
 		RtMidiOut* inRtMidiOut,
 		std::shared_ptr<DriverInfo>& inDriverInfo,
 		std::function<void(void)> inExitScreenCallback,
@@ -147,7 +147,7 @@ namespace Editor
 			m_ExitScreenCallback();
 			return true;
 		}
-		if (inKeyEvent == SDLK_F1)
+		if (inKeyEvent == SDLK_F1 && m_AddMidiPortSelectionOption)
 		{
 			// Invoke midi device selection screen and invoke midi device
 			TryStartDialogForMidiOutDeviceSelection();
