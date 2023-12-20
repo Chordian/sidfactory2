@@ -11,6 +11,8 @@
 #include <memory>
 #include <string>
 
+class RtMidiOut;
+
 namespace Foundation
 {
 	class IPlatform;
@@ -23,6 +25,7 @@ namespace Foundation
 
 namespace Emulation
 {
+	class ASid;
 	class CPUmos6510;
 	class CPUMemory;
 	class SIDProxy;
@@ -112,6 +115,8 @@ namespace Editor
 		int m_ColorSchemeCount;
 		int m_SelectedColorScheme;
 
+		RtMidiOut* m_RtMidiOut;
+
 		Foundation::Viewport* m_Viewport;
 		Foundation::TextField* m_TextField;
 		Foundation::AudioStream* m_AudioStream;
@@ -119,6 +124,7 @@ namespace Editor
 		Emulation::CPUmos6510* m_CPU;
 		Emulation::CPUMemory* m_CPUMemory;
 		Emulation::SIDProxy* m_SIDProxy;
+		Emulation::ASid *m_ASID;
 		Emulation::ExecutionHandler* m_ExecutionHandler;
 		Emulation::FlightRecorder* m_FlightRecorder;
 

@@ -29,6 +29,7 @@
 #include "runtime/editor/utilities/import_utils.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/cpumos6510.h"
+#include "runtime/emulation/asid/asid.h"
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/environmentdefines.h"
 #include "runtime/execution/executionhandler.h"
@@ -51,6 +52,8 @@
 
 // System
 #include "foundation/base/assert.h"
+#include "rtmidi/RtMidi.h"
+#include "utilities/rtmidi_utils.h"
 
 using namespace Foundation;
 using namespace Emulation;
@@ -70,7 +73,6 @@ namespace Editor
 		, m_FlipOverlayState(false)
 		, m_SelectedColorScheme(0)
 	{
-
 		ConfigFile& config = Global::instance().GetConfig();
 		IPlatform& platform = Global::instance().GetPlatform();
 
@@ -122,15 +124,28 @@ namespace Editor
 		sid_configuration.m_eModel = SID_MODEL_6581;
 		sid_configuration.m_nSampleFrequency = sid_sample_frequency;
 
+		m_RtMidiOut = new RtMidiOut();
+		m_ASID = new ASid(m_RtMidiOut);
 		m_SIDProxy = new SIDProxy(sid_configuration);
 		m_CPUMemory = new CPUMemory(0x10000, &platform);
 		m_CPU = new CPUmos6510();
 		m_FlightRecorder = new FlightRecorder(&platform, 0x800);
-		m_ExecutionHandler = new ExecutionHandler(m_CPU, m_CPUMemory, m_SIDProxy, m_FlightRecorder);
+		m_ExecutionHandler = new ExecutionHandler(m_CPU, m_CPUMemory, m_SIDProxy, m_ASID, m_FlightRecorder);
 
 		// Create audio stream
 		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Buffer.Size", 256);
 		m_AudioStream = new AudioStream(sid_sample_frequency, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
+
+		// Setup midi out device, if default selected from the ini file
+		if(Global::instance().GetConfig().HasKey("Playback.ASID.MidiInterface"))
+		{
+			std::string config_asid_midi_port_name = GetSingleConfigurationValue<Utility::Config::ConfigValueString>(Global::instance().GetConfig(), "Playback.ASID.MidiInterface", std::string(""));
+			const auto midi_out_ports = RtMidiUtils::RtMidiOut_GetPorts(m_RtMidiOut);
+			const auto selected_out_port = RtMidiUtils::RtMidi_GetPortInfoByName(midi_out_ports, config_asid_midi_port_name);
+
+			if(selected_out_port.has_value())
+				RtMidiUtils::RtMidiOut_OpenPort(m_RtMidiOut, selected_out_port.value());
+		}
 
 		// Create the main text field
 		m_TextField = m_Viewport->CreateTextField(m_Viewport->GetClientWidth() / TextField::font_width, m_Viewport->GetClientHeight() / TextField::font_height, 0, 0);
@@ -149,6 +164,7 @@ namespace Editor
 			&m_CursorControl,
 			m_DisplayState,
 			m_KeyHookSetup.GetKeyHookStore(),
+			m_RtMidiOut,
 			m_DriverInfo,
 			[&]() { OnExitIntroScreen(); },
 			[&]() { OnExitIntroScreenToLoad(); });
@@ -213,9 +229,11 @@ namespace Editor
 		delete m_AudioStream;
 		delete m_ExecutionHandler;
 		delete m_FlightRecorder;
+		delete m_ASID;
 		delete m_SIDProxy;
 		delete m_CPU;
 		delete m_CPUMemory;
+		delete m_RtMidiOut;
 	}
 
 	//--------------------------------------------------------------------------------

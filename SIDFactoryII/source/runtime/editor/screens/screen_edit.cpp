@@ -184,7 +184,7 @@ namespace Editor
 		for(const auto& SIDWriteInfo : SIDWriteInfoList)
 			Utility::Logging::instance().Info("Write to address $d4%02x at cycle offset: %02x", SIDWriteInfo.m_AddressLow, SIDWriteInfo.m_CycleOffset); 
 
-		m_ExecutionHandler->SendASIDWriteOrder(SIDWriteInfoList);
+		m_ExecutionHandler->TellSIDWriteOrderInfo(SIDWriteInfoList);
 
 		// Create debug views
 		m_DebugViews = std::make_unique<DebugViews>(m_Viewport, &*m_ComponentsManager, m_CPUMemory, m_MainTextField->GetDimensions(), m_DriverInfo);

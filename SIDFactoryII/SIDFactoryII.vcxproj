@@ -323,6 +323,7 @@
     <ClCompile Include="source\runtime\editor\dialog\dialog_bit_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_hex_value_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_message_yesno.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_midi_out_devices.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_move_selection_list.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_optimize.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_packing_options.cpp" />
@@ -361,9 +362,11 @@
     <ClCompile Include="source\runtime\editor\utilities\datasource_utils.cpp" />
     <ClCompile Include="source\runtime\editor\utilities\editor_utils.cpp" />
     <ClCompile Include="source\runtime\editor\utilities\import_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\utilities\rtmidi_utils.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_base.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.cpp" />
+    <ClCompile Include="source\runtime\emulation\asid\asid.cpp" />
     <ClCompile Include="source\runtime\emulation\cpuframecapture.cpp" />
     <ClCompile Include="source\runtime\emulation\cpumemory.cpp" />
     <ClCompile Include="source\runtime\emulation\cpumos6510.cpp" />
@@ -507,6 +510,7 @@
     <ClInclude Include="source\runtime\editor\dialog\dialog_bit_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_hex_value_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_message_yesno.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_midi_out_devices.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_move_selection_list.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_optimize.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_packing_options.h" />
@@ -553,9 +557,11 @@
     <ClInclude Include="source\runtime\editor\utilities\datasource_utils.h" />
     <ClInclude Include="source\runtime\editor\utilities\editor_utils.h" />
     <ClInclude Include="source\runtime\editor\utilities\import_utils.h" />
+    <ClInclude Include="source\runtime\editor\utilities\rtmidi_utils.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_base.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.h" />
+    <ClInclude Include="source\runtime\emulation\asid\asid.h" />
     <ClInclude Include="source\runtime\emulation\cpuframecapture.h" />
     <ClInclude Include="source\runtime\emulation\cpumemory.h" />
     <ClInclude Include="source\runtime\emulation\cpumos6510.h" />

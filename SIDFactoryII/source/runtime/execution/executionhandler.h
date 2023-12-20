@@ -28,6 +28,7 @@ namespace Emulation
 	class CPUmos6510;
 	class CPUMemory;
 	class SIDProxy;
+	class ASid;
 	class FlightRecorder;
 
 	class ExecutionHandler : public Foundation::IAudioStreamFeeder
@@ -42,11 +43,11 @@ namespace Emulation
 			CPUmos6510* pCPU,
 			CPUMemory* pMemory,
 			SIDProxy* pSIDProxy,
+			ASid* inASID,
 			FlightRecorder* inFlightRecorder);
 		~ExecutionHandler();
 
 		// IAudioStreamFeeder
-
 		virtual void Start();
 		virtual void Stop();
 
@@ -103,8 +104,9 @@ namespace Emulation
 		void StopWriteOutputToFile();
 		bool IsWritingOutputToFile() const;
 
-		void SendASIDWriteOrder(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList);
-
+		// SID Write order info
+		void TellSIDWriteOrderInfo(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList);
+	
 	private:
 		enum class ActionType : int
 		{
@@ -125,9 +127,9 @@ namespace Emulation
 		const unsigned short GetAddressFromActionType(ActionType inActionType) const;
 
 		void SimulateSID(int inDeltaCycles);
-		unsigned char GetASIDposFromSIDreg(unsigned char ucSIDReg);
-		void ASIDWrite(unsigned char ucSidReg, unsigned char ucData);
+
 		void ASIDSend();
+		
 		void CaptureNewFrame();
 
 		// Audio stream feeding
@@ -167,6 +169,7 @@ namespace Emulation
 		SIDProxy* m_SIDProxy;
 		CPUmos6510* m_CPU;
 		CPUMemory* m_Memory;
+		ASid* m_ASID;
 
 		std::shared_ptr<Foundation::IMutex> m_Mutex;
 
@@ -180,11 +183,6 @@ namespace Emulation
 		unsigned int m_SampleBufferSize;
 		short* m_SampleBuffer;
 		float m_OutputGain;
-
-		// ASID
-		RtMidiOut* m_pRtMidiOut;
-		unsigned char m_aucAsidRegisterBuffer[ASID_NUM_REGS];
-		unsigned char m_aucAsidRegisterUpdated[ASID_NUM_REGS];
 	};
 }
 
