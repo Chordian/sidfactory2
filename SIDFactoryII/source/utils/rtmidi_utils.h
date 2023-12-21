@@ -1,6 +1,5 @@
 #pragma once
 
-#include <optional>
 #include <string>
 #include <vector>
 
@@ -16,7 +15,7 @@ namespace Utility
 			std::string m_PortName;
 		};
 
-		std::optional<const RtMidiPortInfo> RtMidi_GetPortInfoByName(const std::vector<RtMidiPortInfo> inMidiPortInfoList, const std::string& inPortName);
+		const RtMidiPortInfo* RtMidi_GetPortInfoByName(const std::vector<RtMidiPortInfo> inMidiPortInfoList, const std::string& inPortName);
 
 		std::vector<RtMidiPortInfo> RtMidiOut_GetPorts(RtMidiOut* inRtMidiOut);
 		bool RtMidiOut_OpenPort(RtMidiOut* inRtMidiOut, const RtMidiPortInfo& inPort);
