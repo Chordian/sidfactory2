@@ -11,21 +11,26 @@ namespace Emulation
 {
 	class ASid
 	{
-		static_assert(ASID_NUM_REGS < 32, "ASID_NUM_REGS must be less than 32");
-
 	public:
 		ASid(RtMidiOut* inRtMidiOut);
 
+		void SetMuted(bool inMuted);
+		
 		void SendSIDRegisterWriteOrderAndCycleInfo(std::vector<Editor::SIDWriteInformation> inSIDWriteInfoList);
 		void WriteToSIDRegister(unsigned char inSidReg, unsigned char inData);
 		void SendToDevice();
 
 	private:
 		unsigned char GetASIDPositionFromRegisterIndex(unsigned char inSidRegister);
-		
+
+		bool m_Muted = false;
 		RtMidiOut* m_RtMidiOut = nullptr;
 		
-		unsigned char ASIDRegisterBuffer[ASID_NUM_REGS];
-		bool ASIDRegisterUpdated[ASID_NUM_REGS];
+		// Physical out buffer, including protocol overhead
+		unsigned char m_ASIDOutBuffer[ASID_NUM_REGS + 12];
+
+		// Registers
+		unsigned char m_ASIDRegisterBuffer[ASID_NUM_REGS];
+		bool m_ASIDRegisterUpdated[ASID_NUM_REGS];
 	};
 }

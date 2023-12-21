@@ -2,10 +2,6 @@
 
 #include "libraries/rtmidi/RtMidi.h"
 
-#include "utils/configfile.h"
-#include "utils/global.h"
-#include "utils/logging.h"
-
 #include <array>
 #include <vector>
 
@@ -19,11 +15,39 @@ namespace Emulation
 		// Reset the ASID buffer
 		for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
 		{
-			ASIDRegisterBuffer[i] = 0;
-			ASIDRegisterUpdated[i] = false;
+			m_ASIDRegisterBuffer[i] = 0;
+			m_ASIDRegisterUpdated[i] = false;
 		}
 	}
 
+	void ASid::SetMuted(bool inMuted)
+	{
+		if(inMuted == m_Muted)
+			return;
+
+		if(inMuted)
+		{
+			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+			{
+				m_ASIDRegisterBuffer[i] = 0;
+				m_ASIDRegisterUpdated[i] = false;
+			}
+
+			for(unsigned int i=0; i<3; ++i)
+			{
+				unsigned char channel_offset = static_cast<unsigned char>(i * 7);
+				
+				WriteToSIDRegister(0x04 + channel_offset, 0);
+				WriteToSIDRegister(0x05 + channel_offset, 0);
+				WriteToSIDRegister(0x06 + channel_offset, 0);
+			}
+
+			SendToDevice();
+		}
+
+		m_Muted = inMuted;
+	}
+	
 	void ASid::SendSIDRegisterWriteOrderAndCycleInfo(std::vector<Editor::SIDWriteInformation> inSIDWriteInfoList)
 	{
 		#define WRITE_ORDER_UNUSED 0xff
@@ -35,42 +59,42 @@ namespace Emulation
 		};
 		
 		// Physical out buffer, including protocol overhead
-		unsigned char aucAsidOutBuffer[ASID_NUM_REGS*2+4];
+		unsigned char ASidOutBuffer[ASID_NUM_REGS*2+4];
 
 		// Write order list, initialized with all slots unused
-		std::array<write_order, ASID_NUM_REGS> aWriteOrder;
-		aWriteOrder.fill({0, WRITE_ORDER_UNUSED});
+		std::array<write_order, ASID_NUM_REGS> WriteOrder;
+		WriteOrder.fill({0, WRITE_ORDER_UNUSED});
 
 		// Get the write order from the analysis, for all the three voices
 		int index = 0;
-		int iPrevASIDreg = -1;
+		int PreviousSidRegister = -1;
 		
 		for (int voice = 0; voice < 3 ; ++voice)
 		{
-			unsigned char ucLastCycleOffset = 0;
+			unsigned char PreviousCycleOffset = 0;
 			for (const auto& SIDWriteInfo : inSIDWriteInfoList)
 			{
 				unsigned char ucASIDreg;
 				ucASIDreg = GetASIDPositionFromRegisterIndex((SIDWriteInfo.m_AddressLow & 0xff) + 7 * voice);
-				aWriteOrder[ucASIDreg].ucIndex = index;
+				WriteOrder[ucASIDreg].ucIndex = index;
 
 				// The cycles are specified as "post wait times", so will be used on the next cycle value
-				if (iPrevASIDreg >= 0)
+				if (PreviousSidRegister >= 0)
 				{
-					aWriteOrder[iPrevASIDreg].ucCycles = SIDWriteInfo.m_CycleOffset-ucLastCycleOffset;
-					ucLastCycleOffset = SIDWriteInfo.m_CycleOffset;
+					WriteOrder[PreviousSidRegister].ucCycles = SIDWriteInfo.m_CycleOffset - PreviousCycleOffset;
+					PreviousCycleOffset = SIDWriteInfo.m_CycleOffset;
 				}
 				
-				iPrevASIDreg = ucASIDreg;
+				PreviousSidRegister = ucASIDreg;
 				++index;
 			}
 		}
 		
 		// Last register does not need to wait any cycles
-		aWriteOrder[iPrevASIDreg].ucCycles = 0;
+		WriteOrder[PreviousSidRegister].ucCycles = 0;
 
 		// Add the remaining registers last, without waits
-		for (auto& wo : aWriteOrder)
+		for (auto& wo : WriteOrder)
 		{
 			if (wo.ucCycles == WRITE_ORDER_UNUSED)
 			{
@@ -82,62 +106,64 @@ namespace Emulation
 		// Sysex start data for an ASID message
 		index = 0;
 		
-		aucAsidOutBuffer[index++] = 0xf0;
-		aucAsidOutBuffer[index++] = 0x2d;
-		aucAsidOutBuffer[index++] = 0x30; // Write order
+		ASidOutBuffer[index++] = 0xf0;
+		ASidOutBuffer[index++] = 0x2d;
+		ASidOutBuffer[index++] = 0x30; // Write order
 
 		// Fill in the write order payload. Only 7 bits may be used in MIDI
-		for (auto& wo : aWriteOrder)
+		for (auto& wo : WriteOrder)
 		{
 			// Index serves double duty as index (5 bits) and msb (1 bit) of cycles
-			aucAsidOutBuffer[index++] = (wo.ucIndex & 0x1f) + ((wo.ucCycles & 0x80) >> 1);
-			aucAsidOutBuffer[index++] = wo.ucCycles & 0x7f;
+			ASidOutBuffer[index++] = (wo.ucIndex & 0x1f) + ((wo.ucCycles & 0x80) >> 1);
+			ASidOutBuffer[index++] = wo.ucCycles & 0x7f;
 		}
 
 		// Sysex end marker
-		aucAsidOutBuffer[index++] = 0xf7;
+		ASidOutBuffer[index++] = 0xf7;
 		
 		// Send to physical MIDI port
 		if (m_RtMidiOut->isPortOpen())
-			m_RtMidiOut->sendMessage(aucAsidOutBuffer, index);
+			m_RtMidiOut->sendMessage(ASidOutBuffer, index);
 	}
 	
 	void ASid::WriteToSIDRegister(unsigned char inSidReg, unsigned char inData)
 	{
+		if (m_Muted)
+			return;
 		if (inSidReg > 0x18) 
 			return;
 
 		// Get the ASID transformed register
-		unsigned char ucMappedAddr = GetASIDPositionFromRegisterIndex(inSidReg);
+		unsigned char MappedAddress = GetASIDPositionFromRegisterIndex(inSidReg);
 
 		// If a write occurs to a waveform register, check if first block is already allocated
-		if (ucMappedAddr >= 0x16 && ucMappedAddr <= 0x18 && ASIDRegisterUpdated[ucMappedAddr])
+		if (MappedAddress >= 0x16 && MappedAddress <= 0x18 && m_ASIDRegisterUpdated[MappedAddress])
 		{
-			ucMappedAddr += 3;
+			MappedAddress += 3;
 
 			// If second block is also updated, move it to the first to make sure to always keep the last one
-			if(ASIDRegisterUpdated[ucMappedAddr])
-				ASIDRegisterBuffer[ucMappedAddr - 3] = ASIDRegisterBuffer[ucMappedAddr];
+			if(m_ASIDRegisterUpdated[MappedAddress])
+				m_ASIDRegisterBuffer[MappedAddress - 3] = m_ASIDRegisterBuffer[MappedAddress];
 		}
 
 		// If we're trying to update a control register that is already mapped, flush it directly
-		if(ASIDRegisterUpdated[ucMappedAddr])
+		if(m_ASIDRegisterUpdated[MappedAddress])
 		{
-			if(ucMappedAddr >= 0x16)
+			if(MappedAddress >= 0x16)
 				SendToDevice();
 		}
 
 		// Store the data
-		ASIDRegisterBuffer[ucMappedAddr] = inData;
-		ASIDRegisterUpdated[ucMappedAddr] = true;
+		m_ASIDRegisterBuffer[MappedAddress] = inData;
+		m_ASIDRegisterUpdated[MappedAddress] = true;
 	}
 	
 	void ASid::SendToDevice()
 	{
-		// Physical out buffer, including protocol overhead
-		static unsigned char aucAsidOutBuffer[ASID_NUM_REGS+12];
-
-		const bool RequireUpdate = [&RegisterUpdated = ASIDRegisterUpdated]()
+		if(m_Muted)
+			return;
+		
+		const bool RequireUpdate = [&RegisterUpdated = m_ASIDRegisterUpdated]()
 		{
 			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
 			{
@@ -154,9 +180,9 @@ namespace Emulation
 		if (m_RtMidiOut->isPortOpen())
 		{
 			// Sysex start data for an ASID message
-			aucAsidOutBuffer[0] = 0xf0;
-			aucAsidOutBuffer[1] = 0x2d;
-			aucAsidOutBuffer[2] = 0x4e;
+			m_ASIDOutBuffer[0] = 0xf0;
+			m_ASIDOutBuffer[1] = 0x2d;
+			m_ASIDOutBuffer[2] = 0x4e;
 		
 			size_t index = 3;
 
@@ -168,10 +194,10 @@ namespace Emulation
 				ucReg = 0x00;
 				for (unsigned char ucRegOffset = 0; ucRegOffset < 7; ++ucRegOffset)
 				{
-					if (ASIDRegisterUpdated[ucMask*7+ucRegOffset])
+					if (m_ASIDRegisterUpdated[ucMask*7+ucRegOffset])
 						ucReg |= (1<<ucRegOffset);
 				}
-				aucAsidOutBuffer[index++] = ucReg;
+				m_ASIDOutBuffer[index++] = ucReg;
 			}
 
 			// Setup the MSB bits, one per register (since MIDI only allows for 7-bit data bytes)
@@ -180,29 +206,29 @@ namespace Emulation
 				ucReg = 0x00;
 				for (unsigned char ucRegOffset = 0; ucRegOffset < 7; ++ucRegOffset)
 				{
-					if (ASIDRegisterBuffer[ucMsb*7 + ucRegOffset] & 0x80)
+					if (m_ASIDRegisterBuffer[ucMsb*7 + ucRegOffset] & 0x80)
 						ucReg |= (1 << ucRegOffset);
 				}
-				aucAsidOutBuffer[index++] = ucReg;
+				m_ASIDOutBuffer[index++] = ucReg;
 			}
 
 			// Add data for all updated registers (the 7 LSB bits)
 			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
 			{
-				if (ASIDRegisterUpdated[i])
-					aucAsidOutBuffer[index++] = ASIDRegisterBuffer[i] & 0x7f;
+				if (m_ASIDRegisterUpdated[i])
+					m_ASIDOutBuffer[index++] = m_ASIDRegisterBuffer[i] & 0x7f;
 			}
 
 			// Sysex end marker
-			aucAsidOutBuffer[index++] = 0xf7;
+			m_ASIDOutBuffer[index++] = 0xf7;
 
 			// Send to physical MIDI port
-			m_RtMidiOut->sendMessage(aucAsidOutBuffer, index);
+			m_RtMidiOut->sendMessage(m_ASIDOutBuffer, index);
 		}
 
 		// Prepare for next buffer
 		for (int i = 0; i < ASID_NUM_REGS; ++i)
-			ASIDRegisterUpdated[i] = false;
+			m_ASIDRegisterUpdated[i] = false;
 	}
 
 	unsigned char ASid::GetASIDPositionFromRegisterIndex(unsigned char inSidRegister)
