@@ -21,6 +21,7 @@ namespace Emulation
 		void SendToDevice();
 
 	private:
+		void SendSetChannelsSilent();
 		unsigned char GetASIDPositionFromRegisterIndex(unsigned char inSidRegister);
 
 		bool m_Muted = false;

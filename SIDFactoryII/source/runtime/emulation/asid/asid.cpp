@@ -26,24 +26,7 @@ namespace Emulation
 			return;
 
 		if(inMuted)
-		{
-			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
-			{
-				m_ASIDRegisterBuffer[i] = 0;
-				m_ASIDRegisterUpdated[i] = false;
-			}
-
-			for(unsigned int i=0; i<3; ++i)
-			{
-				unsigned char channel_offset = static_cast<unsigned char>(i * 7);
-				
-				WriteToSIDRegister(0x04 + channel_offset, 0);
-				WriteToSIDRegister(0x05 + channel_offset, 0);
-				WriteToSIDRegister(0x06 + channel_offset, 0);
-			}
-
-			SendToDevice();
-		}
+			SendSetChannelsSilent();
 
 		m_Muted = inMuted;
 	}
@@ -229,6 +212,26 @@ namespace Emulation
 		// Prepare for next buffer
 		for (int i = 0; i < ASID_NUM_REGS; ++i)
 			m_ASIDRegisterUpdated[i] = false;
+	}
+
+	void ASid::SendSetChannelsSilent()
+	{
+		for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+		{
+			m_ASIDRegisterBuffer[i] = 0;
+			m_ASIDRegisterUpdated[i] = false;
+		}
+
+		for(unsigned int i=0; i<3; ++i)
+		{
+			unsigned char channel_offset = static_cast<unsigned char>(i * 7);
+				
+			WriteToSIDRegister(0x04 + channel_offset, 0);
+			WriteToSIDRegister(0x05 + channel_offset, 0);
+			WriteToSIDRegister(0x06 + channel_offset, 0);
+		}
+
+		SendToDevice();
 	}
 
 	unsigned char ASid::GetASIDPositionFromRegisterIndex(unsigned char inSidRegister)
