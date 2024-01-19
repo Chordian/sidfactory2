@@ -21,7 +21,7 @@ namespace Utility
 
 		std::vector<RtMidiPortInfo> RtMidiOut_GetPorts(RtMidiOut* inRtMidiOut)
 		{
-			FOUNDATION_ASSERT(inRtMidiOut != nullptr, "inRtMidiOut must not be nullptr");
+			FOUNDATION_ASSERT(inRtMidiOut != nullptr);
 
 			std::vector<RtMidiPortInfo> Output;
 			unsigned int available_ports_count = inRtMidiOut->getPortCount();
@@ -46,7 +46,7 @@ namespace Utility
 		
 		bool RtMidiOut_OpenPort(RtMidiOut* inRtMidiOut, const RtMidiPortInfo& inPort)
 		{
-			FOUNDATION_ASSERT(inRtMidiOut != nullptr, "inRtMidiOut must not be nullptr");
+			FOUNDATION_ASSERT(inRtMidiOut != nullptr);
 
 			if(inRtMidiOut->isPortOpen())
 			{
@@ -70,7 +70,7 @@ namespace Utility
 
 		bool RtMidiOut_HasOpenPort(RtMidiOut* inRtMidiOut)
 		{
-			FOUNDATION_ASSERT(inRtMidiOut != nullptr, "inRtMidiOut must not be nullptr");
+			FOUNDATION_ASSERT(inRtMidiOut != nullptr);
 			return inRtMidiOut->isPortOpen();			
 		}
 
