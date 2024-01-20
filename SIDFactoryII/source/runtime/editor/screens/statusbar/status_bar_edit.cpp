@@ -1,7 +1,6 @@
 #include "status_bar_edit.h"
 #include "foundation/graphics/textfield.h"
 #include "foundation/graphics/color.h"
-#include "runtime/editor/auxilarydata/auxilary_data_hardware_preferences.h"
 #include "utils/usercolors.h"
 
 using namespace Utility;
@@ -18,7 +17,6 @@ namespace Editor
 			std::function<void(Mouse::Button, int)> inOctaveMousePressCallback,
 			std::function<void(Mouse::Button, int)> inSharpFlatMousePressCallback,
 			std::function<void(Mouse::Button, int)> inSIDMousePressCallback,
-			std::function<void(Mouse::Button, int)> inEnginePressCallback,
 			std::function<void(Mouse::Button, int)> inContextHighlightMousePressCallback,
 			std::function<void(Mouse::Button, int)> inFollowPlayerMousePressCallback
 	)
@@ -30,14 +28,12 @@ namespace Editor
 		m_TextSectionOctave = std::make_shared<TextSection>(12, inOctaveMousePressCallback);
 		m_TextSectionSharpFlat = std::make_shared<TextSection>(15, inSharpFlatMousePressCallback);
 		m_TextSectionSID = std::make_shared<TextSection>(19, inSIDMousePressCallback);
-		m_TextSectionEngine= std::make_shared<TextSection>(17, inEnginePressCallback);
 		m_TextSectionContextHighlight = std::make_shared<TextSection>(18, inContextHighlightMousePressCallback);
 		m_TextSectionFollowPlay = std::make_shared<TextSection>(15, inFollowPlayerMousePressCallback);
 
 		m_TextSectionList.push_back(m_TextSectionOctave);
 		m_TextSectionList.push_back(m_TextSectionSharpFlat);
 		m_TextSectionList.push_back(m_TextSectionSID);
-		m_TextSectionList.push_back(m_TextSectionEngine);
 		m_TextSectionList.push_back(m_TextSectionContextHighlight);
 		m_TextSectionList.push_back(m_TextSectionFollowPlay);
 	}
@@ -68,7 +64,6 @@ namespace Editor
 
 		const AuxilaryDataHardwarePreferences::SIDModel sid_model = hardware_preferences.GetSIDModel();
 		const AuxilaryDataHardwarePreferences::Region region = hardware_preferences.GetRegion();
-		const AuxilaryDataHardwarePreferences::Engine engine = hardware_preferences.GetEngine();
 		
 		if (sid_model != m_CachedSIDModel || region != m_CachedRegion || inNeedUpdate)
 		{
@@ -80,13 +75,6 @@ namespace Editor
 			m_CachedSIDModel = sid_model;
 			m_CachedRegion = region;
 
-			m_NeedRefresh = true;
-		}
-
-		if (engine != m_CachedEngine || inNeedUpdate) {
-			std::string sid_engine_string= (engine == AuxilaryDataHardwarePreferences::Engine::RESID ? "ReSID" : "ASID");
-			m_TextSectionEngine->SetText(" Engine: " + sid_engine_string);
-			m_CachedEngine = engine;
 			m_NeedRefresh = true;
 		}
 

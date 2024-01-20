@@ -19,12 +19,6 @@ namespace Editor
 			NTSC
 		};
 
-		enum Engine : unsigned char
-		{
-			RESID,
-			ASID
-		};
-
 		AuxilaryDataHardwarePreferences();
 
 		void Reset() override;
@@ -35,9 +29,6 @@ namespace Editor
 		const Region GetRegion() const;
 		void SetRegion(const Region inRegion);
 
-		const Engine GetEngine() const;
-		void SetEngine(const Engine inEngine);
-
 	protected:
 		std::vector<unsigned char> GenerateSaveData() const override;
 		unsigned short GetGeneratedFileVersion() const override;
@@ -47,6 +38,5 @@ namespace Editor
 	private:
 		SIDModel m_SIDModel;
 		Region m_Region;
-		Engine m_Engine;
 	};
 }
