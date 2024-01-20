@@ -132,7 +132,7 @@ run: $(EXE)
 debug: $(EXE)
 	cd $(ARTIFACTS_FOLDER) && lldb $(APP_NAME)
 
-# For local development with ccls, make this file first
+# For local development with ccls or lsp, make this file first
 compile_commands.json: clean
 	bear -- make TARGET=DEBUG PLATFORM=$(PLATFORM)
 

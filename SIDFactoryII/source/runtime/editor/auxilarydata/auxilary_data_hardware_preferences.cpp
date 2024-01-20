@@ -42,6 +42,9 @@ namespace Editor
 		{
 			m_Region = Region::PAL;
 		}
+
+		// TODO: Get from config
+		m_Engine = Engine::RESID;
 	}
 
 
@@ -66,6 +69,16 @@ namespace Editor
 	void AuxilaryDataHardwarePreferences::SetRegion(const Region inRegion)
 	{
 		m_Region = inRegion;
+	}
+
+	const AuxilaryDataHardwarePreferences::Engine AuxilaryDataHardwarePreferences::GetEngine() const
+	{
+		return m_Engine;
+	}
+
+	void AuxilaryDataHardwarePreferences::SetEngine(const Engine inEngine)
+	{
+		m_Engine = inEngine;
 	}
 
 

@@ -206,6 +206,11 @@ namespace Editor
 			DoToggleSIDModelAndRegion(KeyboardUtils::IsModifierExclusivelyDown(inKeyboardModifiers, Keyboard::Control));
 		};
 
+		auto mouse_button_engine = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
+		{
+			DoToggleEngine();
+		};
+
 		auto mouse_button_context_highlight = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
 		{
 			DoToggleContextHighlight();
@@ -226,7 +231,7 @@ namespace Editor
 			? std::to_string(selected_song_index + 1)
 			: song_name;
 
-		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_context_highlight, mouse_button_follow_play);
+		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_engine, mouse_button_context_highlight, mouse_button_follow_play);
 		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500, false);
 		m_ActivationMessage = "";
 
@@ -762,6 +767,17 @@ namespace Editor
 
 			m_ExecutionHandler->Unlock();
 		}
+	}
+
+	void ScreenEdit::DoToggleEngine()
+	{
+		auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+
+		const AuxilaryDataHardwarePreferences::Engine engine = hardware_preferences.GetEngine() == AuxilaryDataHardwarePreferences::Engine::RESID
+			? AuxilaryDataHardwarePreferences::Engine::ASID
+			: AuxilaryDataHardwarePreferences::Engine::RESID;
+
+		hardware_preferences.SetEngine(engine);
 	}
 
 	void ScreenEdit::DoToggleContextHighlight()
