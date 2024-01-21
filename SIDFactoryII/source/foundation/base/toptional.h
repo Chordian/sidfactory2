@@ -88,6 +88,10 @@ namespace Foundation
 
 	private:
 		bool m_IsValid;
-		T m_Value;
+
+		union
+		{
+			T m_Value;
+		};
 	};
 }
