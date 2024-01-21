@@ -1,5 +1,6 @@
 #pragma once
 
+#include "foundation/base/toptional.h"
 #include <string>
 #include <vector>
 
@@ -15,8 +16,8 @@ namespace Utility
 			std::string m_PortName;
 		};
 
-		const RtMidiPortInfo* RtMidi_GetPortInfoByName(const std::vector<RtMidiPortInfo> inMidiPortInfoList, const std::string& inPortName);
-
+		Foundation::TOptional<RtMidiPortInfo> RtMidi_GetPortInfoByName(const std::vector<RtMidiPortInfo> inMidiPortInfoList, const std::string& inPortName);
+		
 		std::vector<RtMidiPortInfo> RtMidiOut_GetPorts(RtMidiOut* inRtMidiOut);
 		bool RtMidiOut_OpenPort(RtMidiOut* inRtMidiOut, const RtMidiPortInfo& inPort);
 		bool RtMidiOut_HasOpenPort(RtMidiOut* inRtMidiOut);

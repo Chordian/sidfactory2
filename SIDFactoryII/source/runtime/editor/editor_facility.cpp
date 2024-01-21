@@ -141,10 +141,10 @@ namespace Editor
 		{
 			std::string config_asid_midi_port_name = GetSingleConfigurationValue<Utility::Config::ConfigValueString>(Global::instance().GetConfig(), "Playback.ASID.MidiInterface", std::string(""));
 			const auto midi_out_ports = RtMidiUtils::RtMidiOut_GetPorts(m_RtMidiOut);
-			const auto* selected_out_port = RtMidiUtils::RtMidi_GetPortInfoByName(midi_out_ports, config_asid_midi_port_name);
+			const auto selected_out_port = RtMidiUtils::RtMidi_GetPortInfoByName(midi_out_ports, config_asid_midi_port_name);
 
-			if(selected_out_port != nullptr)
-				RtMidiUtils::RtMidiOut_OpenPort(m_RtMidiOut, *selected_out_port);
+			if(selected_out_port.IsValid())
+				RtMidiUtils::RtMidiOut_OpenPort(m_RtMidiOut, selected_out_port.Get());
 		}
 
 		// Create the main text field

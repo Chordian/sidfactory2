@@ -465,6 +465,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\foundation\base\assert.h" />
+    <ClInclude Include="source\foundation\base\toptional.h" />
     <ClInclude Include="source\foundation\base\types.h" />
     <ClInclude Include="source\foundation\graphics\drawfield.h" />
     <ClInclude Include="source\foundation\graphics\image.h" />

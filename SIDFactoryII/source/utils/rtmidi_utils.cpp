@@ -8,15 +8,17 @@ namespace Utility
 {
 	namespace RtMidiUtils
 	{
-		const RtMidiPortInfo* RtMidi_GetPortInfoByName(const std::vector<RtMidiPortInfo> inMidiPortInfoList, const std::string& inPortName)
+		using namespace Foundation;
+		
+		TOptional<RtMidiPortInfo> RtMidi_GetPortInfoByName(const std::vector<RtMidiPortInfo> inMidiPortInfoList, const std::string& inPortName)
 		{
 			for (const auto& port_info : inMidiPortInfoList)
 			{
 				if (port_info.m_PortName == inPortName)
-					return &port_info;
+					return port_info;
 			}
 
-			return nullptr;
+			return TOptional<RtMidiPortInfo>();
 		}
 
 		std::vector<RtMidiPortInfo> RtMidiOut_GetPorts(RtMidiOut* inRtMidiOut)
