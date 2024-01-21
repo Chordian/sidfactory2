@@ -10,11 +10,13 @@
 #include "foundation/base/assert.h"
 #include "foundation/platform/imutex.h"
 #include "foundation/platform/iplatform.h"
+#include "runtime/emulation/asid/asid.h"
 
 #include "utils/configfile.h"
 #include "utils/logging.h"
 #include "utils/global.h"
 
+#include <array>
 #include <algorithm>
 #include <iostream>
 
@@ -33,10 +35,12 @@ namespace Emulation
 		CPUmos6510* inCPU,
 		CPUMemory* pMemory,
 		SIDProxy* pSIDProxy,
+		ASid* inASID,
 		FlightRecorder* inFlightRecorder)
 		: m_CPU(inCPU)
 		, m_Memory(pMemory)
 		, m_SIDProxy(pSIDProxy)
+		, m_ASID(inASID)
 		, m_SIDRegisterFlightRecorder(inFlightRecorder)
 		, m_IsStarted(false)
 		, m_FeedCount(0)
@@ -387,6 +391,7 @@ namespace Emulation
 		}
 	}
 
+
 	void ExecutionHandler::CaptureNewFrame()
 	{
 		FOUNDATION_ASSERT(m_CPU != nullptr);
@@ -513,9 +518,15 @@ namespace Emulation
 			SimulateSID(deltaCycles);
 			m_SIDProxy->Write((unsigned char)(capture.m_usReg & 0xff), capture.m_ucVal);
 			nCycle += deltaCycles;
+
+			if(m_ASID != nullptr)
+				m_ASID->WriteToSIDRegister(static_cast<unsigned char>(capture.m_usReg & 0xff), capture.m_ucVal);
 		}
 
 		// Do the rest of the frame
+		if(m_ASID != nullptr)
+			m_ASID->SendToDevice();
+		
 		while (nCycle < (int)m_CyclesPerFrame)
 		{
 			const int deltaCycles = m_CyclesPerFrame - nCycle;
@@ -528,5 +539,12 @@ namespace Emulation
 
 		// Unlock execution handler
 		Unlock();
+	}
+
+
+	void ExecutionHandler::TellSIDWriteOrderInfo(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList)
+	{
+		if(m_ASID != nullptr)
+			m_ASID->SendSIDRegisterWriteOrderAndCycleInfo(SIDWriteInfoList);
 	}
 }
