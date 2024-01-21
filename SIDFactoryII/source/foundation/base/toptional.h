@@ -40,6 +40,29 @@ namespace Foundation
 				new (&m_Value) T(std::move(InOther.m_Value));
 		}
 
+		TOptional& operator=(const TOptional& InOther)
+		{
+			if (m_IsValid)
+				m_Value.~T();
+
+			m_IsValid = InOther.m_IsValid;
+			if (m_IsValid)
+				new (&m_Value) T(InOther.m_Value);
+
+			return *this;
+		}
+
+		TOptional& operator=(TOptional&& InOther)
+		{
+			m_IsValid = InOther.m_IsValid;
+			InOther.IsValid = false;
+
+			if (m_IsValid)
+				new (&m_Value) T(std::move(InOther.m_Value));
+
+			return *this;
+		}
+
 		~TOptional()
 		{
 			if (m_IsValid)
