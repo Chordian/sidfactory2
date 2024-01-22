@@ -30,16 +30,36 @@ namespace Emulation
 
 	void CPUFrameCapture::Capture(unsigned short inStartAddress, unsigned char inAccumulatorValue)
 	{
-		// Set program counter
-		m_CPU->SetPC(inStartAddress);
-		m_CPU->SetAccumulator(inAccumulatorValue);
+		Capture(inStartAddress, inAccumulatorValue, 1);
+	}
 
-		// Set the CPU to be not suspended
-		m_CPU->SetSuspended(false);
+	void CPUFrameCapture::Capture(unsigned short inStartAddress, unsigned char inAccumulatorValue, int inEventlySpreadRepetitions)
+	{
+		FOUNDATION_ASSERT(inEventlySpreadRepetitions > 0);
+
+		const int cyclesPerRepetition = m_uiMaxCycles / inEventlySpreadRepetitions;
 
 		// Execute instructions until suspending!
-		while (!m_CPU->IsSuspended() && static_cast<unsigned int>(m_CPU->CycleCounterGetCurrent()) < m_uiMaxCycles)
-			m_CPU->ExecuteInstruction();
+		for(int i=0; i< inEventlySpreadRepetitions; ++i)
+		{
+			// Set program counter
+			m_CPU->SetPC(inStartAddress);
+			m_CPU->SetAccumulator(inAccumulatorValue);
+
+			// Set the CPU to be not suspended
+			m_CPU->SetSuspended(false);
+
+			if(i > 0)
+			{
+				const int startCycle = cyclesPerRepetition * i;
+				FOUNDATION_ASSERT(m_CPU->CycleCounterGetCurrent() <= startCycle);
+
+				m_CPU->CycleCounterSetCurrent(startCycle);
+			}
+
+			while (!m_CPU->IsSuspended() && static_cast<unsigned int>(m_CPU->CycleCounterGetCurrent()) < m_uiMaxCycles)
+				m_CPU->ExecuteInstruction();
+		}
 
 		// Record the number of cycles spend on the executing code before the CPU was suspended!
 		m_uiCyclesSpend = static_cast<unsigned int>(m_CPU->CycleCounterGetCurrent());
@@ -47,6 +67,7 @@ namespace Emulation
 		// Error state
 		m_ReachedMaxCycleCount = m_uiCyclesSpend >= m_uiMaxCycles;
 	}
+
 
 	void CPUFrameCapture::Write(unsigned short usAddress, unsigned char ucVal, int iCycle)
 	{
