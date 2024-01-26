@@ -604,7 +604,6 @@ namespace Editor
 	{
 		ExecutionHandler::OutputDevice device = m_ExecutionHandler->GetOutputDevice();
 
-		// - Keeps playing last settings
 		if (device == ExecutionHandler::OutputDevice::RESID) {
 			device = ExecutionHandler::OutputDevice::ASID;
 		}
