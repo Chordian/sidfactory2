@@ -21,7 +21,8 @@ namespace Emulation
 	}
 
 
-	bool ASid::isPortOpen() {
+	bool ASid::isPortOpen() 
+	{
 		return m_RtMidiOut->isPortOpen();
 	}
 

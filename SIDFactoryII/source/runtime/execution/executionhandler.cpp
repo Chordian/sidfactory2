@@ -70,7 +70,6 @@ namespace Emulation
 
 		// Clear SID registers after last driver update
 		memset(m_SIDRegisterLastDriverUpdate.m_Buffer, 0, sizeof(m_SIDRegisterLastDriverUpdate.m_Buffer));
-
 	}
 
 	ExecutionHandler::~ExecutionHandler()
@@ -145,7 +144,8 @@ namespace Emulation
 		FeedPCM(inBuffer, inByteCount);
 	}
 
-	void ExecutionHandler::SetOutputDevice(const OutputDevice device) {
+	void ExecutionHandler::SetOutputDevice(const OutputDevice device)
+	{
 
 		if (m_OutputDevice == device)
 			return;
@@ -198,13 +198,14 @@ namespace Emulation
 
 				for (unsigned int i = 0; i < uiSamplesToCopy; ++i)
 				{
-					if (m_OutputDevice == ExecutionHandler::OutputDevice::RESID) 
+					if (m_OutputDevice == ExecutionHandler::OutputDevice::RESID)
 					{
 						const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
 						const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
 						pTarget[i] = static_cast<short>(fClampedSample);
 					}
-					else {
+					else
+					{
 						pTarget[i] = 0;
 					}
 				}
