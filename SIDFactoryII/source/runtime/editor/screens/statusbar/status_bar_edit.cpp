@@ -1,7 +1,9 @@
 #include "status_bar_edit.h"
 #include "foundation/graphics/textfield.h"
 #include "foundation/graphics/color.h"
+#include "runtime/execution/executionhandler.h"
 #include "utils/usercolors.h"
+#include <string>
 
 using namespace Utility;
 using namespace Foundation;
@@ -14,9 +16,11 @@ namespace Editor
 			const EditState& inEditState,
 			const DriverState& inDriverState,
 			const AuxilaryDataCollection& inAuxilaryDataCollection,
+			const Emulation::ExecutionHandler& inExecutionHandler,
 			std::function<void(Mouse::Button, int)> inOctaveMousePressCallback,
 			std::function<void(Mouse::Button, int)> inSharpFlatMousePressCallback,
 			std::function<void(Mouse::Button, int)> inSIDMousePressCallback,
+			std::function<void(Mouse::Button, int)> inOutputDevicePressCallback,
 			std::function<void(Mouse::Button, int)> inContextHighlightMousePressCallback,
 			std::function<void(Mouse::Button, int)> inFollowPlayerMousePressCallback
 	)
@@ -24,18 +28,21 @@ namespace Editor
 		, m_EditState(inEditState)
 		, m_DriverState(inDriverState)
 		, m_AuxilaryDataPlayMarkers(inAuxilaryDataCollection)
+		, m_ExecutionHandler(inExecutionHandler)
 	{
 		m_TextSectionOctave = std::make_shared<TextSection>(12, inOctaveMousePressCallback);
 		m_TextSectionSharpFlat = std::make_shared<TextSection>(15, inSharpFlatMousePressCallback);
 		m_TextSectionSID = std::make_shared<TextSection>(19, inSIDMousePressCallback);
 		m_TextSectionContextHighlight = std::make_shared<TextSection>(18, inContextHighlightMousePressCallback);
 		m_TextSectionFollowPlay = std::make_shared<TextSection>(15, inFollowPlayerMousePressCallback);
+		m_TextSectionOutputDevice = std::make_shared<TextSection>(17, inOutputDevicePressCallback);
 
 		m_TextSectionList.push_back(m_TextSectionOctave);
 		m_TextSectionList.push_back(m_TextSectionSharpFlat);
 		m_TextSectionList.push_back(m_TextSectionSID);
 		m_TextSectionList.push_back(m_TextSectionContextHighlight);
 		m_TextSectionList.push_back(m_TextSectionFollowPlay);
+		m_TextSectionList.push_back(m_TextSectionOutputDevice);
 	}
 
 	
@@ -43,8 +50,7 @@ namespace Editor
 	{
 
 	}
-
-
+	
 	void StatusBarEdit::UpdateInternal(int inDeltaTick, bool inNeedUpdate)
 	{
 		if (m_CachedEditState != m_EditState || inNeedUpdate)
@@ -75,6 +81,16 @@ namespace Editor
 			m_CachedSIDModel = sid_model;
 			m_CachedRegion = region;
 
+			m_NeedRefresh = true;
+		}
+
+		const Emulation::ExecutionHandler::OutputDevice outputDevice = m_ExecutionHandler.GetOutputDevice();
+
+		if (outputDevice != m_CachedOutputDevice || inNeedUpdate)
+		{
+			std::string output_device_string = (outputDevice == Emulation::ExecutionHandler::OutputDevice::ASID ? "ASID" : "RESID");
+			m_TextSectionOutputDevice->SetText("Output: " + output_device_string);
+			m_CachedOutputDevice = outputDevice;
 			m_NeedRefresh = true;
 		}
 

@@ -206,6 +206,11 @@ namespace Editor
 			DoToggleSIDModelAndRegion(KeyboardUtils::IsModifierExclusivelyDown(inKeyboardModifiers, Keyboard::Control));
 		};
 
+		auto mouse_button_output_device = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
+		{
+			DoToggleOutputDevice();
+		};
+
 		auto mouse_button_context_highlight = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
 		{
 			DoToggleContextHighlight();
@@ -226,7 +231,8 @@ namespace Editor
 			? std::to_string(selected_song_index + 1)
 			: song_name;
 
-		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_context_highlight, mouse_button_follow_play);
+		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), *m_ExecutionHandler,
+				mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_output_device, mouse_button_context_highlight, mouse_button_follow_play);
 		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500, false);
 		m_ActivationMessage = "";
 
@@ -592,6 +598,20 @@ namespace Editor
 			unsigned char channel = static_cast<unsigned char>(inChannel);
 			m_ExecutionHandler->QueueMuteChannel(channel, [&, channel](Emulation::CPUMemory* inCPUMemory) { OnDriverPostApplyChannelMuteState(inCPUMemory, channel); });
 		}
+	}
+
+	void ScreenEdit::DoToggleOutputDevice() 
+	{
+		ExecutionHandler::OutputDevice device = m_ExecutionHandler->GetOutputDevice();
+
+		// - Keeps playing last settings
+		if (device == ExecutionHandler::OutputDevice::RESID) {
+			device = ExecutionHandler::OutputDevice::ASID;
+		}
+		else {
+			device = ExecutionHandler::OutputDevice::RESID;
+		}
+		m_ExecutionHandler->SetOutputDevice(device);
 	}
 
 
@@ -1962,6 +1982,12 @@ namespace Editor
 
 			return true;
 		} });
+
+		m_KeyHooks.push_back( { "Key.ScreenEdit.ToggleOutputDevice", m_KeyHookStore, [&]()
+		{
+			DoToggleOutputDevice();
+			return true;
+		}});
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.SetMarker", m_KeyHookStore, [&]()
 		{

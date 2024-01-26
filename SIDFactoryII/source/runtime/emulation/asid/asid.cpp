@@ -20,6 +20,11 @@ namespace Emulation
 		}
 	}
 
+
+	bool ASid::isPortOpen() {
+		return m_RtMidiOut->isPortOpen();
+	}
+
 	void ASid::SetMuted(bool inMuted)
 	{
 		if(inMuted == m_Muted)
@@ -30,17 +35,17 @@ namespace Emulation
 
 		m_Muted = inMuted;
 	}
-	
+
 	void ASid::SendSIDRegisterWriteOrderAndCycleInfo(std::vector<Editor::SIDWriteInformation> inSIDWriteInfoList)
 	{
 		#define WRITE_ORDER_UNUSED 0xff
-		
+
 		struct write_order
 		{
 			unsigned char ucIndex;
 			unsigned char ucCycles;
 		};
-		
+
 		// Physical out buffer, including protocol overhead
 		unsigned char ASidOutBuffer[ASID_NUM_REGS*2+4];
 
