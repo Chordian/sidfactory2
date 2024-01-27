@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace Foundation
 {
@@ -18,6 +19,7 @@ namespace Editor
 	class ComponentTrack;
 	class DataCopySequence;
 	class AuxilaryDataCollection;
+	class DataSourceOrderList;
 
 	class UndoComponentDataTableTracks;
 
@@ -29,7 +31,8 @@ namespace Editor
 			int inGroupID, 
 			Undo* inUndo, 
 			std::shared_ptr<DataSourceTrackComponents> inDataSource, 
-			Foundation::TextField* inTextField, 
+			std::vector<std::shared_ptr<DataSourceOrderList>> inOtherOrderListDataSources,
+			Foundation::TextField* inTextField,
 			const AuxilaryDataCollection& inAuxilaryDataCollection, 
 			const EditState& inEditState,
 			int inX, 
@@ -46,7 +49,7 @@ namespace Editor
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 		
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
@@ -75,6 +78,10 @@ namespace Editor
 		void TellPlaybackEventPosition(int inPlaybackEventPosition);
 		bool ComputePlaybackStateFromEventPosition(int inEventPos, std::vector<IDriverArchitecture::PlayMarkerInfo>& inPlayMarkerInfoList) const;
 
+		void OnOrderListChanged(int inChannel);
+
+		ComponentTrack::OrderListIndexChangedEvent& GetOrderListIndexChangedEvent();
+
 	private:
 		void AlignTracks();
 		void HandleSequenceSplit(unsigned char inSequence, unsigned char inSequenceToAdd);
@@ -96,10 +103,15 @@ namespace Editor
 		int m_FocusTrackIndex;
 		bool m_FocusModeOrderList;
 
+		bool m_OtherOrderListsChanged;
+
 		const EditState& m_EditState;
 		const AuxilaryDataCollection& m_AuxilaryData;
 		ComponentTrackUtils::FocusRow m_FocusRow;
 
+		ComponentTrack::OrderListIndexChangedEvent m_OrderListIndexChangedEvent;
+
 		std::shared_ptr<DataSourceTrackComponents> m_DataSource;
+		std::vector<std::shared_ptr<DataSourceOrderList>> m_OtherOrderListDataSources;
 	};
 }

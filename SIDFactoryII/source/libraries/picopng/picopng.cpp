@@ -13,13 +13,13 @@ in_size: size of the input PNG file in bytes.
 convert_to_rgba32: optional parameter, true by default.
   Set to true to get the output in RGBA 32-bit (8 bit per channel) color format
   no matter what color type the original PNG image had. This gives predictable,
-  useable data from any random input PNG.
+  usable data from any random input PNG.
   Set to false to do no color conversion at all. The result then has the same data
   type as the PNG image, which can range from 1 bit to 64 bits per pixel.
   Information about the color type or palette colors are not provided. You need
   to know this information yourself to be able to use the data so this only
   works for trusted PNG files. Use LodePNG instead of picoPNG if you need this information.
-return: 0 if success, not 0 if some error occured.
+return: 0 if success, not 0 if some error occurred.
 */
 
 namespace PicoPNG

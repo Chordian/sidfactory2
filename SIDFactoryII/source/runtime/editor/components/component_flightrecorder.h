@@ -20,14 +20,14 @@ namespace Editor
 	class ComponentFlightRecorder final : public ComponentBase
 	{
 	public:
-		ComponentFlightRecorder(int inID, int inGroupID, Undo* inUndo, Foundation::TextField* inTextField, int inX, int inY, int inHeight, std::shared_ptr<DataSourceFlightRecorder>& inDataSource);
+		ComponentFlightRecorder(int inID, int inGroupID, Undo* inUndo, Foundation::TextField* inTextField, std::shared_ptr<DataSourceFlightRecorder>& inDataSource);
 		~ComponentFlightRecorder();
 
 		void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl) override;
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;

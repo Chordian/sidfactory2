@@ -10,8 +10,6 @@ SIDFactory II consists of:
   - Documentation
   - Example music
   - Alternative drivers
-  - The "SF2Converter" command line tool for converting MOD and Goattracker
-    tunes to the SF2 format.
 
 Put the folder "SIDFactoryII" somewhere convenient, for example your "Music" or
 "Documents" folder.

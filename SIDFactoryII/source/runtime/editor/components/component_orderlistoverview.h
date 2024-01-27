@@ -1,6 +1,8 @@
 #pragma once
 
 #include "component_base.h"
+#include "runtime/editor/edit_state.h"
+#include "utils/event.h"
 
 #include <memory>
 #include <vector>
@@ -11,8 +13,16 @@ namespace Foundation
 	class TextField;
 }
 
+namespace Utility
+{
+	template<typename CONTEXT>
+	class KeyHook;
+	class KeyHookStore;
+}
+
 namespace Editor
 {
+	class DriverState;
 	class CursorControl;
 	class ScreenBase;
 	class DataSourceOrderList;
@@ -23,14 +33,64 @@ namespace Editor
 
 	class ComponentOrderListOverview final : public ComponentBase
 	{
+		struct KeyHookContext
+		{
+			ComponentsManager& m_ComponentsManager;
+		};
+
+		struct HoveredSequenceValue
+		{
+			bool operator == (const HoveredSequenceValue& InRhs) const
+			{
+				return m_Value == InRhs.m_Value;
+			}
+
+			bool operator != (const HoveredSequenceValue& InRhs) const
+			{
+				return m_Value != InRhs.m_Value;
+			}
+			
+			void Reset()
+			{
+				m_Value = 0x80;
+			}
+			
+			bool HasValue() const
+			{
+				return (m_Value & 0x80) == 0;
+			}
+			
+			void SetValue(int inValue)
+			{
+				if(inValue >= 0 && inValue < 0x7f)
+					m_Value = inValue;
+				else
+					m_Value = 0x80;
+			}
+			
+			unsigned char GetValue() const
+			{
+				FOUNDATION_ASSERT(HasValue());
+				return m_Value;
+			}
+		
+		private:
+			unsigned char m_Value = 0x80;
+		};
+
 	public:
+		using OrderListChangedEvent = Utility::TEvent<void(int)>;
+
 		ComponentOrderListOverview(
 			int inID, 
 			int inGroupID, 
 			Undo* inUndo,
-			Foundation::TextField* inTextField, 
+			Foundation::TextField* inTextField,
+			const EditState& inEditState,
+			const DriverState& inDriverState,
+			const Utility::KeyHookStore& inKeyHookStore,
 			std::shared_ptr<DataSourceTableText> inDataSourceTableText,
-			const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
+			std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 			const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 			int inX,
 			int inY, 
@@ -43,7 +103,7 @@ namespace Editor
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 		
 		void Refresh(const DisplayState& inDisplayState) override;
 		bool HasDataChange() const override;
@@ -51,11 +111,17 @@ namespace Editor
 		void PullDataFromSource(const bool inFromUndo) override;
 
 		bool IsNoteInputSilenced() const override;
+		bool IsFastForwardAllowed() const override;
+		void ClearHasControl(CursorControl& inCursorControl) override;
 
 		void ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost) override;
 		void ExecuteAction(int inActionInput) override;
 
 		void TellPlaybackEventPosition(int inPlaybackEventPosition);
+
+		void SetHighlitSequenceValue(int inSequenceIndex);
+
+		OrderListChangedEvent& GetOrderListChangedEvent();
 
 	private:
 		void DoMouseWheel(const Foundation::Mouse& inMouse);
@@ -67,16 +133,21 @@ namespace Editor
 		bool DoEnd();
 		bool DoInsertTextRow(unsigned int inRow);
 		bool DoDeleteTextRow(unsigned int inRow);
-		
+		bool DoCopy();
+		bool DoPaste();
+
 		void DoBeginMarking();
 		void DoCancelMarking();
 		int GetMarkingTopY() const;
 		int GetMarkingBottomY() const;
 
-		void AddUndo();
-		void AddMostRecentEdit();
+		void AddUndoSequenceStep(unsigned int inChannel);
+		void AddMostRecentSequenceEdit();
+		void AddUndoTextStep();
+		void AddMostRecentTextEdit();
 
-		void OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl);
+		void OnUndoTextEdit(const UndoComponentData& inData, CursorControl& inCursorControl);
+		void OnUndoSequenceEdit(const UndoComponentData& inData, CursorControl& inCursorControl);
 
 		bool IsEditingText() const;
 		void DoStartEditText(CursorControl& inCursorControl);
@@ -85,11 +156,26 @@ namespace Editor
 
 		void RebuildOverview();
 
+		// Update hovered sequence
+		bool UpdateHoveredSequence();
+		
+		// Key hooks
+		void ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore);
+
+		static int GetWidthFromChannelCount(int inChannelCount);
+		static int GetOutputPositionFromCursorX(int inCursorX);
+
 		struct OverviewEntry
 		{
+			struct SequenceEntry
+			{
+				int m_Transpose;
+				int m_Index;
+			};
+
 			int m_EventPos;
 
-			std::vector<int> m_SequenceIndices;
+			std::vector<SequenceEntry> m_SequenceEntries;
 		};
 
 		std::vector<OverviewEntry> m_Overview;
@@ -97,13 +183,20 @@ namespace Editor
 		std::unique_ptr<TextEditingDataSourceTableText> m_TextEditingDataSourceTableText;
 		std::shared_ptr<DataSourceTableText> m_TableText;
 
-		const std::vector<std::shared_ptr<DataSourceOrderList>>& m_OrderLists;
+		std::vector<std::shared_ptr<DataSourceOrderList>>& m_OrderLists;
+		
 		const std::vector<std::shared_ptr<DataSourceSequence>>& m_SequenceList;
 
 		std::function<void(int, bool)> m_SetTrackEventPosFunction;
 
-		static int GetWidthFromChannelCount(int inChannelCount);
-		static int GetOutputPositionFromCursorX(int inCursorX);
+		// KeyHooks
+		std::vector<Utility::KeyHook<bool(KeyHookContext&)>> m_KeyHooks;
+
+		OrderListChangedEvent m_OrderListChangedEvent;
+
+		const EditState& m_EditState;
+		const DriverState& m_DriverState;
+		HoveredSequenceValue m_HighlitSequenceValue;
 
 		int m_CursorY;
 		int m_CursorX;
@@ -116,6 +209,8 @@ namespace Editor
 		int m_MarkingX;
 		int m_MarkingFromY;
 		int m_MarkingToY;
+
+		int m_InvokeOrderListChangedEventChannel;
 
 		static const int ms_MarginWidth;
 		static const int ms_TextWidth;

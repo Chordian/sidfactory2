@@ -8,29 +8,99 @@ To build from source, have a look [here](DEVELOPMENT.md).
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
 Huus and Michel de Bree.
 
+Notable features:
+
+- Uses the renowned reSID emulator
+- Tracker-like interface, using JCH's contiguous sequence stacking system and
+  Protracker note input layout.
+- Choice of various music drivers made by pioneer musicians
+  [Laxity](https://deepsid.chordian.net/?file=/MUSICIANS/L/Laxity) and
+  [JCH](https://deepsid.chordian.net/?file=/MUSICIANS/J/JCH) ,
+  optimized for use in demos and games on the Commodore 64.
+- A hotkey opens a surrounding overlay with help for both editor and driver.
+- Imports Goattracker, CheeseCutter and MOD files.
+- Supports both SID models 6581 and 8580 for PAL and NTSC.
+- Unlimited undo
+- Multiple songs
+- Copy / paste and modify selected area
+- Built-in packer and relocator to position the music anywhere in the Commodore
+  64 memory. Relocate used zero page addresses.
+- Includes demo tunes to learn from.
+- Cross platform: Windows, macOS (Intel and ARM) and Linux versions.
+- Configurable settings, shortcuts and keyboard layout
+- Open source
+
+![SID Factory II screenshot](screenshot.png)
+
+## Changelog
+
+![Last commit](https://img.shields.io/github/last-commit/chordian/sidfactory2)
 ![Build windows
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20windows%20binaries/badge.svg)
 ![Build macOS
 binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20binaries/badge.svg)
 ![Build linux binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20linux%20binaries/badge.svg)
 
-![SID Factory II screenshot](https://chordian.net/media/SF2_20200816.png "SID Factory II")
+Please report issues in our [issue tracker](https://github.com/Chordian/sidfactory2/issues).
 
-## Changelog
+![Commits since last
+release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20231002)
 
+### Build 20231002
+
+- Added: [#102](https://github.com/Chordian/sidfactory2/issues/102) Visualizers
+  for pulse width (per channel), filter cutoff and an indication per channel if
+  it is being filtered.
+- Added: Config option `Visualizer.PulseWidth.Style` to set the default style
+  for the pulse width visualizer.
+- Changed: New default driver is 11.05.00
+- Added: [#156](https://github.com/Chordian/sidfactory2/issues/156)
+  Configuration option `Disk.Hide.Extensions` to hide files with certain
+  extensions in the file browser. Default values are `.sid`, `.wav` and `.mp3`
+- Changed: Configuration parameter `Window.Scale` now has a range from 1.0 to
+  10.0, so users can blow up the screen even bigger. Values below 1.0 were not
+  working correctly.
+
+### Build 20221007
+
+- Fixed: [#162](https://github.com/Chordian/sidfactory2/issues/162) Crash when
+  converting NP20 and GT tunes.
+- Fixed: Crash when using a loop point beyond position 128
+- Fixed: [#161](https://github.com/Chordian/sidfactory2/pull/161) A bug where
+  sometimes you couldn't edit sequences before hitting the play button.
+
+### Build 20220914
+
+- Added: [#37](https://github.com/Chordian/sidfactory2/issues/37) Multi song
+  support. Allows you to edit multiple order lists that share the same sequences
+  and sounds. Press `F7` to check it out.
+- Added: Marking and copy/paste functionality in the song list
+- Added: Marking and copy/paste inside sequences (even across boundaries)
+- Added: [#74](https://github.com/Chordian/sidfactory2/issues/74) Configurable
+  virtual piano keyboard layout. (Thanks to Wolfgang Kreutz for requesting)
+- Added: [#119](https://github.com/Chordian/sidfactory2/issues/119) A song can
+  be made to stop playing instead of looping.
+- Added: An option to set the emulation sample rate to a user defined value
+  (Thanks to Tammo Hinrichs for implementing)
+- Added: More than 30+ new source tunes by JCH and Vincenzo
+- Fixed: Scrolling in the song list using the mouse wheel
+- Fixed: reSID won't output a click anymore when launching SID Factory II or
+  loading/saving files (Thanks to Tammo Hinrichs for implementing)
+
+### Build 20211230
+
+- Added: You can now add labels for song list rows. Left-click to edit a label.
+- Added: Note delay; delay a note by 0-F ticks. This is a feature of the new
+  default driver 11.04
+- Added: An option in the packer to specify the base for zero page addresses
+  that the player uses.
 - Added: Documentation on how to customize configuration using a `user.ini`
-  file. Including a default template `/documentation/user.default.ini`.
-- Added: Configuration option `Window.Scaling` to scale the contents of the
-  window. (Thanks to Matty Seito for suggesting)
-- Added: Configuration options (thanks to Laszlo Vincenzo Vincze for
-  suggesting):
-  - `Editor.Follow.Play` to set default follow play on/off.
-  - `Editor.Sequence.Highlights` to set default sequence highlights on/off.
-  - `Sound.Emulation.Default.Model` to set the default SID model (6581/8580) on
-    startup.
-  - `Sound.Emulation.Default.Region` to set default region (PAL/NTSC) on
-    startup.
+  file. Including a default template in `/documentation/user.default.ini`.
 - Added: Configuration options:
+  - `Window.Scaling` to scale the contents of the window. (Thanks to Matty
+    Seito for suggesting)
+  - `Editor.Driver.Default` to set the default driver that is loaded when
+    starting up the editor.
   - `Editor.Confirm.QuickSave` to enable/disable confirmation dialog on quick
     save.
   - `Sound.Output.Gain` for boosting/lowering output volume of the editor.
@@ -38,15 +108,35 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
     folder shortcuts to the file browser.
   - `Disk.Startup.Folder` to set the default startup folder for the file
     browser.
-- Fixed: [#131](https://github.com/Chordian/sidfactory2/issues/131) SF2 won't
+  - `Editor.Follow.Play` to set default follow play on/off.
+  - `Editor.Sequence.Highlights` to set default sequence highlights on/off.
+  - `Sound.Emulation.8580.FilterCurve` for adjusting the filter of the 8580 model.
+  - `Sound.Emulation.6581.FilterCurve` for adjusting the filter of the 6581 model.
+  - `Sound.Emulation.Default.Model` to set the default SID model (6581/8580) on
+    startup.
+  - `Sound.Emulation.Default.Region` to set default region (PAL/NTSC) on
+    startup.
+- Changed: [#142](https://github.com/Chordian/sidfactory2/issues/142) the
+  list of keycodes that can be used for remapping is complete now. Please note: the names for
+  keycodes starting with `num` are renamed to start with `kp_`.
+- Changed: `macOs` [#146](https://github.com/Chordian/sidfactory2/issues/146) the
+  official macOS distribution is now a universal application, meaning it will
+  run native both on the new M1 (arm64) and the Intel (x86_64) architecture.
+  The architecture the application is running on is reflected in the build
+  number in the lower right corner of the startup screen.
+- Fixed: More accurate clockspeed (Thanks to Lazlo Vincenzo Vincze for
+  reporting)
+- Fixed: `macOs` [#131](https://github.com/Chordian/sidfactory2/issues/131) SF2 won't
   compile on mac with Silicon M1 CPU. (Thanks to Rolf Greven for reporting and
   suggesting the fix)
-- Fixed: [#133](https://github.com/Chordian/sidfactory2/issues/133) Emulation
+- Fixed: `linux` [#133](https://github.com/Chordian/sidfactory2/issues/133) Emulation
   error when starting up linux version. (Thanks to Maurizio Dall'Acqua for
   reporting)
-- Fixed: [#134](https://github.com/Chordian/sidfactory2/issues/134) SF2 won't
-  compile on Arch Linux (Thanks to jansalleine for reporting amd suggesting the
+- Fixed: `linux` [#134](https://github.com/Chordian/sidfactory2/issues/134) SF2 won't
+  compile on Arch Linux (Thanks to jansalleine for reporting and suggesting the
   fix)
+- Fixed: [#137](https://github.com/Chordian/sidfactory2/issues/137) Instability
+  in filter table when jumping to set command in default driver.
 
 ### Build 20210104
 

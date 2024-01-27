@@ -50,14 +50,19 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.SongList.Text.Editing", UserColor::SongListTextEditing, ioViewport, Color::LightGreen);
 			Details::SetUserColor(inConfigFile, "Color.SongList.EventPos", UserColor::SongListEventPos, ioViewport, Color::White);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Values", UserColor::SongListValues, ioViewport, Color::White);
+			Details::SetUserColor(inConfigFile, "Color.SongList.Values.Highlight", UserColor::SongListValuesHighlight, ioViewport, Color::Yellow);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Cursor", UserColor::SongListCursorDefault, ioViewport, Color::DarkBlue);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Cursor.Focus", UserColor::SongListCursorFocus, ioViewport, Color::Blue);
+			Details::SetUserColor(inConfigFile, "Color.SongList.AreaMarking", UserColor::SongListAreaMarking, ioViewport, Color::DarkBlue);
+			Details::SetUserColor(inConfigFile, "Color.SongList.AreaMarking.Focus", UserColor::SongListAreaMarkingFocus, ioViewport, Color::DarkBlue);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Playback.Marker", UserColor::SongListPlaybackMarker, ioViewport, Color::Red);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Loop.Marker", UserColor::SongListLoopMarker, ioViewport, Color::LightGreen);
 			Details::SetUserColor(inConfigFile, "Color.Track.Background", UserColor::TrackBackground, ioViewport, Color::DarkBlue);
 			Details::SetUserColor(inConfigFile, "Color.Track.Background.FocusLine", UserColor::TrackBackgroundFocusLine, ioViewport, Color::DarkerBlue);
 			Details::SetUserColor(inConfigFile, "Color.Track.BackgroundMuted", UserColor::TrackBackgroundMuted, ioViewport, Color::DarkGrey);
 			Details::SetUserColor(inConfigFile, "Color.Track.BackgroundMuted.FocusLine", UserColor::TrackBackgroundMutedFocusLine, ioViewport, Color::DarkerGrey);
+			Details::SetUserColor(inConfigFile, "Color.Track.MarkingArea", UserColor::TrackMarkingArea, ioViewport, Color::DarkerBlue);
+			Details::SetUserColor(inConfigFile, "Color.Track.MarkingAreaMuted", UserColor::TrackMarkingAreaMuted, ioViewport, Color::DarkerGrey);
 			Details::SetUserColor(inConfigFile, "Color.Track.Name", UserColor::TrackName, ioViewport, Color::Grey);
 			Details::SetUserColor(inConfigFile, "Color.Track.Name.Selected", UserColor::TrackNameSelected, ioViewport, Color::White);
 			Details::SetUserColor(inConfigFile, "Color.Track.Name.Focus", UserColor::TrackNameFocus, ioViewport, Color::LighterGrey);
@@ -98,6 +103,15 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.Orderlist.Value", UserColor::OrderlistValue, ioViewport, Color::LightGrey);
 			Details::SetUserColor(inConfigFile, "Color.Orderlist.Value.Loop.Marker", UserColor::OrderlistValueLoopMarker, ioViewport, Color::LightGreen);
 			Details::SetUserColor(inConfigFile, "Color.Orderlist.Value.Input", UserColor::OrderlistValueInput, ioViewport, Color::White);
+
+			Details::SetUserColor(inConfigFile, "Color.Visualizer.Area", UserColor::VisualizerArea, ioViewport, Color::DarkestGrey);
+			Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.Background", UserColor::VisualizerBarBackground, ioViewport, Color::DarkGrey);
+			Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.BackgroundMuted", UserColor::VisualizerBarBackgroundMuted, ioViewport, Color::DarkerGrey);
+      		Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.BackgroundFilteredChannel", UserColor::VisualizerBarBackgroundFilteredChannel, ioViewport, Color::Grey);
+      		Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.Separator", UserColor::VisualizerBarSeparator, ioViewport, Color::DarkestGrey);
+      		Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.FillColorPulse", UserColor::VisualizerBarFillColorPulse, ioViewport, Color::White);
+      		Details::SetUserColor(inConfigFile, "Color.Visualizer.Bar.FillColorFilter", UserColor::VisualizerBarFillColorFilter, ioViewport, Color::LightGrey);
+
 			Details::SetUserColor(inConfigFile, "Color.Dialog.Background", UserColor::DialogBackground, ioViewport, Color::DarkRed);
 			Details::SetUserColor(inConfigFile, "Color.Dialog.Header", UserColor::DialogHeader, ioViewport, Color::Red);
 			Details::SetUserColor(inConfigFile, "Color.Dialog.Header.Text", UserColor::DialogHeaderText, ioViewport, Color::White);
@@ -118,7 +132,7 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.ScreenEdit.InfoRect.Text.Time.PlaybackState", UserColor::ScreenEditInfoRectTextTimePlaybackState, ioViewport, Color::DarkerGrey);
 			Details::SetUserColor(inConfigFile, "Color.ScreenEdit.Table.Headline", UserColor::ScreenEditTableHeadline, ioViewport, Color::LightBlue);
 			Details::SetUserColor(inConfigFile, "Color.ScreenEdit.Table.Headline.HotkeyLetter", UserColor::ScreenEditTableHeadlineHotkeyLetter, ioViewport, Color::White);
-			Details::SetUserColor(inConfigFile, "Color.Converters.Backgroud", UserColor::ConvertersBackground, ioViewport, Color::DarkerGrey);
+			Details::SetUserColor(inConfigFile, "Color.Converters.Background", UserColor::ConvertersBackground, ioViewport, Color::DarkerGrey);
 			Details::SetUserColor(inConfigFile, "Color.Console.Background", UserColor::ConsoleBackground, ioViewport, Color::Black);
 			Details::SetUserColor(inConfigFile, "Color.Console.Text", UserColor::ConsoleText, ioViewport, Color::LightGreen);
 

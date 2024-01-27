@@ -43,7 +43,7 @@ namespace Editor
 
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
-		void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
+		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;
 		
 		void Refresh(const DisplayState& inDisplayState) override;
 		void HandleDataChange() override;
@@ -62,11 +62,13 @@ namespace Editor
 		const int GetSelectedRow() const;
 		SelectedRowChangedEvent& GetSelectedRowChangedEvent();
 
+		DataSourceTable* GetDataSource();
 		const DataSourceTable* GetDataSource() const;
 
 		void DoCursorUp();
 		void DoCursorDown();
 
+		void SetSelectedRow(int inRow);
 	private:
 		void DoScrollWheel(const Foundation::Mouse& inMouse, CursorControl* inCursorControl);
 		void AdjustVisibleArea();
@@ -88,12 +90,14 @@ namespace Editor
 
 		int GetLastUnusedRow();
 
-		void SetRow(int inRow);
 
 	protected:
 		Foundation::TextColoring GetTextColoring(int inDataOffset, const Foundation::TextColoring& inBaseTextColoring) const;
 
+		const bool m_HighlightRowOfSelectedSongIndex;
+		const bool m_IndexAsContinuousMemory;
 		bool m_InsertDeleteEnabled;
+
 		unsigned int m_TopRow;
 
 		int m_CursorX;
@@ -107,7 +111,6 @@ namespace Editor
 		SelectedRowChangedEvent m_SelectedRowChangedEvent;
 
 		DriverInfo::TableActionRules m_ActionRules;
-		bool m_IndexAsContinuousMemory;
 
 		std::function<void(int, int)> m_ActionRuleExecutionCallback;
 		std::function<void(int, int, int)> m_InsertDeleteCallback;

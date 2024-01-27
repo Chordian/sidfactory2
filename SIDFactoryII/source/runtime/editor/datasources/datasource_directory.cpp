@@ -1,7 +1,7 @@
 #include "datasource_directory.h"
 #include "foundation/platform/iplatform.h"
-#include "utils/configfile.h"
 #include "utils/config/configtypes.h"
+#include "utils/configfile.h"
 #include <cctype>
 
 using namespace fs;
@@ -23,11 +23,12 @@ namespace Editor
 
 		auto user_folders = GetConfigurationValues<ConfigValueString>(inConfigFile, "Disk.UserFolders", {});
 		auto user_folders_alias = GetConfigurationValues<ConfigValueString>(inConfigFile, "Disk.UserFolders.Aliases", {});
+		m_ExtensionFilter = GetConfigurationValues<ConfigValueString>(inConfigFile, "Disk.Hide.Extensions", {});
 
 		const size_t user_folder_count = user_folders.size();
 		const bool has_aliases = user_folders_alias.size() == user_folder_count;
 
-		for (size_t i = 0; i<user_folder_count; ++i)
+		for (size_t i = 0; i < user_folder_count; ++i)
 		{
 			const std::string& user_folder = inPlatform->OS_ParsePath(user_folders[i]);
 			path user_folder_path = path(user_folder);
@@ -35,7 +36,7 @@ namespace Editor
 			if (is_directory(user_folder_path))
 				m_Drives.push_back({ user_folder, has_aliases ? user_folders_alias[i] : "" });
 		}
-        
+
 		GenerateData();
 	}
 
@@ -47,7 +48,7 @@ namespace Editor
 		FOUNDATION_ASSERT(inIndex < static_cast<int>(m_List.size()));
 
 		const DirectoryEntry& entry = (*this)[inIndex];
-        std::error_code error_code;
+		std::error_code error_code;
 
 		switch (entry.m_Type)
 		{
@@ -57,11 +58,11 @@ namespace Editor
 
 		case DirectoryEntry::Drive:
 		case DirectoryEntry::Folder:
-            if(m_Platform->Storage_SetCurrentPath(entry.m_Path.string()))
-            {
-                GenerateData();
-                return SelectResult::SelectFolderSucceeded;
-            }
+			if (m_Platform->Storage_SetCurrentPath(entry.m_Path.string()))
+			{
+				GenerateData();
+				return SelectResult::SelectFolderSucceeded;
+			}
 
 			return SelectResult::SelectFolderFailed;
 		case DirectoryEntry::File:
@@ -79,11 +80,11 @@ namespace Editor
 
 	bool DataSourceDirectory::Back()
 	{
-        std::error_code error_code;
-        
+		std::error_code error_code;
+
 		std::string current_path_string = current_path().string();
 		if (m_Platform->Storage_SetCurrentPath(current_path().parent_path().string()))
- 		{
+		{
 			GenerateData();
 
 			for (size_t i = 0; i < m_List.size(); ++i)
@@ -145,7 +146,7 @@ namespace Editor
 		fs::path current_path = fs::current_path();
 
 		const bool is_root = current_path.parent_path() == current_path;
-		if(!is_root)
+		if (!is_root)
 			m_List.push_back({ DirectoryEntry::Back, ".." });
 
 		// Iterate entries in current directory and add folder to the list and cache files for adding afterward
@@ -153,13 +154,30 @@ namespace Editor
 		std::vector<path> files;
 		for (auto& path : directory_iterator)
 		{
-            if(!m_Platform->Storage_IsSystemFile(path.path().string()))
-            {
-                std::error_code error_code;
-                if (is_directory(path, error_code))
-                    m_List.push_back({ DirectoryEntry::Folder, path });
+			if (!m_Platform->Storage_IsSystemFile(path.path().string()))
+			{
+				std::error_code error_code;
+				if (is_directory(path, error_code))
+					m_List.push_back({ DirectoryEntry::Folder, path });
 				else if (is_regular_file(path, error_code))
-					files.push_back(path);
+				{
+					std::string extension = fs::path(path).extension().string();
+
+					// filter out files with extensions on the hide list
+					bool showFile = true;
+					for (size_t i = 0; i < m_ExtensionFilter.size(); ++i)
+					{
+						if (extension.compare(m_ExtensionFilter[i]) == 0)
+						{
+							showFile = false;
+						}
+					}
+
+					if (showFile)
+					{
+						files.push_back(path);
+					}
+				}
 			}
 		}
 
@@ -169,30 +187,29 @@ namespace Editor
 		// Sort the list
 		std::sort(m_List.begin(), m_List.end(), [](const DirectoryEntry& inEntry1, const DirectoryEntry& inEntry2)
 			{
-				// If the types are the same, lets check the filenames against eachother (and ignore case .. which means a transformation per comparasin, not fast.. but who cares! This is disk operation stuff)
-				if (inEntry1.m_Type == inEntry2.m_Type)
+			// If the types are the same, lets check the filenames against each other (and ignore case .. which means a transformation per comparison, not fast.. but who cares! This is disk operation stuff)
+			if (inEntry1.m_Type == inEntry2.m_Type)
+			{
+				if (!(inEntry1.m_DisplayName.empty() ^ inEntry2.m_DisplayName.empty()))
 				{
-					if (!(inEntry1.m_DisplayName.empty() ^ inEntry2.m_DisplayName.empty()))
-					{
-						std::string name1 = inEntry1.m_DisplayName.empty() ? inEntry1.m_Path.string() : inEntry1.m_DisplayName;
-						std::string name2 = inEntry2.m_DisplayName.empty() ? inEntry2.m_Path.string() : inEntry2.m_DisplayName;
+					std::string name1 = inEntry1.m_DisplayName.empty() ? inEntry1.m_Path.string() : inEntry1.m_DisplayName;
+					std::string name2 = inEntry2.m_DisplayName.empty() ? inEntry2.m_Path.string() : inEntry2.m_DisplayName;
 
-						std::transform(name1.begin(), name1.end(), name1.begin(),
-							[](char c) { return std::tolower(c); });
-						std::transform(name2.begin(), name2.end(), name2.begin(),
-							[](char c) { return std::tolower(c); });
+					std::transform(name1.begin(), name1.end(), name1.begin(),
+						[](char c) { return std::tolower(c); });
+					std::transform(name2.begin(), name2.end(), name2.begin(),
+						[](char c) { return std::tolower(c); });
 
-						return name1 < name2;
-					}
-					else
-					{
-						// If inEntry2 is not using the display name, entry 1 is and vice versa!
-						return inEntry2.m_DisplayName.empty();
-					}
+					return name1 < name2;
 				}
+				else
+				{
+					// If inEntry2 is not using the display name, entry 1 is and vice versa!
+					return inEntry2.m_DisplayName.empty();
+				}
+			}
 
-				// Otherwise just prefer one type over the other
-				return inEntry1.m_Type < inEntry2.m_Type;
-			});
+			// Otherwise just prefer one type over the other
+			return inEntry1.m_Type < inEntry2.m_Type; });
 	}
 }

@@ -1,5 +1,6 @@
 #include "runtime/editor/components/component_orderlistoverview.h"
 #include "runtime/editor/components/utils/text_editing_data_source_table_text.h"
+#include "runtime/editor/components/utils/orderlist_utils.h"
 #include "runtime/editor/cursor_control.h"
 #include "runtime/editor/display_state.h"
 #include "runtime/editor/datasources/datasource_orderlist.h"
@@ -7,11 +8,18 @@
 #include "runtime/editor/datasources/datasource_table_text.h"
 #include "runtime/editor/undo/undo.h"
 #include "runtime/editor/undo/undo_componentdata/undo_componentdata_table_text.h"
+#include "runtime/editor/datacopy/copypaste.h"
+#include "runtime/editor/datacopy/datacopy_orderlist.h"
+#include "runtime/editor/undo/undo_componentdata/undo_componentdata_orderlist_overview.h"
 #include "foundation/graphics/textfield.h"
 #include "foundation/input/keyboard.h"
 #include "foundation/input/mouse.h"
 #include "foundation/base/assert.h"
+#include "runtime/editor/driver/driver_state.h"
+#include "utils/keyhook.h"
+#include "utils/keyhookstore.h"
 #include "utils/usercolors.h"
+#include "utils/logging.h"
 
 using namespace Foundation;
 using namespace Utility;
@@ -38,8 +46,11 @@ namespace Editor
 		int inGroupID, 
 		Undo* inUndo,
 		TextField* inTextField,
+		const EditState& inEditState,
+		const DriverState& inDriverState,
+		const Utility::KeyHookStore& inKeyHookStore,
 		std::shared_ptr<DataSourceTableText> inDataSourceTableText,
-		const std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
+		std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
 		const std::vector<std::shared_ptr<DataSourceSequence>>& inSequenceList,
 		int inX,
 		int inY,
@@ -47,6 +58,8 @@ namespace Editor
 		std::function<void(int, bool)> inSetTrackEventPosFunction
 	)
 		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, ComponentOrderListOverview::GetWidthFromChannelCount(static_cast<int>(inOrderLists.size())), inHeight)
+		, m_EditState(inEditState)
+		, m_DriverState(inDriverState)
 		, m_TableText(inDataSourceTableText)
 		, m_OrderLists(inOrderLists)
 		, m_SequenceList(inSequenceList)
@@ -58,6 +71,7 @@ namespace Editor
 		, m_IsMarkingArea(false)
 		, m_TopPosition(0)
 		, m_SetTrackEventPosFunction(inSetTrackEventPosFunction)
+		, m_InvokeOrderListChangedEventChannel(-1)
 	{
 		m_TextEditingDataSourceTableText = std::make_unique<TextEditingDataSourceTableText>(
 			inUndo, 
@@ -66,6 +80,8 @@ namespace Editor
 			inDataSourceTableText, 
 			ms_TextWidth,
 			true);
+
+		ConfigureKeyHooks(inKeyHookStore);
 	}
 
 
@@ -79,6 +95,8 @@ namespace Editor
 	{
 		// Set has control, but do not enaBle the cursor for this component, because it doesn't need it yet!
 		m_HasControl = true;
+
+		UpdateHoveredSequence();
 		m_RequireRefresh = true;
 	}
 
@@ -97,6 +115,12 @@ namespace Editor
 
 			for (const auto& key_event : inKeyboard.GetKeyEventList())
 			{
+				if (Utility::ConsumeInputKeyHooks(key_event, inKeyboard.GetModiferMask(), m_KeyHooks, KeyHookContext({ inComponentsManager })))
+				{
+					consume = true;
+					continue;
+				}
+
 				switch (key_event)
 				{
 				case SDLK_DOWN:
@@ -217,7 +241,7 @@ namespace Editor
 					if (m_IsMarkingArea)
 						DoCancelMarking();
 
-					if (isOnlyShiftDown)
+					if (inKeyboard.IsModifierDown(Keyboard::Shift) || inKeyboard.IsModifierDown(Keyboard::Control))
 					{
 						if (m_CursorY >= 0 && m_CursorY < static_cast<int>(m_Overview.size()) && m_SetTrackEventPosFunction)
 						{
@@ -227,12 +251,9 @@ namespace Editor
 					}
 					else if (isNoModifierDown)
 					{
-						if (m_CursorX == m_MaxCursorX)
-						{
-							DoStartEditText(inCursorControl);
-							m_RequireRefresh = true;
-							consume = true;
-						}
+						DoStartEditText(inCursorControl);
+						m_RequireRefresh = true;
+						consume = true;
 					}
 					break;
 				case SDLK_BACKSPACE:
@@ -277,7 +298,16 @@ namespace Editor
 								consume = true;
 							}
 						}
-						else if (isOnlyShiftDown)
+					}
+					break;
+				case SDLK_INSERT:
+
+					if (m_CursorX == m_MaxCursorX)
+					{
+						if (m_IsMarkingArea)
+							DoCancelMarking();
+
+						if (isNoModifierDown)
 						{
 							DoInsertTextRow(m_CursorY);
 
@@ -288,6 +318,12 @@ namespace Editor
 					break;
 				}
 			}
+		}
+
+		if(consume)
+		{
+			if(UpdateHoveredSequence())
+				m_RequireRefresh = true;
 		}
 
 		if (m_TextEditingDataSourceTableText->RequireRefresh())
@@ -317,6 +353,7 @@ namespace Editor
 				m_RequireRefresh = true;
 
 				consume = true;
+				UpdateHoveredSequence();
 			}
 			else if (inMouse.IsButtonPressed(Mouse::Left))
 			{
@@ -335,17 +372,25 @@ namespace Editor
 				{
 					if (IsEditingText() && m_CursorY != m_TextEditingDataSourceTableText->GetTextLineIndex())
 						DoStopEditText(inCursorControl, false);
-
-					const int cursor_pos = local_cell_position.m_X - text_x;
-
-					m_TextEditingDataSourceTableText->TrySetCursorPosition(cursor_pos);
+					if (m_IsMarkingArea)
+						DoCancelMarking();
 
 					m_CursorX = m_MaxCursorX;
+
+					if (m_CursorY <= m_MaxCursorY)
+					{
+						DoStartEditText(inCursorControl);
+
+						const int cursor_pos = local_cell_position.m_X - text_x;
+						m_TextEditingDataSourceTableText->TrySetCursorPosition(cursor_pos);
+					}
 				}
 				else
 				{
 					if (IsEditingText())
 						DoStopEditText(inCursorControl, false);
+					if (m_IsMarkingArea)
+						DoCancelMarking();
 
 					for (int i = m_MaxCursorX; i >= 0; --i)
 					{
@@ -359,21 +404,26 @@ namespace Editor
 				}
 
 				consume = true;
+				UpdateHoveredSequence();
+
 			}
 		}
 		
-		DoMouseWheel(inMouse);
+		if (!IsEditingText())
+			DoMouseWheel(inMouse);
 
 		return consume;
 	}
 
 
-	void ComponentOrderListOverview::ConsumeNonExclusiveInput(const Mouse& inMouse)
+	bool ComponentOrderListOverview::ConsumeNonExclusiveInput(const Mouse& inMouse)
 	{
 		if (!m_HasControl)
 		{
 			DoMouseWheel(inMouse);
 		}
+
+		return false;
 	}
 
 
@@ -382,6 +432,7 @@ namespace Editor
 	{
 		if (m_RequireRefresh)
 		{
+			const bool is_playing = m_DriverState.GetPlayState() == DriverState::PlayState::Playing;
 			RebuildOverview();
 
 			m_TextField->Clear(m_Rect);
@@ -418,7 +469,7 @@ namespace Editor
 					marking_rect.m_Position.m_Y += adjusted_top_marking;
 					marking_rect.m_Dimensions = { 2, marking_height };
 
-					m_TextField->ColorAreaBackground(ToColor(m_HasControl ? UserColor::SongListCursorFocus : UserColor::SongListCursorDefault), marking_rect);
+					m_TextField->ColorAreaBackground(ToColor(m_HasControl ? UserColor::SongListAreaMarkingFocus : UserColor::SongListAreaMarking), marking_rect);
 				}
 			}
 
@@ -443,11 +494,12 @@ namespace Editor
 			}
 
 			int local_y = 0;
-			int overview_list_size = static_cast<int>(m_Overview.size());
-
-			Color event_pos_values = ToColor(UserColor::SongListEventPos);
-
-			for (int i=m_TopPosition; i < overview_list_size && local_y < m_Dimensions.m_Height; ++i)
+			
+			const int overview_list_size = static_cast<int>(m_Overview.size());
+			const Color event_pos_values = ToColor(UserColor::SongListEventPos);
+			const int cursor_screen_y = cursor_position + m_Position.m_Y;
+			
+			for (int i = m_TopPosition; i < overview_list_size && local_y < m_Dimensions.m_Height; ++i)
 			{
 				OverviewEntry& entry = m_Overview[i];
 
@@ -465,12 +517,26 @@ namespace Editor
 
 				x += 6;
 
-				for (int sequence_index : entry.m_SequenceIndices)
+				for (auto& sequence_entry : entry.m_SequenceEntries)
 				{
+					int sequence_index = sequence_entry.m_Index;
 					if (sequence_index >= 0)
 					{
-						const Color color = sequence_index < 0x100 ? ToColor(UserColor::SongListValues) : ToColor(UserColor::SongListLoopMarker);
-						m_TextField->PrintHexValue(x, y, color, is_uppercase, static_cast<unsigned char>(sequence_index & 0x0ff));
+						const unsigned char sequence_value = static_cast<unsigned char>(sequence_index & 0x0ff);
+
+						if(m_EditState.IsSequenceHighlightingEnabled()
+							&& (!(is_playing && m_EditState.IsFollowPlayMode()) || m_HasControl)
+							&& (y != cursor_screen_y || !m_HasControl)
+							&& m_HighlitSequenceValue.HasValue()
+							&& m_HighlitSequenceValue.GetValue() == sequence_value)
+						{
+							m_TextField->PrintHexValue(x, y, ToColor(UserColor::SongListValuesHighlight), is_uppercase, sequence_value);
+						}
+						else
+						{
+							const Color color = sequence_index < 0x100 ? ToColor(UserColor::SongListValues) : ToColor(UserColor::SongListLoopMarker);
+							m_TextField->PrintHexValue(x, y, color, is_uppercase, sequence_value);
+						}
 					}
 
 					x += 3;
@@ -507,12 +573,19 @@ namespace Editor
 			m_TextEditingDataSourceTableText->ApplyDataChange();
 
 		m_HasDataChange = false;
+
+		if (m_InvokeOrderListChangedEventChannel >= 0)
+		{
+			m_OrderListChangedEvent.Execute(static_cast<unsigned int>(m_InvokeOrderListChangedEventChannel));
+			m_InvokeOrderListChangedEventChannel = -1;
+		}
 	}
 
 	
 	void ComponentOrderListOverview::PullDataFromSource(const bool inFromUndo)
 	{
 		m_TableText->PullDataFromSource();
+		m_RequireRefresh |= inFromUndo;
 	}
 
 
@@ -521,6 +594,19 @@ namespace Editor
 		return IsEditingText();
 	}
 
+
+	bool ComponentOrderListOverview::IsFastForwardAllowed() const
+	{
+		return !IsEditingText();
+	}
+
+	void ComponentOrderListOverview::ClearHasControl(CursorControl& inCursorControl)
+	{
+		if(IsEditingText())
+			DoStopEditText(inCursorControl, false);
+
+		ComponentBase::ClearHasControl(inCursorControl);
+	}
 
 	void ComponentOrderListOverview::ExecuteInsertDeleteRule(const DriverInfo::TableInsertDeleteRule& inRule, int inSourceTableID, int inIndexPre, int inIndexPost)
 	{
@@ -542,6 +628,13 @@ namespace Editor
 			m_RequireRefresh = true;
 		}
 	}
+
+
+	ComponentOrderListOverview::OrderListChangedEvent& ComponentOrderListOverview::GetOrderListChangedEvent()
+	{
+		return m_OrderListChangedEvent;
+	}
+
 
 
 	void ComponentOrderListOverview::DoMouseWheel(const Foundation::Mouse& inMouse)
@@ -699,7 +792,7 @@ namespace Editor
 
 		if (inRow < size && size > 1)
 		{
-			AddUndo();
+			AddUndoTextStep();
 
 			for (int i = static_cast<int>(size) - 2; i >= static_cast<int>(inRow); --i)
 				(*m_TableText)[i + 1] = (*m_TableText)[i];
@@ -707,7 +800,7 @@ namespace Editor
 			(*m_TableText)[inRow] = "";
 
 			m_TableText->PushDataToSource();
-			AddMostRecentEdit();
+			AddMostRecentTextEdit();
 
 			m_HasDataChange = true;
 
@@ -724,7 +817,7 @@ namespace Editor
 
 		if (inRow < size && inRow >= 0 && size > 1)
 		{
-			AddUndo();
+			AddUndoTextStep();
 
 			for (unsigned int i = inRow; i < size - 1; ++i)
 				(*m_TableText)[i] = (*m_TableText)[i + 1];
@@ -732,7 +825,7 @@ namespace Editor
 			(*m_TableText)[size - 1] = "";
 
 			m_TableText->PushDataToSource();
-			AddMostRecentEdit();
+			AddMostRecentTextEdit();
 			
 			m_HasDataChange = true;
 
@@ -740,6 +833,120 @@ namespace Editor
 		}
 
 		return false;
+	}
+
+
+	bool ComponentOrderListOverview::DoCopy()
+	{
+		if (!m_IsMarkingArea)
+			DoBeginMarking();
+
+		{
+			const int channel_count = static_cast<int>(m_OrderLists.size());
+			const int channel = m_MarkingX;
+
+			if (channel < channel_count)
+			{
+				std::vector<DataSourceOrderList::Entry> order_list_copy;
+
+				int marking_top = std::min(m_MarkingFromY, m_MarkingToY);
+				int marking_bottom = std::max(m_MarkingFromY, m_MarkingToY);
+
+				for (int i = marking_top; i <= marking_bottom; ++i)
+				{
+					if (static_cast<int>(m_Overview.size()) <= i)
+						break;
+
+					const auto& entry = m_Overview[i];
+
+					std::string output;
+
+					if (entry.m_SequenceEntries[channel].m_Index >= 0)
+					{
+						const auto transpose = entry.m_SequenceEntries[channel].m_Transpose;
+						const auto index = entry.m_SequenceEntries[channel].m_Index;
+
+						FOUNDATION_ASSERT(transpose < 0x100);
+
+						// Logging
+						output += std::to_string(channel + 1) + ": " + std::to_string(transpose) + " - " + std::to_string(index & 0xff);
+						Logging::instance().Info(output.c_str());
+
+						order_list_copy.push_back({ static_cast<unsigned char>(transpose), static_cast<unsigned char>(index & 0xff) });
+					}
+				}
+
+				CopyPaste::Instance().SetData(new DataCopyOrderList(order_list_copy));
+			}
+		}
+
+		return true;
+	}
+
+
+	bool ComponentOrderListOverview::DoPaste()
+	{
+		if (CopyPaste::Instance().HasData<DataCopyOrderList>())
+		{
+			const int channel_count = m_OrderLists.size();
+			const int channel = m_CursorX;
+
+			if (channel < channel_count)
+			{
+				int current_event_pos = m_Overview[m_CursorY].m_EventPos;
+
+				std::shared_ptr<DataSourceOrderList>& order_list = m_OrderLists[channel];
+				const int orderlist_length = order_list->GetLength();
+
+				int order_list_destination_index = [&](const int inCurrentEventPos)
+				{
+					int event_pos = 0;
+
+					for (int i = 0; i < orderlist_length; ++i)
+					{
+						if (inCurrentEventPos == event_pos)
+							return i;
+
+						const unsigned char current_transposition = (*order_list)[i].m_Transposition;
+						if (current_transposition >= 0xfe)
+							return -1;
+
+						const unsigned char current_sequence_index = (*order_list)[i].m_SequenceIndex;
+						FOUNDATION_ASSERT(current_sequence_index < 0x80);
+
+						const int sequence_length = static_cast<int>(m_SequenceList[current_sequence_index]->GetLength());
+						if (event_pos < inCurrentEventPos && event_pos + sequence_length > inCurrentEventPos)
+							return i + 1;
+
+						event_pos += sequence_length;
+					}
+
+					return orderlist_length;
+				}(current_event_pos);
+
+				if (order_list_destination_index < 0)
+					return false;
+
+				AddUndoSequenceStep(channel);
+
+				const DataCopyOrderList& order_list_copy = *CopyPaste::Instance().GetData<DataCopyOrderList>();
+
+				for (int i = 0; i < static_cast<int>(order_list_copy.GetEntryCount()); ++i)
+				{
+					if (!order_list->CanIncreaseSize())
+						break;
+
+					InsertSequenceIndexInOrderListAtIndex(order_list, i + order_list_destination_index, order_list_copy[i]);					
+				}
+
+				// Insert and raise events
+				m_OrderListChangedEvent.Execute(channel);
+
+				m_RequireRefresh = true;
+			}
+		}
+
+		return true;
 	}
 
 
@@ -751,6 +958,7 @@ namespace Editor
 
 		m_MarkingX = m_CursorX;
 		m_MarkingFromY = m_CursorY;
+		m_MarkingToY = m_CursorY;
 	}
 
 
@@ -784,7 +992,7 @@ namespace Editor
 	}
 
 
-	void ComponentOrderListOverview::AddUndo()
+	void ComponentOrderListOverview::AddUndoTextStep()
 	{
 		const int count = m_TableText->GetSize();
 
@@ -798,11 +1006,11 @@ namespace Editor
 		undo_data->m_ComponentGroupID = m_ComponentGroupID;
 		undo_data->m_TextLines = text_lines;
 
-		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
+		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndoTextEdit(inData, inCursorControl); });
 	}
 
 
-	void ComponentOrderListOverview::AddMostRecentEdit()
+	void ComponentOrderListOverview::AddMostRecentTextEdit()
 	{
 		const int count = m_TableText->GetSize();
 
@@ -816,12 +1024,10 @@ namespace Editor
 		undo_data->m_ComponentGroupID = m_ComponentGroupID;
 		undo_data->m_TextLines = text_lines;
 
-		m_Undo->AddMostRecentEdit(true, undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
+		m_Undo->AddMostRecentEdit(true, undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndoTextEdit(inData, inCursorControl); });
 	}
 
-
-
-	void ComponentOrderListOverview::OnUndo(const UndoComponentData& inData, CursorControl& inCursorControl)
+	void ComponentOrderListOverview::OnUndoTextEdit(const UndoComponentData& inData, CursorControl& inCursorControl)
 	{
 		const UndoComponentDataTableText& undo_data = static_cast<const UndoComponentDataTableText&>(inData);
 
@@ -838,6 +1044,46 @@ namespace Editor
 		m_RequireRefresh = true;
 	}
 
+
+	void ComponentOrderListOverview::OnUndoSequenceEdit(const UndoComponentData& inData, CursorControl& inCursorControl)
+	{
+		const UndoComponentDataOrderListOverview& undo_data = static_cast<const UndoComponentDataOrderListOverview&>(inData);
+
+		m_CursorX = undo_data.m_CursorX;
+		m_CursorY = undo_data.m_CursorY;
+		m_TopPosition = undo_data.m_TopPosition;
+
+		m_HasDataChange = true;
+		m_RequireRefresh = true;
+
+		m_InvokeOrderListChangedEventChannel = static_cast<int>(undo_data.m_ModifiedChannel);
+	}
+
+
+	void ComponentOrderListOverview::AddUndoSequenceStep(unsigned int inChannel)
+	{
+		std::shared_ptr<UndoComponentDataOrderListOverview> undo_data = std::make_shared<UndoComponentDataOrderListOverview>();
+
+		undo_data->m_ComponentGroupID = m_ComponentGroupID;
+		undo_data->m_ComponentID = m_ComponentID;
+		undo_data->m_TopPosition = m_TopPosition;
+		undo_data->m_CursorX = m_CursorX;
+		undo_data->m_CursorY = m_CursorY;
+		undo_data->m_ModifiedChannel = inChannel;
+
+		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndoSequenceEdit(inData, inCursorControl); });
+	}
+
+
+	void ComponentOrderListOverview::AddMostRecentSequenceEdit()
+	{
+		std::shared_ptr<UndoComponentDataOrderListOverview> undo_data = std::make_shared<UndoComponentDataOrderListOverview>();
+
+		undo_data->m_ComponentGroupID = m_ComponentGroupID;
+		undo_data->m_ComponentID = m_ComponentID;
+		undo_data->m_CursorX = m_CursorX;
+		undo_data->m_CursorY = m_CursorY;
+	}
 
 
 	bool ComponentOrderListOverview::IsEditingText() const
@@ -874,6 +1120,7 @@ namespace Editor
 		return Foundation::Point(m_Position.m_X + m_Rect.m_Dimensions.m_Width - ms_TextWidth, m_Position.m_Y + m_CursorY - m_TopPosition);
 	}
 
+
 	void ComponentOrderListOverview::RebuildOverview()
 	{
 		m_Overview.clear();
@@ -909,22 +1156,22 @@ namespace Editor
 
 					if (!is_end)
 					{
-						if(orderlist_index == loop_index)
-							entry.m_SequenceIndices.push_back(order_list_entry.m_SequenceIndex | 0x100);
+						if (orderlist_index == loop_index)
+							entry.m_SequenceEntries.push_back({ order_list_entry.m_Transposition, order_list_entry.m_SequenceIndex | 0x100 });
 						else
-							entry.m_SequenceIndices.push_back(order_list_entry.m_SequenceIndex);
+							entry.m_SequenceEntries.push_back({ order_list_entry.m_Transposition, order_list_entry.m_SequenceIndex });
 
 						orderlist_event_pos[i] += m_SequenceList[order_list_entry.m_SequenceIndex]->GetLength();
 						orderlist_indices[i]++;
 					}
 					else
 					{
-						entry.m_SequenceIndices.push_back(-1);
+						entry.m_SequenceEntries.push_back({ -1, -1 });
 						orderlist_event_pos[i] = -1;
 					}
 				}
 				else 
-					entry.m_SequenceIndices.push_back(-1);
+					entry.m_SequenceEntries.push_back({ -1, -1 });
 			}
 
 			m_Overview.push_back(entry);
@@ -952,5 +1199,60 @@ namespace Editor
 
 		if (m_CursorY > m_MaxCursorY)
 			m_CursorY = m_MaxCursorY;
+	}
+
+	bool ComponentOrderListOverview::UpdateHoveredSequence()
+	{
+		HoveredSequenceValue NewValue;
+
+		if(m_CursorY < static_cast<int>(m_Overview.size()))
+		{
+			const auto& Row = m_Overview[m_CursorY];
+			if(m_CursorX < static_cast<int>(Row.m_SequenceEntries.size()))
+				NewValue.SetValue(Row.m_SequenceEntries[m_CursorX].m_Index);
+		}
+
+		if(m_HighlitSequenceValue != NewValue)
+		{
+			m_HighlitSequenceValue = NewValue;
+			return true;
+		}
+
+		return false;
+	}
+
+	
+	void ComponentOrderListOverview::SetHighlitSequenceValue(int inSequenceIndex)
+	{
+		HoveredSequenceValue NewValue;
+		NewValue.SetValue(inSequenceIndex);
+		
+		if(m_HighlitSequenceValue != NewValue)
+		{
+			m_HighlitSequenceValue = NewValue;
+			m_RequireRefresh = true;
+		}
+	}
+
+	
+
+	void ComponentOrderListOverview::ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore)
+	{
+		using namespace Utility;
+
+		m_KeyHooks.clear();
+
+		m_KeyHooks.push_back({ "Key.OrderListOverview.Copy", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			DoCopy();
+
+			return true;
+		} });
+		m_KeyHooks.push_back({ "Key.OrderListOverview.Paste", inKeyHookStore, [&](KeyHookContext& inKeyHookContext)
+		{
+			DoPaste();
+
+			return true;
+		} });
 	}
 }

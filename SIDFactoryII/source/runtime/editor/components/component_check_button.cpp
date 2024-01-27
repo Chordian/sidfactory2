@@ -89,7 +89,7 @@ namespace Editor
 	}
 
 
-	void ComponentCheckButton::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentCheckButton::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		Foundation::Point cell_position = m_TextField->GetCellPositionFromPixelPosition(inMouse.GetPosition());
 
@@ -99,6 +99,8 @@ namespace Editor
 			m_RequireRefresh = true;
 
 		m_MouseOver = mouse_over;
+	
+		return false;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------------------------------

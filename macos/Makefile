@@ -1,7 +1,11 @@
 # Makefile for macOS version
 
+TARGET=x86_64-apple-macos10.09
+
+BUILD_NR=$(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
+BUILD_NR_TARGET=$(BUILD_NR).$(TARGET)
+
 # Sources
-BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 PROJECT_ROOT=../SIDFactoryII
 SOURCE=$(PROJECT_ROOT)/source
 SRC_TMP=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
@@ -21,17 +25,18 @@ DMG_SIZE=25600
 ICONSET=$(ARTIFACTS_FOLDER)/$(APP_NAME).iconset
 ICONS=$(ARTIFACTS_FOLDER)/$(APP_NAME).icns
 
-CC=MACOSX_DEPLOYMENT_TARGET=10.9 g++
+CC=clang++
 
 CC_FLAGS= \
   -I$(SOURCE) \
 	-I./App/Contents/Frameworks/SDL2.framework/Headers \
-	-D_BUILD_NR=\"$(BUILD_NR)\" \
+	-D_BUILD_NR=\"$(BUILD_NR_TARGET)\" \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \
 	-DNDEBUG \
-	-flto
+	-flto \
+	-target $(TARGET)
 
 LINKER_FLAGS=\
 	-framework SDL2 \
@@ -39,12 +44,8 @@ LINKER_FLAGS=\
 	-F./App/Contents/Frameworks \
 	-lstdc++ \
 	-flto \
-	-Wl,-rpath,@executable_path/../Frameworks
-
-.PHONY: clean
-.PHONY: tmp
-.PHONY: dmg
-.PHONY: app
+	-Wl,-rpath,@executable_path/../Frameworks \
+	-target $(TARGET)
 
 # Rule to compile .o from .cpp
 %.o: %.cpp
@@ -52,7 +53,7 @@ LINKER_FLAGS=\
 
 # Rule to compile .o from .c
 %.o: %.c
-	$(CC) -c $< -o $@
+	$(CC) -target $(TARGET) -c $< -o $@
 
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
@@ -62,22 +63,35 @@ $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)
 	$(CC) $(LINKER_FLAGS) -o $(EXE) $(OBJ)
 	strip $(EXE)
 
+# Make universal binary
+.PHONY: universal
+universal: | clean $(EXE)
+	rm ${OBJ} || true
+	mv $(EXE) $(EXE)_x86
+	make TARGET=arm64-apple-macos11
+	mv $(EXE) $(EXE)_arm
+	lipo -create -output $(EXE) $(EXE)_x86 $(EXE)_arm
+	rm $(EXE)_x86 $(EXE)_arm
+
+.PHONY: app
 app: $(APP)
 
 # ----------------------------------------------------
 
 # Step 1: "make raw" to create a "raw" DMG
+.PHONY: raw
 raw: $(DMG_RAW)
 
 # Step 2: Mount tmp.dmg, lay it out manually, unmount
 
 # Step 3: "make dmg" to finalize the DMG
+.PHONY: dmg
 dmg: $(DMG)
 
 # ---------------------------------------------------
 
 # Package executable and dependencies in macOS App
-$(APP): $(EXE) $(ICONS)
+$(APP): universal $(ICONS)
 	rm -rf $(APP)
 	mkdir -p $(APP)
 	cp -r App/ ${APP}
@@ -113,7 +127,7 @@ $(DMG_CONTENTS): $(APP) $(EXE_SF2C) $(ARTIFACTS_FOLDER)/keys.html
 	cp -r $(PROJECT_ROOT)/drivers ${DMG_CONTENTS}/$(APP_NAME)/drivers
 	ln -s /Applications $(DMG_CONTENTS)/Applications
 
-# Make a temporary DMG. This needs to be layed out nicely by hand before building the final DMG.
+# Make a temporary DMG. This needs to be laid out nicely by hand before building the final DMG.
 $(DMG_RAW): $(DMG_CONTENTS)
 	rm -f $(DMG_RAW)
 	hdiutil create -srcfolder "$<" -volname "$(DMG_TITLE)" -fs HFS+ -fsargs "-c c=64,a=16,e=16" -format UDRW -size $(DMG_SIZE)k $@
@@ -141,6 +155,7 @@ $(ARTIFACTS_FOLDER)/%.html: %.md
 $(ARTIFACTS_FOLDER):
 	mkdir -p $@
 
+.PHONY: clean
 clean:
 	rm ${OBJ} || true
 	rm -rf $(ARTIFACTS_FOLDER)

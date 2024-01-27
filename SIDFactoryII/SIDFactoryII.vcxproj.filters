@@ -458,9 +458,6 @@
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl_windows.cpp">
       <Filter>source\foundation\platform\sdl</Filter>
     </ClCompile>
-    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_macos.cpp">
-      <Filter>source\foundation\platform\sdl</Filter>
-    </ClCompile>
     <ClCompile Include="source\utils\keyhookstore.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
@@ -490,9 +487,6 @@
     </ClCompile>
     <ClCompile Include="source\foundation\platform\platform_factory.cpp">
       <Filter>source\foundation\platform</Filter>
-    </ClCompile>
-    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_linux.cpp">
-      <Filter>source\foundation\platform\sdl</Filter>
     </ClCompile>
     <ClCompile Include="source\libraries\residfp\Dac.cpp">
       <Filter>source\libraries\residfp</Filter>
@@ -610,6 +604,24 @@
     </ClCompile>
     <ClCompile Include="source\runtime\editor\datacopy\copypaste.cpp">
       <Filter>source\runtime\editor\datacopy</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\packer\packing_utils.cpp">
+      <Filter>source\runtime\editor\packer</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_packing_options.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\components\utils\orderlist_utils.cpp">
+      <Filter>source\runtime\editor\components\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_songs.cpp">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_songs.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_move_selection_list.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -985,9 +997,6 @@
     <ClInclude Include="source\foundation\platform\sdl\platform_sdl_windows.h">
       <Filter>source\foundation\platform\sdl</Filter>
     </ClInclude>
-    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_macos.h">
-      <Filter>source\foundation\platform\sdl</Filter>
-    </ClInclude>
     <ClInclude Include="source\utils\keyhookstore.h">
       <Filter>source\utils</Filter>
     </ClInclude>
@@ -1017,9 +1026,6 @@
     </ClInclude>
     <ClInclude Include="source\foundation\platform\platform_factory.h">
       <Filter>source\foundation\platform</Filter>
-    </ClInclude>
-    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_linux.h">
-      <Filter>source\foundation\platform\sdl</Filter>
     </ClInclude>
     <ClInclude Include="source\libraries\residfp\array.h">
       <Filter>source\libraries\residfp</Filter>
@@ -1169,6 +1175,27 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\datacopy\copypaste.h">
       <Filter>source\runtime\editor\datacopy</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_orderlist_overview.h">
+      <Filter>source\runtime\editor\undo\undo_componentdata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\packer\packing_utils.h">
+      <Filter>source\runtime\editor\packer</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_packing_options.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\components\utils\orderlist_utils.h">
+      <Filter>source\runtime\editor\components\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_songs.h">
+      <Filter>source\runtime\editor\auxilarydata</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_songs.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_move_selection_list.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

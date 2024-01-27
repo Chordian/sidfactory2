@@ -3,6 +3,8 @@
 #include "runtime/editor/driver/driver_architecture_sidfactory2.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 
+#include "runtime/emulation/cpumemory.h"
+
 #include "utils/c64file.h"
 
 #include "foundation/base/assert.h"
@@ -132,8 +134,6 @@ namespace Editor
 		return m_DriverArchitecture.get();
 	}
 
-
-
 	//-----------------------------------------------------------------------------------------------
 
 	bool DriverInfo::HasParsedHeaderBlock(DriverInfo::HeaderBlockID inBlockID) const
@@ -189,6 +189,27 @@ namespace Editor
 	const AuxilaryDataCollection& DriverInfo::GetAuxilaryDataCollection() const
 	{
 		return *m_AuxilaryDataCollection;
+	}
+
+
+	//-----------------------------------------------------------------------------------------------
+
+	const DriverInfo::MusicDataMetaDataEmulationAddresses& DriverInfo::GetMusicDataMetaDataEmulationAddresses() const
+	{
+		FOUNDATION_ASSERT(HasParsedHeaderBlock(HeaderBlockID::ID_MusicData));
+		return m_MusicDataMetaDataEmulationAddresses;
+	}
+
+	void DriverInfo::RefreshMusicData(Emulation::CPUMemory& inCPUMemory)
+	{
+		inCPUMemory.Lock();
+
+		m_MusicData.m_SequencePointersLowAddress = inCPUMemory.GetWord(m_MusicDataMetaDataEmulationAddresses.m_EmulationAddressOfSequencePointersLowAddress);
+		m_MusicData.m_SequencePointersHighAddress = inCPUMemory.GetWord(m_MusicDataMetaDataEmulationAddresses.m_EmulationAddressOfSequencePointersHighAddress);
+		m_MusicData.m_OrderListTrack1Address = inCPUMemory.GetWord(m_MusicDataMetaDataEmulationAddresses.m_EmulationAddressOfOrderListTrack1Address);
+		m_MusicData.m_Sequence00Address = inCPUMemory.GetWord(m_MusicDataMetaDataEmulationAddresses.m_EmulationAddressOfSequence00Address);
+
+		inCPUMemory.Unlock();
 	}
 
 
@@ -385,13 +406,18 @@ namespace Editor
 		m_MusicData.m_TrackOrderListPointersHighAddress = inReader.ReadWord();
 
 		m_MusicData.m_SequenceCount = inReader.ReadByte();
+
+		m_MusicDataMetaDataEmulationAddresses.m_EmulationAddressOfSequencePointersLowAddress = inReader.GetReadAddress();
 		m_MusicData.m_SequencePointersLowAddress = inReader.ReadWord();
+		m_MusicDataMetaDataEmulationAddresses.m_EmulationAddressOfSequencePointersHighAddress = inReader.GetReadAddress();
 		m_MusicData.m_SequencePointersHighAddress = inReader.ReadWord();
 
 		m_MusicData.m_OrderListSize = inReader.ReadWord();
+		m_MusicDataMetaDataEmulationAddresses.m_EmulationAddressOfOrderListTrack1Address = inReader.GetReadAddress();
 		m_MusicData.m_OrderListTrack1Address = inReader.ReadWord();
 
 		m_MusicData.m_SequenceSize = inReader.ReadWord();
+		m_MusicDataMetaDataEmulationAddresses.m_EmulationAddressOfSequence00Address = inReader.GetReadAddress();
 		m_MusicData.m_Sequence00Address = inReader.ReadWord();
 	}
 

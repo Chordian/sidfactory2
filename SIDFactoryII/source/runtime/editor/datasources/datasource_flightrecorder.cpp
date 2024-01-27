@@ -38,6 +38,22 @@ namespace Editor
 		return m_FlightRecorder->GetFrame(inIndex);
 	}
 
+	const Emulation::FlightRecorder::Frame& DataSourceFlightRecorder::GetMostRecentFrame() const
+	{
+		FOUNDATION_ASSERT(m_FlightRecorder != nullptr);
+		FOUNDATION_ASSERT(m_FlightRecorder->GetCapacity() > 0);
+
+		return m_FlightRecorder->GetNewestFrame();
+	}
+
+
+	const bool DataSourceFlightRecorder::IsRecording() const
+	{
+		FOUNDATION_ASSERT(m_FlightRecorder != nullptr);
+		return m_FlightRecorder->IsRecording();
+	}
+
+
 
 	const int DataSourceFlightRecorder::GetSize() const
 	{
@@ -54,7 +70,7 @@ namespace Editor
 		if (index >= m_FlightRecorder->GetCapacity())
 			return m_FlightRecorder->GetCapacity() - 1;
 
-		return static_cast<int>(m_FlightRecorder->RecordedFrameCount());
+		return index;
 	}
 }
 

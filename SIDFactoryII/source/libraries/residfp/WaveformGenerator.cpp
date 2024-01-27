@@ -69,7 +69,7 @@ const int DAC_BITS = 12;
  * cycle 2: second phase of the shift, the latched value becomes active in the first
  *          half of the clock and from the second half the register returns to normal operation.
  *
- * When the test or reset lines are active the first phase is executed at every cyle
+ * When the test or reset lines are active the first phase is executed at every cycle
  * until the signal is released triggering the second phase.
  */
 void WaveformGenerator::clock_shift_register(unsigned int bit0)

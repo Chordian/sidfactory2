@@ -6,6 +6,9 @@
 #include "foundation/input/keyboard.h"
 #include "foundation/input/keyboard_utils.h"
 #include "foundation/graphics/textfield.h"
+#include "foundation/base/assert.h"
+
+#include <algorithm>
 
 using namespace Foundation;
 
@@ -18,6 +21,7 @@ namespace Editor
 		, m_CursorPos(0)
 		, m_MaxCursorPos(inDigitCount - 1)
 		, m_TextColor(Color::White)
+		, m_UseRange(false)
 	{
 
 	}
@@ -78,10 +82,24 @@ namespace Editor
 	}
 
 
-	void ComponentHexValueInput::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentHexValueInput::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-
+		return false;
 	}
+
+
+	void ComponentHexValueInput::SetAllowedRange(unsigned int inRangeLow, unsigned int inRangeHigh)
+	{
+		m_UseRange = true;
+		m_RangeLow = inRangeLow;
+		m_RangeHigh = inRangeHigh;
+	}
+
+	void ComponentHexValueInput::ClearAllowedRangeAll()
+	{
+		m_UseRange = false;
+	}
+
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
 
@@ -161,6 +179,8 @@ namespace Editor
 		else
 			(*m_DataSource)[buffer_index] = (current_value & 0xf0) | value;
 
+		ClampRange();
+
 		DoCursorForward();
 
 		m_RequireRefresh = true;
@@ -187,5 +207,31 @@ namespace Editor
 	{
 		if (m_CursorPos > 0)
 			--m_CursorPos;
+	}
+
+	void ComponentHexValueInput::ClampRange()
+	{
+		if (!m_UseRange)
+			return;
+
+		// Only supported up to a value of 8 digits
+		const size_t source_size = m_DataSource->GetSize();
+		FOUNDATION_ASSERT(source_size <= 4);
+
+		unsigned int value = 0;
+
+		for (int i = 0; i < static_cast<int>(source_size); ++i)
+		{
+			value <<= 8;
+			value += (*m_DataSource)[i];
+		}
+
+		value = std::max(m_RangeLow, std::min(m_RangeHigh, value));
+
+		for (int i = static_cast<int>(source_size) - 1; i >= 0; --i)
+		{
+			(*m_DataSource)[i] = static_cast<unsigned char>(value & 0xff);
+			value >>= 8;
+		}
 	}
 }

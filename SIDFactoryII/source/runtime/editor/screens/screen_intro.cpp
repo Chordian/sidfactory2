@@ -43,7 +43,7 @@ namespace Editor
 		const std::string build_number = std::string(__DATE__);
 #endif
 
-		const std::string build_string = "Development build: " + build_number + " ";
+		const std::string build_string = "Build " + build_number + " ";
 
 		// Load bmp
 		void* file_buffer;

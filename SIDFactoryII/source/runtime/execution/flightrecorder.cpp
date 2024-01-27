@@ -93,7 +93,11 @@ namespace Emulation
 			{
 				FOUNDATION_ASSERT(m_TopIndex == 0);
 
-				RecordFrame(inFrame, inMemory, inCyclesSpend, m_Frames[m_RecordedFrameCount]);
+				Frame& frame = m_Frames[m_RecordedFrameCount];
+				RecordFrame(inFrame, inMemory, inCyclesSpend, frame);
+
+				m_LastRecordedFrame = frame;
+
 				m_RecordedFrameCount++;
 			}
 			else
@@ -101,7 +105,11 @@ namespace Emulation
 				FOUNDATION_ASSERT(m_RecordedFrameCount == m_FrameCapacity);
 				FOUNDATION_ASSERT(m_TopIndex < m_FrameCapacity);
 
-				RecordFrame(inFrame, inMemory, inCyclesSpend, m_Frames[m_TopIndex]);
+				Frame& frame = m_Frames[m_TopIndex];
+				RecordFrame(inFrame, inMemory, inCyclesSpend, frame);
+
+				m_LastRecordedFrame = frame;
+				
 				m_TopIndex++;
 
 				if (m_TopIndex >= m_FrameCapacity)
@@ -130,6 +138,11 @@ namespace Emulation
 		FOUNDATION_ASSERT(inIndex >= 0 && inIndex < m_FrameCapacity);
 
 		return m_Frames[inIndex];
+	}
+
+	const FlightRecorder::Frame& FlightRecorder::GetNewestFrame() const
+	{
+		return m_LastRecordedFrame;	
 	}
 
 	//------------------------------------------------------------------------------------------------

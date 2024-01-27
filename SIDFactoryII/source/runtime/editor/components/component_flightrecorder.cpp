@@ -18,11 +18,11 @@ using namespace Utility;
 
 namespace Editor
 {
-	ComponentFlightRecorder::ComponentFlightRecorder(int inID, int inGroupID, Undo* inUndo, TextField* inTextField, int inX, int inY, int inHeight, std::shared_ptr<DataSourceFlightRecorder>& inDataSource)
-		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, 40, inHeight)
+	ComponentFlightRecorder::ComponentFlightRecorder(int inID, int inGroupID, Undo* inUndo, TextField* inTextField, std::shared_ptr<DataSourceFlightRecorder>& inDataSource)
+		: ComponentBase(inID, inGroupID, inUndo, inTextField, 0, 0, inTextField->GetDimensions().m_Width, inTextField->GetDimensions().m_Height)
 		, m_DataSource(inDataSource)
 		, m_CursorPos(0)
-		, m_MaxCursorPos(static_cast<unsigned int>(m_DataSource->GetSize()) - inHeight)
+		, m_MaxCursorPos(static_cast<unsigned int>(m_DataSource->GetSize()) - inTextField->GetDimensions().m_Height)
 	{
 		FOUNDATION_ASSERT(inTextField != nullptr);
 		m_RequireRefresh = true;
@@ -106,11 +106,14 @@ namespace Editor
 
 	bool ComponentFlightRecorder::ConsumeInput(const Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager)
 	{
+		if (ConsumeNonExclusiveInput(inMouse))
+			return true;
+
 		return false;
 	}
 
 
-	void ComponentFlightRecorder::ConsumeNonExclusiveInput(const Mouse& inMouse)
+	bool ComponentFlightRecorder::ConsumeNonExclusiveInput(const Mouse& inMouse)
 	{
 		Point scroll_wheel = inMouse.GetWheelDelta();
 
@@ -131,8 +134,12 @@ namespace Editor
 
 				if (change != 0)
 					m_CursorPos = static_cast<unsigned int>(cursor_pos);
+
+				return change != 0;
 			}
 		}
+
+		return false;
 	}
 
 
@@ -150,7 +157,15 @@ namespace Editor
 			const Color color_cpu_usage_high = ToColor(UserColor::FlightRecorderCPUUsageHigh);
 			const Color color_desc = ToColor(UserColor::FlightRecorderDesc);
 
+			const int visible_row_count = m_Dimensions.m_Height - 4;
+
 			m_DataSource->Lock();
+
+			if (m_DataSource->IsRecording())
+			{
+				const int newest_recording_index = static_cast<int>(m_DataSource->GetNewestRecordingIndex());
+				m_CursorPos = newest_recording_index > visible_row_count ? (newest_recording_index - visible_row_count) : 0;
+			}
 
 			auto print_channel = [&](int x, int y, int channel, const Emulation::FlightRecorder::Frame& frame_data)
 			{
@@ -187,7 +202,7 @@ namespace Editor
 
 			const int x = 2;
 
-			for (int i = 0; i < m_Dimensions.m_Height - 4; ++i)
+			for (int i = 0; i < visible_row_count; ++i)
 			{
 				const int y = i + 3;
 

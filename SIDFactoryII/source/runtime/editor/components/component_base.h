@@ -52,8 +52,10 @@ namespace Editor
 
 		virtual bool HasDataChange() const;
 
+		virtual bool CanReceiveFocus() const;
 		virtual bool MayTabOutOfFocus(bool inForward) const;
 		virtual bool IsNoteInputSilenced() const;
+		virtual bool IsFastForwardAllowed() const;
 
 		virtual void SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl);
 		virtual void ClearHasControl(CursorControl& inCursorControl);
@@ -63,7 +65,7 @@ namespace Editor
 
 		virtual bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) = 0;
 		virtual bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) = 0;
-		virtual void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) = 0;
+		virtual bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) = 0;
 
 		virtual void Refresh(const DisplayState& inDisplayState) = 0;
 		virtual void HandleDataChange() = 0;

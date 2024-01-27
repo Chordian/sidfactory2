@@ -29,13 +29,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -94,12 +94,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\source;C:\Projects\Libs\SDL2-2.0.9\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\source;..\libs\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>sdl2.lib;sdl2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Projects\Libs\SDL2-2.0.9\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\SDL2-2.0.12\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,14 +134,14 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.\source;C:\Projects\Libs\SDL2-2.0.9\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\source;..\libs\SDL2-2.0.12\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>sdl2.lib;sdl2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\Projects\Libs\SDL2-2.0.9\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\libs\SDL2-2.0.12\lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -158,8 +158,6 @@
     <ClCompile Include="source\foundation\platform\platform_factory.cpp" />
     <ClCompile Include="source\foundation\platform\sdl\mutex_sdl.cpp" />
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl.cpp" />
-    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_linux.cpp" />
-    <ClCompile Include="source\foundation\platform\sdl\platform_sdl_macos.cpp" />
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl_windows.cpp" />
     <ClCompile Include="source\foundation\sound\audiostream.cpp" />
     <ClCompile Include="source\libraries\miniz\miniz.c" />
@@ -186,6 +184,7 @@
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.cpp" />
+    <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_songs.cpp" />
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_base.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_button.cpp" />
@@ -196,6 +195,7 @@
     <ClCompile Include="source\runtime\editor\components\component_list_selector.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_memory_view.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_orderlistoverview.cpp" />
+    <ClCompile Include="source\runtime\editor\components\component_pulse_filter_visualizer.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_string_list_selector.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_table_row_elements_with_text.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_console.cpp" />
@@ -204,6 +204,7 @@
     <ClCompile Include="source\runtime\editor\components\component_text_input.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_tracks.cpp" />
     <ClCompile Include="source\runtime\editor\components\component_track_utils.cpp" />
+    <ClCompile Include="source\runtime\editor\components\utils\orderlist_utils.cpp" />
     <ClCompile Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.cpp" />
     <ClCompile Include="source\runtime\editor\components_manager.cpp" />
     <ClCompile Include="source\runtime\editor\converters\cc\converter_cc.cpp" />
@@ -232,6 +233,7 @@
     <ClCompile Include="source\runtime\editor\datasources\datasource_orderlist.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_play_markers.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_sequence.cpp" />
+    <ClCompile Include="source\runtime\editor\datasources\datasource_sidregistersbuffer.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_table.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_table_column_major.cpp" />
     <ClCompile Include="source\runtime\editor\datasources\datasource_table_memory_view.cpp" />
@@ -244,9 +246,12 @@
     <ClCompile Include="source\runtime\editor\dialog\dialog_bit_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_hex_value_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_message_yesno.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_move_selection_list.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_optimize.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_packing_options.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_selection_list.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_sid_file_info.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_songs.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_text_input.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_message.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_utilities.cpp" />
@@ -265,6 +270,7 @@
     <ClCompile Include="source\runtime\editor\overlays\overlay_flightrecorder.cpp" />
     <ClCompile Include="source\runtime\editor\overlay_control.cpp" />
     <ClCompile Include="source\runtime\editor\packer\packer.cpp" />
+    <ClCompile Include="source\runtime\editor\packer\packing_utils.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_base.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_convert.cpp" />
     <ClCompile Include="source\runtime\editor\screens\screen_disk.cpp" />
@@ -279,6 +285,7 @@
     <ClCompile Include="source\runtime\editor\utilities\editor_utils.cpp" />
     <ClCompile Include="source\runtime\editor\utilities\import_utils.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_base.cpp" />
+    <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.cpp" />
     <ClCompile Include="source\runtime\emulation\cpuframecapture.cpp" />
     <ClCompile Include="source\runtime\emulation\cpumemory.cpp" />
@@ -318,8 +325,6 @@
     <ClInclude Include="source\foundation\platform\platform_factory.h" />
     <ClInclude Include="source\foundation\platform\sdl\mutex_sdl.h" />
     <ClInclude Include="source\foundation\platform\sdl\platform_sdl.h" />
-    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_linux.h" />
-    <ClInclude Include="source\foundation\platform\sdl\platform_sdl_macos.h" />
     <ClInclude Include="source\foundation\platform\sdl\platform_sdl_windows.h" />
     <ClInclude Include="source\foundation\sound\audiostream.h" />
     <ClInclude Include="source\libraries\ghc\filesystem.h" />
@@ -359,6 +364,7 @@
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_editing_preferences.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_hardware_preferences.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_play_markers.h" />
+    <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_songs.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_table_text.h" />
     <ClInclude Include="source\runtime\editor\auxilarydata\auxilary_data_utils.h" />
     <ClInclude Include="source\runtime\editor\components\component_base.h" />
@@ -370,6 +376,7 @@
     <ClInclude Include="source\runtime\editor\components\component_list_selector.h" />
     <ClInclude Include="source\runtime\editor\components\component_memory_view.h" />
     <ClInclude Include="source\runtime\editor\components\component_orderlistoverview.h" />
+    <ClInclude Include="source\runtime\editor\components\component_pulse_filter_visualizer.h" />
     <ClInclude Include="source\runtime\editor\components\component_string_list_selector.h" />
     <ClInclude Include="source\runtime\editor\components\component_table_row_elements_with_text.h" />
     <ClInclude Include="source\runtime\editor\components\component_console.h" />
@@ -378,6 +385,7 @@
     <ClInclude Include="source\runtime\editor\components\component_text_input.h" />
     <ClInclude Include="source\runtime\editor\components\component_tracks.h" />
     <ClInclude Include="source\runtime\editor\components\component_track_utils.h" />
+    <ClInclude Include="source\runtime\editor\components\utils\orderlist_utils.h" />
     <ClInclude Include="source\runtime\editor\components\utils\text_editing_data_source_table_text.h" />
     <ClInclude Include="source\runtime\editor\components_manager.h" />
     <ClInclude Include="source\runtime\editor\converters\cc\converter_cc.h" />
@@ -406,6 +414,7 @@
     <ClInclude Include="source\runtime\editor\datasources\datasource_orderlist.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_play_markers.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_sequence.h" />
+    <ClInclude Include="source\runtime\editor\datasources\datasource_sidregistersbuffer.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_table_column_major.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_table_memory_view.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_table_row_major.h" />
@@ -420,9 +429,12 @@
     <ClInclude Include="source\runtime\editor\dialog\dialog_bit_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_hex_value_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_message_yesno.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_move_selection_list.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_optimize.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_packing_options.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_selection_list.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_sid_file_info.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_songs.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_text_input.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_message.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_utilities.h" />
@@ -443,6 +455,7 @@
     <ClInclude Include="source\runtime\editor\overlays\overlay_flightrecorder.h" />
     <ClInclude Include="source\runtime\editor\overlay_control.h" />
     <ClInclude Include="source\runtime\editor\packer\packer.h" />
+    <ClInclude Include="source\runtime\editor\packer\packing_utils.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_base.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_convert.h" />
     <ClInclude Include="source\runtime\editor\screens\screen_disk.h" />
@@ -454,6 +467,7 @@
     <ClInclude Include="source\runtime\editor\undo\undo.h" />
     <ClInclude Include="source\runtime\editor\undo\undostep.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata.h" />
+    <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_orderlist_overview.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_table_row_elements.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_table_text.h" />
     <ClInclude Include="source\runtime\editor\undo\undo_componentdata\undo_componentdata_tracks.h" />
@@ -462,6 +476,7 @@
     <ClInclude Include="source\runtime\editor\utilities\editor_utils.h" />
     <ClInclude Include="source\runtime\editor\utilities\import_utils.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_base.h" />
+    <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.h" />
     <ClInclude Include="source\runtime\emulation\cpuframecapture.h" />
     <ClInclude Include="source\runtime\emulation\cpumemory.h" />

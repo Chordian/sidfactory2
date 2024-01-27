@@ -17,6 +17,7 @@ namespace Editor
 	DialogSelectionList::DialogSelectionList(
 		int inWidth,
 		int inHeight,
+		int inSelectionIndex,
 		const std::string& inCaption,
 		const std::vector<std::string>& inSelectionList,
 		std::function<void(const unsigned int)>&& inSelect,
@@ -25,6 +26,7 @@ namespace Editor
 		: DialogBase()
 		, m_Width(inWidth)
 		, m_Height(inHeight)
+		, m_InitialSelectionIndex(inSelectionIndex)
 		, m_Caption(inCaption)
 		, m_SelectionList(inSelectionList)
 		, m_SelectFunction(inSelect)
@@ -96,6 +98,7 @@ namespace Editor
 
 		m_StringListSelectorComponent->SetColors(ToColor(UserColor::DialogBackground), ToColor(UserColor::DialogListSelectorCursorFocus), ToColor(UserColor::DialogListSelectorCursor));
 		m_StringListSelectorComponent->SetColors(ToColor(UserColor::DialogText));
+		m_StringListSelectorComponent->SetSelectionIndex(m_InitialSelectionIndex);
 
 		m_ComponentsManager->AddComponent(m_StringListSelectorComponent);
 		m_ComponentsManager->SetComponentInFocus(m_StringListSelectorComponent);

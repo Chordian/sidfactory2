@@ -3,10 +3,16 @@
 #include "runtime/editor/datasources/datasource_table_column_major.h"
 #include "runtime/editor/datasources/datasource_table_row_major.h"
 #include "runtime/editor/driver/driver_info.h"
+#include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/imemoryrandomreadaccess.h"
+#include "runtime/emulation/cpumos6510.h"
 #include "utils/c64file.h"
 #include "foundation/base/assert.h"
+
+#include <algorithm>
+#include <unordered_map>
 
 namespace Editor
 {
@@ -26,13 +32,16 @@ namespace Editor
 
 			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
 			{
+				// Get song count
+				const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+
 				// Get Music data descriptor
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 
 				// Find highest used sequence index
 				unsigned short order_list_1 = music_data.m_OrderListTrack1Address;
 
-				for (unsigned char i = 0; i < music_data.m_TrackCount; ++i)
+				for (unsigned char i = 0; i < music_data.m_TrackCount * song_count; ++i)
 				{
 					unsigned short order_list_address = order_list_1 + static_cast<unsigned short>(i) * music_data.m_OrderListSize;
 					for (unsigned short j = 0; j < music_data.m_OrderListSize; ++j)
@@ -60,7 +69,9 @@ namespace Editor
 		{
 			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
 			{
-				std::vector<int> usage_count(inDriverInfo.GetMusicData().m_SequenceCount, 0);
+				// Output collection
+				const int SequenceCount = static_cast<int>(inDriverInfo.GetMusicData().m_SequenceCount);
+				std::vector<int> usage_count(SequenceCount, 0);
 
 				// Get Music data descriptor
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
@@ -68,19 +79,20 @@ namespace Editor
 				// Find highest used sequence index
 				unsigned short order_list_1 = music_data.m_OrderListTrack1Address;
 
-				for (unsigned char i = 0; i < music_data.m_TrackCount; ++i)
+				// Get song count
+				const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+
+				for (unsigned char i = 0; i < music_data.m_TrackCount * song_count; ++i)
 				{
 					unsigned short order_list_address = order_list_1 + static_cast<unsigned short>(i) * music_data.m_OrderListSize;
 					for (unsigned short j = 0; j < music_data.m_OrderListSize; ++j)
 					{
 						unsigned char value = inMemoryReader[order_list_address + j];
-						if (value < 0x80)
-						{
-							if (value == 0x7f)
-								break;
 
+						if (value < SequenceCount)
 							usage_count[value]++;
-						}
+						else if (value >= 0xfe)
+							break;
 					}
 				}
 
@@ -263,13 +275,16 @@ namespace Editor
 
 			if (inDriverInfo.HasParsedHeaderBlock(DriverInfo::HeaderBlockID::ID_MusicData))
 			{
+				// Get song count
+				const unsigned char song_count = inDriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+
 				// Get Music data descriptor
 				const DriverInfo::MusicData& music_data = inDriverInfo.GetMusicData();
 
 				// Find highest used sequence index
 				unsigned short order_list_1 = music_data.m_OrderListTrack1Address;
 
-				for (unsigned char i = 0; i < music_data.m_TrackCount; ++i)
+				for (unsigned char i = 0; i < music_data.m_TrackCount * song_count; ++i)
 				{
 					unsigned short order_list_address = order_list_1 + static_cast<unsigned short>(i) * music_data.m_OrderListSize;
 					for (int j = 0; j < music_data.m_OrderListSize; ++j)
@@ -279,6 +294,11 @@ namespace Editor
 						{
 							// +2, because the value after $ff is used as the loop index of the order list!
 							order_list_length_list.push_back(static_cast<unsigned short>(j) + 2);
+							break;
+						}
+						else if (value == 0xfe)
+						{
+							order_list_length_list.push_back(static_cast<unsigned short>(j) + 1);
 							break;
 						}
 					}
@@ -321,6 +341,87 @@ namespace Editor
 		unsigned short GetEndOfFileAddress(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader)
 		{
 			return GetEndOfMusicDataAddress(inDriverInfo, inMemoryReader);
+		}
+		
+
+		std::vector<SIDWriteInformation> GetSIDWriteInformationFromDriver(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo)
+		{
+			auto is_accessing_memory_address_with_offset = [](Emulation::CPUmos6510::AddressingMode inAddressingMode)
+			{
+				switch (inAddressingMode)
+				{
+				case Emulation::CPUmos6510::am_ABX:
+				case Emulation::CPUmos6510::am_ABY:
+					return true;
+				default:
+					break;
+				}
+
+				return false;
+			};
+
+			std::vector<SIDWriteInformation> result;
+			std::unordered_map<unsigned char, SIDWriteInformation> sid_write_information;
+		
+			const int top_address = inDriverInfo.GetDescriptor().m_DriverCodeTop;
+			const int bottom_address = top_address + inDriverInfo.GetDescriptor().m_DriverCodeSize;
+
+			int address = top_address;
+
+			bool first_write_found = false;
+			unsigned char cycle_count = 0;
+
+			inCPUMemory.Lock();
+
+			while (address < bottom_address)
+			{
+				const unsigned char opcode = inCPUMemory[address];
+				const unsigned char opcode_size = Emulation::CPUmos6510::GetOpcodeByteSize(opcode);
+				const unsigned char opcode_cycles = Emulation::CPUmos6510::GetOpcodeCycles(opcode);
+			
+				const Emulation::CPUmos6510::AddressingMode opcode_addressing_mode = Emulation::CPUmos6510::GetOpcodeAddressingMode(opcode);
+
+				if (is_accessing_memory_address_with_offset(opcode_addressing_mode))
+				{
+					FOUNDATION_ASSERT(opcode_size == 3);
+;
+					const unsigned short accessing_address = inCPUMemory.GetWord(address + 1);
+					if (accessing_address >= 0xd400 && accessing_address <= 0xd406)
+					{
+						first_write_found = true;
+						
+						unsigned char sid_register = static_cast<unsigned char>(accessing_address & 0xff);
+						
+						auto it = sid_write_information.find(sid_register);
+						if(it != sid_write_information.end())
+							it->second.m_CycleOffset = cycle_count;
+						else
+							sid_write_information[sid_register] = { sid_register, cycle_count };
+					}
+				}
+
+				address += static_cast<unsigned short>(opcode_size);
+
+				if(first_write_found)
+					cycle_count += opcode_cycles;
+			}
+
+			inCPUMemory.Unlock();
+
+			// Push the collected information into the result vector
+			for(const auto it : sid_write_information)
+				result.push_back(it.second);
+
+			// Sort writes in cycle order
+			std::sort(result.begin(), result.end(), [](const auto& inA, const auto& inB) { return inA.m_CycleOffset < inB.m_CycleOffset; });
+
+			// Adjust cycle offset to start from the the lowest (and first) entry in the list
+			const unsigned char first_cycle = result.begin()->m_CycleOffset;
+			for (auto& it : result)
+				it.m_CycleOffset -= first_cycle;
+
+			// Return the result
+			return result;
 		}
 
 

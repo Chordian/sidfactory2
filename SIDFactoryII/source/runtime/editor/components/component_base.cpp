@@ -90,6 +90,11 @@ namespace Editor
 
 	//----------------------------------------------------------------------------------------------------------------------------------------
 
+	bool ComponentBase::CanReceiveFocus() const
+	{
+		return true;
+	}
+
 	bool ComponentBase::MayTabOutOfFocus(bool inForward) const
 	{
 		return true;
@@ -99,6 +104,12 @@ namespace Editor
 	bool ComponentBase::IsNoteInputSilenced() const
 	{
 		return false;
+	}
+
+
+	bool ComponentBase::IsFastForwardAllowed() const
+	{
+		return true;
 	}
 
 

@@ -36,11 +36,9 @@ A: One thing you can try on your own is to replace the SDL2.dll with a "stable"
 
 Q: Why is [feature X] not in SID Factory II yet?
 
-A: SID Factory II is still in BETA and a lot of essential features may be missing.
+A: SID Factory II is still in BETA and some features are still missing.
 
    The following features should definitely be added some time in the future:
 
-     o  Subtunes (for game support) including being able to stop a tune (jingle)
      o  Multispeed
      o  Load/Save instruments
-     o  Descriptions in the song list

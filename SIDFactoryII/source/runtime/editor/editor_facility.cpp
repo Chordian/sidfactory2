@@ -7,7 +7,9 @@
 #include "libraries/ghc/fs_std.h"
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_hardware_preferences.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/editor/converters/converterbase.h"
+#include "runtime/editor/datacopy/copypaste.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/dialog/dialog_message_yesno.h"
 #include "runtime/editor/dialog/dialog_sid_file_info.h"
@@ -100,9 +102,25 @@ namespace Editor
 		SIDConfiguration sid_configuration; // Default settings are applicable
 
 		const bool sid_use_resample = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.Resample", 1) != 0;
+
+		int sid_sample_frequency = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Emulation.SampleFrequency", 44100);
+		if (sid_sample_frequency < 11025)
+		{
+			// In resampling mode reSID can downsample down to clock/125 Hz. With NTSC this puts us at min. 8200Hz,
+			// so let's use 11025 which is the next higher usual rate.
+			Logging::instance().Warning("Sound.Emulation.SampleFrequency (%d) is too low, using 11025 instead", sid_sample_frequency);
+			sid_sample_frequency = 11025;
+		}
+		else if (sid_sample_frequency > 192000)
+		{
+			Logging::instance().Warning("Sound.Emulation.SampleFrequency (%d) is too high, using 192000 instead", sid_sample_frequency);
+			sid_sample_frequency = 192000;
+		}
+		Logging::instance().Info("Sound.Emulation.SampleFrequency set to %d", sid_sample_frequency);
+
 		sid_configuration.m_eSampleMethod = sid_use_resample ? SID_SAMPLE_METHOD_RESAMPLE_INTERPOLATE : SID_SAMPLE_METHOD_INTERPOLATE;
 		sid_configuration.m_eModel = SID_MODEL_6581;
-
+		sid_configuration.m_nSampleFrequency = sid_sample_frequency;
 
 		m_SIDProxy = new SIDProxy(sid_configuration);
 		m_CPUMemory = new CPUMemory(0x10000, &platform);
@@ -112,7 +130,7 @@ namespace Editor
 
 		// Create audio stream
 		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Buffer.Size", 256);
-		m_AudioStream = new AudioStream(44100, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
+		m_AudioStream = new AudioStream(sid_sample_frequency, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
 
 		// Create the main text field
 		m_TextField = m_Viewport->CreateTextField(m_Viewport->GetClientWidth() / TextField::font_width, m_Viewport->GetClientHeight() / TextField::font_height, 0, 0);
@@ -176,7 +194,7 @@ namespace Editor
 			[&]() {	m_DiskScreen->SetMode(ScreenDisk::LoadInstrument); RequestScreen(m_DiskScreen.get()); },
 			[&]() {	m_DiskScreen->SetMode(ScreenDisk::SaveInstrument); m_DiskScreen->SetSuggestedFileName(m_LastSF2PathAndFilename);  RequestScreen(m_DiskScreen.get()); },
 			[&]() { OnQuickSave(m_EditScreen.get()); },
-			[&](unsigned short inDestinationAddress) { OnPack(m_EditScreen.get(), inDestinationAddress); },
+			[&](unsigned short inDestinationAddress, unsigned char inFirstZeroPage) { OnPack(m_EditScreen.get(), inDestinationAddress, inFirstZeroPage); },
 			[&]() { m_FlipOverlayState = true; },
 			[&](unsigned int inReconfigureOption) { Reconfigure(inReconfigureOption); });
 
@@ -210,7 +228,6 @@ namespace Editor
 		IPlatform& platform = Global::instance().GetPlatform();
 		ConfigFile& configFile = Global::instance().GetConfig();
 
-
 		const bool file_loaded_successfully = [&]() {
 			if (inFileToLoad != nullptr)
 			{
@@ -224,7 +241,7 @@ namespace Editor
 		// Try to load the driver directly
 		if (!file_loaded_successfully)
 		{
-			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_03.prg"));
+			std::string default_driver_filename = GetSingleConfigurationValue<ConfigValueString>(configFile, "Editor.Driver.Default", std::string("sf2driver11_05.prg"));
 			std::string drivers_folder = platform.Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}
@@ -357,7 +374,6 @@ namespace Editor
 
 	void EditorFacility::Reconfigure(unsigned int inReconfigureOption)
 	{
-
 		ConfigFile& configFile = Global::instance().GetConfig();
 
 		if (inReconfigureOption == 0)
@@ -370,7 +386,7 @@ namespace Editor
 			m_EditScreen->SetActivationMessage("Reloaded config!");
 			ForceRequestScreen(m_EditScreen.get());
 		}
-		if (inReconfigureOption == 1)
+		else if (inReconfigureOption == 1)
 		{
 			m_SelectedColorScheme++;
 			if (m_SelectedColorScheme >= m_ColorSchemeCount)
@@ -384,7 +400,7 @@ namespace Editor
 				ForceRequestScreen(m_EditScreen.get());
 			}
 		}
-		if (inReconfigureOption == 2)
+		else if (inReconfigureOption == 2)
 		{
 			std::string selected_color_scheme_name = ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
 
@@ -393,6 +409,22 @@ namespace Editor
 				m_EditScreen->SetActivationMessage("Reloaded color scheme: " + selected_color_scheme_name);
 				ForceRequestScreen(m_EditScreen.get());
 			}
+		}
+		else if (inReconfigureOption == 3)
+		{
+			ConfigureColorsFromScheme(m_SelectedColorScheme, *m_Viewport);
+
+			const auto selected_song_index = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+			const std::string& song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(selected_song_index);
+			const std::string& song_selection_text = song_name.empty()
+				? std::to_string(selected_song_index + 1)
+				: song_name;
+
+			m_EditScreen->SetActivationMessage("[Selected song: " + song_selection_text + "]");
+			const unsigned char initTableID = EditorUtils::GetTableIDFromNameInTableDefinition(*m_DriverInfo, "init");
+			if (initTableID != 0xff)
+				m_EditScreen->SetActivationTableFocusID(static_cast<int>(initTableID), selected_song_index);
+			ForceRequestScreen(m_EditScreen.get());
 		}
 	}
 
@@ -507,11 +539,19 @@ namespace Editor
 				m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 				m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
 
+				// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+				EditorUtils::UpdateSongNameOfSingleSongPackages(*m_DriverInfo);
+				EditorUtils::AddMissingPlayerMarkerLayers(*m_DriverInfo);
+
+
 				// Store name of last read file
 				SetLastSavedPathAndFilename(inPathAndFilename);
 
 				// Flush undo after load
 				m_EditScreen->FlushUndo();
+
+				// Flush copy/paste
+				CopyPaste::Instance().Flush();
 
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
@@ -544,8 +584,15 @@ namespace Editor
 					// Store name of last read file
 					SetLastSavedPathAndFilename(inPathAndFilename);
 
+					// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+					EditorUtils::UpdateSongNameOfSingleSongPackages(*outDriverInfo);
+					EditorUtils::AddMissingPlayerMarkerLayers(*m_DriverInfo);
+
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
+
+					// Flush copy/paste
+					CopyPaste::Instance().Flush();
 
 					return true;
 				}
@@ -589,11 +636,18 @@ namespace Editor
 					m_ExecutionHandler->SetStopVector(m_DriverInfo->GetDriverCommon().m_StopAddress);
 					m_ExecutionHandler->SetUpdateVector(m_DriverInfo->GetDriverCommon().m_UpdateAddress);
 
+					// Give the first song a default name, if it hasn't one and is the only song in the loaded file
+					EditorUtils::UpdateSongNameOfSingleSongPackages(*m_DriverInfo);
+					EditorUtils::AddMissingPlayerMarkerLayers(*m_DriverInfo);
+
 					// Store name of last read file
 					SetLastSavedPathAndFilename(inPathAndFilename);
 
 					// Flush undo after load
 					m_EditScreen->FlushUndo();
+
+					// Flush copy/paste
+					CopyPaste::Instance().Flush();
 
 					// Notify overlay
 					m_OverlayControl->OnChange(*m_DriverInfo);
@@ -657,7 +711,7 @@ namespace Editor
 			const unsigned short auxilary_data_vector = file_writer.GetWriteAddress();
 			m_DriverInfo->GetAuxilaryDataCollection().Save(file_writer);
 
-			// Adjust IRQ and auxilary data vectors in file
+			// Adjust IRQ and auxiliary data vectors in file
 			const unsigned short driver_init_vector = m_DriverInfo->GetDriverCommon().m_InitAddress;
 			(*file)[driver_init_vector - 2] = static_cast<unsigned char>(irq_vector & 0xff);
 			(*file)[driver_init_vector - 1] = static_cast<unsigned char>(irq_vector >> 8);
@@ -715,13 +769,14 @@ namespace Editor
 				// Save PSID file to disk, also
 				const auto& driver_common = m_DriverInfo->GetDriverCommon();
 				const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+				const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
 
 				Utility::PSIDFile psid_file(
 					data,
 					data_size + 2,
 					0,
 					driver_common.m_UpdateAddress - driver_common.m_InitAddress,
-					1,
+					static_cast<unsigned short>(song_count),
 					inTitle,
 					inAuthor,
 					inCopyright,
@@ -864,6 +919,9 @@ namespace Editor
 				// Flush undo after load
 				m_EditScreen->FlushUndo();
 
+				// Flush copy/paste
+				CopyPaste::Instance().Flush();
+
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
 
@@ -877,11 +935,11 @@ namespace Editor
 	}
 
 
-	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress)
+	void EditorFacility::OnPack(ScreenBase* inCallerScreen, unsigned short inDestinationAddress, unsigned char inFirstZeroPage)
 	{
 		const bool is_uppercase = m_DisplayState.IsHexUppercase();
 
-		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress);
+		Packer packer(*m_CPUMemory, *m_DriverInfo, inDestinationAddress, inFirstZeroPage);
 		m_PackedData = packer.GetResult();
 
 		std::string packing_info;
@@ -991,7 +1049,7 @@ namespace Editor
 		else
 		{
 			const bool confirm_quick_save = GetSingleConfigurationValue<ConfigValueInt>(Global::instance().GetConfig(), "Editor.Confirm.QuickSave", 1) != 0;
-			
+
 			auto do_save = [save_path_and_filename, inCallerScreen, this]() {
 				if (SaveFile(save_path_and_filename.string()))
 					this->m_EditScreen->SetStatusBarMessage(" Quick saved to: " + save_path_and_filename.filename().string(), 5000);
@@ -999,15 +1057,15 @@ namespace Editor
 					this->OnSaveError(inCallerScreen);
 			};
 
-			if (confirm_quick_save) {
+			if (confirm_quick_save)
+			{
 				inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogMessageYesNo>("Warning", "Do you want to perform a quick save to:\n" + save_path_and_filename.string() + "?", DefaultDialogWidth, do_save, []() {}));
 			}
-			else {
+			else
+			{
 				do_save();
 			}
-		
 		}
-
 	}
 
 

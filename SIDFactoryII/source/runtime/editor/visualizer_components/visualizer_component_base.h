@@ -31,7 +31,7 @@ namespace Editor
 
 		virtual void ForceRefresh();
 
-		virtual void ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) = 0;
+		virtual bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) = 0;
 		virtual void Refresh(const DisplayState& inDisplayState) = 0;
 
 		bool ContainsPosition(const Foundation::Point& inPixelPosition) const;

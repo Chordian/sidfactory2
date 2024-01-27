@@ -77,9 +77,9 @@ namespace Editor
 	}
 
 
-	void ComponentMemoryView::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentMemoryView::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
-
+		return false;
 	}
 
 

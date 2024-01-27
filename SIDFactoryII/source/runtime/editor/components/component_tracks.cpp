@@ -10,6 +10,7 @@
 #include "runtime/editor/auxilarydata/auxilary_data_editing_preferences.h"
 #include "runtime/editor/undo/undo_componentdata/undo_componentdata_tracks.h"
 #include "runtime/editor/display_state.h"
+#include "runtime/editor/components/utils/orderlist_utils.h"
 
 #include "utils/usercolors.h"
 
@@ -28,6 +29,7 @@ namespace Editor
 		int inGroupID,
 		Undo* inUndo,
 		std::shared_ptr<DataSourceTrackComponents> inDataSource,
+		std::vector<std::shared_ptr<DataSourceOrderList>> inOtherOrderListDataSources,
 		TextField* inTextField,
 		const AuxilaryDataCollection& inAuxilaryDataCollection,
 		const EditState& inEditState,
@@ -46,6 +48,7 @@ namespace Editor
 			inHeight
 		)
 		, m_DataSource(inDataSource)
+		, m_OtherOrderListDataSources(inOtherOrderListDataSources)
 		, m_AuxilaryData(inAuxilaryDataCollection)
 		, m_EditState(inEditState)
 		, m_EventPos(0)
@@ -54,6 +57,7 @@ namespace Editor
 		, m_FocusModeOrderList(false)
 		, m_TracksPositionY(1)
 		, m_TracksHeight(m_Dimensions.m_Height - m_TracksPositionY)
+		, m_OtherOrderListsChanged(false)
 	{
 		m_MaxEventPos = GetMaxEventPosition();
 		m_FocusRow = CalculateFocusRow(m_TracksHeight >> 1, m_TracksHeight);
@@ -80,15 +84,33 @@ namespace Editor
 			{ 
 				HandleSequenceSplit(inSequence, inSequenceToAdd); 
 			}));
+
+			// Set event handle
+			(*m_DataSource)[i]->GetComputeMaxEventPosEvent().Add(this, Utility::TDelegate<void(void)>([&]()
+			{
+				for (int i = 0; i < m_DataSource->GetSize(); ++i)
+				{
+					(*m_DataSource)[i]->PullSequenceDataFromSource();
+					(*m_DataSource)[i]->UpdateMaxEventPos();
+				}
+			}));
+
+			// Set orderlist index changed event
+			(*m_DataSource)[i]->GetOrderListIndexChangedEvent().Add(
+				this,
+				Utility::TDelegate<void(bool, unsigned int, unsigned char)>([this](bool inHasControl, unsigned int inIndex, unsigned char inValue)
+			{
+				this->m_OrderListIndexChangedEvent.Execute(inHasControl, inIndex, inValue);
+			}));
 		}
 
 		// Set the event position on each track
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
 			(*m_DataSource)[i]->SetEventPosition(m_EventPos);
 
-		// Set undo handlers
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
 		{
+			// Set undo handlers
 			(*m_DataSource)[i]->SetUndoHandlers(
 				[this](UndoComponentDataTableTracks& ioData) { AddUndoStep(ioData); },
 				[this](const UndoComponentDataTableTracks& inData, CursorControl& inCursorControl) { OnUndo(inData, inCursorControl); }
@@ -112,7 +134,7 @@ namespace Editor
 				return true;
 		}
 
-		return false;
+		return m_OtherOrderListsChanged;
 	}
 
 	//---------------------------------------------------------------------------------------------------------
@@ -197,7 +219,7 @@ namespace Editor
 			// Consume input on focus track
 			consume |= (*m_DataSource)[m_FocusTrackIndex]->ConsumeInput(inKeyboard, inCursorControl, inComponentsManager);
 
-			// Syncronize event track position
+			// Synchronize event track position
 			int focus_track_event_pos = (*m_DataSource)[m_FocusTrackIndex]->GetEventPosition();
 			if (m_EventPos != focus_track_event_pos)
 			{
@@ -267,7 +289,7 @@ namespace Editor
 	}
 
 
-	void ComponentTracks::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
+	bool ComponentTracks::ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse)
 	{
 		Point scroll_wheel = inMouse.GetWheelDelta();
 
@@ -294,8 +316,12 @@ namespace Editor
 
 				if (event_pos != m_EventPos)
 					SetEventPosition(event_pos, false);
+
+				return change != 0;
 			}
 		}
+
+		return false;
 	}
 
 
@@ -401,6 +427,14 @@ namespace Editor
 			if ((*m_DataSource)[i]->HasDataChange())
 				(*m_DataSource)[i]->HandleDataChange();
 		}
+
+		if (m_OtherOrderListsChanged)
+		{
+			for (const auto& other_order_list_data_source : m_OtherOrderListDataSources)
+				other_order_list_data_source->PushDataToSource();
+
+			m_OtherOrderListsChanged = false;
+		}
 	}
 
 
@@ -408,6 +442,8 @@ namespace Editor
 	{
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
 			(*m_DataSource)[i]->PullDataFromSource(inFromUndo);
+		for (auto& other_order_list_data_source : m_OtherOrderListDataSources)
+			other_order_list_data_source->PullDataFromSource();
 	}
 
 
@@ -563,6 +599,21 @@ namespace Editor
 	}
 
 
+	void ComponentTracks::OnOrderListChanged(int inChannel)
+	{
+		if (inChannel < m_DataSource->GetSize())
+			(*m_DataSource)[inChannel]->OnOrderListChanged();
+
+		m_HasDataChange = true;
+	}
+
+
+	ComponentTrack::OrderListIndexChangedEvent& ComponentTracks::GetOrderListIndexChangedEvent()
+	{
+		return m_OrderListIndexChangedEvent;
+	}
+
+
 	void ComponentTracks::AlignTracks()
 	{
 		m_RequireRefresh = true;
@@ -582,7 +633,22 @@ namespace Editor
 		m_RequireRefresh = true;
 
 		for (int i = 0; i < m_DataSource->GetSize(); ++i)
-			(*m_DataSource)[i]->HandleOrderListUpdateAfterSequenceSplit(inSequence, static_cast<unsigned char>(inSequenceToAdd));
+		{
+			auto order_list_data_source = (*m_DataSource)[i]->GetDataSourceOrderList();
+			HandleOrderListUpdateAfterSequenceSplit(order_list_data_source, inSequence, static_cast<unsigned char>(inSequenceToAdd));
+			(*m_DataSource)[i]->OnOrderListChanged();
+		}
+
+		for (auto& other_order_list_data_source : m_OtherOrderListDataSources)
+		{
+			HandleOrderListUpdateAfterSequenceSplit(other_order_list_data_source, inSequence, static_cast<unsigned char>(inSequenceToAdd));
+
+			auto packed_result = other_order_list_data_source->Pack();
+			if (packed_result.m_DataLength < 0x100)
+				other_order_list_data_source->SendPackedDataToBuffer(packed_result);
+		}
+
+		m_OtherOrderListsChanged = true;
 	}
 
 

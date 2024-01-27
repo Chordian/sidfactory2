@@ -82,8 +82,6 @@ namespace Editor
 			ComponentBaseID, ComponentGroupID,
 			nullptr,
 			m_TextField,
-			0, 0,
-			m_TextField->GetDimensions().m_Height,
 			data_source_flight_recorder);
 
 		m_ComponentsManager->AddComponent(component_flight_recorder);

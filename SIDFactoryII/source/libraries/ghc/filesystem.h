@@ -171,7 +171,7 @@
 #define LWG_2682_BEHAVIOUR
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // LWG #2395 makes crate_directory/create_directories not emit an error if there is a regular
-// file with that name, it is superceded by P1164R1, so only activate if really needed
+// file with that name, it is superseded by P1164R1, so only activate if really needed
 // #define LWG_2935_BEHAVIOUR
 //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // LWG #2937 enforces that fs::equivalent emits an error, if !fs::exists(p1)||!exists(p2)
@@ -194,7 +194,7 @@
 #define GHC_WITH_EXCEPTIONS
 #endif
 #if !defined(GHC_WITH_EXCEPTIONS) && defined(GHC_RAISE_UNICODE_ERRORS)
-#error "Can't raise unicode errors whith exception support disabled"
+#error "Can't raise unicode errors with exception support disabled"
 #endif
 
 namespace ghc {
@@ -245,7 +245,7 @@ public:
     using path_helper_base<value_type>::preferred_separator;
     
     // 30.10.10.1 enumeration format
-    /// The path format in wich the constructor argument is given.
+    /// The path format in which the constructor argument is given.
     enum format {
         generic_format,  ///< The generic format, internally used by
                          ///< ghc::filesystem::path with slashes

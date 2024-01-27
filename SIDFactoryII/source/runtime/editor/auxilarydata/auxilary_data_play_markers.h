@@ -14,8 +14,14 @@ namespace Editor
 
 		void Reset() override;
 
-		const int GetPlayMarkerEventPosition(int inMarkerIndex) const;
-		void SetPlayMarkerEventPosition(int inMarkerIndex, int inEventPosition);
+		const int GetPlayMarkerEventPosition(int inLayer, int inMarkerIndex) const;
+		void SetPlayMarkerEventPosition(int inLayer, int inMarkerIndex, int inEventPosition);
+
+		int GetLayerCount() const;
+
+		bool InsertLayer(unsigned int inLayer);
+		bool RemoveLayer(unsigned int inLayer);
+		bool SwapLayers(unsigned int inLayer1, unsigned int inLayer2);
 
 	protected:
 		std::vector<unsigned char> GenerateSaveData() const override;
@@ -24,6 +30,6 @@ namespace Editor
 		bool RestoreFromSaveData(unsigned short inDataVersion, std::vector<unsigned char> inData) override;
 
 	private:
-		std::vector<int> m_PlayMarkerEventPositionList;
+		std::vector<std::vector<int>> m_PlayMarkerEventPositionListLayers;
 	};
 }

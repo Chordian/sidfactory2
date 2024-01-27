@@ -13,6 +13,7 @@ namespace Editor
 {
 	StatusBar::StatusBar(Foundation::TextField* inTextField) 
 		: m_TextField(inTextField)
+		, m_CanBeOverwritten(true)
 		, m_NeedRefresh(true)
 		, m_TextColor(ToColor(UserColor::StatusBarText))
 		, m_BackgroundColor(ToColor(UserColor::StatusBarBackgroundStopped))
@@ -55,15 +56,19 @@ namespace Editor
 
 	void StatusBar::SetText(const std::string& inText)
 	{
-		SetText(inText, 0);
+		SetText(inText, 0, true);
 	}
 
 
-	void StatusBar::SetText(const std::string& inText, int inDuration)
+	void StatusBar::SetText(const std::string& inText, int inDuration, bool inCanBeOverwritten)
 	{
-		m_Text = inText;
-		m_TextClearTimer = inDuration;
-		m_NeedRefresh = true;
+		if(!inCanBeOverwritten || m_CanBeOverwritten)
+		{
+			m_Text = inText;
+			m_TextClearTimer = inDuration;
+			m_NeedRefresh = true;
+			m_CanBeOverwritten = inCanBeOverwritten;
+		}
 	}
 
 	bool StatusBar::IsDisplayingTimedText() const
@@ -149,6 +154,7 @@ namespace Editor
 			{
 				m_Text = "";
 				m_NeedRefresh = true;
+				m_CanBeOverwritten = true;
 			}
 		}
 

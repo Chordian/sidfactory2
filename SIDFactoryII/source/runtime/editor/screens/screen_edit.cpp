@@ -10,6 +10,7 @@
 #include "runtime/editor/auxilarydata/auxilary_data_collection.h"
 #include "runtime/editor/auxilarydata/auxilary_data_hardware_preferences.h"
 #include "runtime/editor/auxilarydata/auxilary_data_play_markers.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/datasource_utils.h"
 #include "runtime/editor/driver/driver_info.h"
@@ -22,22 +23,21 @@
 #include "runtime/editor/components/component_orderlistoverview.h"
 #include "runtime/editor/components/component_string_list_selector.h"
 #include "runtime/editor/datasources/datasource_track_components.h"
-#include "runtime/editor/datasources/datasource_table_column_major.h"
-#include "runtime/editor/datasources/datasource_table_row_major.h"
 #include "runtime/editor/datasources/datasource_play_markers.h"
 #include "runtime/editor/datasources/datasource_flightrecorder.h"
-#include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/editor/datasources/datasource_table_text.h"
-#include "runtime/editor/visualizer_components/vizualizer_component_emulation_state.h"
 #include "runtime/editor/debug/debug_views.h"
 #include "runtime/editor/dialog/dialog_utilities.h"
+#include "runtime/editor/dialog/dialog_songs.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/dialog/dialog_message_yesno.h"
-#include "runtime/editor/dialog/dialog_hex_value_input.h"
 #include "runtime/editor/dialog/dialog_optimize.h"
+#include "runtime/editor/dialog/dialog_packing_options.h"
+#include "runtime/editor/dialog/dialog_text_input.h"
 #include "runtime/editor/screens/statusbar/status_bar_edit.h"
 #include "runtime/editor/overlays/overlay_flightrecorder.h"
 #include "runtime/editor/datacopy/copypaste.h"
+#include "runtime/editor/packer/packing_utils.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/emulation/sid/sidproxydefines.h"
@@ -47,10 +47,16 @@
 #include "utils/keyhook.h"
 #include "utils/keyhookstore.h"
 #include "utils/usercolors.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/global.h"
 
 #include "SDL.h"
 #include <cctype>
 #include "foundation/base/assert.h"
+#include "runtime/editor/components/component_pulse_filter_visualizer.h"
+#include "utils/logging.h"
+
 #include <algorithm>
 
 
@@ -63,6 +69,7 @@ namespace Editor
 	const unsigned char ScreenEdit::OrderListOverviewID = 0x40;
 	const unsigned char ScreenEdit::PlayMarkerListID = 41;
 	const unsigned char ScreenEdit::TracksTableID = 0x42;
+	const unsigned char ScreenEdit::PulseFilterVisualizerID = 0x43;
 
 	ScreenEdit::ScreenEdit(
 		Foundation::Viewport* inViewport,
@@ -81,7 +88,7 @@ namespace Editor
 		std::function<void(void)> inRequestLoadInstrumentCallback,
 		std::function<void(void)> inRequestSaveInstrumentCallback,
 		std::function<void(void)> inQuickSaveCallback,
-		std::function<void(unsigned short)> inPackCallback,
+		std::function<void(unsigned short, unsigned char)> inPackCallback,
 		std::function<void(void)> inToggleShowOverlay,
 		std::function<void(unsigned int)> inReconfigure)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
@@ -108,6 +115,8 @@ namespace Editor
 		, m_LastPlayNote(0x30)
 		, m_ActivationMessage("")
 		, m_ConvertLegacyDriverTableDefaultColors(false)
+		, m_ActivationFocusOnComponent(false)
+		, m_StopEmulationIfDriverStops(true)
 	{
 	}
 
@@ -144,6 +153,8 @@ namespace Editor
 		// Configure keys
 		ConfigureKeyHooks();
 		ConfigureDynamicKeyHooks();
+		ConfigureNoteKeys();
+		ConfigurePlaybackOptions();
 
 		// Prepare the layout
 		PrepareLayout();
@@ -159,10 +170,19 @@ namespace Editor
 		m_SIDProxy->SetModel(sid_model == AuxilaryDataHardwarePreferences::SIDModel::MOS6581 ? SID_MODEL_6581 : SID_MODEL_8580);
 
 		const AuxilaryDataHardwarePreferences::Region hardware_region = hardware_preferences.GetRegion();
-		m_SIDProxy->SetEnvironment(hardware_region == AuxilaryDataHardwarePreferences::Region::PAL ? SID_ENVIRONMENT_PAL : SID_ENVIRONMENT_NTSC);
+		const bool is_pal = hardware_region == AuxilaryDataHardwarePreferences::Region::PAL;
+		m_SIDProxy->SetEnvironment(is_pal ? SID_ENVIRONMENT_PAL : SID_ENVIRONMENT_NTSC);
 		m_SIDProxy->ApplySettings();
 
+		m_ExecutionHandler->SetPAL(is_pal);
+
 		m_ExecutionHandler->Unlock();
+
+		// Get the write order and cycle timing from the driver
+		const auto SIDWriteInfoList = DriverUtils::GetSIDWriteInformationFromDriver(*m_CPUMemory, *m_DriverInfo);
+
+		for(const auto& SIDWriteInfo : SIDWriteInfoList)
+			Utility::Logging::instance().Info("Write to address $d4%02x at cycle offset: %02x", SIDWriteInfo.m_AddressLow, SIDWriteInfo.m_CycleOffset); 
 
 		// Create debug views
 		m_DebugViews = std::make_unique<DebugViews>(m_Viewport, &*m_ComponentsManager, m_CPUMemory, m_MainTextField->GetDimensions(), m_DriverInfo);
@@ -198,8 +218,14 @@ namespace Editor
 		m_DriverState = DriverState();
 
 		// Create the status bar
+		const auto selected_song_index = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+		const std::string& song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(selected_song_index);
+		const std::string& song_selection_text = song_name.empty()
+			? std::to_string(selected_song_index + 1)
+			: song_name;
+
 		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_context_highlight, mouse_button_follow_play);
-		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II", 2500);
+		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500, false);
 		m_ActivationMessage = "";
 
 		// Create flight recorder overlay
@@ -243,6 +269,7 @@ namespace Editor
 
 		// Clear / dereference data sources
 		m_OrderListDataSources.clear();
+		m_NotSelectedSongOrderListDataSources.clear();
 		m_SequenceDataSources.clear();
 		m_InstrumentTableDataSource = nullptr;
 		m_CommandTableDataSource = nullptr;
@@ -285,8 +312,9 @@ namespace Editor
 		for (const auto key_event : inKeyboard.GetKeyDownList())
 			Utility::ConsumeInputKeyHooks(key_event, inKeyboard.GetModiferMask(), m_FastForwardKeyHooks);
 
-		// Apply fast forward factor to the execution handler
-		m_ExecutionHandler->SetFastForward(m_FastForwardFactor);
+		// Apply fast forward factor to the execution handler if not prevented by the active component
+		const bool may_do_fast_forward = m_ComponentsManager->IsFastForwardAllowed();
+		m_ExecutionHandler->SetFastForward(may_do_fast_forward ? m_FastForwardFactor : 0);
 
 		// Consume input for note play, if allowed
 		if (ConsumeInputNotePlay(inKeyboard))
@@ -370,7 +398,7 @@ namespace Editor
 		ScreenBase::Refresh();
 
 		// Refresh info rect
-		const int h = 4;
+		const int h = 5;
 		const int x = m_TracksComponent->GetPosition().m_X + m_TracksComponent->GetDimensions().m_Width + 1;
 		const int y = m_MainTextField->GetDimensions().m_Height - (h + 1);
 		const int w = m_MainTextField->GetDimensions().m_Width - (x + 1);
@@ -380,8 +408,13 @@ namespace Editor
 		const int minutes = m_PlayTimerSeconds / 60;
 		const int seconds = m_PlayTimerSeconds % 60;
 
+		const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
+		const unsigned char selected_song = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+		const std::string& song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(selected_song);
+
 		m_MainTextField->Print(x + 1, y + 1, ToColor(IsPlaying() ? UserColor::ScreenEditInfoRectTextTimePlaybackState : UserColor::ScreenEditInfoRectText), "Playing time: " + std::to_string(minutes) + ((seconds < 10) ? ":0" : ":") + std::to_string(seconds) + "      ");
-		m_MainTextField->Print(x + 1, y + 2, ToColor(UserColor::ScreenEditInfoRectText), m_DriverInfo->GetDescriptor().m_DriverName);
+		m_MainTextField->Print(x + 1, y + 2, ToColor(UserColor::ScreenEditInfoRectText), "Song " + std::to_string(selected_song + 1) + "/" + std::to_string(song_count) + ": " + song_name);
+		m_MainTextField->Print(x + 1, y + 3, ToColor(UserColor::ScreenEditInfoRectText), m_DriverInfo->GetDescriptor().m_DriverName);
 
 		// m_Undo->PrintDebug(*m_MainTextField);
 	}
@@ -392,6 +425,15 @@ namespace Editor
 	{
 		m_ActivationMessage = " " + inMessage;
 	}
+
+
+	void ScreenEdit::SetActivationTableFocusID(int inFocusComponentID, int inSelectedRow)
+	{
+		m_ActivationFocusOnComponent = true;
+		m_ActivationComponentFocusID = inFocusComponentID;
+		m_ActivationSelectedRow = inSelectedRow;
+	}
+
 
 	void ScreenEdit::SetStatusBarMessage(const std::string& inMessage, int inDisplayDuration)
 	{
@@ -481,7 +523,8 @@ namespace Editor
 		m_InstrumentTableDataSource->PushDataToSource();
 		m_CPUMemory->Unlock();
 
-		m_ExecutionHandler->QueueInit(0);
+		const unsigned char song_index = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+		m_ExecutionHandler->QueueInit(song_index);
 		SetStatusPlaying(true);
 
 		m_LastPlaybackStartEventPos = 0;
@@ -498,7 +541,8 @@ namespace Editor
 		m_InstrumentTableDataSource->PushDataToSource();
 		m_CPUMemory->Unlock();
 
-		m_ExecutionHandler->QueueInit(0, [&, inEventPos](Emulation::CPUMemory* inCPUMemory) { OnDriverPostInitPlayFromEventPos(inCPUMemory, inEventPos); });
+		const unsigned char song_index = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong();
+		m_ExecutionHandler->QueueInit(song_index, [&, inEventPos](Emulation::CPUMemory* inCPUMemory) { OnDriverPostInitPlayFromEventPos(inCPUMemory, inEventPos); });
 		SetStatusPlaying(true);
 
 		m_LastPlaybackStartEventPos = inEventPos;
@@ -514,7 +558,7 @@ namespace Editor
 			const int selected_marker = m_PlayMarkerListComponent->GetSelectionIndex();
 			const auto& play_markers = m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers();
 
-			return play_markers.GetPlayMarkerEventPosition(selected_marker);
+			return play_markers.GetPlayMarkerEventPosition(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong(), selected_marker);
 		}();
 
 		DoPlay(event_pos);
@@ -567,7 +611,7 @@ namespace Editor
 		const int selected_marker = m_PlayMarkerListComponent->GetSelectionIndex();
 		auto& play_markers = m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers();
 
-		const int event_pos = play_markers.GetPlayMarkerEventPosition(selected_marker);
+		const int event_pos = play_markers.GetPlayMarkerEventPosition(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong(), selected_marker);
 
 		m_TracksComponent->SetEventPosition(event_pos, false);
 	}
@@ -658,7 +702,7 @@ namespace Editor
 
 		AuxilaryDataEditingPreferences::NotationMode notation_mode = editing_preferences.GetNotationMode();
 		editing_preferences.SetNotationMode(notation_mode == AuxilaryDataEditingPreferences::NotationMode::Sharp
-			? AuxilaryDataEditingPreferences::NotationMode::Flat 
+			? AuxilaryDataEditingPreferences::NotationMode::Flat
 			: AuxilaryDataEditingPreferences::NotationMode::Sharp);
 
 		m_TracksComponent->ForceRefresh();
@@ -670,7 +714,9 @@ namespace Editor
 
 		if (inUp)
 		{
-			if (octave < 6)
+			const unsigned int max_octave = EditorUtils::Has2ndNoteInputOctave() ? 6 : 7;
+
+			if (octave < max_octave)
 				m_EditState.SetOctave(octave + 1);
 		}
 		else
@@ -686,8 +732,8 @@ namespace Editor
 
 		if (!inToggleRegion)
 		{
-			const AuxilaryDataHardwarePreferences::SIDModel sid_model = hardware_preferences.GetSIDModel() == AuxilaryDataHardwarePreferences::SIDModel::MOS6581 
-				? AuxilaryDataHardwarePreferences::SIDModel::MOS8580 
+			const AuxilaryDataHardwarePreferences::SIDModel sid_model = hardware_preferences.GetSIDModel() == AuxilaryDataHardwarePreferences::SIDModel::MOS6581
+				? AuxilaryDataHardwarePreferences::SIDModel::MOS8580
 				: AuxilaryDataHardwarePreferences::SIDModel::MOS6581;
 
 			hardware_preferences.SetSIDModel(sid_model);
@@ -701,8 +747,8 @@ namespace Editor
 		}
 		else
 		{
-			const AuxilaryDataHardwarePreferences::Region hardware_region = hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::Region::PAL 
-				? AuxilaryDataHardwarePreferences::Region::NTSC 
+			const AuxilaryDataHardwarePreferences::Region hardware_region = hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::Region::PAL
+				? AuxilaryDataHardwarePreferences::Region::NTSC
 				: AuxilaryDataHardwarePreferences::Region::PAL;
 
 			hardware_preferences.SetRegion(hardware_region);
@@ -720,6 +766,7 @@ namespace Editor
 	{
 		m_EditState.SetSequenceHighlighting(!m_EditState.IsSequenceHighlightingEnabled());
 		m_TracksComponent->ForceRefresh();
+		m_OrderListOverviewComponent->ForceRefresh();
 	}
 
 
@@ -771,8 +818,6 @@ namespace Editor
 		}
 	}
 
-
-
 	void ScreenEdit::DoUtilitiesDialog()
 	{
 		if (!m_ComponentsManager->IsDisplayingDialog())
@@ -799,42 +844,64 @@ namespace Editor
 
 						m_CPUMemory->Unlock();
 
-						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Statistics", text, 60, false, []() {}));						
+						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Statistics", text, 60, false, []() {}));
 					}
 					break;
 				case DialogUtilities::Selection::Optimize:
-					m_ComponentsManager->StartDialog(std::make_shared<DialogOptimize>(
-						m_OrderListDataSources,
-						m_SequenceDataSources,
-						m_InstrumentTableDataSource,
-						m_CommandTableDataSource,
-						m_InstrumentTableComponent->GetComponentID(),
-						m_CommandTableComponent->GetComponentID(),
-						*m_ComponentsManager,
-						*m_DriverInfo,
-						m_CPUMemory,
-						[&]() 
-						{
-							m_InstrumentTableComponent->PullDataFromSource(false);
-							m_CommandTableComponent->PullDataFromSource(false);
+					{
+						std::vector<std::shared_ptr<DataSourceOrderList>> all_order_list_data_sources;
 
-							m_ComponentsManager->ForceRefresh(); 
-						}
-					));
+						for(const auto& order_list_data_source : m_OrderListDataSources)
+							all_order_list_data_sources.push_back(order_list_data_source);
+						for (const auto& order_list_data_source : m_NotSelectedSongOrderListDataSources)
+							all_order_list_data_sources.push_back(order_list_data_source);
+
+						m_ComponentsManager->StartDialog(std::make_shared<DialogOptimize>(
+							all_order_list_data_sources,
+							m_SequenceDataSources,
+							m_InstrumentTableDataSource,
+							m_CommandTableDataSource,
+							m_InstrumentTableComponent->GetComponentID(),
+							m_CommandTableComponent->GetComponentID(),
+							*m_ComponentsManager,
+							*m_DriverInfo,
+							m_CPUMemory,
+							[&]()
+							{
+								m_InstrumentTableComponent->PullDataFromSource(false);
+								m_CommandTableComponent->PullDataFromSource(false);
+
+								m_ComponentsManager->ForceRefresh();
+							}
+						));
+					}
 					break;
 				case DialogUtilities::Selection::Pack:
 					{
-						auto dialog_ok = [this](unsigned int inDestinationAddress)
-						{
-							m_PackCallback(static_cast<unsigned short>(inDestinationAddress));
-						};
-						
+						m_PackingDestinationAddress = 0x0000;
+
 						auto dialog_cancel = [this]()
 						{
 						};
 
-						const unsigned int default_destination_address = 0x1000;
-						m_ComponentsManager->StartDialog(std::make_shared<DialogHexValueInput>("Packer", "Packed song destination address:", 32, 4, default_destination_address, 0xffff, dialog_ok, dialog_cancel));
+						auto dialog_ok = [this](unsigned short inDestinationAddress, unsigned char inDestinationZeroPage)
+						{
+							this->m_PackCallback(inDestinationAddress, inDestinationZeroPage);
+						};
+
+						ZeroPageRange zp_range = GetZeroPageRangeFromDriver(*(this->m_CPUMemory), *(this->m_DriverInfo));
+
+						if (zp_range.m_LowestZeroPage <= zp_range.m_HighestZeroPage)
+						{
+							const unsigned short default_destination_address = 0x1000;
+							m_ComponentsManager->StartDialog(std::make_shared<DialogPackingOptions>(
+								default_destination_address,
+								zp_range.m_LowestZeroPage,
+								zp_range,
+								dialog_ok,
+								dialog_cancel
+							));
+						}
 					}
 
 					break;
@@ -846,6 +913,7 @@ namespace Editor
 
 							DataSourceUtils::ClearSequences(m_SequenceDataSources);
 							DataSourceUtils::ClearOrderlist(m_OrderListDataSources);
+							DataSourceUtils::ClearOrderlist(m_NotSelectedSongOrderListDataSources);
 
 							m_CPUMemory->Unlock();
 
@@ -863,7 +931,7 @@ namespace Editor
 							m_CPUMemory->Lock();
 
 							DataSourceUtils::ExpandSequences(m_SequenceDataSources);
-		
+
 							m_CPUMemory->Unlock();
 
 							m_ComponentsManager->ForceRefresh();
@@ -884,6 +952,104 @@ namespace Editor
 	void ScreenEdit::DoOptionsDialog()
 	{
 		m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Not implemented", "Options!", 60, true, []() {}));
+	}
+
+
+	void ScreenEdit::DoSongsDialog()
+	{
+		if (!m_ComponentsManager->IsDisplayingDialog())
+		{
+			auto on_select = [&](const DialogSongs::Selection inSelection)
+			{
+				switch (inSelection)
+				{
+				case DialogSongs::Selection::SelectSong:
+					StartSongsDialogWithSelectionExecution("Select song", [&](unsigned int inSelection)
+					{
+						if (m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong() != inSelection)
+						{
+							EditorUtils::SelectSong(inSelection, *m_DriverInfo, *m_CPUMemory);
+							m_ConfigReconfigure(3);
+						}
+					});
+					break;
+				case DialogSongs::Selection::AddSong:
+					if (m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount() < EditorUtils::MAX_SONG_COUNT)
+					{
+						const auto do_add_song = [&](std::string inName)
+						{
+							EditorUtils::AddSong(inName, *m_DriverInfo, *m_CPUMemory, &(*m_ComponentsManager), OrderListOverviewID);
+							m_ConfigReconfigure(3);
+						};
+
+						m_ComponentsManager->StartDialog(std::make_shared<DialogTextInput>(
+							"Add song!",
+							"Enter a name for the song you are adding!",
+							"Name: ",
+							"New song",
+							50,
+							32,
+							true,
+							do_add_song,
+							[]() {}));
+					}
+					else
+						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Info", "You cannot add more than " + std::to_string(EditorUtils::MAX_SONG_COUNT) + " songs!", 60, true, []() {}));
+
+					break;
+				case DialogSongs::Selection::RemoveSong:
+					if (m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount() > 1)
+					{
+						StartSongsDialogWithSelectionExecution("Remove song", [&](unsigned int inSelection)
+						{
+							const auto do_remove_song = [&, selection = inSelection]()
+							{
+								EditorUtils::RemoveSong(selection, *m_DriverInfo, *m_CPUMemory, &(*m_ComponentsManager), OrderListOverviewID);
+								m_ConfigReconfigure(3);
+							};
+
+							m_ComponentsManager->StartDialog(std::make_shared<DialogMessageYesNo>("Remove song!", "Are you sure you want to remove song " + std::to_string(inSelection) + "?\nThis cannot be undone!", 60, do_remove_song, []() {}));
+						});
+					}
+					else
+						m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Info", "You cannot delete the last remaining song", 60, true, []() {}));
+
+					break;
+				case DialogSongs::Selection::RenameSong:
+					StartSongsDialogWithSelectionExecution("Remove song", [&](unsigned int inSelection)
+					{
+						const auto do_rename_song = [&, selection = inSelection](std::string inName)
+						{
+							EditorUtils::RenameSong(selection, inName, *m_DriverInfo);
+						};
+
+						const std::string song_name = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongName(inSelection);
+						m_ComponentsManager->StartDialog(std::make_shared<DialogTextInput>(
+							"Rename song!",
+							"Rename " + std::to_string(inSelection) + " [" + song_name + "]?",
+							"Song name: ",
+							song_name,
+							50,
+							32,
+							true,
+							do_rename_song,
+							[]() {}));
+					});
+					break;
+				case DialogSongs::Selection::MoveSong:
+					//m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("Move song!", "Not implemented", 60, true, []() {}));
+					StartMoveSongDialogWithSelectionExecution("Move song", [&](unsigned int inSelectionFrom, unsigned int inSelectionTo)
+					{
+						if(EditorUtils::MoveSong(inSelectionFrom, inSelectionTo, *m_DriverInfo, *m_CPUMemory, OrderListOverviewID, *m_ComponentsManager))
+							m_ConfigReconfigure(3);
+					});
+
+					break;
+				}
+			};
+
+			m_ComponentsManager->StartDialog(std::make_shared<DialogSongs>(60, 8, on_select, [&]() { DoRestoreMuteState(); }));
+		}
 	}
 
 
@@ -932,12 +1098,13 @@ namespace Editor
 		m_CPUMemory->Unlock();
 
 		// Create data containers for each track
-		ScreenEditUtils::PrepareOrderListsDataSources(*m_DriverInfo, *m_CPUMemory, m_OrderListDataSources);
+		ScreenEditUtils::PrepareSelectedSongOrderListsDataSources(*m_DriverInfo, *m_CPUMemory, m_OrderListDataSources);
+		ScreenEditUtils::PrepareNotSelectedSongOrderListsDataSources(*m_DriverInfo, *m_CPUMemory, m_NotSelectedSongOrderListDataSources);
 
 		// Create data containers for each sequence
 		ScreenEditUtils::PrepareSequenceDataSources(*m_DriverInfo, m_DriverState, *m_CPUMemory, m_SequenceDataSources);
 
-		// Status report lamda for sequence editing
+		// Status report lambda for sequence editing
 		auto sequence_editing_status_report = [&](bool inIsSequenceReport, int inDataIndex, int inPackedSize)
 		{
 			m_IsTrackDataReportSequence = inIsSequenceReport;
@@ -953,18 +1120,15 @@ namespace Editor
 
 			return first_free_sequence_index;
 		};
-        
-        auto get_first_empty_sequence_index = [&]() -> unsigned char
-        {
-            m_CPUMemory->Lock();
-            unsigned char first_free_sequence_index = DriverUtils::GetFirstEmptySequenceIndex(*m_DriverInfo, *m_CPUMemory);
-            m_CPUMemory->Unlock();
 
-            return first_free_sequence_index;
-        };
+		auto get_first_empty_sequence_index = [&]() -> unsigned char
+		{
+			m_CPUMemory->Lock();
+			unsigned char first_free_sequence_index = DriverUtils::GetFirstEmptySequenceIndex(*m_DriverInfo, *m_CPUMemory);
+			m_CPUMemory->Unlock();
 
-		// Flush copy paste
-		CopyPaste::Instance().Flush();
+			return first_free_sequence_index;
+		};
 
 		// Create data container for music data (which is all tracks and sequences combined)
 		std::vector<std::shared_ptr<ComponentTrack>> tracks;
@@ -983,9 +1147,9 @@ namespace Editor
 					m_DriverInfo->GetAuxilaryDataCollection(),
 					sequence_editing_status_report,
 					get_first_free_sequence_index,
-                    get_first_empty_sequence_index,
+					get_first_empty_sequence_index,
 					0, 0, 0
-					)
+				)
 			);
 
 		m_TracksDataSource = std::make_shared<DataSourceTrackComponents>(tracks);
@@ -999,29 +1163,33 @@ namespace Editor
 
 		const int top = 2;
 		const int bottom = text_field_dimensions.m_Height - 1;
-		const int order_list_overview_bottom = bottom - (1 + AuxilaryDataPlayMarkers::MaxPlayMarkers);
+		const int order_list_overview_bottom = bottom - (2 + AuxilaryDataPlayMarkers::MaxPlayMarkers);
 		const int player_markers_list_top = order_list_overview_bottom + 1;
 
 		// Create orderlist overview component
 		std::shared_ptr<DataSourceTableText> song_view_text_buffer = std::make_shared<DataSourceTableText>(
 			OrderListOverviewID,
 			256,
+			m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong(),
 			m_DriverInfo->GetAuxilaryDataCollection().GetTableText()
 		);
 
 		m_OrderListOverviewComponent = std::make_shared<ComponentOrderListOverview>(
-			OrderListOverviewID, 0, 
+			OrderListOverviewID, 0,
 			undo,
-			m_MainTextField, 
+			m_MainTextField,
+			m_EditState,
+			m_DriverState,
+			m_KeyHookStore,
 			song_view_text_buffer,
-			m_OrderListDataSources, 
-			m_SequenceDataSources, 
-			1, 
-			top, 
-			order_list_overview_bottom - top, 
+			m_OrderListDataSources,
+			m_SequenceDataSources,
+			1,
+			top,
+			order_list_overview_bottom - top,
 			[&](int inEventPosition, bool inStartPlayingFromPosition)
 			{
-				m_TracksComponent->SetEventPosition(inEventPosition, false); 
+				m_TracksComponent->SetEventPosition(inEventPosition, false);
 				if(inStartPlayingFromPosition)
 					DoPlay(inEventPosition);
 			}
@@ -1033,18 +1201,19 @@ namespace Editor
 
 		// Play markers component
 		const int play_markers_width = orderlist_overview_rect.m_Dimensions.m_Width;
-		auto play_markers_data_source = std::make_shared<DataSourcePlayMarkers>(m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers(), m_DisplayState);
+		const int play_markers_height = 4;
+		auto play_markers_data_source = std::make_shared<DataSourcePlayMarkers>(m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers(), m_DriverInfo->GetAuxilaryDataCollection().GetSongs(), m_DisplayState);
 
 		m_PlayMarkerListComponent = std::make_shared<ComponentStringListSelector>(
 			PlayMarkerListID, 0,
-			undo, 
-			play_markers_data_source, 
-			m_MainTextField, 
-			1, 
-			player_markers_list_top, 
-			play_markers_width, 
-			bottom - player_markers_list_top, 
-			1, 
+			undo,
+			play_markers_data_source,
+			m_MainTextField,
+			1,
+			player_markers_list_top,
+			play_markers_width,
+			play_markers_height,
+			1,
 			0
 		);
 		m_PlayMarkerListComponent->SetColors(ToColor(UserColor::MarkerListBackground), ToColor(UserColor::MarkerListCursorFocus), ToColor(UserColor::MarkerListCursorNoFocus));
@@ -1058,16 +1227,34 @@ namespace Editor
 		});
 		m_ComponentsManager->AddComponent(m_PlayMarkerListComponent);
 
+		// Create pulse/filter visualizer component
+		const int pulse_filter_visualzer_top = player_markers_list_top + play_markers_height + 1;
+		auto pulse_filter_visualizer = std::make_shared<ComponentPulseFilterVisualizer>(
+			PulseFilterVisualizerID, 0,
+			undo,
+			m_ExecutionHandler,
+			m_MainTextField,
+			m_Viewport,
+			m_ComponentsManager.get(),
+			m_TracksDataSource,
+			1,
+			pulse_filter_visualzer_top,
+			play_markers_width,
+			4);
+
+		m_ComponentsManager->AddComponent(pulse_filter_visualizer);
+
 		// Create the tracks component for editing orderlist and sequence data
 		m_TracksComponent = std::make_shared<ComponentTracks>(
-			TracksTableID, 0, 
-			undo, 
-			m_TracksDataSource, 
-			m_MainTextField, 
-			m_DriverInfo->GetAuxilaryDataCollection(), 
+			TracksTableID, 0,
+			undo,
+			m_TracksDataSource,
+			m_NotSelectedSongOrderListDataSources,
+			m_MainTextField,
+			m_DriverInfo->GetAuxilaryDataCollection(),
 			m_EditState,
-			tracks_table_x, 
-			top, 
+			tracks_table_x,
+			top,
 			bottom - top);
 		m_ComponentsManager->AddComponent(m_TracksComponent);
 
@@ -1081,8 +1268,6 @@ namespace Editor
 		// Create tables as configured by the driver
 		const std::vector<DriverInfo::TableDefinition>& table_definitions = m_DriverInfo->GetTableDefinitions();
 
-		int command_and_instrument_table_ref = 0;
-		
 		int highest_table = 0;
 		int widest_table = 0;
 
@@ -1109,7 +1294,7 @@ namespace Editor
 				widest_table = 0;
 			}
 
-			if (table_width + current_x > tables_rect.m_Dimensions.m_Width || command_and_instrument_table_ref == 2)
+			if (table_width + current_x > tables_rect.m_Dimensions.m_Width)
 			{
 				current_x = 0;
 				current_y += highest_table + 2;
@@ -1222,14 +1407,12 @@ namespace Editor
 
 				table->GetSelectedRowChangedEvent().Add(
 					nullptr,
-					Utility::TDelegate<void(int)>([&](int inSelectedRow) 
-					{ 
-						m_EditState.SetSelectedInstrument(static_cast<unsigned char>(inSelectedRow)); 
+					Utility::TDelegate<void(int)>([&](int inSelectedRow)
+					{
+						m_EditState.SetSelectedInstrument(static_cast<unsigned char>(inSelectedRow));
 						m_TracksComponent->ForceRefresh();
 					})
 				);
-
-				//++command_and_instrument_table_ref;
 			}
 			else if (table_definition.m_Type == DriverInfo::TableType::Commands)
 			{
@@ -1238,14 +1421,12 @@ namespace Editor
 
 				table->GetSelectedRowChangedEvent().Add(
 					nullptr,
-					Utility::TDelegate<void(int)>([&](int inSelectedRow) 
-					{ 
-						m_EditState.SetSelectedCommand(static_cast<unsigned char>(inSelectedRow)); 
+					Utility::TDelegate<void(int)>([&](int inSelectedRow)
+					{
+						m_EditState.SetSelectedCommand(static_cast<unsigned char>(inSelectedRow));
 						m_TracksComponent->ForceRefresh();
 					})
 				);
-
-				//++command_and_instrument_table_ref;
 			}
 
 			// Print table name
@@ -1276,10 +1457,45 @@ namespace Editor
 			);
 		}
 
+		// Hook up the tracks to order list change from the orderlist overview component
+		m_OrderListOverviewComponent->GetOrderListChangedEvent().Add(
+			nullptr,
+			Utility::TDelegate<void(int)>([&](int inChannel) { m_TracksComponent->OnOrderListChanged(inChannel); })
+		);
+
+		// Hook up tracks for when order list index changes
+		m_TracksComponent->GetOrderListIndexChangedEvent().Add(
+			nullptr,
+			Utility::TDelegate<void(bool, unsigned int, unsigned char)>([this](bool InHasFocus, unsigned int InOrderlistIndex, unsigned char InSequenceIndex)
+			{
+				const bool is_playing = m_DriverState.GetPlayState() == Editor::DriverState::PlayState::Playing;
+
+				if(m_EditState.IsFollowPlayMode() && is_playing)
+					return;
+				
+				if(InHasFocus)
+				{
+					this->ShowSequenceUsageCount(InSequenceIndex);
+					this->m_OrderListOverviewComponent->SetHighlitSequenceValue(InSequenceIndex);
+				}
+			})
+		);
+
 		// Enable groups
-		//m_ComponentsManager->SetGroupEnabledForTabbing(0);
 		m_ComponentsManager->SetGroupEnabledForInput(0, true);
-		m_ComponentsManager->SetComponentInFocus(m_TracksComponent);
+
+		if (m_ActivationFocusOnComponent)
+		{
+			m_ComponentsManager->SetComponentInFocus(m_ActivationComponentFocusID);
+			ComponentTableRowElements* component = reinterpret_cast<ComponentTableRowElements*>(m_ComponentsManager->GetComponent(m_ActivationComponentFocusID));
+
+			FOUNDATION_ASSERT(component != nullptr);
+			component->SetSelectedRow(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong());
+
+			m_ActivationFocusOnComponent = false;
+		}
+		else
+			m_ComponentsManager->SetComponentInFocus(m_TracksComponent);
 	}
 
 
@@ -1377,16 +1593,26 @@ namespace Editor
 		case DriverState::PlayState::Playing:
 			{
 				const unsigned short tempo_counter_address = m_DriverInfo->GetDriverCommon().m_TempoCounterAddress;
+				const unsigned short driver_state_address = m_DriverInfo->GetDriverCommon().m_DriverStateAddress;
 
 				if (tempo_counter_address != 0)
 				{
-					const unsigned char tempo_counter_value = (*inCPUMemory)[tempo_counter_address];
+					const unsigned char driver_state_value = (*inCPUMemory)[driver_state_address];
+					if (driver_state_value == 0x80)
+					{
+						const unsigned char tempo_counter_value = (*inCPUMemory)[tempo_counter_address];
 
-					if (tempo_counter_value == 0)
-						++m_PlaybackCurrentEventPos;
+						if (tempo_counter_value == 0)
+							++m_PlaybackCurrentEventPos;
 
-					if (m_PlaybackCurrentEventPos >= m_TracksComponent->GetMaxEventPosition())
-						m_PlaybackCurrentEventPos = m_TracksComponent->GetLoopEventPosition();
+						if (m_PlaybackCurrentEventPos >= m_TracksComponent->GetMaxEventPosition())
+							m_PlaybackCurrentEventPos = m_TracksComponent->GetLoopEventPosition();
+					}
+					else if (driver_state_value == 0x40)
+					{
+						if(m_StopEmulationIfDriverStops)
+							DoStop();
+					}
 				}
 			}
 			break;
@@ -1517,6 +1743,31 @@ namespace Editor
 	}
 
 
+	void ScreenEdit::ConfigurePlaybackOptions()
+	{
+		using namespace Utility::Config;
+
+		ConfigFile& config = Global::instance().GetConfig();
+		m_StopEmulationIfDriverStops = GetSingleConfigurationValue<ConfigValueInt>(config, "Playback.StopEmulationIfDriverStops", true);
+	}
+
+
+	void ScreenEdit::ConfigureNoteKeys()
+	{
+		using namespace Utility::Config;
+
+		ConfigFile& config = Global::instance().GetConfig();
+
+		if (config.HasKey("Key.Input.Notes.Octave1"))
+		{
+			std::string note_keys_octave1 = GetSingleConfigurationValue<ConfigValueString>(config, "Key.Input.Notes.Octave1", std::string(""));
+			std::string note_keys_octave2 = GetSingleConfigurationValue<ConfigValueString>(config, "Key.Input.Notes.Octave2", std::string(""));
+
+			EditorUtils::SetNoteInputValueKeys(note_keys_octave1, note_keys_octave2);
+		}
+	}
+
+
 	void ScreenEdit::ConfigureKeyHooks()
 	{
 		using namespace Utility;
@@ -1543,7 +1794,7 @@ namespace Editor
 
 			return true;
 		} });
- 
+
 		m_KeyHooks.push_back({ "Key.ScreenEdit.PlayFromMarker", m_KeyHookStore, [&]()
 		{
 			if (IsPlaying())
@@ -1584,6 +1835,16 @@ namespace Editor
 			return true;
 		} });
 
+		m_KeyHooks.push_back({ "Key.ScreenEdit.OpenSongsDialog", m_KeyHookStore, [&]()
+		{
+			if (IsPlaying())
+				DoStop();
+
+			DoSongsDialog();
+
+			return true;
+		} });
+
 		m_KeyHooks.push_back({ "Key.ScreenEdit.OpenOptionsDialog", m_KeyHookStore, [&]()
 		{
 			if (IsPlaying())
@@ -1602,31 +1863,31 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.OctaveDown", m_KeyHookStore, [&]()
-		{ 
-			DoOctaveChange(false); 
+		{
+			DoOctaveChange(false);
 			return true;
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.OctaveUp", m_KeyHookStore, [&]()
-		{ 
-			DoOctaveChange(true); 
+		{
+			DoOctaveChange(true);
 			return true;
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleSIDModel", m_KeyHookStore, [&]()
-		{ 
-			DoToggleSIDModelAndRegion(false); 
+		{
+			DoToggleSIDModelAndRegion(false);
 			return true;
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleRegion", m_KeyHookStore, [&]()
-		{ 
-			DoToggleSIDModelAndRegion(true); 
+		{
+			DoToggleSIDModelAndRegion(true);
 			return true;
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.LoadSong", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoLoadSong();
 
@@ -1634,7 +1895,7 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.LoadInstrument", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoLoadInstrument();
 
@@ -1642,7 +1903,7 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ImportSong", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoLoadImportSong();
 
@@ -1650,7 +1911,7 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.SaveSong", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoSaveSong();
 
@@ -1658,7 +1919,7 @@ namespace Editor
 		} });
 
 		m_KeyHooks.push_back({ "Key.ScreenEdit.SaveInstrument", m_KeyHookStore, [&]()
-		{ 
+		{
 			DoStop();
 			DoSaveInstrument();
 
@@ -1705,7 +1966,7 @@ namespace Editor
 			const int selected_marker = m_PlayMarkerListComponent->GetSelectionIndex();
 			auto& play_markers = m_DriverInfo->GetAuxilaryDataCollection().GetPlayMarkers();
 
-			play_markers.SetPlayMarkerEventPosition(selected_marker, m_TracksComponent->GetEventPosition());
+			play_markers.SetPlayMarkerEventPosition(m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSelectedSong(), selected_marker, m_TracksComponent->GetEventPosition());
 
 			m_PlayMarkerListComponent->ForceRefresh();
 
@@ -1748,7 +2009,7 @@ namespace Editor
 		{
 			if (m_Undo->HasRedoStep())
 			{
-				m_Undo->DoRedo(*m_CursorControl);			
+				m_Undo->DoRedo(*m_CursorControl);
 				m_ComponentsManager->PullDataFromAllSources(true);
 			}
 
@@ -1894,7 +2155,7 @@ namespace Editor
 					if (it == m_KeyTableIDPairs.end())
 						return static_cast<int>(i);
 				}
-				
+
 				return -1;
 			}(table_definition.m_Name);
 
@@ -1906,6 +2167,22 @@ namespace Editor
 				m_KeyTableIDPairs.push_back({ associated_key_code, associated_character_index, table_definition.m_ID });
 				m_DynamicKeyHooks.push_back({ table_definition.m_Name, { associated_key_code, Keyboard::Alt }, focus_toggle_function });
 			}
+		}
+	}
+
+	void ScreenEdit::ShowSequenceUsageCount(unsigned char inSequenceIndex)
+	{
+		if(inSequenceIndex < 0x80)
+		{
+			m_CPUMemory->Lock();
+			std::vector<int> sequence_index_use_count = DriverUtils::GetSequenceUsageCount(*m_DriverInfo, *m_CPUMemory);
+			m_CPUMemory->Unlock();
+
+			const int usage_count = sequence_index_use_count[inSequenceIndex];
+			const bool usage_count_plural = usage_count > 1;
+			
+			const std::string text = " Sequence " + EditorUtils::ConvertToHexValue(inSequenceIndex, m_DisplayState.IsHexUppercase()) + " referenced " + std::to_string(sequence_index_use_count[inSequenceIndex]) + (usage_count_plural ? " times." : " time.");
+			SetStatusBarMessage(text, 5000);
 		}
 	}
 }

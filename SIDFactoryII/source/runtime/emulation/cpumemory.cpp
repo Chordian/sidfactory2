@@ -7,7 +7,7 @@ namespace Emulation
 {
 	CPUMemory::CPUMemory(unsigned int nSize, Foundation::IPlatform* inPlatform)
 		: m_nSize(nSize)
-		, m_IsLocked(false)
+		, m_LockRefCount(0)
 		, m_MemorySnapshot(nullptr)
 	{
 		FOUNDATION_ASSERT(inPlatform != nullptr);
@@ -31,18 +31,20 @@ namespace Emulation
 	void CPUMemory::Lock()
 	{
 		m_Mutex->Lock();
-		m_IsLocked = true;
+		m_LockRefCount++;
 	}
 
 	void CPUMemory::Unlock()
 	{
-		m_IsLocked = false;
+		m_LockRefCount--;
+		FOUNDATION_ASSERT(m_LockRefCount >= 0);
+		
 		m_Mutex->Unlock();
 	}
 
 	bool CPUMemory::IsLocked() const
 	{
-		return m_IsLocked;
+		return m_LockRefCount > 0;
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------------
@@ -59,7 +61,7 @@ namespace Emulation
 	{
 		FOUNDATION_ASSERT(m_Memory != nullptr);
 		FOUNDATION_ASSERT(m_MemorySnapshot == nullptr);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		m_MemorySnapshot = new unsigned char[m_nSize];
 		memcpy(m_MemorySnapshot, m_Memory, m_nSize);
@@ -69,7 +71,7 @@ namespace Emulation
 	{
 		FOUNDATION_ASSERT(m_Memory != nullptr);
 		FOUNDATION_ASSERT(m_MemorySnapshot != nullptr);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		memcpy(m_Memory, m_MemorySnapshot, m_nSize);
 	}
@@ -77,7 +79,7 @@ namespace Emulation
 	void CPUMemory::FlushSnapshot()
 	{
 		FOUNDATION_ASSERT(m_MemorySnapshot != nullptr);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		delete[] m_MemorySnapshot;
 		m_MemorySnapshot = nullptr;
@@ -89,7 +91,7 @@ namespace Emulation
 	{
 		FOUNDATION_ASSERT(m_Memory != nullptr);
 		FOUNDATION_ASSERT(nAddress < m_nSize);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		return m_Memory[nAddress];
 	}
@@ -98,7 +100,7 @@ namespace Emulation
 	{
 		FOUNDATION_ASSERT(m_Memory != nullptr);
 		FOUNDATION_ASSERT(nAddress < m_nSize - 1);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		return (unsigned short)m_Memory[nAddress] | (((unsigned short)m_Memory[nAddress + 1]) << 8);
 	}
@@ -108,7 +110,7 @@ namespace Emulation
 		FOUNDATION_ASSERT(inDestinationBuffer != nullptr);
 		FOUNDATION_ASSERT(m_Memory != nullptr);
 		FOUNDATION_ASSERT(inAddress < m_nSize + inDestinationBufferByteCount);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		unsigned char* pDest = (unsigned char*)inDestinationBuffer;
 
@@ -122,7 +124,7 @@ namespace Emulation
 	{
 		FOUNDATION_ASSERT(m_Memory != nullptr);
 		FOUNDATION_ASSERT(nAddress < m_nSize);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		m_Memory[nAddress] = ucByte;
 	}
@@ -131,7 +133,7 @@ namespace Emulation
 	{
 		FOUNDATION_ASSERT(m_Memory != nullptr);
 		FOUNDATION_ASSERT(nAddress < m_nSize - 1);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		m_Memory[nAddress] = (unsigned char)(usWord & 0x00ff);
 		m_Memory[nAddress + 1] = (unsigned char)((usWord & 0xff00) >> 8);
@@ -141,12 +143,32 @@ namespace Emulation
 	{
 		FOUNDATION_ASSERT(pSourceBuffer != nullptr);
 		FOUNDATION_ASSERT(m_Memory != nullptr);
-		FOUNDATION_ASSERT(nAddress < m_nSize + nSourceBufferByteCount);
-		FOUNDATION_ASSERT(m_IsLocked);
+		FOUNDATION_ASSERT(nAddress + nSourceBufferByteCount <= m_nSize);
+		FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 		unsigned char* pSrc = (unsigned char*)pSourceBuffer;
 
 		for (unsigned int i = 0; i < nSourceBufferByteCount; i++)
 			m_Memory[nAddress + i] = pSrc[i];
+	}
+
+	void CPUMemory::Copy(unsigned int inSourceAddress, unsigned int inLength, unsigned int inDestinationAddress)
+	{
+		FOUNDATION_ASSERT(inSourceAddress < m_nSize);
+		FOUNDATION_ASSERT(inSourceAddress + inLength <= m_nSize);
+		FOUNDATION_ASSERT(inDestinationAddress < m_nSize);
+		FOUNDATION_ASSERT(inDestinationAddress + inLength <= m_nSize);
+
+		memcpy(&m_Memory[inDestinationAddress], &m_Memory[inSourceAddress], inLength);
+	}
+
+
+	void CPUMemory::Set(unsigned char inValue, unsigned int inAddress, unsigned int inLength)
+	{
+		FOUNDATION_ASSERT(inAddress < m_nSize);
+		FOUNDATION_ASSERT(inAddress + inLength < m_nSize);
+
+		for (unsigned int i = 0; i < inLength; ++i)
+			m_Memory[inAddress + i] = inValue;
 	}
 }

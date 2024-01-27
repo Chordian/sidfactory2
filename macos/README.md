@@ -12,7 +12,7 @@ Building macOS distribution from command line (iTerm)
 
 - `make`: Create just the executable
 - `make app`: Create the `SIDFactoryII.app`
-- `make tmp`: Create a temporary DMG image
+- `make raw`: Create a temporary 'raw' DMG image
 - `make dmg`: Finalize existing temporary DMG image
 
 ## Create a distribution
@@ -23,7 +23,7 @@ version is correct)
 ### Build "raw" DMG image
 
 This creates a DMG image that is ready for distribution, except that the window
-not nicely layed out when you open it, and it isn't compressed. The created
+not nicely laid out when you open it, and it isn't compressed. The created
 image is in the `artifacts` folder.
 
 From `sidfactory2/macos`:

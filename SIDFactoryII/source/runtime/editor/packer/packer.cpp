@@ -1,7 +1,9 @@
 #include "packer.h"
-
+#include "packing_utils.h"
 #include "runtime/editor/driver/driver_info.h"
 #include "runtime/editor/driver/driver_utils.h"
+#include "runtime/editor/auxilarydata/auxilary_data_collection.h"
+#include "runtime/editor/auxilarydata/auxilary_data_songs.h"
 #include "runtime/emulation/cpumos6510.h"
 #include "utils/c64file.h"
 
@@ -21,10 +23,11 @@ namespace Editor
 	}
 
 
-	Packer::Packer(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned short inDestinationAddress)
+	Packer::Packer(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned short inDestinationAddress, unsigned char inLowestZP)
 		: m_CPUMemory(inCPUMemory)
 		, m_DriverInfo(inDriverInfo)
 		, m_DestinationAddress(inDestinationAddress)
+		, m_LowestZP(inLowestZP)
 		, m_HighestUsedSequenceIndex(0)
 		, m_OrderListPointersDataSectionLowID(0)
 		, m_OrderListPointersDataSectionHighID(0)
@@ -35,6 +38,13 @@ namespace Editor
 
 		// Compute the destination address delta. The driver and data are processed for the destination address at address 0x1000 in the data container, but the load 
 		// address of the file generated is altered to the destination address before saving it to disk.
+
+		ZeroPageRange zp_range = GetZeroPageRangeFromDriver(inCPUMemory, inDriverInfo);
+
+		FOUNDATION_ASSERT(zp_range.m_LowestZeroPage > 0);
+		FOUNDATION_ASSERT(zp_range.m_LowestZeroPage <= zp_range.m_HighestZeroPage);
+
+		m_CurrentLowestZP = zp_range.m_LowestZeroPage;
 
 		m_DestinationAddressDelta = m_DestinationAddress - m_DriverInfo.GetDescriptor().m_DriverCodeTop;
 
@@ -47,18 +57,29 @@ namespace Editor
 		FetchSequences();
 
 		// Sort data descriptors
-		std::sort(m_DataSectionList.begin(), m_DataSectionList.end(), [](const auto& inA, const auto& inB) { return (inA.m_SourceAddress < inB.m_SourceAddress); });
+		std::sort(m_DataSectionList.begin(), m_DataSectionList.end(), [](const auto& inA, const auto& inB)
+		{ 
+			return (inA.m_SourceAddress < inB.m_SourceAddress); 
+		});
+
+		const bool requires_multi_song_patch = m_DriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount() > 1;
 
 		unsigned short end_address = ComputeDestinationAddresses();
 
+		if (requires_multi_song_patch)
+			end_address += GetMultiSongPatchSize();
+
 		m_OutputData = CreateOutputDataContainer(m_DriverInfo.GetDescriptor().m_DriverCodeTop, end_address);
 
-		CopyDataToOutputContainer();
+		unsigned short data_address = CopyDataToOutputContainer();
 
 		AdjustOrderListPointers();
 		AdjustSequencePointers();
 
 		ProcessDriverCode();
+
+		if (requires_multi_song_patch)
+			ApplyMultiSongPatch(data_address);
 
 		// Move the top address of the output data container, to the selected destination address (the code and data have been generated specifically for the destination address already)
 		m_OutputData->MoveDataToTopAddress(m_DestinationAddress);
@@ -171,8 +192,9 @@ namespace Editor
 	{
 		std::vector<unsigned short> orderlist_length_list = DriverUtils::GetOrderListsLength(m_DriverInfo, m_CPUMemory);
 		const auto& music_data = m_DriverInfo.GetMusicData();
+		const unsigned char song_count = m_DriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
 
-		for (int i = 0; i < music_data.m_TrackCount; ++i)
+		for (int i = 0; i < music_data.m_TrackCount * song_count; ++i)
 		{
 			const unsigned short order_list_address = music_data.m_OrderListTrack1Address + music_data.m_OrderListSize * i;
 			m_OrderListDataSectionIDList.push_back(AddDataSection(order_list_address, orderlist_length_list[i]));
@@ -223,7 +245,7 @@ namespace Editor
 	}
 
 
-	void Packer::CopyDataToOutputContainer()
+	unsigned short Packer::CopyDataToOutputContainer()
 	{
 		FOUNDATION_ASSERT(m_OutputData != nullptr);
 		
@@ -241,6 +263,8 @@ namespace Editor
 
 			data_address += data_section.m_SourceSize;
 		}
+
+		return data_address;
 	}
 
 
@@ -249,16 +273,23 @@ namespace Editor
 		const unsigned short order_list_pointers_low_address = GetDataSection(m_OrderListPointersDataSectionLowID)->m_DestinationAddress;
 		const unsigned short order_list_pointers_high_address = GetDataSection(m_OrderListPointersDataSectionHighID)->m_DestinationAddress;
 
+		const auto& music_data = m_DriverInfo.GetMusicData();
+
 		int offset = 0;
 
 		for (int order_list_id : m_OrderListDataSectionIDList)
 		{
 			unsigned short order_list_address = GetDataSection(order_list_id)->m_DestinationAddress + m_DestinationAddressDelta;
 
-			(*m_OutputData)[order_list_pointers_low_address + offset] = static_cast<unsigned char>(order_list_address & 0xff);
-			(*m_OutputData)[order_list_pointers_high_address + offset] = static_cast<unsigned char>((order_list_address >> 8) & 0xff);
+			m_OrderListAdressList.push_back(order_list_address);
 
-			++offset;
+			if (offset < static_cast<int>(music_data.m_TrackCount))
+			{
+				(*m_OutputData)[order_list_pointers_low_address + offset] = static_cast<unsigned char>(order_list_address & 0xff);
+				(*m_OutputData)[order_list_pointers_high_address + offset] = static_cast<unsigned char>((order_list_address >> 8) & 0xff);
+
+				++offset;
+			}
 		}
 	}
 
@@ -279,6 +310,104 @@ namespace Editor
 
 			++offset;
 		}
+	}
+
+
+	static const unsigned char multi_song_patch_code[] =
+	{
+		0x85, 0xfe,			// c000   STA $FE		// ZP lowest
+		0x0a,				// c002   ASL A
+		0x18,				// c003   CLC
+		0x65, 0xfe,			// c004   ADC $FE		// ZP lowest
+		0xaa,				// c006   TAX
+		0xa0, 0x00,			// c007   LDY #$00
+		0xbd, 0x00, 0xc1,	// c009   LDA $C100,X	// Order list pointer source low
+		0x99, 0x00, 0xc2,	// c00c   STA $C200,Y	// Driver order list  pointer low 
+		0xbd, 0x10, 0xc1,	// c00f   LDA $C110,X	// Order list pointer source high
+		0x99, 0x03, 0xc2,	// c012   STA $C203,Y	// Driver order list  pointer high
+		0xe8,				// c015   INX
+		0xc8,				// c016   INY
+		0xc0, 0x03,			// c017   CPY #$03
+		0xd0, 0xee,			// c019   BNE $C009
+		0xa5, 0xfe,			// c01b   LDA $FE		// ZP lowest
+		0x4c, 0x03, 0x10	// c01d   JMP $1000		// Jump to vector originally jumped to by jump at $1000
+	};
+
+	unsigned short Packer::GetMultiSongPatchSize()
+	{
+		const unsigned char song_count = m_DriverInfo.GetAuxilaryDataCollection().GetSongs().GetSongCount();
+		const unsigned char track_count = m_DriverInfo.GetMusicData().m_TrackCount;
+
+		const unsigned short order_list_pointer_size = static_cast<unsigned short>(song_count * track_count) * 2;
+		const unsigned short patch_code_size = sizeof(multi_song_patch_code);
+
+		return order_list_pointer_size + patch_code_size;
+	}
+
+
+	void Packer::ApplyMultiSongPatch(unsigned short inTargetAddress)
+	{
+		static unsigned short zp_fix_offsets[] = { 0x0001, 0x0005, 0x001c };
+
+		static unsigned short order_list_pointer_low_read_fix_offset = 0x000a;
+		static unsigned short order_list_pointer_high_read_fix_offset = 0x0010;
+		static unsigned short order_list_pointer_low_write_fix_offset = 0x000d;
+		static unsigned short order_list_pointer_high_write_fix_offset = 0x0013;
+
+		static unsigned short jump_vector_offset = 0x001e;
+
+		unsigned short order_list_count = static_cast<unsigned short>(m_OrderListAdressList.size());
+
+		unsigned short offset = 0;
+
+		for (unsigned short order_list_address : m_OrderListAdressList)
+		{
+			(*m_OutputData)[inTargetAddress + offset] = static_cast<unsigned char>(order_list_address & 0xff);
+			(*m_OutputData)[inTargetAddress + order_list_count + offset] = static_cast<unsigned char>(order_list_address >> 8);
+		
+			++offset;
+		}
+
+		unsigned short code_patch_target_address = inTargetAddress + 2 * order_list_count;
+		unsigned short patch_code_size = sizeof(multi_song_patch_code);
+
+		for (unsigned short i = 0; i < patch_code_size; ++i)
+			(*m_OutputData)[code_patch_target_address + i] = multi_song_patch_code[i];
+
+		// Fix zero pages in patch code
+		for (unsigned int i = 0; i < 3; ++i)
+			(*m_OutputData)[code_patch_target_address + zp_fix_offsets[i]] = m_LowestZP;
+
+		// Patch the orderlist read addresses
+		const unsigned short order_list_read_low_address = inTargetAddress + m_DestinationAddressDelta;
+		const unsigned short order_list_read_high_address = inTargetAddress + order_list_count + m_DestinationAddressDelta;
+
+		(*m_OutputData)[code_patch_target_address + order_list_pointer_low_read_fix_offset] = static_cast<unsigned char>(order_list_read_low_address & 0xff);
+		(*m_OutputData)[code_patch_target_address + order_list_pointer_low_read_fix_offset + 1] = static_cast<unsigned char>(order_list_read_low_address >> 8);
+		(*m_OutputData)[code_patch_target_address + order_list_pointer_high_read_fix_offset] = static_cast<unsigned char>((order_list_read_high_address) & 0xff);
+		(*m_OutputData)[code_patch_target_address + order_list_pointer_high_read_fix_offset + 1] = static_cast<unsigned char>((order_list_read_high_address) >> 8);
+
+		// Patch driver order list pointer destination
+		const unsigned short order_list_pointers_low_address = GetDataSection(m_OrderListPointersDataSectionLowID)->m_DestinationAddress + m_DestinationAddressDelta;
+		const unsigned short order_list_pointers_high_address = GetDataSection(m_OrderListPointersDataSectionHighID)->m_DestinationAddress + m_DestinationAddressDelta;
+
+		(*m_OutputData)[code_patch_target_address + order_list_pointer_low_write_fix_offset] = static_cast<unsigned char>(order_list_pointers_low_address & 0xff);
+		(*m_OutputData)[code_patch_target_address + order_list_pointer_low_write_fix_offset + 1] = static_cast<unsigned char>(order_list_pointers_low_address >> 8);
+		(*m_OutputData)[code_patch_target_address + order_list_pointer_high_write_fix_offset] = static_cast<unsigned char>((order_list_pointers_high_address) & 0xff);
+		(*m_OutputData)[code_patch_target_address + order_list_pointer_high_write_fix_offset + 1] = static_cast<unsigned char>((order_list_pointers_high_address) >> 8);
+
+
+		// Patch the jump vector
+		const unsigned short init_address = m_DriverInfo.GetDriverCommon().m_InitAddress;
+		const unsigned short init_jump_vector = m_OutputData->GetWord(init_address + 1);
+
+		(*m_OutputData)[code_patch_target_address + jump_vector_offset] = static_cast<unsigned char>(init_jump_vector & 0xff);
+		(*m_OutputData)[code_patch_target_address + jump_vector_offset + 1] = static_cast<unsigned char>(init_jump_vector >> 8);
+
+		const unsigned short relocated_code_patch_target_address = code_patch_target_address + m_DestinationAddressDelta;
+
+		(*m_OutputData)[init_address + 1] = static_cast<unsigned char>(relocated_code_patch_target_address & 0xff);
+		(*m_OutputData)[init_address + 2] = static_cast<unsigned char>(relocated_code_patch_target_address >> 8);
 	}
 
 
@@ -315,22 +444,22 @@ namespace Editor
 			return false;
 		};
 
-		//auto requires_zeropage_check = [](Emulation::CPUmos6510::AddressingMode inAddressingMode)
-		//{
-		//	switch (inAddressingMode)
-		//	{
-		//	case Emulation::CPUmos6510::am_ZP:
-		//	case Emulation::CPUmos6510::am_ZPX:
-		//	case Emulation::CPUmos6510::am_ZPY:
-		//	case Emulation::CPUmos6510::am_IZX:
-		//	case Emulation::CPUmos6510::am_IZY:
-		//		return true;
-        //    default:
-        //        break;
-		//	}
-        //
-		//	return false;
-		//};
+		auto requires_zeropage_check = [](Emulation::CPUmos6510::AddressingMode inAddressingMode)
+		{
+			switch (inAddressingMode)
+			{
+			case Emulation::CPUmos6510::am_ZP:
+			case Emulation::CPUmos6510::am_ZPX:
+			case Emulation::CPUmos6510::am_ZPY:
+			case Emulation::CPUmos6510::am_IZX:
+			case Emulation::CPUmos6510::am_IZY:
+				return true;
+            default:
+                break;
+			}
+        
+			return false;
+		};
 
 		const int top_address = m_DriverInfo.GetDescriptor().m_DriverCodeTop;
 		const int bottom_address = top_address + m_DriverInfo.GetDescriptor().m_DriverCodeSize;
@@ -364,12 +493,16 @@ namespace Editor
 			}
 
             // Relocate zp addresses
-			//if (requires_zeropage_check(opcode_addressing_mode))
-			//{
-			//	FOUNDATION_ASSERT(opcode_size == 2);
-            //
-			//	const unsigned short zero_page_address = m_OutputData->GetByte(address + 1);
-			//}
+			if (requires_zeropage_check(opcode_addressing_mode))
+			{
+				FOUNDATION_ASSERT(opcode_size == 2);
+            
+				const unsigned char zero_page = m_OutputData->GetByte(address + 1);
+				const unsigned char zero_page_base = zero_page - m_CurrentLowestZP;
+				const unsigned char zero_page_relocated = zero_page_base + m_LowestZP;
+
+				(*m_OutputData)[address + 1] = zero_page_relocated;
+			}
 
 			address += static_cast<unsigned short>(opcode_size);
 		}

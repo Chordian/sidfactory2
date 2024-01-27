@@ -65,7 +65,6 @@ namespace Editor
 		m_TextField->SetPositionToCenterOfViewport();
 
 		m_TextField->ColorAreaBackground(ToColor(UserColor::DialogBackground));
-		// m_TextField->PrintAligned({ { 1, GetMessageTopPositionY() }, { m_Width, message_height } }, m_Message, m_CenterMessage ? TextField::HorizontalAlignment::Center : TextField::HorizontalAlignment::Left);
 
 		std::string caption = "SID file info";
 
