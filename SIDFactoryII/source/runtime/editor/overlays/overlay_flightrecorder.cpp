@@ -31,8 +31,9 @@ namespace Editor
 		const unsigned int margin_v = 2;
 		const unsigned int width = inMainTextFieldDimensions.m_Width - 2 * margin_h;
 		const unsigned int height = inMainTextFieldDimensions.m_Height - 2 * margin_v;
-		const unsigned int x = margin_h * Foundation::TextField::font_width;
-		const unsigned int y = margin_v * Foundation::TextField::font_height;
+		// const unsigned int x = margin_h * Foundation::TextField::font_width;
+		const unsigned int x = margin_h * inViewport->GetFont().width;
+		const unsigned int y = margin_v * inViewport->GetFont().height;
 
 		m_TextField = m_Viewport->CreateTextField(width, height, x, y);
 		m_TextField->SetEnable(false);
@@ -91,14 +92,16 @@ namespace Editor
 
 		const int offset_x = text_field_position.m_X;
 		const int offset_y = text_field_position.m_Y;
-
-		const int draw_field_margin_x = 2 * TextField::font_width;
-		const int draw_field_margin_y = TextField::font_height;
+		
+		const int font_width = m_Viewport->GetFont().width;
+		const int font_height = m_Viewport->GetFont().height;
+		const int draw_field_margin_x = 2 * font_width;
+		const int draw_field_margin_y = font_height;
 
 		const int draw_field_width = 300;
 		const int draw_field_height = 150;
- 		const int draw_field_x = offset_x + m_TextField->GetDimensions().m_Width * TextField::font_width - draw_field_width - draw_field_margin_x;
-		const int draw_field_y = offset_y + m_TextField->GetDimensions().m_Height * TextField::font_height - draw_field_height - draw_field_margin_y;
+ 		const int draw_field_x = offset_x + m_TextField->GetDimensions().m_Width * font_width - draw_field_width - draw_field_margin_x;
+		const int draw_field_y = offset_y + m_TextField->GetDimensions().m_Height * font_height - draw_field_height - draw_field_margin_y;
 
 		m_DrawField = m_Viewport->CreateDrawField(draw_field_width, draw_field_height, draw_field_x, draw_field_y);
 		m_DrawField->SetEnable(false);

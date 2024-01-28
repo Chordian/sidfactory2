@@ -1,7 +1,7 @@
 #include "textfield.h"
+#include "resources/data_char.h"
 #include "viewport.h"
 #include "wrapped_string.h"
-#include "resources/data_char.h"
 
 #include "SDL.h"
 #include "foundation/base/assert.h"
@@ -59,12 +59,11 @@ namespace Foundation
 
 	bool Cursor::operator==(const Cursor& inOther) const
 	{
-		return
-			(m_Enabled == inOther.m_Enabled
-				&& m_X == inOther.m_X
-				&& m_Y == inOther.m_Y
-				&& m_Width == inOther.m_Width
-				&& m_Height == inOther.m_Height);
+		return (m_Enabled == inOther.m_Enabled
+			&& m_X == inOther.m_X
+			&& m_Y == inOther.m_Y
+			&& m_Width == inOther.m_Width
+			&& m_Height == inOther.m_Height);
 	}
 
 	bool Cursor::operator!=(const Cursor& inOther) const
@@ -97,7 +96,7 @@ namespace Foundation
 
 	bool Cursor::IsPositionInside(int inX, int inY) const
 	{
-		return  (inX >= m_X && inY >= m_Y && inX < m_X + m_Width && inY < m_Y + m_Height);
+		return (inX >= m_X && inY >= m_Y && inX < m_X + m_Width && inY < m_Y + m_Height);
 	}
 
 	//------------------------------------------------------------------------------------------------------------------------------------------------
@@ -107,8 +106,8 @@ namespace Foundation
 		, m_Renderer(inRenderer)
 		, m_Position({ inX, inY })
 		, m_Dimensions({ inWidth, inHeight })
-		, m_ResolutionX(inWidth * font_width)
-		, m_ResolutionY(inHeight * font_height)
+		, m_ResolutionX(inWidth * inViewport.GetFont().width)
+		, m_ResolutionY(inHeight * inViewport.GetFont().height)
 		, m_Enabled(false)
 	{
 		m_Surface = SDL_CreateRGBSurface(0, m_ResolutionX, m_ResolutionY, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
@@ -176,14 +175,18 @@ namespace Foundation
 		return m_Dimensions;
 	}
 
+  const Resource::Font& TextField::GetFont() const {
+		return m_Viewport.GetFont();
+	}	 
+	
 	//------------------------------------------------------------------------------------------------------------------------------------------------
 
 	Point TextField::GetCellPositionFromPixelPosition(const Point& inPixelPosition) const
 	{
 		Foundation::Point local_position = inPixelPosition - m_Position;
 
-		const int cell_x = local_position.m_X / font_width;
-		const int cell_y = local_position.m_Y / font_height;
+		const int cell_x = local_position.m_X / m_Viewport.GetFont().width;
+		const int cell_y = local_position.m_Y / m_Viewport.GetFont().height;
 
 		return Foundation::Point({ cell_x, cell_y });
 	}
@@ -463,7 +466,6 @@ namespace Foundation
 	}
 
 
-
 	void TextField::PrintAligned(const Rect& inRect, const WrappedString& inWrappedString, HorizontalAlignment inHorizontalAlignment)
 	{
 		const TextColoring text_coloring;
@@ -707,6 +709,12 @@ namespace Foundation
 		int char_index = 0;
 		int out_y = 0;
 
+		int font_width = m_Viewport.GetFont().width;
+		int font_height = m_Viewport.GetFont().height;
+		int font_pitch = m_Viewport.GetFont().pitch;
+		int font_data_size = m_Viewport.GetFont().data_size;
+		const unsigned char *font_data = m_Viewport.GetFont().data;
+
 		const Palette& palette = m_Viewport.GetPalette();
 
 		for (int cy = 0; cy < m_Dimensions.m_Height; ++cy)
@@ -719,7 +727,7 @@ namespace Foundation
 				{
 					unsigned int character_index = static_cast<unsigned int>(m_ScreenCharacterCellBuffer[char_index]) * font_pitch * font_height;
 
-                    const bool in_valid_character = (character_index < sizeof(Resource::data_characters) - (font_width * font_pitch));
+					const bool in_valid_character = (character_index < font_data_size - (font_width * font_pitch));
 
 					const unsigned short character_coloring = m_ScreenColorCellBuffer[char_index];
 					const Color ForegroundColor = Color(character_coloring & 0x00ff);
@@ -734,7 +742,7 @@ namespace Foundation
 
 						for (int j = 0; j < font_pitch; ++j)
 						{
-                            unsigned char data = in_valid_character ? Resource::data_characters[character_index++] : 0;
+							unsigned char data = in_valid_character ? font_data[character_index++] : 0;
 							unsigned int pixel_offset = j << 3;
 
 							*(dest + pixel_offset + 0) = data & 0x80 ? color_foreground : color_background;

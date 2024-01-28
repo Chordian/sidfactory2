@@ -63,8 +63,11 @@ namespace Editor
 	{
 		Foundation::Point local_position = inPixelPosition - m_TextField->GetPosition();
 
-		const int cell_x = local_position.m_X / Foundation::TextField::font_width;
-		const int cell_y = local_position.m_Y / Foundation::TextField::font_height;
+		const int font_width = m_TextField->GetFont().width;
+		const int font_height = m_TextField->GetFont().height;
+
+		const int cell_x = local_position.m_X / font_width;
+		const int cell_y = local_position.m_Y / font_height;
 
 		return Foundation::Point({ cell_x, cell_y });
 	}
@@ -150,8 +153,8 @@ namespace Editor
 
 	Foundation::Point ComponentBase::GetLocalCellPosition(const Foundation::Point& inPosition)
 	{
-		const int cell_x = inPosition.m_X / Foundation::TextField::font_width;
-		const int cell_y = inPosition.m_Y / Foundation::TextField::font_height;
+		const int cell_x = inPosition.m_X / m_TextField->GetFont().width;
+		const int cell_y = inPosition.m_Y / m_TextField->GetFont().height;
 
 		return Foundation::Point({ cell_x - m_Position.m_X, cell_y - m_Position.m_Y });
 	}

@@ -133,7 +133,7 @@ namespace Editor
 		m_AudioStream = new AudioStream(sid_sample_frequency, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
 
 		// Create the main text field
-		m_TextField = m_Viewport->CreateTextField(m_Viewport->GetClientWidth() / TextField::font_width, m_Viewport->GetClientHeight() / TextField::font_height, 0, 0);
+		m_TextField = m_Viewport->CreateTextField(m_Viewport->GetClientWidth() / m_Viewport->GetFont().width, m_Viewport->GetClientHeight() / m_Viewport->GetFont().height, 0, 0);
 		m_TextField->SetEnable(true);
 
 		// Allocate empty Driver Info class

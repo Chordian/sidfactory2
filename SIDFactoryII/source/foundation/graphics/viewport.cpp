@@ -28,9 +28,11 @@ namespace Foundation
 		, m_ShowOverlay(false)
 		, m_Caption(inCaption)
 		, m_FadeValue(0.0f)
+		, m_Font(Resource::C64)
 	{
 		const int window_width = static_cast<int>(m_ClientResolutionX * m_Scaling);
 		const int window_height = static_cast<int>(m_ClientResolutionY * m_Scaling);
+
 
 		ConfigFile& config = Global::instance().GetConfig();
 
@@ -244,6 +246,10 @@ namespace Foundation
 		return m_Palette;
 	}
 
+	const Resource::Font& Viewport::GetFont() const
+	{
+		return m_Font;
+	}
 
 	TextField* Viewport::CreateTextField(unsigned inWidth, unsigned int inHeight, int inX, int inY)
 	{
