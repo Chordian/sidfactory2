@@ -79,7 +79,7 @@ namespace Foundation
 		float m_FadeValue;
 
 		Palette m_Palette;
-		const Resource::Font& m_Font;
+		Resource::Font m_Font;
 
 		SDL_Window* m_Window;
 		SDL_Renderer* m_Renderer;

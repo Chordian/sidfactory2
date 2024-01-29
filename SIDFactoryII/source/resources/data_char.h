@@ -9,7 +9,7 @@ namespace Resource
 		int height;
 		int pitch;
 		int data_size;
-		unsigned char data[];
+		unsigned char data[0x1000];
 	};
 
 	const struct Font DEFAULT = {
