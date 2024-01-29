@@ -28,16 +28,18 @@ namespace Foundation
 		, m_ShowOverlay(false)
 		, m_Caption(inCaption)
 		, m_FadeValue(0.0f)
-		, m_Font(Resource::C64 )
+		, m_Font(Resource::C64)
 	{
 		ConfigFile& config = Global::instance().GetConfig();
 		std::string font = GetSingleConfigurationValue<ConfigValueString>(config, "Window.Font", std::string("DEFAULT"));
 
 		// TODO: fix this
-		if (font == "C64") {
+		if (font == "C64")
+		{
 			// m_Font = Resource::C64;
 		}
-		else {
+		else
+		{
 			// m_Font = Resource::DEFAULT;
 		}
 
