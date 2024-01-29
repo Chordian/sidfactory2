@@ -175,10 +175,11 @@ namespace Foundation
 		return m_Dimensions;
 	}
 
-  const Resource::Font& TextField::GetFont() const {
+	const Resource::Font& TextField::GetFont() const
+	{
 		return m_Viewport.GetFont();
-	}	 
-	
+	}
+
 	//------------------------------------------------------------------------------------------------------------------------------------------------
 
 	Point TextField::GetCellPositionFromPixelPosition(const Point& inPixelPosition) const
@@ -713,7 +714,7 @@ namespace Foundation
 		int font_height = m_Viewport.GetFont().height;
 		int font_pitch = m_Viewport.GetFont().pitch;
 		int font_data_size = m_Viewport.GetFont().data_size;
-		const unsigned char *font_data = m_Viewport.GetFont().data;
+		const unsigned char* font_data = m_Viewport.GetFont().data;
 
 		const Palette& palette = m_Viewport.GetPalette();
 

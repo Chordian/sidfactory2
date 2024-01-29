@@ -32,8 +32,6 @@ namespace Foundation
 
 		bool IsPositionInside(int inX, int inY) const;
 
-		const Resource::Font& getFont() const;
-
 	private:
 		bool m_Enabled;
 
