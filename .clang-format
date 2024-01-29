@@ -3,7 +3,7 @@
 Language:        Cpp
 # BasedOnStyle:  WebKit
 IndentAccessModifiers: false
-AccessModifierOffset: -2
+AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 AlignConsecutiveMacros: false
 AlignConsecutiveAssignments: false
