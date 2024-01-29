@@ -14,8 +14,9 @@ namespace Emulation
 	public:
 		ASid(RtMidiOut* inRtMidiOut);
 
+		bool isPortOpen();
 		void SetMuted(bool inMuted);
-		
+
 		void SendSIDRegisterWriteOrderAndCycleInfo(std::vector<Editor::SIDWriteInformation> inSIDWriteInfoList);
 		void WriteToSIDRegister(unsigned char inSidReg, unsigned char inData);
 		void SendToDevice();
@@ -26,7 +27,7 @@ namespace Emulation
 
 		bool m_Muted = false;
 		RtMidiOut* m_RtMidiOut = nullptr;
-		
+
 		// Physical out buffer, including protocol overhead
 		unsigned char m_ASIDOutBuffer[ASID_NUM_REGS + 12];
 

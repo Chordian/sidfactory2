@@ -106,7 +106,16 @@ namespace Emulation
 
 		// SID Write order info
 		void TellSIDWriteOrderInfo(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList);
-	
+
+		enum class OutputDevice: int
+		{
+			RESID,
+			ASID
+		};
+
+		void SetOutputDevice(const OutputDevice device);
+		const OutputDevice GetOutputDevice() const;
+
 	private:
 		enum class ActionType : int
 		{
@@ -183,6 +192,7 @@ namespace Emulation
 		unsigned int m_SampleBufferSize;
 		short* m_SampleBuffer;
 		float m_OutputGain;
+		OutputDevice m_OutputDevice;
 	};
 }
 

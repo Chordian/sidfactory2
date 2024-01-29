@@ -1,5 +1,6 @@
 #include "executionhandler.h"
 
+#include "libraries/residfp/siddefs-fp.h"
 #include "runtime/emulation/cpuframecapture.h"
 #include "runtime/emulation/cpumos6510.h"
 #include "runtime/emulation/sid/sidproxy.h"
@@ -49,7 +50,8 @@ namespace Emulation
 		, m_SampleBufferWriteCursor(0)
 		, m_CPUFrameCounter(0)
 		, m_UpdateEnabled(false)
-    , m_ErrorState(false)
+		, m_ErrorState(false)
+		, m_OutputDevice(OutputDevice::RESID)
 	{
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
@@ -142,6 +144,29 @@ namespace Emulation
 		FeedPCM(inBuffer, inByteCount);
 	}
 
+	void ExecutionHandler::SetOutputDevice(const OutputDevice device)
+	{
+
+		if (m_OutputDevice == device)
+			return;
+
+		// if MIDI port is not open, do not switch to ASID
+		if (!m_ASID->isPortOpen())
+			return;
+
+		m_OutputDevice = device;
+
+		// mute/unmute ASID depending on its selection
+		m_ASID->SetMuted(m_OutputDevice != OutputDevice::ASID);
+
+		Utility::Logging::instance().Info("OutputDevice set to %s", m_OutputDevice == ExecutionHandler::OutputDevice::ASID ? "ASID" : "RESID");
+	}
+
+	const ExecutionHandler::OutputDevice ExecutionHandler::GetOutputDevice() const
+	{
+		return m_OutputDevice;
+	}
+
 	void ExecutionHandler::FeedPCM(void* inBuffer, unsigned int inByteCount)
 	{
 		m_FeedCount++;
@@ -173,9 +198,16 @@ namespace Emulation
 
 				for (unsigned int i = 0; i < uiSamplesToCopy; ++i)
 				{
-					const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
-					const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
-					pTarget[i] = static_cast<short>(fClampedSample);
+					if (m_OutputDevice == ExecutionHandler::OutputDevice::RESID)
+					{
+						const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
+						const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
+						pTarget[i] = static_cast<short>(fClampedSample);
+					}
+					else
+					{
+						pTarget[i] = 0;
+					}
 				}
 
 				// Forward the read cursor
@@ -391,7 +423,6 @@ namespace Emulation
 		}
 	}
 
-
 	void ExecutionHandler::CaptureNewFrame()
 	{
 		FOUNDATION_ASSERT(m_CPU != nullptr);
@@ -519,7 +550,7 @@ namespace Emulation
 			m_SIDProxy->Write((unsigned char)(capture.m_usReg & 0xff), capture.m_ucVal);
 			nCycle += deltaCycles;
 
-			if(m_ASID != nullptr)
+			if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID &&  m_ASID != nullptr)
 				m_ASID->WriteToSIDRegister(static_cast<unsigned char>(capture.m_usReg & 0xff), capture.m_ucVal);
 		}
 

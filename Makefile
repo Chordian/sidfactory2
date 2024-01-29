@@ -126,7 +126,8 @@ clean:
 
 .PHONY: run
 run: $(EXE)
-	cd $(ARTIFACTS_FOLDER) && ./$(APP_NAME)
+	cd $(ARTIFACTS_FOLDER) && ./$(APP_NAME) "../SIDFactoryII/music/Laxity/Laxity - Farfisa.sf2"
+
 
 .PHONY: debug
 debug: $(EXE)

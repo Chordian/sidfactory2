@@ -8,6 +8,7 @@
 #include "runtime/editor/auxilarydata/auxilary_data_hardware_preferences.h"
 #include "runtime/editor/screens/statusbar/status_bar.h"
 #include "runtime/editor/driver/driver_state.h"
+#include "runtime/execution/executionhandler.h"
 #include <string>
 #include <functional>
 
@@ -27,9 +28,11 @@ namespace Editor
 			const EditState& inEditState,
 			const DriverState& inDriverState,
 			const AuxilaryDataCollection& inAuxilaryDataCollection,
+			const Emulation::ExecutionHandler& inExecutionHandler,
 			std::function<void(Foundation::Mouse::Button, int)> inOctaveMousePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inSharpFlatMousePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inSIDMousePressCallback,
+			std::function<void(Foundation::Mouse::Button, int)> inOuputDevicePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inContextHighlightMousePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inFollowPlayerMousePressCallback
 		);
@@ -48,10 +51,12 @@ namespace Editor
 		std::shared_ptr<TextSection> m_TextSectionSID;
 		std::shared_ptr<TextSection> m_TextSectionContextHighlight;
 		std::shared_ptr<TextSection> m_TextSectionFollowPlay;
+		std::shared_ptr<TextSection> m_TextSectionOutputDevice;
 
 		const EditState& m_EditState;
 		const AuxilaryDataCollection& m_AuxilaryDataPlayMarkers;
 		const DriverState& m_DriverState;
+		const Emulation::ExecutionHandler& m_ExecutionHandler;
 
 		EditState m_CachedEditState;
 		DriverState m_CachedDriverState;
@@ -59,5 +64,6 @@ namespace Editor
 		AuxilaryDataEditingPreferences::NotationMode m_CachedNotationMode;
 		AuxilaryDataHardwarePreferences::SIDModel m_CachedSIDModel;
 		AuxilaryDataHardwarePreferences::Region m_CachedRegion;
+		Emulation::ExecutionHandler::OutputDevice m_CachedOutputDevice; 
 	};
 }
