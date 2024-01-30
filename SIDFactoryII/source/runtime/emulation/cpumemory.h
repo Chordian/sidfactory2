@@ -10,11 +10,16 @@ namespace Emulation
 {
 	class IPlatformFactory;
 
-	class CPUMemory : public IMemoryRandomReadAccess
+	class CPUMemory final : public IMemoryRandomReadAccess 
 	{
 	public:
 		CPUMemory(unsigned int inSize, Foundation::IPlatform* inPlatform);
-		~CPUMemory();
+		virtual ~CPUMemory();
+
+		CPUMemory(const CPUMemory&) = delete;
+		CPUMemory& operator=(const CPUMemory&) = delete;
+		CPUMemory(CPUMemory&&) = delete;
+		CPUMemory& operator=(CPUMemory&&) = delete;
 
 		const unsigned char& operator[](int inAddress) const override
 		{
