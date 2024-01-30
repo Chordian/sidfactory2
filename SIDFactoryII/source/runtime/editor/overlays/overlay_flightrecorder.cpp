@@ -31,7 +31,6 @@ namespace Editor
 		const unsigned int margin_v = 2;
 		const unsigned int width = inMainTextFieldDimensions.m_Width - 2 * margin_h;
 		const unsigned int height = inMainTextFieldDimensions.m_Height - 2 * margin_v;
-		// const unsigned int x = margin_h * Foundation::TextField::font_width;
 		const unsigned int x = margin_h * inViewport->GetFont().width;
 		const unsigned int y = margin_v * inViewport->GetFont().height;
 
