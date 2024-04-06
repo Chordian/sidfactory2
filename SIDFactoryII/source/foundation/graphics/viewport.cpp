@@ -1,4 +1,5 @@
 #include "foundation/graphics/viewport.h"
+#include "SDL_video.h"
 #include "foundation/base/assert.h"
 #include "foundation/base/types.h"
 #include "foundation/graphics/drawfield.h"
@@ -46,6 +47,9 @@ namespace Foundation
 
 		m_RenderTarget = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, m_ClientResolutionX, m_ClientResolutionY);
 		FOUNDATION_ASSERT(m_RenderTarget != nullptr);
+
+		SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+
 	}
 
 
