@@ -180,6 +180,10 @@ namespace Foundation
 		SDL_SetWindowFullscreen(m_Window, flags);
 	}
 
+	SDL_Renderer* Viewport::GetRenderer() {
+		return m_Renderer;
+	}
+
 
 	void Viewport::Begin()
 	{

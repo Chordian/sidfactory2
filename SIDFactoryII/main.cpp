@@ -85,7 +85,7 @@ void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 
 	Viewport viewport(width, height, window_scaling, std::string("SID Factory II"));
 
-	Mouse mouse(window_scaling);
+	Mouse mouse(viewport.GetRenderer());
 	Keyboard keyboard;
 
 	// Editor facility

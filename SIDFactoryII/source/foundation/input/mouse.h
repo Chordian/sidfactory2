@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SDL.h"
 #include "foundation/base/types.h"
 
 namespace Foundation
@@ -16,7 +17,7 @@ namespace Foundation
 			_Count
 		};
 
-		Mouse(float inScaling);
+		Mouse(SDL_Renderer* inRenderer);
 
 		void BeginCollect(const Rect& inClientRect);
 		void EndCollect();
@@ -37,7 +38,7 @@ namespace Foundation
 	private:
 		Rect m_ClientRect;
 		Point m_Position;
-		float m_Scaling;
+		SDL_Renderer* m_Renderer;
 
 		bool m_IsCollecting;
 		bool m_IsInsideScreenRect;

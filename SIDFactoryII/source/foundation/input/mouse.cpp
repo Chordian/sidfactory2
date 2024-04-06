@@ -5,7 +5,7 @@
 
 namespace Foundation
 {
-	Mouse::Mouse(float inScaling)
+	Mouse::Mouse(SDL_Renderer* inRenderer)
 		: m_ButtonState(0)
 		, m_ButtonStateLast(0)
 		, m_ButtonStateDoublePress(0)
@@ -14,7 +14,7 @@ namespace Foundation
 		, m_IsInsideScreenRect(false)
 		, m_WheelDeltaX(0)
 		, m_WheelDeltaY(0)
-		, m_Scaling(inScaling)
+		, m_Renderer(inRenderer)
 	{
 		for (int i = 0; i < Mouse::_Count; ++i)
 			m_LastButtonPressedTime[i] = 0;
@@ -53,8 +53,14 @@ namespace Foundation
 
 		m_ButtonStateLast = m_ButtonState;
 		m_ButtonState = SDL_GetMouseState(&m_Position.m_X, &m_Position.m_Y);
-		m_Position.m_X = static_cast<int>(m_Position.m_X / m_Scaling);
-		m_Position.m_Y = static_cast<int>(m_Position.m_Y / m_Scaling);
+
+		// scale physical to logical coordinates
+		float logicalX;
+		float logicalY;
+		SDL_RenderWindowToLogical(m_Renderer, m_Position.m_X, m_Position.m_Y, &logicalX, &logicalY);
+		m_Position.m_X = static_cast<int>(logicalX);
+		m_Position.m_Y = static_cast<int>(logicalY);
+
 		m_IsInsideScreenRect = m_ClientRect.Contains(m_Position);
 		m_Position -= m_ClientRect.m_Position;
 

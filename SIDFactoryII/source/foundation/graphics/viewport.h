@@ -48,11 +48,14 @@ namespace Foundation
 		DrawField* CreateDrawField(unsigned inWidth, unsigned int inHeight, int inX, int inY);
 		Image* CreateImageFromFile(const std::string& inFileName);
 		Image* CreateImageFromARGBData(void* inData, unsigned int inWidth, unsigned int inHeight, bool inIncludeAlphaChannel);
+		
+		SDL_Renderer* GetRenderer();
 
 		void Destroy(IManaged* inManagedResource);
 
 		void SetUserColor(unsigned char inUserColorIndex, unsigned int inARGB);
 		const Palette& GetPalette() const;
+
 
 	private:
 		struct Overlay
