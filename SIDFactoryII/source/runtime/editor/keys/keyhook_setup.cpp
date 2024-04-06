@@ -77,6 +77,7 @@ namespace Editor
 		definitions.push_back({ "Key.ScreenEdit.SaveSong", {{ SDLK_F11, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.SaveInstrument", {{ SDLK_F11, Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleOverlay", {{ SDLK_F12, Keyboard::None }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleFullScreen", {{ SDLK_RETURN, Keyboard::Alt }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleFlightRecorderOverlay", {{ SDLK_F12, Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleDebugView", {{ SDLK_F12, Keyboard::Shift | Keyboard::Alt }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel1", {{ SDLK_1, Keyboard::Control }} });

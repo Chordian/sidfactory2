@@ -6,7 +6,6 @@
 
 #include "foundation/base/types.h"
 #include "foundation/graphics/color.h"
-#include "utils/bit_array.h"
 
 namespace Foundation
 {
@@ -40,6 +39,7 @@ namespace Foundation
 
 		void ShowOverlay(bool inShowOverlay);
 		void SetOverlayPNG(int inIndex, void* inData, const Rect& inImageRect);
+		void SetWindowFullScreen(int flags);
 
 		void Begin();
 		void End();

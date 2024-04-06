@@ -45,8 +45,6 @@ namespace Foundation
 
 		m_RenderTarget = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, m_ClientResolutionX, m_ClientResolutionY);
 		FOUNDATION_ASSERT(m_RenderTarget != nullptr);
-
-		SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 	}
 
 
@@ -174,6 +172,12 @@ namespace Foundation
 		overlay.m_Rect = inImageRect;
 
 		SDL_FreeSurface(surface);
+	}
+
+
+	void Viewport::SetWindowFullScreen(int flags)
+	{
+		SDL_SetWindowFullscreen(m_Window, flags);
 	}
 
 

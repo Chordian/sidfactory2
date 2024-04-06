@@ -1,4 +1,5 @@
 #include "runtime/editor/editor_facility.h"
+#include "SDL_video.h"
 #include "foundation/graphics/textfield.h"
 #include "foundation/graphics/viewport.h"
 #include "foundation/input/keyboard.h"
@@ -68,6 +69,7 @@ namespace Editor
 		, m_CurrentScreen(nullptr)
 		, m_RequestedScreen(nullptr)
 		, m_FlipOverlayState(false)
+		, m_IsFullScreen(false)
 		, m_SelectedColorScheme(0)
 	{
 
@@ -196,6 +198,7 @@ namespace Editor
 			[&]() { OnQuickSave(m_EditScreen.get()); },
 			[&](unsigned short inDestinationAddress, unsigned char inFirstZeroPage) { OnPack(m_EditScreen.get(), inDestinationAddress, inFirstZeroPage); },
 			[&]() { m_FlipOverlayState = true; },
+			[&]() { ToggleFullScreen(); },
 			[&](unsigned int inReconfigureOption) { Reconfigure(inReconfigureOption); });
 
 		//
@@ -438,6 +441,12 @@ namespace Editor
 
 			m_FlipOverlayState = false;
 		}
+	}
+
+	void EditorFacility::ToggleFullScreen()
+	{
+		m_Viewport->SetWindowFullScreen(m_IsFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+		m_IsFullScreen = !m_IsFullScreen;
 	}
 
 

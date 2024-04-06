@@ -90,6 +90,7 @@ namespace Editor
 		std::function<void(void)> inQuickSaveCallback,
 		std::function<void(unsigned short, unsigned char)> inPackCallback,
 		std::function<void(void)> inToggleShowOverlay,
+		std::function<void()> inToggleFullScreen,
 		std::function<void(unsigned int)> inReconfigure)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
 		, m_EditState(inEditState)
@@ -109,6 +110,7 @@ namespace Editor
 		, m_QuickSaveCallback(inQuickSaveCallback)
 		, m_PackCallback(inPackCallback)
 		, m_ToggleShowOverlay(inToggleShowOverlay)
+		, m_ToggleFullScreen(inToggleFullScreen)
 		, m_ConfigReconfigure(inReconfigure)
 		, m_PlayTimerTicks(0)
 		, m_PlayTimerSeconds(0)
@@ -691,7 +693,6 @@ namespace Editor
 		editing_preferences.SetEventPosHighlightInterval(static_cast<unsigned char>(interval));
 
 		m_TracksComponent->ForceRefresh();
-
 	}
 
 	//------------------------------------------------------------------------------------------------------------
@@ -1858,7 +1859,12 @@ namespace Editor
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleOverlay", m_KeyHookStore, [&]()
 		{
 			m_ToggleShowOverlay();
+			return true;
+		} });
 
+		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleFullScreen", m_KeyHookStore, [&]()
+		{
+			m_ToggleFullScreen();
 			return true;
 		} });
 
