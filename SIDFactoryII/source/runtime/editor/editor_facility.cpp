@@ -82,6 +82,7 @@ namespace Editor
 		// Configure editor
 		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Name", {});
 		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Filename", {});
+		ApplyFullScreenSetting(GetSingleConfigurationValue<ConfigValueInt>(config, "Window.FullScreen", 0));
 
 		if (color_scheme_names.size() == color_scheme_filenames.size())
 		{
@@ -443,10 +444,14 @@ namespace Editor
 		}
 	}
 
+	void EditorFacility::ApplyFullScreenSetting(bool isFullScreen) {
+		m_IsFullScreen = isFullScreen;
+		m_Viewport->SetWindowFullScreen(m_IsFullScreen ?  SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	}
+
 	void EditorFacility::ToggleFullScreen()
 	{
-		m_Viewport->SetWindowFullScreen(m_IsFullScreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
-		m_IsFullScreen = !m_IsFullScreen;
+		ApplyFullScreenSetting(!m_IsFullScreen);
 	}
 
 

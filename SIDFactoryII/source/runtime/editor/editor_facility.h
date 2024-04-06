@@ -68,6 +68,7 @@ namespace Editor
 	  private:
 		void Reconfigure(unsigned int inReconfigureOption);
 		void UpdateOverlayEnableDisable();
+		void ApplyFullScreenSetting(bool isFullScreen);
 		void ToggleFullScreen();
 
 		void RequestScreen(ScreenBase* inRequestedScreen);
