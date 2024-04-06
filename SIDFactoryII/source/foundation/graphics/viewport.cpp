@@ -6,11 +6,9 @@
 #include "foundation/graphics/image.h"
 #include "foundation/graphics/imanaged.h"
 #include "foundation/graphics/textfield.h"
-#include "resources/data_char.h"
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
 #include "utils/global.h"
-#include <iostream>
 
 using namespace Utility;
 using namespace Utility::Config;
@@ -49,7 +47,6 @@ namespace Foundation
 		FOUNDATION_ASSERT(m_RenderTarget != nullptr);
 
 		SDL_SetWindowFullscreen(m_Window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-
 	}
 
 
@@ -201,6 +198,8 @@ namespace Foundation
 		if (m_RenderTarget != nullptr)
 		{
 			SDL_SetRenderTarget(m_Renderer, nullptr);
+			SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 255);
+			SDL_RenderClear(m_Renderer);
 
 			if (m_ShowOverlay)
 			{
