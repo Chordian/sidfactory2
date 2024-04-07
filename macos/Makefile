@@ -31,6 +31,7 @@ CC_FLAGS= \
   -I$(SOURCE) \
 	-I./App/Contents/Frameworks/SDL2.framework/Headers \
 	-D_BUILD_NR=\"$(BUILD_NR_TARGET)\" \
+	-F./App/Contents/Frameworks \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \

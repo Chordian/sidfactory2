@@ -1,15 +1,14 @@
 #include "foundation/graphics/viewport.h"
+#include "SDL_video.h"
 #include "foundation/base/assert.h"
 #include "foundation/base/types.h"
 #include "foundation/graphics/drawfield.h"
 #include "foundation/graphics/image.h"
 #include "foundation/graphics/imanaged.h"
 #include "foundation/graphics/textfield.h"
-#include "resources/data_char.h"
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
 #include "utils/global.h"
-#include <iostream>
 
 using namespace Utility;
 using namespace Utility::Config;
@@ -176,13 +175,20 @@ namespace Foundation
 	}
 
 
+	void Viewport::SetWindowFullScreen(int flags)
+	{
+		SDL_SetWindowFullscreen(m_Window, flags);
+	}
+
+	SDL_Renderer* Viewport::GetRenderer() {
+		return m_Renderer;
+	}
+
+
 	void Viewport::Begin()
 	{
 		if (m_RenderTarget != nullptr)
 			SDL_SetRenderTarget(m_Renderer, m_RenderTarget);
-
-		SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 255);
-		SDL_RenderClear(m_Renderer);
 
 		for (auto text_field : m_ManagedResources)
 			text_field->Begin();
@@ -197,6 +203,8 @@ namespace Foundation
 		if (m_RenderTarget != nullptr)
 		{
 			SDL_SetRenderTarget(m_Renderer, nullptr);
+			SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 255);
+			SDL_RenderClear(m_Renderer);
 
 			if (m_ShowOverlay)
 			{

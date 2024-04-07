@@ -1,4 +1,5 @@
 #include "runtime/editor/editor_facility.h"
+#include "SDL_video.h"
 #include "foundation/graphics/textfield.h"
 #include "foundation/graphics/viewport.h"
 #include "foundation/input/keyboard.h"
@@ -68,6 +69,7 @@ namespace Editor
 		, m_CurrentScreen(nullptr)
 		, m_RequestedScreen(nullptr)
 		, m_FlipOverlayState(false)
+		, m_IsFullScreen(false)
 		, m_SelectedColorScheme(0)
 	{
 
@@ -80,6 +82,7 @@ namespace Editor
 		// Configure editor
 		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Name", {});
 		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Filename", {});
+		ApplyFullScreenSetting(GetSingleConfigurationValue<ConfigValueInt>(config, "Window.FullScreen", 0));
 
 		if (color_scheme_names.size() == color_scheme_filenames.size())
 		{
@@ -196,6 +199,7 @@ namespace Editor
 			[&]() { OnQuickSave(m_EditScreen.get()); },
 			[&](unsigned short inDestinationAddress, unsigned char inFirstZeroPage) { OnPack(m_EditScreen.get(), inDestinationAddress, inFirstZeroPage); },
 			[&]() { m_FlipOverlayState = true; },
+			[&]() { ToggleFullScreen(); },
 			[&](unsigned int inReconfigureOption) { Reconfigure(inReconfigureOption); });
 
 		//
@@ -438,6 +442,16 @@ namespace Editor
 
 			m_FlipOverlayState = false;
 		}
+	}
+
+	void EditorFacility::ApplyFullScreenSetting(bool isFullScreen) {
+		m_IsFullScreen = isFullScreen;
+		m_Viewport->SetWindowFullScreen(m_IsFullScreen ?  SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+	}
+
+	void EditorFacility::ToggleFullScreen()
+	{
+		ApplyFullScreenSetting(!m_IsFullScreen);
 	}
 
 
