@@ -2,6 +2,8 @@
 .svn
 .vs
 .cache
+.vscode
+*.code-workspace
 /builds
 /drivers
 /debug

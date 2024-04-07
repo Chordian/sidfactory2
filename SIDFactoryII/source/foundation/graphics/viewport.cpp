@@ -190,9 +190,6 @@ namespace Foundation
 		if (m_RenderTarget != nullptr)
 			SDL_SetRenderTarget(m_Renderer, m_RenderTarget);
 
-		SDL_SetRenderDrawColor(m_Renderer, 0, 0, 0, 255);
-		SDL_RenderClear(m_Renderer);
-
 		for (auto text_field : m_ManagedResources)
 			text_field->Begin();
 	}
