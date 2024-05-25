@@ -3,10 +3,14 @@
 #include "foundation/graphics/drawfield.h"
 #include "runtime/editor/datasources/datasource_flightrecorder.h"
 #include "runtime/environmentdefines.h"
+#include "utils/global.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
 #include "utils/usercolors.h"
 
 using namespace Foundation;
 using namespace Utility;
+using namespace Utility::Config;
 
 namespace Editor
 {
@@ -22,6 +26,10 @@ namespace Editor
 		: VisualizerComponentBase(inID, inDrawField, inX, inY, inWidth, inHeight)
 		, m_DataSource(inDataSource)
 	{
+
+		ConfigFile& config = Global::instance().GetConfig();
+		m_CPUUsageMediumRasterlines = GetSingleConfigurationValue<ConfigValueInt>(config, "Visualizer.CPU.Medium.Rasterlines", 16);
+		m_CPUUsageHighRasterlines = GetSingleConfigurationValue<ConfigValueInt>(config, "Visualizer.CPU.High.Rasterlines", 24);
 
 	}
 
@@ -62,12 +70,7 @@ namespace Editor
 
 			const auto fetch_cycle_color = [&](const int inValue) -> const Color
 			{
-				if (inValue < 0x10)
-					return color_cpu_usage_low;
-				if (inValue < 0x18)
-					return color_cpu_usage_medium;
-
-				return color_cpu_usage_high;
+                return inValue < m_CPUUsageMediumRasterlines ? color_cpu_usage_low : (inValue < m_CPUUsageHighRasterlines ? color_cpu_usage_medium : color_cpu_usage_high);
 			};
 
 			DrawColoredFilled(fetch_cycle_value, fetch_cycle_color);

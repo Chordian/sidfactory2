@@ -37,5 +37,8 @@ namespace Editor
 		);
 
 		std::shared_ptr<DataSourceFlightRecorder> m_DataSource;
+
+        unsigned int m_CPUUsageMediumRasterlines;
+        unsigned int m_CPUUsageHighRasterlines;
 	};
 }
