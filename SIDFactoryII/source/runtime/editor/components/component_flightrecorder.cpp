@@ -5,13 +5,13 @@
 #include "foundation/graphics/textfield.h"
 #include "foundation/input/mouse.h"
 #include "foundation/input/keyboard.h"
-#include "foundation/input/keyboard_utils.h"
 #include "runtime/editor/cursor_control.h"
 #include "runtime/environmentdefines.h"
 #include "utils/usercolors.h"
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
 #include "utils/global.h"
+#include "utils/usercolors.h"
 
 #include "SDL_keycode.h"
 #include "foundation/base/assert.h"
@@ -208,6 +208,13 @@ namespace Editor
 			m_TextField->Print(2, 1, color_desc, "Frame Cycl SL  SC  Sy Freq Puls Wf ADSR  Sy Freq Puls Wf ADSR  Sy Freq Puls Wf ADSR  CutO RS BV");
 
 			const int x = 2;
+
+			const unsigned short max_cycles = static_cast<unsigned short>((*m_DataSource).GetCyclesSpendMax());
+			const unsigned char max_scan_lines = static_cast<unsigned char>(max_cycles / EMULATION_CYCLES_PER_SCANLINE_PAL);
+
+			Color max_color = max_scan_lines < m_CPUUsageMediumRasterlines ? color_cpu_usage_low : (max_scan_lines < m_CPUUsageHighRasterlines ? color_cpu_usage_medium : color_cpu_usage_high);
+			m_TextField->PrintHexValue(x + 6, 2, max_color, is_uppercase, max_cycles);
+			m_TextField->PrintHexValue(x + 11, 2, max_color, is_uppercase, max_scan_lines);
 
 			for (int i = 0; i < visible_row_count; ++i)
 			{
