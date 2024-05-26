@@ -75,6 +75,7 @@ namespace Emulation
 
 		m_TopIndex = 0;
 		m_RecordedFrameCount = 0;
+		m_CyclesSpendMax = 0;
 
 		for (unsigned int i = 0; i < m_FrameCapacity; ++i)
 			m_Frames[i].Reset();
@@ -124,6 +125,12 @@ namespace Emulation
 		return m_RecordedFrameCount;
 	}
 
+	unsigned int FlightRecorder::CyclesSpendMax() const
+	{
+		FOUNDATION_ASSERT(m_Locked);
+		return m_CyclesSpendMax;
+	}
+
 	//------------------------------------------------------------------------------------------------
 
 	const FlightRecorder::Frame& FlightRecorder::GetFrame(unsigned int inIndex) const
@@ -153,6 +160,10 @@ namespace Emulation
 
 		inFrameData.m_nFrameNumber = inFrame;
 		inFrameData.m_nCyclesSpend = inCyclesSpend;
+
+		if (inCyclesSpend > m_CyclesSpendMax) {
+			m_CyclesSpendMax = inCyclesSpend;
+		}
 
 		inMemory->GetData(0xd400, &inFrameData.m_SIDData, 0x19);
 
