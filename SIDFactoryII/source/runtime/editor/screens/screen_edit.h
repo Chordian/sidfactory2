@@ -116,6 +116,7 @@ namespace Editor
 		void DoPlayFromSelectedMarker();
 		void DoStop();
 		void DoToggleMute(unsigned int inChannel);
+		void DoToggleOutputDevice();
 		void DoClearAllMuteState();
 		void DoRestoreMuteState();
 		void DoMoveToEventPositionOfSelectedMarker();
