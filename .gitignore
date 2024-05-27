@@ -1,4 +1,5 @@
 .DS_Store
+.cache
 .svn
 .vs
 /builds
@@ -30,3 +31,4 @@ xcuserdata
 .ccls-cache
 .cache
 /SIDFactoryII/x64/Debug
+compile_commands.json
