@@ -6,6 +6,7 @@
 
 #include "foundation/base/types.h"
 #include "foundation/graphics/color.h"
+#include "resources/data_char.h"
 #include "utils/bit_array.h"
 
 namespace Foundation
@@ -53,6 +54,7 @@ namespace Foundation
 
 		void SetUserColor(unsigned char inUserColorIndex, unsigned int inARGB);
 		const Palette& GetPalette() const;
+		const Resource::Font& GetFont() const;
 
 	private:
 		struct Overlay
@@ -77,6 +79,7 @@ namespace Foundation
 		float m_FadeValue;
 
 		Palette m_Palette;
+		Resource::Font m_Font;
 
 		SDL_Window* m_Window;
 		SDL_Renderer* m_Renderer;

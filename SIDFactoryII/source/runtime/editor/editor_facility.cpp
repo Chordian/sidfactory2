@@ -148,7 +148,7 @@ namespace Editor
 		}
 
 		// Create the main text field
-		m_TextField = m_Viewport->CreateTextField(m_Viewport->GetClientWidth() / TextField::font_width, m_Viewport->GetClientHeight() / TextField::font_height, 0, 0);
+		m_TextField = m_Viewport->CreateTextField(m_Viewport->GetClientWidth() / m_Viewport->GetFont().width, m_Viewport->GetClientHeight() / m_Viewport->GetFont().height, 0, 0);
 		m_TextField->SetEnable(true);
 
 		// Allocate empty Driver Info class

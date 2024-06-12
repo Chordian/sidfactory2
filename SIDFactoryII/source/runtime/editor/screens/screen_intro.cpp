@@ -19,7 +19,7 @@
 namespace Editor
 {
 	using namespace Utility;
-	
+
 	ScreenIntro::ScreenIntro(
 		Foundation::Viewport* inViewport,
 		Foundation::TextField* inMainTextField,
@@ -46,7 +46,7 @@ namespace Editor
 		ScreenBase::Activate();
 
 		m_AddMidiPortSelectionOption = !RtMidiUtils::RtMidiOut_HasOpenPort(m_RtMidiOut);
-		
+
 		// Build string
 #ifdef _BUILD_NR
 		const std::string build_number = _BUILD_NR;
@@ -92,29 +92,31 @@ namespace Editor
 		const int num_blocks = 3;
 		const int block_width = dimensions.m_Width / (num_blocks + 1);
 		const int credits_margin = (dimensions.m_Width - (block_width * num_blocks)) >> 1;
-		
+		// screen is designed for 16 pixel high font, so we need to scale for other fonts
+		const int font_height_scale_factor =  16 / m_Viewport->GetFont().height;
+
 		const auto OutputBlock = [&](const int inBlock, const std::string& InText)
 		{
-			const Foundation::Rect rect({ { credits_margin + (inBlock * block_width), credits_y }, { block_width, driver_info_y - credits_y - 1 } });
+			const Foundation::Rect rect({ { credits_margin + (inBlock * block_width), credits_y * font_height_scale_factor }, { block_width, driver_info_y - credits_y - 1 } });
 			m_MainTextField->PrintAligned(rect, Foundation::WrappedString(InText, block_width), Foundation::TextField::HorizontalAlignment::Center);
 		};
-		
+
 		OutputBlock(0, "Programming by:\nThomas Egeskov Petersen\nJens-Christian Huus\nMichel de Bree\nThomas Jansson\n \nAdditional design and suggestions by:\n Torben Korgaard Hansen\nThomas Laurits Mogensen\nThomas Bendt");
 		OutputBlock(1, "reSID-fp Engine by:\nDag Lem\nAntti S. Lankila \n \npicoPNG by:\nLode Vandevenne\n \nminiz by:\nRich Geldreich");
 		OutputBlock(2, "ghc::filesystem for c++11 by:\nSteffen Schumann\n \nRtMidi by:\nGary P. Scavone");
-		
+
 		if (m_DriverInfo->IsValid())
 		{
 			const std::string& driver_name = m_DriverInfo->GetDescriptor().m_DriverName;
-			PrintCenteredText(driver_info_y, "Driver loaded: " + driver_name);
+			PrintCenteredText(driver_info_y * font_height_scale_factor, "Driver loaded: " + driver_name);
 		}
 		else
-			PrintCenteredText(driver_info_y, "Driver has not been loaded!");
+			PrintCenteredText(driver_info_y * font_height_scale_factor, "Driver has not been loaded!");
 
-		if(m_AddMidiPortSelectionOption)
-			PrintCenteredText(continue_info_y, "Press SPACE to continue, F1 to choose midi output device or F10 for disk menu!");
+		if (m_AddMidiPortSelectionOption)
+			PrintCenteredText(continue_info_y * font_height_scale_factor, "Press SPACE to continue, F1 to choose midi output device or F10 for disk menu!");
 		else
-			PrintCenteredText(continue_info_y, "Press SPACE to continue or F10 for disk menu!");
+			PrintCenteredText(continue_info_y * font_height_scale_factor, "Press SPACE to continue or F10 for disk menu!");
 
 		m_MainTextField->Print(build_x - static_cast<int>(build_string.length()), build_y, Foundation::Color::Grey, build_string);
 	}
@@ -151,7 +153,7 @@ namespace Editor
 		{
 			// Invoke midi device selection screen and invoke midi device
 			TryStartDialogForMidiOutDeviceSelection();
-			
+
 			return true;
 		}
 		if (inKeyEvent == SDLK_F10)
@@ -169,7 +171,7 @@ namespace Editor
 		std::vector<std::string> selections;
 
 		const auto MidiOutPorts = RtMidiUtils::RtMidiOut_GetPorts(m_RtMidiOut);
-		if(MidiOutPorts.empty())
+		if (MidiOutPorts.empty())
 			return false;
 
 		for (const auto& MidiOutPort : MidiOutPorts)
@@ -199,8 +201,7 @@ namespace Editor
 	}
 
 
-
-	void ScreenIntro::PrintCenteredText(int inY, const std::string& inText)
+void ScreenIntro::PrintCenteredText(int inY, const std::string& inText)
 	{
 		const Foundation::Extent& dimensions = m_MainTextField->GetDimensions();
 		const Foundation::WrappedString message = { inText, dimensions.m_Width };
