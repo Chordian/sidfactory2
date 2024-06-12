@@ -38,6 +38,7 @@ namespace Emulation
 		~CPUFrameCapture();
 
 		void Capture(unsigned short inStartAddress, unsigned char inAccumulatorValue);
+		void Capture(unsigned short inStartAddress, unsigned char inAccumulatorValue, int inEventlySpreadRepetitions);
 
 		virtual void Write(unsigned short usAddress, unsigned char ucVal, int iCycle);
 
