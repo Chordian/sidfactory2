@@ -146,7 +146,7 @@ namespace Editor
 		void SetCursorPosition(int inCursorPosition);
 
 		int GetMaxEventPosition() const;
-		void SetEventPosition(int inEventPos);
+		void SetEventPosition(int inEventPos, bool inForceOrderListIndexChangeEvent = false);
 		int GetEventPosition() const;
 		int GetEventPositionAtTopOfCurrentSequence() const;
 
@@ -218,7 +218,7 @@ namespace Editor
 		void UpdateMaxEventPos();
 
 	private:
-		void SetEventPosDetails(unsigned int inOrderListIndex, unsigned int inSequenceIndex);
+		void SetEventPosDetails(unsigned int inOrderListIndex, unsigned int inSequenceIndex, bool inForceOrderListIndexChangeEvent = false);
 
 		// Status report
 		void UpdateSequenceStatusReport();

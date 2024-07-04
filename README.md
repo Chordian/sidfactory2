@@ -46,6 +46,14 @@ Please report issues in our [issue tracker](https://github.com/Chordian/sidfacto
 ![Commits since last
 release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20231002)
 
+### Next release
+
+- Added [#190](https://github.com/Chordian/sidfactory2/issues/190)
+  Configuration options
+  for setting the limits of rastertime usage used to color frames orange or red in
+  the flightrecorder.
+  `Visualizer.CPU.Medium.Rasterlines` and `Visualizer.CPU.High.Rasterlines`
+
 ### Build 20231002
 
 - Added: [#102](https://github.com/Chordian/sidfactory2/issues/102) Visualizers

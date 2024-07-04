@@ -23,19 +23,14 @@
 #include "runtime/editor/components/component_orderlistoverview.h"
 #include "runtime/editor/components/component_string_list_selector.h"
 #include "runtime/editor/datasources/datasource_track_components.h"
-#include "runtime/editor/datasources/datasource_table_column_major.h"
-#include "runtime/editor/datasources/datasource_table_row_major.h"
 #include "runtime/editor/datasources/datasource_play_markers.h"
 #include "runtime/editor/datasources/datasource_flightrecorder.h"
-#include "runtime/editor/datasources/datasource_sequence.h"
 #include "runtime/editor/datasources/datasource_table_text.h"
-#include "runtime/editor/visualizer_components/vizualizer_component_emulation_state.h"
 #include "runtime/editor/debug/debug_views.h"
 #include "runtime/editor/dialog/dialog_utilities.h"
 #include "runtime/editor/dialog/dialog_songs.h"
 #include "runtime/editor/dialog/dialog_message.h"
 #include "runtime/editor/dialog/dialog_message_yesno.h"
-#include "runtime/editor/dialog/dialog_hex_value_input.h"
 #include "runtime/editor/dialog/dialog_optimize.h"
 #include "runtime/editor/dialog/dialog_packing_options.h"
 #include "runtime/editor/dialog/dialog_text_input.h"
@@ -60,6 +55,7 @@
 #include <cctype>
 #include "foundation/base/assert.h"
 #include "runtime/editor/components/component_pulse_filter_visualizer.h"
+#include "utils/logging.h"
 
 #include <algorithm>
 
@@ -182,6 +178,12 @@ namespace Editor
 
 		m_ExecutionHandler->Unlock();
 
+		// Get the write order and cycle timing from the driver
+		const auto SIDWriteInfoList = DriverUtils::GetSIDWriteInformationFromDriver(*m_CPUMemory, *m_DriverInfo);
+
+		for(const auto& SIDWriteInfo : SIDWriteInfoList)
+			Utility::Logging::instance().Info("Write to address $d4%02x at cycle offset: %02x", SIDWriteInfo.m_AddressLow, SIDWriteInfo.m_CycleOffset); 
+
 		// Create debug views
 		m_DebugViews = std::make_unique<DebugViews>(m_Viewport, &*m_ComponentsManager, m_CPUMemory, m_MainTextField->GetDimensions(), m_DriverInfo);
 
@@ -223,7 +225,7 @@ namespace Editor
 			: song_name;
 
 		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_context_highlight, mouse_button_follow_play);
-		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500);
+		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500, false);
 		m_ActivationMessage = "";
 
 		// Create flight recorder overlay
@@ -1195,6 +1197,7 @@ namespace Editor
 			undo,
 			m_MainTextField,
 			m_EditState,
+			m_DriverState,
 			m_KeyHookStore,
 			song_view_text_buffer,
 			m_OrderListDataSources,
@@ -1478,8 +1481,25 @@ namespace Editor
 			Utility::TDelegate<void(int)>([&](int inChannel) { m_TracksComponent->OnOrderListChanged(inChannel); })
 		);
 
+		// Hook up tracks for when order list index changes
+		m_TracksComponent->GetOrderListIndexChangedEvent().Add(
+			nullptr,
+			Utility::TDelegate<void(bool, unsigned int, unsigned char)>([this](bool InHasFocus, unsigned int InOrderlistIndex, unsigned char InSequenceIndex)
+			{
+				const bool is_playing = m_DriverState.GetPlayState() == Editor::DriverState::PlayState::Playing;
+
+				if(m_EditState.IsFollowPlayMode() && is_playing)
+					return;
+				
+				if(InHasFocus)
+				{
+					this->ShowSequenceUsageCount(InSequenceIndex);
+					this->m_OrderListOverviewComponent->SetHighlitSequenceValue(InSequenceIndex);
+				}
+			})
+		);
+
 		// Enable groups
-		//m_ComponentsManager->SetGroupEnabledForTabbing(0);
 		m_ComponentsManager->SetGroupEnabledForInput(0, true);
 
 		if (m_ActivationFocusOnComponent)
@@ -1763,7 +1783,6 @@ namespace Editor
 
 			EditorUtils::SetNoteInputValueKeys(note_keys_octave1, note_keys_octave2);
 		}
-
 	}
 
 
@@ -2166,6 +2185,22 @@ namespace Editor
 				m_KeyTableIDPairs.push_back({ associated_key_code, associated_character_index, table_definition.m_ID });
 				m_DynamicKeyHooks.push_back({ table_definition.m_Name, { associated_key_code, Keyboard::Alt }, focus_toggle_function });
 			}
+		}
+	}
+
+	void ScreenEdit::ShowSequenceUsageCount(unsigned char inSequenceIndex)
+	{
+		if(inSequenceIndex < 0x80)
+		{
+			m_CPUMemory->Lock();
+			std::vector<int> sequence_index_use_count = DriverUtils::GetSequenceUsageCount(*m_DriverInfo, *m_CPUMemory);
+			m_CPUMemory->Unlock();
+
+			const int usage_count = sequence_index_use_count[inSequenceIndex];
+			const bool usage_count_plural = usage_count > 1;
+			
+			const std::string text = " Sequence " + EditorUtils::ConvertToHexValue(inSequenceIndex, m_DisplayState.IsHexUppercase()) + " referenced " + std::to_string(sequence_index_use_count[inSequenceIndex]) + (usage_count_plural ? " times." : " time.");
+			SetStatusBarMessage(text, 5000);
 		}
 	}
 }

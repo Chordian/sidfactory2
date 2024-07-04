@@ -18,6 +18,12 @@ namespace Editor
 {
 	class DataSourceTable;
 
+	struct SIDWriteInformation
+	{
+		unsigned char m_AddressLow;
+		unsigned char m_CycleOffset;
+	};
+
 	namespace DriverUtils
 	{
 		std::shared_ptr<DataSourceTable> CreateTableDataSource(const DriverInfo::TableDefinition& inTableDefinition, Emulation::CPUMemory* inCPUMemory);
@@ -32,6 +38,8 @@ namespace Editor
 		unsigned short GetSequenceLength(unsigned short inSequenceIndex, const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
 		unsigned short GetEndOfMusicDataAddress(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
 		unsigned short GetEndOfFileAddress(const Editor::DriverInfo& inDriverInfo, const Emulation::IMemoryRandomReadAccess& inMemoryReader);
+
+		std::vector<SIDWriteInformation> GetSIDWriteInformationFromDriver(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo);
 
 		void InsertIRQ(const Editor::DriverInfo& inDriverInfo, Utility::C64FileWriter& inFileWriter);
 	}
