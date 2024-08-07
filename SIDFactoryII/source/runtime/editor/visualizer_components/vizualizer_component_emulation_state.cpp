@@ -70,7 +70,7 @@ namespace Editor
 
 			const auto fetch_cycle_color = [&](const int inValue) -> const Color
 			{
-                return inValue < m_CPUUsageMediumRasterlines ? color_cpu_usage_low : (inValue < m_CPUUsageHighRasterlines ? color_cpu_usage_medium : color_cpu_usage_high);
+                return inValue < static_cast<int>(m_CPUUsageMediumRasterlines) ? color_cpu_usage_low : (inValue < static_cast<int>(m_CPUUsageHighRasterlines) ? color_cpu_usage_medium : color_cpu_usage_high);
 			};
 
 			DrawColoredFilled(fetch_cycle_value, fetch_cycle_color);
