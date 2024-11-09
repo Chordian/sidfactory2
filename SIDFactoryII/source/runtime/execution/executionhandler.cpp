@@ -44,6 +44,7 @@ namespace Emulation
 		, m_SampleBufferReadCursor(0)
 		, m_SampleBufferWriteCursor(0)
 		, m_CPUFrameCounter(0)
+		, m_UpdatesPerFrame(1)
 		, m_UpdateEnabled(false)
     , m_ErrorState(false)
 	{
@@ -316,6 +317,14 @@ namespace Emulation
 		Unlock();
 	}
 
+	void ExecutionHandler::SetUpdatesPerFrame(unsigned char inUpdatesPerFrame)
+	{
+		Lock();
+		m_UpdatesPerFrame = inUpdatesPerFrame;
+		Unlock();
+	}
+
+
 	void ExecutionHandler::StartWriteOutputToFile(const std::string& inFilename)
 	{
 		FOUNDATION_ASSERT(m_SIDProxy != nullptr);
@@ -429,7 +438,7 @@ namespace Emulation
 				break;
 			case ActionType::Update:
 				if (!m_ErrorState)
-					frameCapture.Capture(GetAddressFromActionType(action.m_ActionType), action.m_ActionArgument);
+					frameCapture.Capture(GetAddressFromActionType(action.m_ActionType), action.m_ActionArgument, static_cast<int>(m_UpdatesPerFrame));
 			default:
 				break;
 			}
@@ -447,7 +456,7 @@ namespace Emulation
 
 			if (!error)
 			{
-				frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0);
+				frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0, static_cast<int>(m_UpdatesPerFrame));
 				error = frameCapture.IsMaxCycleCountReached();
 
 				if (m_PostUpdateCallback)
@@ -462,7 +471,7 @@ namespace Emulation
 					if (m_CyclesPerFrame - frameCapture.GetCyclesSpend() < m_CyclesPerFrame >> 2)
 						break;
 
-					frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0);
+					frameCapture.Capture(GetAddressFromActionType(ActionType::Update), 0, static_cast<int>(m_UpdatesPerFrame));
 					if (m_PostUpdateCallback)
 						m_PostUpdateCallback(m_Memory);
 

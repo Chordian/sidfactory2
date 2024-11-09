@@ -79,6 +79,7 @@ namespace Emulation
 		void SetStopVector(unsigned short inVector);
 		void SetUpdateVector(unsigned short inVector);
 		void SetPostUpdateCallback(const std::function<void(CPUMemory*)>& inPostUpdateCallback);
+		void SetUpdatesPerFrame(unsigned char inUpdatesPerFrame);
 
 		// Cycles
 		unsigned int GetCPUCyclesSpendLastFrame() const { return m_CPUCyclesSpend; }
@@ -147,6 +148,7 @@ namespace Emulation
 		bool m_UpdateEnabled;
 		unsigned int m_FastForwardUpdateCount;
 		std::function<void(CPUMemory*)> m_PostUpdateCallback;
+		unsigned char m_UpdatesPerFrame;
 
 		// Driver vectors
 		unsigned short m_InitVector;
