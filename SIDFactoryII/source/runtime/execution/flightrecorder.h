@@ -52,6 +52,7 @@ namespace Emulation
 		void Record(unsigned int inFrame, CPUMemory* inMemory, unsigned int inCyclesSpend);
 
 		unsigned int RecordedFrameCount() const;
+		unsigned int CyclesSpendMax() const;
 		const Frame& GetFrame(unsigned int inIndex) const;
 		const Frame& GetNewestFrame() const;
 
@@ -69,6 +70,7 @@ namespace Emulation
 
 		unsigned int m_TopIndex;
 		unsigned int m_RecordedFrameCount;
+		unsigned int m_CyclesSpendMax;
 
 		unsigned int m_FrameCapacity;
 
