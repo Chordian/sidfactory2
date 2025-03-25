@@ -18,6 +18,8 @@ namespace Emulation
 		void SetMuted(bool inMuted);
 
 		void SendSIDRegisterWriteOrderAndCycleInfo(std::vector<Editor::SIDWriteInformation> inSIDWriteInfoList);
+		void SendSIDType(bool is6581);
+		void SendSIDEnvironment(bool isPAL);
 		void WriteToSIDRegister(unsigned char inSidReg, unsigned char inData);
 		void SendToDevice();
 

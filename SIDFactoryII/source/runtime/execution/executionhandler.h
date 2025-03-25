@@ -104,8 +104,9 @@ namespace Emulation
 		void StopWriteOutputToFile();
 		bool IsWritingOutputToFile() const;
 
-		// SID Write order info
+		// SID Write order info and environment, for ASID usage
 		void TellSIDWriteOrderInfo(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList);
+		void TellSIDEnvironment();
 
 		enum class OutputDevice: int
 		{

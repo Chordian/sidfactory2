@@ -178,14 +178,6 @@ namespace Editor
 
 		m_ExecutionHandler->Unlock();
 
-		// Get the write order and cycle timing from the driver
-		const auto SIDWriteInfoList = DriverUtils::GetSIDWriteInformationFromDriver(*m_CPUMemory, *m_DriverInfo);
-
-		for(const auto& SIDWriteInfo : SIDWriteInfoList)
-			Utility::Logging::instance().Info("Write to address $d4%02x at cycle offset: %02x", SIDWriteInfo.m_AddressLow, SIDWriteInfo.m_CycleOffset); 
-
-		m_ExecutionHandler->TellSIDWriteOrderInfo(SIDWriteInfoList);
-
 		// Create debug views
 		m_DebugViews = std::make_unique<DebugViews>(m_Viewport, &*m_ComponentsManager, m_CPUMemory, m_MainTextField->GetDimensions(), m_DriverInfo);
 
@@ -611,6 +603,19 @@ namespace Editor
 			device = ExecutionHandler::OutputDevice::RESID;
 		}
 		m_ExecutionHandler->SetOutputDevice(device);
+
+		if (device == ExecutionHandler::OutputDevice::ASID)
+		{
+			// Get the write order and cycle timing from the driver
+			const auto SIDWriteInfoList = DriverUtils::GetSIDWriteInformationFromDriver(*m_CPUMemory, *m_DriverInfo);
+
+			for(const auto& SIDWriteInfo : SIDWriteInfoList)
+				Utility::Logging::instance().Info("Write to address $d4%02x at cycle offset: %02x", SIDWriteInfo.m_AddressLow, SIDWriteInfo.m_CycleOffset);
+
+			m_ExecutionHandler->TellSIDWriteOrderInfo(SIDWriteInfoList);
+			m_ExecutionHandler->TellSIDEnvironment();
+		}
+
 	}
 
 
@@ -781,6 +786,8 @@ namespace Editor
 
 			m_ExecutionHandler->Unlock();
 		}
+
+		m_ExecutionHandler->TellSIDEnvironment();
 	}
 
 	void ScreenEdit::DoToggleContextHighlight()

@@ -1,6 +1,7 @@
 #include "asid.h"
 
 #include "libraries/rtmidi/RtMidi.h"
+#include "runtime/environmentdefines.h"
 
 #include <array>
 #include <vector>
@@ -110,6 +111,82 @@ namespace Emulation
 		// Sysex end marker
 		ASidOutBuffer[index++] = 0xf7;
 		
+		// Send to physical MIDI port
+		if (m_RtMidiOut->isPortOpen())
+			m_RtMidiOut->sendMessage(ASidOutBuffer, index);
+	}
+
+	void ASid::SendSIDEnvironment(bool isPAL)
+	{
+		// Physical out buffer, including protocol overhead
+		unsigned char ASidOutBuffer[8];
+		int index = 0;
+
+		// No UI exist to request buffering or change speed multiplier
+		const bool isBufferingRequested = false;
+		const int speedMultiplier = 1; // 1x
+
+		// Time between two frames
+		const int frameDeltaUs = isPAL ? (long)1000000*63*312/EMULATION_CYCLES_PER_SECOND_PAL : (long)1000000*65*263/EMULATION_CYCLES_PER_SECOND_NTSC;
+
+		// Sysex start data for an ASID message
+		ASidOutBuffer[index++] = 0xf0;
+		ASidOutBuffer[index++] = 0x2d;
+		ASidOutBuffer[index++] = 0x31; // SID environment
+
+		// Payload
+
+		/* data0: settings
+			bit0    : 0 = PAL, 1 = NTSC
+			bits4-1 : speed, 1x to 16x (value 0-15)
+			bit5    : 1 = custom speed (only framedelta valid)
+			bit6    : 1 = buffering requested by user
+		 */
+		ASidOutBuffer[index++] =
+			((isBufferingRequested ? 1:0)   << 6) |
+			(((speedMultiplier - 1) & 0x0f) << 1) |
+			((isPAL? 0:1)                   << 0);
+
+		/* data1: framedelta uS, total 7+7+2=16 bits, slowest time = 65535us = 15Hz
+			bits6-0: framedelta uS (LSB)
+
+		   data2:
+			bits6-0: framedelta uS
+
+		   data3:
+			bits1-0: framedelta uS (MSB)
+			bits6-2: 5 bits (reserved)
+		*/
+		ASidOutBuffer[index++] = (frameDeltaUs >> 7*0) & 0x7f;
+		ASidOutBuffer[index++] = (frameDeltaUs >> 7*1) & 0x7f;
+		ASidOutBuffer[index++] = (frameDeltaUs >> 7*2) & 0x03;
+
+		// Sysex end marker
+		ASidOutBuffer[index++] = 0xf7;
+
+		// Send to physical MIDI port
+		if (m_RtMidiOut->isPortOpen())
+			m_RtMidiOut->sendMessage(ASidOutBuffer, index);
+	}
+
+	void ASid::SendSIDType(bool is6581)
+	{
+		// Physical out buffer, including protocol overhead
+		unsigned char ASidOutBuffer[6];
+		int index = 0;
+
+		// Sysex start data for an ASID message
+		ASidOutBuffer[index++] = 0xf0;
+		ASidOutBuffer[index++] = 0x2d;
+		ASidOutBuffer[index++] = 0x32; // SID type
+
+		// Payload
+		ASidOutBuffer[index++] = 0; // Chip index, only one chip
+		ASidOutBuffer[index++] = is6581? 0x00 : 0x01; // bits 7-1 reserved
+
+		// Sysex end marker
+		ASidOutBuffer[index++] = 0xf7;
+
 		// Send to physical MIDI port
 		if (m_RtMidiOut->isPortOpen())
 			m_RtMidiOut->sendMessage(ASidOutBuffer, index);

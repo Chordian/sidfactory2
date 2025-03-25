@@ -575,7 +575,18 @@ namespace Emulation
 
 	void ExecutionHandler::TellSIDWriteOrderInfo(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList)
 	{
-		if(m_ASID != nullptr)
+		if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID && m_ASID != nullptr)
+		{
 			m_ASID->SendSIDRegisterWriteOrderAndCycleInfo(SIDWriteInfoList);
+		}
+	}
+
+	void ExecutionHandler::TellSIDEnvironment()
+	{
+		if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID && m_ASID != nullptr)
+		{
+			m_ASID->SendSIDEnvironment(m_SIDProxy->GetEnvironment() == SID_ENVIRONMENT_PAL);
+			m_ASID->SendSIDType(m_SIDProxy->GetModel() == SID_MODEL_6581);
+		}
 	}
 }
