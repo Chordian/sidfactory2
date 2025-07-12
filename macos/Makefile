@@ -31,6 +31,7 @@ CC_FLAGS= \
   -I$(SOURCE) \
 	-I./App/Contents/Frameworks/SDL2.framework/Headers \
 	-D_BUILD_NR=\"$(BUILD_NR_TARGET)\" \
+	-D__MACOSX_CORE__ \
 	-std=gnu++14 \
 	-stdlib=libc++ \
 	-O2 \
@@ -41,6 +42,9 @@ CC_FLAGS= \
 LINKER_FLAGS=\
 	-framework SDL2 \
 	-framework ApplicationServices \
+	-framework CoreMIDI \
+	-framework CoreAudio \
+	-framework CoreFoundation \
 	-F./App/Contents/Frameworks \
 	-lstdc++ \
 	-flto \

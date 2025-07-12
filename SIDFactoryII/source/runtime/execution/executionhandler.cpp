@@ -1,5 +1,6 @@
 #include "executionhandler.h"
 
+#include "libraries/residfp/siddefs-fp.h"
 #include "runtime/emulation/cpuframecapture.h"
 #include "runtime/emulation/cpumos6510.h"
 #include "runtime/emulation/sid/sidproxy.h"
@@ -10,11 +11,13 @@
 #include "foundation/base/assert.h"
 #include "foundation/platform/imutex.h"
 #include "foundation/platform/iplatform.h"
+#include "runtime/emulation/asid/asid.h"
 
 #include "utils/configfile.h"
 #include "utils/logging.h"
 #include "utils/global.h"
 
+#include <array>
 #include <algorithm>
 #include <iostream>
 
@@ -33,10 +36,12 @@ namespace Emulation
 		CPUmos6510* inCPU,
 		CPUMemory* pMemory,
 		SIDProxy* pSIDProxy,
+		ASid* inASID,
 		FlightRecorder* inFlightRecorder)
 		: m_CPU(inCPU)
 		, m_Memory(pMemory)
 		, m_SIDProxy(pSIDProxy)
+		, m_ASID(inASID)
 		, m_SIDRegisterFlightRecorder(inFlightRecorder)
 		, m_IsStarted(false)
 		, m_FeedCount(0)
@@ -45,7 +50,8 @@ namespace Emulation
 		, m_SampleBufferWriteCursor(0)
 		, m_CPUFrameCounter(0)
 		, m_UpdateEnabled(false)
-    , m_ErrorState(false)
+		, m_ErrorState(false)
+		, m_OutputDevice(OutputDevice::RESID)
 	{
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
@@ -138,6 +144,29 @@ namespace Emulation
 		FeedPCM(inBuffer, inByteCount);
 	}
 
+	void ExecutionHandler::SetOutputDevice(const OutputDevice device)
+	{
+
+		if (m_OutputDevice == device)
+			return;
+
+		// if MIDI port is not open, do not switch to ASID
+		if (!m_ASID->isPortOpen())
+			return;
+
+		m_OutputDevice = device;
+
+		// mute/unmute ASID depending on its selection
+		m_ASID->SetMuted(m_OutputDevice != OutputDevice::ASID);
+
+		Utility::Logging::instance().Info("OutputDevice set to %s", m_OutputDevice == ExecutionHandler::OutputDevice::ASID ? "ASID" : "RESID");
+	}
+
+	const ExecutionHandler::OutputDevice ExecutionHandler::GetOutputDevice() const
+	{
+		return m_OutputDevice;
+	}
+
 	void ExecutionHandler::FeedPCM(void* inBuffer, unsigned int inByteCount)
 	{
 		m_FeedCount++;
@@ -169,9 +198,16 @@ namespace Emulation
 
 				for (unsigned int i = 0; i < uiSamplesToCopy; ++i)
 				{
-					const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
-					const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
-					pTarget[i] = static_cast<short>(fClampedSample);
+					if (m_OutputDevice == ExecutionHandler::OutputDevice::RESID)
+					{
+						const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
+						const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
+						pTarget[i] = static_cast<short>(fClampedSample);
+					}
+					else
+					{
+						pTarget[i] = 0;
+					}
 				}
 
 				// Forward the read cursor
@@ -513,9 +549,15 @@ namespace Emulation
 			SimulateSID(deltaCycles);
 			m_SIDProxy->Write((unsigned char)(capture.m_usReg & 0xff), capture.m_ucVal);
 			nCycle += deltaCycles;
+
+			if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID &&  m_ASID != nullptr)
+				m_ASID->WriteToSIDRegister(static_cast<unsigned char>(capture.m_usReg & 0xff), capture.m_ucVal);
 		}
 
 		// Do the rest of the frame
+		if(m_ASID != nullptr)
+			m_ASID->SendToDevice();
+		
 		while (nCycle < (int)m_CyclesPerFrame)
 		{
 			const int deltaCycles = m_CyclesPerFrame - nCycle;
@@ -528,5 +570,23 @@ namespace Emulation
 
 		// Unlock execution handler
 		Unlock();
+	}
+
+
+	void ExecutionHandler::TellSIDWriteOrderInfo(std::vector<Editor::SIDWriteInformation> SIDWriteInfoList)
+	{
+		if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID && m_ASID != nullptr)
+		{
+			m_ASID->SendSIDRegisterWriteOrderAndCycleInfo(SIDWriteInfoList);
+		}
+	}
+
+	void ExecutionHandler::TellSIDEnvironment()
+	{
+		if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID && m_ASID != nullptr)
+		{
+			m_ASID->SendSIDEnvironment(m_SIDProxy->GetEnvironment() == SID_ENVIRONMENT_PAL);
+			m_ASID->SendSIDType(m_SIDProxy->GetModel() == SID_MODEL_6581);
+		}
 	}
 }

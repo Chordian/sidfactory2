@@ -489,6 +489,9 @@
 		E98347DE24BBB2EA005F6C0D /* datasource_table_text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = datasource_table_text.cpp; sourceTree = "<group>"; };
 		E989ADC524BFAFF500A4E69B /* display_state.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = display_state.cpp; sourceTree = "<group>"; };
 		E989ADC624BFAFF500A4E69B /* display_state.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = display_state.h; sourceTree = "<group>"; };
+		E99DCFEF2D6BDE170040C3B7 /* asid.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; name = asid.o; path = asid/asid.o; sourceTree = "<group>"; };
+		E99DCFF02D6BDE170040C3B7 /* asid.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = asid.cpp; path = asid/asid.cpp; sourceTree = "<group>"; };
+		E99DCFF12D6BDE170040C3B7 /* asid.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = asid.h; path = asid/asid.h; sourceTree = "<group>"; };
 		E9A1484024BB667E0025712E /* keyhook_setup.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keyhook_setup.h; sourceTree = "<group>"; };
 		E9A1484124BB667E0025712E /* keyhook_setup.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = keyhook_setup.cpp; sourceTree = "<group>"; };
 		E9A1484324BB66920025712E /* keyhookstore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = keyhookstore.h; sourceTree = "<group>"; };
@@ -754,6 +757,9 @@
 		E9089AC824957179008B147D /* emulation */ = {
 			isa = PBXGroup;
 			children = (
+				E99DCFF02D6BDE170040C3B7 /* asid.cpp */,
+				E99DCFF12D6BDE170040C3B7 /* asid.h */,
+				E99DCFEF2D6BDE170040C3B7 /* asid.o */,
 				E9089AD024957179008B147D /* cpuframecapture.cpp */,
 				E9089ACE24957179008B147D /* cpuframecapture.h */,
 				E9089AC924957179008B147D /* cpumemory.cpp */,
