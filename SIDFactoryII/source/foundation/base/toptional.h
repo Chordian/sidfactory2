@@ -55,7 +55,7 @@ namespace Foundation
 		TOptional& operator=(TOptional&& InOther)
 		{
 			m_IsValid = InOther.m_IsValid;
-			InOther.IsValid = false;
+			InOther.IsValid(false);
 
 			if (m_IsValid)
 				new (&m_Value) T(std::move(InOther.m_Value));
