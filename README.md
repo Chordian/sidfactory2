@@ -48,11 +48,14 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
 
 ### Next release
 
-- Added [#190](https://github.com/Chordian/sidfactory2/issues/190)
+- Added: [#190](https://github.com/Chordian/sidfactory2/issues/190)
   Configuration options
   for setting the limits of rastertime usage used to color frames orange or red in
   the flightrecorder.
   `Visualizer.CPU.Medium.Rasterlines` and `Visualizer.CPU.High.Rasterlines`
+- Added: [#117](https://github.com/Chordian/sidfactory2/issues/117)
+  Flightrecorder now shows max cycles and rasterlines used over time, above
+  the column that shows cycle and rasterline counts for each frame.
 
 ### Build 20231002
 

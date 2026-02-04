@@ -72,5 +72,11 @@ namespace Editor
 
 		return index;
 	}
+
+	const unsigned int DataSourceFlightRecorder::GetCyclesSpendMax() const
+	{
+		FOUNDATION_ASSERT(m_FlightRecorder != nullptr);
+		return m_FlightRecorder->CyclesSpendMax();
+	}
 }
 

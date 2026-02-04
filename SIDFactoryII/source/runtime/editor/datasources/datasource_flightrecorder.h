@@ -19,6 +19,7 @@ namespace Editor
 		const int GetSize() const override;
 		const bool IsRecording() const;
 		const unsigned int GetNewestRecordingIndex() const;
+		const unsigned int GetCyclesSpendMax() const;
 
 		bool PushDataToSource() override { return true; }
 
