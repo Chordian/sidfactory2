@@ -21,6 +21,7 @@ namespace Editor
 
 	OverlayControl::OverlayControl(Foundation::Viewport* inViewport)
 		: m_OverlayEnabledState(false)
+		, m_IsFullScreen(false)
 
 		, m_Viewport(inViewport)
 		, m_IsFading(true)
@@ -40,6 +41,10 @@ namespace Editor
 
 	void OverlayControl::Update(int inDeltaTicks)
 	{
+		// Skip window manipulation when in fullscreen mode
+		if (m_IsFullScreen)
+			return;
+
 		if (m_IsFading)
 		{
 			float fade_delta = m_OverlayFadeDuration > 0 ? (static_cast<float>(inDeltaTicks) / m_OverlayFadeDuration) : 1.0f;
@@ -81,6 +86,10 @@ namespace Editor
 
 	void OverlayControl::SetOverlayEnabled(bool inEnabled)
 	{
+		// Don't allow enabling overlay when in fullscreen mode
+		if (inEnabled && m_IsFullScreen)
+			return;
+
 		if (m_Enabled != inEnabled && !m_IsFading)
 		{
 			m_Enabled = inEnabled;
@@ -92,6 +101,11 @@ namespace Editor
 	bool OverlayControl::GetOverlayEnabled() const
 	{
 		return m_Enabled;
+	}
+
+	void OverlayControl::SetFullScreenState(bool inIsFullScreen)
+	{
+		m_IsFullScreen = inIsFullScreen;
 	}
 
 
@@ -118,7 +132,7 @@ namespace Editor
 				return "";
 			};
 
-			std::string version_base = VersionPrefix() + std::to_string(major_version) + "_"; 
+			std::string version_base = VersionPrefix() + std::to_string(major_version) + "_";
 
 			for (int minor = static_cast<int>(minor_version); minor >= 0; --minor)
 			{
@@ -151,7 +165,6 @@ namespace Editor
 
 		m_Viewport->ShowOverlay(m_Enabled);
 	}
-
 
 
 	void OverlayControl::ReadConfigValues(const Utility::ConfigFile& inConfigFile)

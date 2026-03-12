@@ -18,7 +18,7 @@ namespace Foundation
 	// Class
 	class Viewport final
 	{
-	public:
+	  public:
 		Viewport(int inResolutionX, int inResolutionY, float inScaling, const std::string& inCaption);
 		~Viewport();
 
@@ -40,6 +40,7 @@ namespace Foundation
 		void ShowOverlay(bool inShowOverlay);
 		void SetOverlayPNG(int inIndex, void* inData, const Rect& inImageRect);
 		void SetWindowFullScreen(int flags);
+		bool IsFullScreen() const;
 
 		void Begin();
 		void End();
@@ -48,7 +49,7 @@ namespace Foundation
 		DrawField* CreateDrawField(unsigned inWidth, unsigned int inHeight, int inX, int inY);
 		Image* CreateImageFromFile(const std::string& inFileName);
 		Image* CreateImageFromARGBData(void* inData, unsigned int inWidth, unsigned int inHeight, bool inIncludeAlphaChannel);
-		
+
 		SDL_Renderer* GetRenderer();
 
 		void Destroy(IManaged* inManagedResource);
@@ -57,7 +58,7 @@ namespace Foundation
 		const Palette& GetPalette() const;
 
 
-	private:
+	  private:
 		struct Overlay
 		{
 			Overlay()

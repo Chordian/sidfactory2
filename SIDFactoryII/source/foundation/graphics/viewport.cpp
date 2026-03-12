@@ -180,7 +180,14 @@ namespace Foundation
 		SDL_SetWindowFullscreen(m_Window, flags);
 	}
 
-	SDL_Renderer* Viewport::GetRenderer() {
+	bool Viewport::IsFullScreen() const
+	{
+		Uint32 flags = SDL_GetWindowFlags(m_Window);
+		return (flags & SDL_WINDOW_FULLSCREEN) != 0;
+	}
+
+	SDL_Renderer* Viewport::GetRenderer()
+	{
 		return m_Renderer;
 	}
 

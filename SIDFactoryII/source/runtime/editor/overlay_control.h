@@ -20,18 +20,20 @@ namespace Editor
 
 	class OverlayControl
 	{
-	public:
+	  public:
 		OverlayControl(Foundation::Viewport* inViewport);
 
 		void SetOverlayEnabled(bool inEnabled);
 		bool GetOverlayEnabled() const;
+
+		void SetFullScreenState(bool inIsFullScreen);
 
 		void Update(int inDeltaTicks);
 
 		void OnChange(const DriverInfo& inDriverInfo);
 		void OnWindowResized();
 
-	private:
+	  private:
 		void ReadConfigValues(const Utility::ConfigFile& inConfigFile);
 		void EnumeratePlatformFiles(const Foundation::IPlatform& inPlatform);
 		void LoadOverlay(bool inIsEditorOverlay, const std::string& inFilename);
@@ -40,6 +42,7 @@ namespace Editor
 		bool m_OverlayEnabledState;
 		bool m_IsFading;
 		float m_FadeValue;
+		bool m_IsFullScreen;
 
 		Foundation::Viewport* m_Viewport;
 		std::vector<std::string> m_OverlayFileList;
