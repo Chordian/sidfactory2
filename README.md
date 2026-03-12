@@ -6,7 +6,7 @@ can download binary release builds from [here](http://blog.chordian.net/sf2/).
 To build from source, have a look [here](DEVELOPMENT.md).
 
 Main programming by Thomas Egeskov Petersen, with assistance by Jens-Christian
-Huus and Michel de Bree.
+Huus, Michel de Bree and Thomas Jansson.
 
 Notable features:
 
@@ -28,6 +28,7 @@ Notable features:
 - Includes demo tunes to learn from.
 - Cross platform: Windows, macOS (Intel and ARM) and Linux versions.
 - Configurable settings, shortcuts and keyboard layout
+- ASID support, for playback on real SID hardware interfaces/instruments.
 - Open source
 
 ![SID Factory II screenshot](screenshot.png)
@@ -44,7 +45,23 @@ binaries](https://github.com/Chordian/sidfactory2/workflows/Build%20macOS%20bina
 Please report issues in our [issue tracker](https://github.com/Chordian/sidfactory2/issues).
 
 ![Commits since last
-release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20231002)
+release](https://img.shields.io/github/commits-since/chordian/sidfactory2/release-20260308)
+
+### Next release
+
+### Build 20260308
+
+- Added: [#28](https://github.com/Chordian/sidfactory2/issues/28) ASID support!
+  Use real hardware that supports the ASID protocol (for example the TherapSID
+  or [USBSID-Pico](https://github.com/LouDnl/USBSID-Pico). Press F1 in the
+  startup screen to select MIDI device to use for ASID.
+- Added: Config option `Playback.ASID.MidiInterface` to select the MIDI
+  interface for ASID playback
+- Added [#190](https://github.com/Chordian/sidfactory2/issues/190)
+  Configuration options
+  for setting the limits of rastertime usage used to color frames orange or red in
+  the flightrecorder.
+  `Visualizer.CPU.Medium.Rasterlines` and `Visualizer.CPU.High.Rasterlines`
 
 ### Next release
 

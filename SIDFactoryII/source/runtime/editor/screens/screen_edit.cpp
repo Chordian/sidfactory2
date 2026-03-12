@@ -180,12 +180,6 @@ namespace Editor
 
 		m_ExecutionHandler->Unlock();
 
-		// Get the write order and cycle timing from the driver
-		const auto SIDWriteInfoList = DriverUtils::GetSIDWriteInformationFromDriver(*m_CPUMemory, *m_DriverInfo);
-
-		for(const auto& SIDWriteInfo : SIDWriteInfoList)
-			Utility::Logging::instance().Info("Write to address $d4%02x at cycle offset: %02x", SIDWriteInfo.m_AddressLow, SIDWriteInfo.m_CycleOffset); 
-
 		// Create debug views
 		m_DebugViews = std::make_unique<DebugViews>(m_Viewport, &*m_ComponentsManager, m_CPUMemory, m_MainTextField->GetDimensions(), m_DriverInfo);
 
@@ -204,6 +198,11 @@ namespace Editor
 		auto mouse_button_sid_model = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
 		{
 			DoToggleSIDModelAndRegion(KeyboardUtils::IsModifierExclusivelyDown(inKeyboardModifiers, Keyboard::Control));
+		};
+
+		auto mouse_button_output_device = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
+		{
+			DoToggleOutputDevice();
 		};
 
 		auto mouse_button_context_highlight = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
@@ -226,7 +225,8 @@ namespace Editor
 			? std::to_string(selected_song_index + 1)
 			: song_name;
 
-		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_context_highlight, mouse_button_follow_play);
+		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), *m_ExecutionHandler,
+				mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_output_device, mouse_button_context_highlight, mouse_button_follow_play);
 		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500, false);
 		m_ActivationMessage = "";
 
@@ -244,6 +244,12 @@ namespace Editor
 		// Make sure the driver is stopped upon entering the screen
 		m_ExecutionHandler->QueueStop();
 		SetStatusPlaying(false);
+
+		// Send the ASID information, if needed
+		if (m_ExecutionHandler->GetOutputDevice() == ExecutionHandler::OutputDevice::ASID)
+		{
+			this->SendASIDinformation();
+		}
 
 		m_PlaybackCurrentEventPos = -1;
 
@@ -594,6 +600,25 @@ namespace Editor
 		}
 	}
 
+	void ScreenEdit::DoToggleOutputDevice() 
+	{
+		ExecutionHandler::OutputDevice device = m_ExecutionHandler->GetOutputDevice();
+
+		if (device == ExecutionHandler::OutputDevice::RESID) {
+			device = ExecutionHandler::OutputDevice::ASID;
+		}
+		else {
+			device = ExecutionHandler::OutputDevice::RESID;
+		}
+		m_ExecutionHandler->SetOutputDevice(device);
+
+		if (device == ExecutionHandler::OutputDevice::ASID)
+		{
+			this->SendASIDinformation();
+		}
+
+	}
+
 
 	void ScreenEdit::DoClearAllMuteState()
 	{
@@ -761,6 +786,8 @@ namespace Editor
 
 			m_ExecutionHandler->Unlock();
 		}
+
+		m_ExecutionHandler->TellSIDEnvironment();
 	}
 
 	void ScreenEdit::DoToggleContextHighlight()
@@ -1967,6 +1994,12 @@ namespace Editor
 			return true;
 		} });
 
+		m_KeyHooks.push_back( { "Key.ScreenEdit.ToggleOutputDevice", m_KeyHookStore, [&]()
+		{
+			DoToggleOutputDevice();
+			return true;
+		}});
+
 		m_KeyHooks.push_back({ "Key.ScreenEdit.SetMarker", m_KeyHookStore, [&]()
 		{
 			const int selected_marker = m_PlayMarkerListComponent->GetSelectionIndex();
@@ -2190,6 +2223,20 @@ namespace Editor
 			const std::string text = " Sequence " + EditorUtils::ConvertToHexValue(inSequenceIndex, m_DisplayState.IsHexUppercase()) + " referenced " + std::to_string(sequence_index_use_count[inSequenceIndex]) + (usage_count_plural ? " times." : " time.");
 			SetStatusBarMessage(text, 5000);
 		}
+	}
+
+	void ScreenEdit::SendASIDinformation()
+	{
+		// Get the write order and cycle timing from the driver
+		const auto SIDWriteInfoList = DriverUtils::GetSIDWriteInformationFromDriver(*m_CPUMemory, *m_DriverInfo);
+
+#ifdef DEBUG_ASID
+		for(const auto& SIDWriteInfo : SIDWriteInfoList)
+			Utility::Logging::instance().Info("Write to address $d4%02x at cycle offset: %02x", SIDWriteInfo.m_AddressLow, SIDWriteInfo.m_CycleOffset);
+#endif
+
+		m_ExecutionHandler->TellSIDWriteOrderInfo(SIDWriteInfoList);
+		m_ExecutionHandler->TellSIDEnvironment();
 	}
 }
 
