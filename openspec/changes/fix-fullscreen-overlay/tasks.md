@@ -23,3 +23,7 @@
 - [x] 4.3 Test: Exit fullscreen - overlay remains disabled (no auto-re-enable)
 - [x] 4.4 Test: Rapidly toggle fullscreen and overlay - no visual glitches
 - [x] 4.5 Test: Toggle fullscreen with overlay disabled - no changes to overlay state
+
+## 5. Fix for F12 overlay toggle issue
+
+- [x] 5.1 Reset m_FlipOverlayState when changing fullscreen state in ApplyFullScreenSetting to prevent pending toggles from executing after exiting fullscreen

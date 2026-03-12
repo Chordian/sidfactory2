@@ -49,6 +49,8 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
 
 ### Next release
 
+- SDL2 upgraded to 2.32.10 (Windows and macOS)
+
 ### Build 20260308
 
 - Added: [#28](https://github.com/Chordian/sidfactory2/issues/28) ASID support!

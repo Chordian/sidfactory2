@@ -395,9 +395,6 @@
     <ClCompile Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.cpp">
       <Filter>source\runtime\editor\visualizer_components</Filter>
     </ClCompile>
-    <ClCompile Include="source\runtime\editor\overlays\overlay_flightrecorder.cpp">
-      <Filter>source\runtime\editor\overlays</Filter>
-    </ClCompile>
     <ClCompile Include="source\runtime\editor\components\component_flightrecorder.cpp">
       <Filter>source\runtime\editor\components</Filter>
     </ClCompile>
@@ -627,6 +624,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\editor\datasources\datasource_sidregistersbuffer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+     <ClCompile Include="source\runtime\editor\overlays\overlay_flightrecorder.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.cpp">
@@ -922,9 +922,6 @@
     <ClInclude Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.h">
       <Filter>source\runtime\editor\visualizer_components</Filter>
     </ClInclude>
-    <ClInclude Include="source\runtime\editor\overlays\overlay_flightrecorder.h">
-      <Filter>source\runtime\editor\overlays</Filter>
-    </ClInclude>
     <ClInclude Include="source\runtime\editor\components\component_flightrecorder.h">
       <Filter>source\runtime\editor\components</Filter>
     </ClInclude>
@@ -1212,7 +1209,8 @@
     <ClInclude Include="source\runtime\editor\components\component_pulse_filter_visualizer.h" />
     <ClInclude Include="source\runtime\editor\datasources\datasource_sidregistersbuffer.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.h" />
-    <ClInclude Include="source\runtime\execution\RtMidi.h">
+    <ClInclude Include="source\runtime\editor\overlays\overlay_flightrecorder.h" />
+    <ClInclude Include="source\runtime\execution\RtMidi.h">  
       <Filter>source\runtime\execution</Filter>
     </ClInclude>
   </ItemGroup>
