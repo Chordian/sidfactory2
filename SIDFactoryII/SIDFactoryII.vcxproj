@@ -253,7 +253,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.0.12\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.32.10\include;</AdditionalIncludeDirectories>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="source\runtime\editor\auxilarydata\auxilary_data.cpp" />
@@ -457,7 +457,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.0.12\include;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;.\source;.\source\libraries;..\libs\SDL2-2.32.10\include;</AdditionalIncludeDirectories>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="source\utils\usercolors.cpp" />

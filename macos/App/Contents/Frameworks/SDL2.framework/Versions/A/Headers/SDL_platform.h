@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_platform.h
+ * # CategoryPlatform
  *
- *  Try to get a standard set of platform defines.
+ * Try to get a standard set of platform defines.
  */
 
 #ifndef SDL_platform_h_
@@ -73,7 +73,13 @@
 #if defined(__APPLE__)
 /* lets us know what version of Mac OS X we're compiling on */
 #include <AvailabilityMacros.h>
+#ifndef __has_extension /* Older compilers don't support this */
+#define __has_extension(x) 0
 #include <TargetConditionals.h>
+#undef __has_extension
+#else
+#include <TargetConditionals.h>
+#endif
 
 /* Fix building with older SDKs that don't define these
    See this for more information:

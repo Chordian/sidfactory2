@@ -39,3 +39,4 @@ xcuserdata
 .aider.*
 .exrc
 compile_commands.json
+tmp
