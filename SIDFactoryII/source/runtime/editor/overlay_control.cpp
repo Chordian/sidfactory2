@@ -86,8 +86,8 @@ namespace Editor
 
 	void OverlayControl::SetOverlayEnabled(bool inEnabled)
 	{
-		// Don't allow enabling overlay when in fullscreen mode
-		if (inEnabled && m_IsFullScreen)
+		// Don't allow disabling/enabling overlay when in fullscreen mode
+		if (m_IsFullScreen)
 			return;
 
 		if (m_Enabled != inEnabled && !m_IsFading)
