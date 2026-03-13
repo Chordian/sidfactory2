@@ -28,11 +28,20 @@ namespace Foundation
 		, m_ShowOverlay(false)
 		, m_Caption(inCaption)
 		, m_FadeValue(0.0f)
+		, m_Font(Resource::DEFAULT)
 	{
+		ConfigFile& config = Global::instance().GetConfig();
+		std::string font = GetSingleConfigurationValue<ConfigValueString>(config, "Window.Font", std::string("DEFAULT"));
+
+		if (font == "C64") {
+			m_Font = Resource::C64;
+		}
+		else {
+			m_Font = Resource::DEFAULT;
+		}
+
 		const int window_width = static_cast<int>(m_ClientResolutionX * m_Scaling);
 		const int window_height = static_cast<int>(m_ClientResolutionY * m_Scaling);
-
-		ConfigFile& config = Global::instance().GetConfig();
 
 		m_Window = SDL_CreateWindow(inCaption.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_width, window_height, SDL_WINDOW_SHOWN);
 		FOUNDATION_ASSERT(m_Window != nullptr);
@@ -244,6 +253,10 @@ namespace Foundation
 		return m_Palette;
 	}
 
+	const Resource::Font& Viewport::GetFont() const
+	{
+		return m_Font;
+	}
 
 	TextField* Viewport::CreateTextField(unsigned inWidth, unsigned int inHeight, int inX, int inY)
 	{

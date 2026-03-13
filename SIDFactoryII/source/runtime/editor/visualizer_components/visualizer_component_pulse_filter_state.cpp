@@ -68,8 +68,8 @@ namespace Editor
 			m_DrawField->DrawBox(color_background, 0, 0, m_Dimensions.m_Width, m_Dimensions.m_Height);
 
 			const int bar_width = m_Dimensions.m_Width - 4;
-			const int bar_height = 12;
-			const int bar_spacing = 16;
+			const int bar_spacing = m_Dimensions.m_Height / 4;
+			const int bar_height = bar_spacing - 2;
 
 			int bar_x = 2;
 			int bar_y = 2;

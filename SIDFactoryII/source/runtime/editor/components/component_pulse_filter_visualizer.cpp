@@ -28,10 +28,12 @@ namespace Editor
 		, m_Viewport(inViewport)
 		, m_ComponentsManager(inComponentsManager)
 	{
-		unsigned int viewport_width = inWidth * Foundation::TextField::font_width;
-		unsigned int viewport_height = inHeight * Foundation::TextField::font_height;
+		int font_width = m_Viewport->GetFont().width;
+		int font_height = m_Viewport->GetFont().height;
+		unsigned int viewport_width = inWidth * font_width;
+		unsigned int viewport_height = inHeight * font_height;
 
-		m_DrawField = m_Viewport->CreateDrawField(viewport_width, viewport_height, inX * Foundation::TextField::font_width, inY * Foundation::TextField::font_height);
+		m_DrawField = m_Viewport->CreateDrawField(viewport_width, viewport_height, inX * font_width, inY * font_height);
 		m_DrawField->SetEnable(true);
 
 		std::shared_ptr<DataSourceSIDRegistersBufferAfLastDriverUpdate> data_source_sid_registers_buffer = std::make_shared<DataSourceSIDRegistersBufferAfLastDriverUpdate>(inExecutionHandler);
