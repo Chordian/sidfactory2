@@ -116,6 +116,7 @@ namespace Editor
 		void DoPlayFromSelectedMarker();
 		void DoStop();
 		void DoToggleMute(unsigned int inChannel);
+		void DoToggleOutputDevice();
 		void DoClearAllMuteState();
 		void DoRestoreMuteState();
 		void DoMoveToEventPositionOfSelectedMarker();
@@ -172,6 +173,8 @@ namespace Editor
 		void ConfigurePlaybackOptions();
 
 		void ShowSequenceUsageCount(unsigned char inSequenceIndex);
+
+		void SendASIDinformation();
 
 		template<typename EXECUTION_CALLBACK>
 		void StartSongsDialogWithSelectionExecution(const std::string& headline, EXECUTION_CALLBACK&& inExecutionCallback);

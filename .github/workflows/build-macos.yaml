@@ -3,7 +3,7 @@ on: workflow_dispatch
 jobs:
   build:
     name: Build executable
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - name: Install extra build tooling
@@ -11,7 +11,7 @@ jobs:
       - name: Build binaries
         run: (cd macos && make raw)
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: SIDFactoryII-macos
           path: ./macos/artifacts
