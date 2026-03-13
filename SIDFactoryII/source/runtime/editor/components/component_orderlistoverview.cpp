@@ -15,6 +15,7 @@
 #include "foundation/input/keyboard.h"
 #include "foundation/input/mouse.h"
 #include "foundation/base/assert.h"
+#include "runtime/editor/driver/driver_state.h"
 #include "utils/keyhook.h"
 #include "utils/keyhookstore.h"
 #include "utils/usercolors.h"
@@ -46,6 +47,7 @@ namespace Editor
 		Undo* inUndo,
 		TextField* inTextField,
 		const EditState& inEditState,
+		const DriverState& inDriverState,
 		const Utility::KeyHookStore& inKeyHookStore,
 		std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 		std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
@@ -57,6 +59,7 @@ namespace Editor
 	)
 		: ComponentBase(inID, inGroupID, inUndo, inTextField, inX, inY, ComponentOrderListOverview::GetWidthFromChannelCount(static_cast<int>(inOrderLists.size())), inHeight)
 		, m_EditState(inEditState)
+		, m_DriverState(inDriverState)
 		, m_TableText(inDataSourceTableText)
 		, m_OrderLists(inOrderLists)
 		, m_SequenceList(inSequenceList)
@@ -92,6 +95,8 @@ namespace Editor
 	{
 		// Set has control, but do not enaBle the cursor for this component, because it doesn't need it yet!
 		m_HasControl = true;
+
+		UpdateHoveredSequence();
 		m_RequireRefresh = true;
 	}
 
@@ -427,6 +432,7 @@ namespace Editor
 	{
 		if (m_RequireRefresh)
 		{
+			const bool is_playing = m_DriverState.GetPlayState() == DriverState::PlayState::Playing;
 			RebuildOverview();
 
 			m_TextField->Clear(m_Rect);
@@ -518,9 +524,13 @@ namespace Editor
 					{
 						const unsigned char sequence_value = static_cast<unsigned char>(sequence_index & 0x0ff);
 
-						if(m_EditState.IsSequenceHighlightingEnabled() && m_HasControl && y != cursor_screen_y && m_HoveredSequenceValue.HasValue() && m_HoveredSequenceValue.GetValue() == sequence_value)
+						if(m_EditState.IsSequenceHighlightingEnabled()
+							&& (!(is_playing && m_EditState.IsFollowPlayMode()) || m_HasControl)
+							&& (y != cursor_screen_y || !m_HasControl)
+							&& m_HighlitSequenceValue.HasValue()
+							&& m_HighlitSequenceValue.GetValue() == sequence_value)
 						{
-							m_TextField->PrintHexValue(x, y, Color::Yellow, is_uppercase, sequence_value);
+							m_TextField->PrintHexValue(x, y, ToColor(UserColor::SongListValuesHighlight), is_uppercase, sequence_value);
 						}
 						else
 						{
@@ -575,6 +585,7 @@ namespace Editor
 	void ComponentOrderListOverview::PullDataFromSource(const bool inFromUndo)
 	{
 		m_TableText->PullDataFromSource();
+		m_RequireRefresh |= inFromUndo;
 	}
 
 
@@ -1070,11 +1081,8 @@ namespace Editor
 
 		undo_data->m_ComponentGroupID = m_ComponentGroupID;
 		undo_data->m_ComponentID = m_ComponentID;
-		//		undo_data->m_TopRow = m_TopRow;
 		undo_data->m_CursorX = m_CursorX;
 		undo_data->m_CursorY = m_CursorY;
-
-		//		m_Undo->AddUndo(undo_data, [this](const UndoComponentData& inData, CursorControl& inCursorControl) { this->OnUndo(inData, inCursorControl); });
 	}
 
 
@@ -1204,14 +1212,28 @@ namespace Editor
 				NewValue.SetValue(Row.m_SequenceEntries[m_CursorX].m_Index);
 		}
 
-		if(m_HoveredSequenceValue != NewValue)
+		if(m_HighlitSequenceValue != NewValue)
 		{
-			m_HoveredSequenceValue = NewValue;
+			m_HighlitSequenceValue = NewValue;
 			return true;
 		}
 
 		return false;
 	}
+
+	
+	void ComponentOrderListOverview::SetHighlitSequenceValue(int inSequenceIndex)
+	{
+		HoveredSequenceValue NewValue;
+		NewValue.SetValue(inSequenceIndex);
+		
+		if(m_HighlitSequenceValue != NewValue)
+		{
+			m_HighlitSequenceValue = NewValue;
+			m_RequireRefresh = true;
+		}
+	}
+
 	
 
 	void ComponentOrderListOverview::ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore)

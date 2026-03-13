@@ -22,6 +22,7 @@ namespace Utility
 
 namespace Editor
 {
+	class DriverState;
 	class CursorControl;
 	class ScreenBase;
 	class DataSourceOrderList;
@@ -86,6 +87,7 @@ namespace Editor
 			Undo* inUndo,
 			Foundation::TextField* inTextField,
 			const EditState& inEditState,
+			const DriverState& inDriverState,
 			const Utility::KeyHookStore& inKeyHookStore,
 			std::shared_ptr<DataSourceTableText> inDataSourceTableText,
 			std::vector<std::shared_ptr<DataSourceOrderList>>& inOrderLists,
@@ -116,6 +118,8 @@ namespace Editor
 		void ExecuteAction(int inActionInput) override;
 
 		void TellPlaybackEventPosition(int inPlaybackEventPosition);
+
+		void SetHighlitSequenceValue(int inSequenceIndex);
 
 		OrderListChangedEvent& GetOrderListChangedEvent();
 
@@ -191,7 +195,8 @@ namespace Editor
 		OrderListChangedEvent m_OrderListChangedEvent;
 
 		const EditState& m_EditState;
-		HoveredSequenceValue m_HoveredSequenceValue;
+		const DriverState& m_DriverState;
+		HoveredSequenceValue m_HighlitSequenceValue;
 
 		int m_CursorY;
 		int m_CursorX;

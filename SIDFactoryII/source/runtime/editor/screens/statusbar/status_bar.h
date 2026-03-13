@@ -25,7 +25,7 @@ namespace Editor
 
 		void SetColors(const Foundation::Color& inTextColor, const Foundation::Color& inBackgroundColor, const Foundation::Color& inBackgroundMouseOverColor);
 		void SetText(const std::string& inText);
-		void SetText(const std::string& inText, int inDuration);
+		void SetText(const std::string& inText, int inDuration, bool inCanBeOverwritten = true);
 		bool IsDisplayingTimedText() const;
 		void Refresh();
 
@@ -60,6 +60,7 @@ namespace Editor
 			std::function<void(Foundation::Mouse::Button, int)> m_MouseButtonCallback;
 		};
 
+		bool m_CanBeOverwritten;
 		bool m_NeedRefresh;
 		bool m_NeedUpdate;
 

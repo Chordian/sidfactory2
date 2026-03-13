@@ -10,17 +10,22 @@ namespace Emulation
 {
 	class IPlatformFactory;
 
-	class CPUMemory : public IMemoryRandomReadAccess
+	class CPUMemory final : public IMemoryRandomReadAccess 
 	{
 	public:
 		CPUMemory(unsigned int inSize, Foundation::IPlatform* inPlatform);
-		~CPUMemory();
+		virtual ~CPUMemory();
+
+		CPUMemory(const CPUMemory&) = delete;
+		CPUMemory& operator=(const CPUMemory&) = delete;
+		CPUMemory(CPUMemory&&) = delete;
+		CPUMemory& operator=(CPUMemory&&) = delete;
 
 		const unsigned char& operator[](int inAddress) const override
 		{
 			FOUNDATION_ASSERT(inAddress >= 0);
 			FOUNDATION_ASSERT(inAddress < (int)m_nSize);
-			FOUNDATION_ASSERT(m_IsLocked);
+			FOUNDATION_ASSERT(m_LockRefCount);
 
 			return m_Memory[inAddress];
 		}
@@ -29,7 +34,7 @@ namespace Emulation
 		{
 			FOUNDATION_ASSERT(inAddress >= 0);
 			FOUNDATION_ASSERT(inAddress < (int)m_nSize);
-			FOUNDATION_ASSERT(m_IsLocked);
+			FOUNDATION_ASSERT(m_LockRefCount);
 
 			return m_Memory[inAddress];
 		}
@@ -62,7 +67,7 @@ namespace Emulation
 			unsigned int iAddress = static_cast<unsigned int>(static_cast<const unsigned char*>(inMemoryOffsetPointer) - m_Memory);
 
 			FOUNDATION_ASSERT(iAddress < m_nSize);
-			FOUNDATION_ASSERT(m_IsLocked);
+			FOUNDATION_ASSERT(m_LockRefCount > 0);
 
 			return iAddress;
 		};
@@ -70,7 +75,7 @@ namespace Emulation
 	private:
 		std::shared_ptr<Foundation::IMutex> m_Mutex;
 
-		bool m_IsLocked;
+		int m_LockRefCount;
 
 		unsigned int m_nSize;
 		unsigned char* m_Memory;

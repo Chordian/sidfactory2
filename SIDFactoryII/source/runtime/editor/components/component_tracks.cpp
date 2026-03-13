@@ -94,6 +94,14 @@ namespace Editor
 					(*m_DataSource)[i]->UpdateMaxEventPos();
 				}
 			}));
+
+			// Set orderlist index changed event
+			(*m_DataSource)[i]->GetOrderListIndexChangedEvent().Add(
+				this,
+				Utility::TDelegate<void(bool, unsigned int, unsigned char)>([this](bool inHasControl, unsigned int inIndex, unsigned char inValue)
+			{
+				this->m_OrderListIndexChangedEvent.Execute(inHasControl, inIndex, inValue);
+			}));
 		}
 
 		// Set the event position on each track
@@ -597,6 +605,12 @@ namespace Editor
 			(*m_DataSource)[inChannel]->OnOrderListChanged();
 
 		m_HasDataChange = true;
+	}
+
+
+	ComponentTrack::OrderListIndexChangedEvent& ComponentTracks::GetOrderListIndexChangedEvent()
+	{
+		return m_OrderListIndexChangedEvent;
 	}
 
 

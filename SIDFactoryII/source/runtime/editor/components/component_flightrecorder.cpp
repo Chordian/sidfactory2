@@ -9,12 +9,16 @@
 #include "runtime/editor/cursor_control.h"
 #include "runtime/environmentdefines.h"
 #include "utils/usercolors.h"
+#include "utils/config/configtypes.h"
+#include "utils/configfile.h"
+#include "utils/global.h"
 
 #include "SDL_keycode.h"
 #include "foundation/base/assert.h"
 
 using namespace Foundation;
 using namespace Utility;
+using namespace Utility::Config;
 
 namespace Editor
 {
@@ -26,6 +30,9 @@ namespace Editor
 	{
 		FOUNDATION_ASSERT(inTextField != nullptr);
 		m_RequireRefresh = true;
+		ConfigFile& config = Global::instance().GetConfig();
+		m_CPUUsageMediumRasterlines = GetSingleConfigurationValue<ConfigValueInt>(config, "Visualizer.CPU.Medium.Rasterlines", 16);
+		m_CPUUsageHighRasterlines = GetSingleConfigurationValue<ConfigValueInt>(config, "Visualizer.CPU.High.Rasterlines", 24);
 	}
 
 
@@ -215,7 +222,7 @@ namespace Editor
 
 					const unsigned char scan_lines = static_cast<unsigned char>(frame_data.m_nCyclesSpend / EMULATION_CYCLES_PER_SCANLINE_PAL);
 
-					Color cycle_color = scan_lines < 0x10 ? color_cpu_usage_low : (scan_lines < 0x18 ? color_cpu_usage_medium : color_cpu_usage_high);
+					Color cycle_color = scan_lines < m_CPUUsageMediumRasterlines ? color_cpu_usage_low : (scan_lines < m_CPUUsageHighRasterlines ? color_cpu_usage_medium : color_cpu_usage_high);
 
 					m_TextField->PrintHexValue(x, y, is_uppercase, frame_number);
 					m_TextField->PrintChar(x + 4, y, ':');

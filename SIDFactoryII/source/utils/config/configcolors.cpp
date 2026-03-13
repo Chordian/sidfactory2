@@ -50,6 +50,7 @@ namespace Utility
 			Details::SetUserColor(inConfigFile, "Color.SongList.Text.Editing", UserColor::SongListTextEditing, ioViewport, Color::LightGreen);
 			Details::SetUserColor(inConfigFile, "Color.SongList.EventPos", UserColor::SongListEventPos, ioViewport, Color::White);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Values", UserColor::SongListValues, ioViewport, Color::White);
+			Details::SetUserColor(inConfigFile, "Color.SongList.Values.Highlight", UserColor::SongListValuesHighlight, ioViewport, Color::Yellow);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Cursor", UserColor::SongListCursorDefault, ioViewport, Color::DarkBlue);
 			Details::SetUserColor(inConfigFile, "Color.SongList.Cursor.Focus", UserColor::SongListCursorFocus, ioViewport, Color::Blue);
 			Details::SetUserColor(inConfigFile, "Color.SongList.AreaMarking", UserColor::SongListAreaMarking, ioViewport, Color::DarkBlue);

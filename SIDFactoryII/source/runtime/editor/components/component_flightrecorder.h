@@ -3,8 +3,6 @@
 #include "component_base.h"
 
 #include <memory>
-#include <string>
-#include <functional>
 
 namespace Foundation
 {
@@ -42,5 +40,7 @@ namespace Editor
 		unsigned int m_CursorPos;
 		unsigned int m_MaxCursorPos;
 		unsigned int m_TopVisible;
+        unsigned int m_CPUUsageMediumRasterlines;
+        unsigned int m_CPUUsageHighRasterlines;
 	};
 }

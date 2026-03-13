@@ -289,6 +289,7 @@ namespace Emulation
 		// Opcode
 		static const unsigned char GetOpcodeByteSize(const unsigned char inOpcode);
 		static const AddressingMode GetOpcodeAddressingMode(const unsigned char inOpcode);
+		static const unsigned char GetOpcodeCycles(const unsigned char inOpcode);
 
 	private:
 		// CPU State

@@ -187,14 +187,12 @@ namespace Editor
 			UpdateSequenceStatusReport();
 		}
 
-		{
-			const unsigned int order_list_index = m_EventPosDetails.OrderListIndex();
-			const auto& order_list_entry = (*m_DataSourceOrderList)[order_list_index];
-			if (order_list_entry.m_Transposition >= 0xfe)
-				m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, 0xff);
-			else
-				m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, order_list_entry.m_SequenceIndex);
-		}
+		const unsigned int order_list_index = m_EventPosDetails.OrderListIndex();
+		const auto& order_list_entry = (*m_DataSourceOrderList)[order_list_index];
+		if (order_list_entry.m_Transposition >= 0xfe)
+			m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, 0xff);
+		else
+			m_OrderListIndexChangedEvent.Execute(m_HasControl, order_list_index, order_list_entry.m_SequenceIndex);
 	}
 
 
@@ -511,7 +509,7 @@ namespace Editor
 				const Color color_orderlist_value = ToColor(UserColor::OrderlistValue);
 				const Color color_orderlist_value_loop_marker = ToColor(UserColor::OrderlistValueLoopMarker);
 				const Color color_orderlist_value_input = ToColor(UserColor::OrderlistValueInput);
-
+				
 				while (current_event < bottom_event)
 				{
 					DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
@@ -572,6 +570,8 @@ namespace Editor
 			{
 				if (m_DataSourceOrderList->PushDataToSource())
 					m_HasDataChangeOrderList = false;
+
+				SetEventPosDetails(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex(), true);
 			}
 
 			if (!m_DataChangeSequenceIndexList.empty())
@@ -657,7 +657,7 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::SetEventPosition(int inEventPos)
+	void ComponentTrack::SetEventPosition(int inEventPos, bool inForceOrderListIndexChangeEvent)
 	{
 		FOUNDATION_ASSERT(inEventPos >= 0);
 
@@ -702,7 +702,7 @@ namespace Editor
 				if (!found_event_pos && m_EventPos >= event_pos && m_EventPos < next_event_pos)
 				{
 					found_event_pos = true;
-					SetEventPosDetails(i, m_EventPos - event_pos);
+					SetEventPosDetails(i, m_EventPos - event_pos, inForceOrderListIndexChangeEvent);
 
 					break;
 				}
@@ -772,7 +772,7 @@ namespace Editor
 		if (m_HasControl && m_FocusModeOrderList)
 		{
 			int event_pos = GetEventPositionAtTopOfCurrentSequence();
-			SetEventPosition(event_pos);
+			SetEventPosition(event_pos, true);
 		}
 
 		UpdateOrderListStatusReport();
@@ -1842,13 +1842,13 @@ namespace Editor
 	}
 
 
-	void ComponentTrack::SetEventPosDetails(unsigned int inOrderListIndex, unsigned int inSequenceIndex)
+	void ComponentTrack::SetEventPosDetails(unsigned int inOrderListIndex, unsigned int inSequenceIndex, bool inForceOrderListIndexChangeEvent)
 	{
 		unsigned int previous_order_list_index = m_EventPosDetails.OrderListIndex();
 
 		m_EventPosDetails.Set(inOrderListIndex, inSequenceIndex);
 
-		if (inOrderListIndex != previous_order_list_index)
+		if (inOrderListIndex != previous_order_list_index || inForceOrderListIndexChangeEvent)
 		{
 			const auto& order_list_entry = (*m_DataSourceOrderList)[inOrderListIndex];
 			if (order_list_entry.m_Transposition >= 0xfe)
@@ -2209,7 +2209,7 @@ namespace Editor
 				}
 
 				int event_pos = DoKeyUp();
-				SetEventPosDetails(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex() - 1);
+				SetEventPosDetails(m_EventPosDetails.OrderListIndex(), m_EventPosDetails.SequenceIndex() - 1, true);
 				DoDelete(inIsControlDown);
 
 				return event_pos;

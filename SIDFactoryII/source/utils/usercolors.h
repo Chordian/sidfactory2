@@ -41,6 +41,7 @@ namespace Utility
 		SongListTextEditing,
 		SongListEventPos,
 		SongListValues,
+		SongListValuesHighlight,
 		SongListCursorDefault,
 		SongListCursorFocus,
 		SongListAreaMarking,
