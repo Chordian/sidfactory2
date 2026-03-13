@@ -7,6 +7,7 @@
 #include "foundation/graphics/imanaged.h"
 #include "foundation/base/types.h"
 #include "utils/bit_array.h"
+#include "resources/data_char.h"
 
 namespace Foundation
 {
@@ -71,6 +72,7 @@ namespace Foundation
 		
 		const Point& GetPosition() const;
 		const Extent& GetDimensions() const;
+		const Resource::Font& GetFont() const;
 
 		Point GetCellPositionFromPixelPosition(const Point& inPixelPosition) const;
 
@@ -110,10 +112,6 @@ namespace Foundation
 		void PrintChar(int inX, int inY, const TextColoring& inPrintContext, const char inCharacter);
 
 		void ReflectToRenderSurface();
-
-		static const int font_width = 8;
-		static const int font_height = 16;
-		static const int font_pitch = 1;
 
 	private:
 		bool m_Enabled;

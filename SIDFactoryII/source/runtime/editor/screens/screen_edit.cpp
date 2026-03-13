@@ -1308,7 +1308,9 @@ namespace Editor
 		{
 			const bool table_has_text = table_definition.m_TextFieldSize > 0;
 			const int table_width = ComponentTableRowElements::GetWidthFromColumns(table_definition.m_ColumnCount) + (table_has_text ? (1 + table_definition.m_TextFieldSize) : 0);
-			const int table_height = table_definition.m_VisibleRowCount;
+			// visible row count is based on 16 pixels high font
+			const int adusted_visible_row_count = table_definition.m_VisibleRowCount * 16 / m_Viewport->GetFont().height;
+			const int table_height = adusted_visible_row_count > table_definition.m_RowCount ? table_definition.m_RowCount : adusted_visible_row_count;
 
 			if (table_definition.m_PropertyLayoutVertically)
 			{

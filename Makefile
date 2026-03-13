@@ -44,7 +44,7 @@ CC_FLAGS=$(shell sdl2-config --cflags) -I$(SOURCE) -D_SF2_$(PLATFORM) -D_BUILD_N
 LINKER_FLAGS=$(shell sdl2-config --libs) -lstdc++ -flto
 
 ifeq ($(PLATFORM),LINUX)
-	CC_FLAGS := $(CC_FLAGS) -DUNIX_JACK
+	CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
 	LINKER_FLAGS := $(LINKER_FLAGS) -ljack
 endif
 

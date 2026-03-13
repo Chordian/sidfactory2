@@ -8,7 +8,7 @@
 
 namespace Editor
 {
-	class DataSourceTrackComponents final : public IDataSource
+class DataSourceTrackComponents final : public IDataSource
 	{
 	public:
 		DataSourceTrackComponents(const std::vector<std::shared_ptr<ComponentTrack>>& inTracks);
