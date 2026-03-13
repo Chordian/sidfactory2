@@ -49,6 +49,10 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
 
 ### Next release
 
+- Added: [C64 font](https://github.com/Chordian/sidfactory2/pull/207). Add
+  `Window.Font = "C64"` to your config and enjoy the c64 ROM font and twice as
+  many rows.
+
 ### Build 20260308
 
 - Added: [#28](https://github.com/Chordian/sidfactory2/issues/28) ASID support!
