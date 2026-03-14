@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     branches:
       - master
-      - build-linux-alsa
+      - linux-alsa-build
     paths-ignore:
       - 'README.md'
       - 'tools/**'
