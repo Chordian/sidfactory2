@@ -9,6 +9,7 @@
 #include "utils/config/configtypes.h"
 #include "utils/configfile.h"
 #include "utils/global.h"
+#include "utils/logging.h"
 
 using namespace Utility;
 using namespace Utility::Config;
@@ -32,10 +33,12 @@ namespace Foundation
 		ConfigFile& config = Global::instance().GetConfig();
 		std::string font = GetSingleConfigurationValue<ConfigValueString>(config, "Window.Font", std::string("DEFAULT"));
 
-		if (font == "C64") {
+		if (font == "C64")
+		{
 			m_Font = Resource::C64;
 		}
-		else {
+		else
+		{
 			m_Font = Resource::DEFAULT;
 		}
 
@@ -111,7 +114,8 @@ namespace Foundation
 
 	void Viewport::SetWindowPosition(const Point& inPosition)
 	{
-		SDL_SetWindowPosition(m_Window, inPosition.m_X, inPosition.m_Y);
+		if (!IsFullScreen())
+			SDL_SetWindowPosition(m_Window, inPosition.m_X, inPosition.m_Y);
 	}
 
 
@@ -125,10 +129,20 @@ namespace Foundation
 
 	void Viewport::SetWindowSize(const Extent& inSize)
 	{
-		const int window_width = static_cast<int>(inSize.m_Width * m_Scaling);
-		const int window_height = static_cast<int>(inSize.m_Height * m_Scaling);
+		if (!IsFullScreen())
+		{
+			const int window_width = static_cast<int>(inSize.m_Width * m_Scaling);
+			const int window_height = static_cast<int>(inSize.m_Height * m_Scaling);
 
-		SDL_SetWindowSize(m_Window, window_width, window_height);
+			SDL_SetWindowSize(m_Window, window_width, window_height);
+		}
+
+		SDL_RenderSetLogicalSize(m_Renderer, inSize.m_Width, inSize.m_Height);
+	}
+
+
+	void Viewport::SetLogicalSize(const Extent& inSize)
+	{
 		SDL_RenderSetLogicalSize(m_Renderer, inSize.m_Width, inSize.m_Height);
 	}
 
@@ -192,7 +206,8 @@ namespace Foundation
 	bool Viewport::IsFullScreen() const
 	{
 		Uint32 flags = SDL_GetWindowFlags(m_Window);
-		return (flags & SDL_WINDOW_FULLSCREEN) != 0;
+		bool is_fullscreen = (flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
+		return is_fullscreen;
 	}
 
 	SDL_Renderer* Viewport::GetRenderer()

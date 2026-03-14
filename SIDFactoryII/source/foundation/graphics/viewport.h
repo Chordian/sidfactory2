@@ -19,7 +19,7 @@ namespace Foundation
 	// Class
 	class Viewport final
 	{
-	  public:
+	public:
 		Viewport(int inResolutionX, int inResolutionY, float inScaling, const std::string& inCaption);
 		~Viewport();
 
@@ -34,6 +34,7 @@ namespace Foundation
 
 		Extent GetWindowSize() const;
 		void SetWindowSize(const Extent& inSize);
+		void SetLogicalSize(const Extent& inSize);
 
 		void SetFadeValue(float inFadeValue);
 		void SetAdditionTitleInfo(const std::string& inAdditionTitleInfo);
@@ -60,7 +61,7 @@ namespace Foundation
 		const Resource::Font& GetFont() const;
 
 
-	  private:
+	private:
 		struct Overlay
 		{
 			Overlay()

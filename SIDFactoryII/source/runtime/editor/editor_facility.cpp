@@ -28,9 +28,9 @@
 #include "runtime/editor/screens/screen_intro.h"
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/import_utils.h"
+#include "runtime/emulation/asid/asid.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/cpumos6510.h"
-#include "runtime/emulation/asid/asid.h"
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/environmentdefines.h"
 #include "runtime/execution/executionhandler.h"
@@ -84,7 +84,6 @@ namespace Editor
 		// Configure editor
 		auto color_scheme_names = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Name", {});
 		auto color_scheme_filenames = GetConfigurationValues<ConfigValueString>(config, "ColorScheme.Filename", {});
-		ApplyFullScreenSetting(GetSingleConfigurationValue<ConfigValueInt>(config, "Window.FullScreen", 0));
 
 		if (color_scheme_names.size() == color_scheme_filenames.size())
 		{
@@ -140,13 +139,13 @@ namespace Editor
 		m_AudioStream = new AudioStream(sid_sample_frequency, 16, std::max<const int>(audio_buffer_size, 0x80), m_ExecutionHandler);
 
 		// Setup midi out device, if default selected from the ini file
-		if(Global::instance().GetConfig().HasKey("Playback.ASID.MidiInterface"))
+		if (Global::instance().GetConfig().HasKey("Playback.ASID.MidiInterface"))
 		{
 			std::string config_asid_midi_port_name = GetSingleConfigurationValue<Utility::Config::ConfigValueString>(Global::instance().GetConfig(), "Playback.ASID.MidiInterface", std::string(""));
 			const auto midi_out_ports = RtMidiUtils::RtMidiOut_GetPorts(m_RtMidiOut);
 			const auto selected_out_port = RtMidiUtils::RtMidi_GetPortInfoByName(midi_out_ports, config_asid_midi_port_name);
 
-			if(selected_out_port.IsValid())
+			if (selected_out_port.IsValid())
 				RtMidiUtils::RtMidiOut_OpenPort(m_RtMidiOut, selected_out_port.Get());
 		}
 
@@ -159,6 +158,10 @@ namespace Editor
 
 		// Create overlay control
 		m_OverlayControl = std::make_unique<OverlayControl>(inViewport);
+
+		// Apply fullscreen setting
+		ConfigFile& configFile = Global::instance().GetConfig();
+		ApplyFullScreenSetting(GetSingleConfigurationValue<ConfigValueInt>(configFile, "Window.FullScreen", 0));
 
 		// Create screens
 		m_IntroScreen = std::make_unique<ScreenIntro>(
@@ -481,6 +484,7 @@ namespace Editor
 
 	void EditorFacility::ApplyFullScreenSetting(bool isFullScreen)
 	{
+
 		// Notify overlay control about fullscreen state change
 		if (m_OverlayControl != nullptr)
 		{
@@ -489,6 +493,11 @@ namespace Editor
 
 		m_IsFullScreen = isFullScreen;
 		m_Viewport->SetWindowFullScreen(m_IsFullScreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+
+		if (m_OverlayControl != nullptr)
+		{
+			m_OverlayControl->OnWindowResized();
+		}
 	}
 
 	void EditorFacility::ToggleFullScreen()
