@@ -1,0 +1,29 @@
+name: Build linux binaries
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'README.md'
+      - 'tools/**'
+  workflow_dispatch:
+    branches:
+      - master
+    paths-ignore:
+      - 'README.md'
+      - 'tools/**'
+jobs:
+  build:
+    name: Build executable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Dependencies
+        run: sudo apt-get update && sudo apt-get -y install libsdl2-dev 
+      - name: Build binaries
+        run: LINUXAUDIO=ALSA make dist
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SIDFactoryII-linux
+          path: ./artifacts/
