@@ -14,6 +14,10 @@ We hope you'll have a lot of fun composing. Enjoy! =)
 
 Context         Windows keys                macOS keys                  Purpose
 --------------------------------------------------------------------------------------------------------------------------------------
+STARTUP         F1                          F1                          Select MIDI output device for ASID protocol
+                F10                         F10                         Load SF2 song or driver
+                Space                       Space                       Enter the main editor
+--------------------------------------------------------------------------------------------------------------------------------------
 GENERAL         Tab                         Tab                         Next input focus
                 Shift + Tab                 Shift + Tab                 Previous input focus
 
@@ -32,6 +36,8 @@ GENERAL         Tab                         Tab                         Next inp
                 Ctrl + u                    Ctrl + u                    Toggle upper or lower case hexadecimal numbers
 
                 y/n                         y/n                         Choose "yes" or "no" in dialog boxes
+
+                Alt + Enter                 Alt + Enter                 Toggle fullscreen mode
 --------------------------------------------------------------------------------------------------------------------------------------
 FILES           F10                         F10                         Load SF2 song or driver
                 Ctrl + F10                  Ctrl + F10                  Load SF2 song on top of a different driver
@@ -160,6 +166,8 @@ SETTINGS        F9                          F9                          Toggle 6
                 Ctrl + F7                   Ctrl + F7                   Select the next color scheme
 
                 Ctrl + p                    Ctrl + p                    Toggle follow-play
+
+                Alt + o                     Alt + o                     Toggle output (ASID or reSID emulator)
 --------------------------------------------------------------------------------------------------------------------------------------
 SONGLIST        Up/Down                     Up/Down                     Move up or down in the songlist
                 Page Up/Down                Fn + Up/Down                Move several rows up/down in the songlist
