@@ -5,66 +5,60 @@ namespace Foundation
 	WrappedString::WrappedString(const std::string& inSourceString, int inMaxWidth)
 	{
 		const size_t source_length = inSourceString.length();
-		
+
+		if (source_length == 0)
+			return;
+
+		const size_t max_width = inMaxWidth > 0 ? static_cast<size_t>(inMaxWidth) : 1;
+
 		size_t from = 0;
-		size_t pos = inSourceString.find(" ", from);
-
-		while (true)
+		while (from < source_length)
 		{
-			if (pos == std::string::npos)
-			{
-				if (m_Lines.empty() && source_length > 0)
-					m_Lines.push_back(Line(inSourceString, static_cast<int>(source_length)));
-				break;
-			}
+			size_t next_newline = inSourceString.find("\n", from);
+			size_t segment_end = (next_newline == std::string::npos) ? source_length : next_newline;
 
-			if (pos - from > static_cast<size_t>(inMaxWidth))
+			if (segment_end == from)
 			{
-				m_Lines.push_back(Line(inSourceString.substr(from, pos - from), static_cast<int>(pos - from)));
-
-				from = pos + 1;
-				pos = inSourceString.find(" ", from);
+				m_Lines.push_back(Line("", 0));
 			}
 			else
 			{
-				size_t next_pos = inSourceString.find(" ", pos + 1);
-				size_t line_break_pos = inSourceString.find("\n", pos + 1);
-
-				if (line_break_pos != std::string::npos && line_break_pos < next_pos)
+				size_t segment_from = from;
+				while (segment_from < segment_end)
 				{
-					m_Lines.push_back(Line(inSourceString.substr(from, line_break_pos - from), static_cast<int>(line_break_pos - from)));
-					from = line_break_pos + 1;
-					pos = from;
-				}
+					size_t remaining = segment_end - segment_from;
 
-				if (next_pos == std::string::npos)
-					next_pos = source_length;
-
-				if (next_pos - from > static_cast<size_t>(inMaxWidth))
-				{
-					if (pos > from)
+					if (remaining <= max_width)
 					{
-						m_Lines.push_back(Line(inSourceString.substr(from, pos - from), static_cast<int>(pos - from)));
-						from = pos + 1;
+						m_Lines.push_back(Line(inSourceString.substr(segment_from, remaining), static_cast<int>(remaining)));
+						segment_from = segment_end;
 					}
 					else
 					{
-						m_Lines.push_back(Line(inSourceString.substr(from, inMaxWidth), inMaxWidth));
-						from += inMaxWidth;
-						pos = from;
+						size_t search_limit = segment_from + max_width;
+						size_t last_space = inSourceString.find_last_of(" ", search_limit);
+
+						if (last_space == std::string::npos || last_space < segment_from)
+						{
+							m_Lines.push_back(Line(inSourceString.substr(segment_from, max_width), static_cast<int>(max_width)));
+							segment_from += max_width;
+						}
+						else
+						{
+							size_t line_length = last_space - segment_from;
+							m_Lines.push_back(Line(inSourceString.substr(segment_from, line_length), static_cast<int>(line_length)));
+							segment_from = last_space + 1;
+						}
 					}
 				}
-
-				if (next_pos == source_length)
-				{
-					if (next_pos > from)
-						m_Lines.push_back(Line(inSourceString.substr(from, next_pos - from), static_cast<int>(next_pos - from)));
-
-					break;
-				}
-
-				pos = next_pos;
 			}
+
+			if (next_newline == std::string::npos)
+				break;
+
+			from = next_newline + 1;
+			if (from == source_length)
+				m_Lines.push_back(Line("", 0));
 		}
 	}
 
