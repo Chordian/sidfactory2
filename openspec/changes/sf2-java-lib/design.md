@@ -1,21 +1,33 @@
 ## Context
 
-SID Factory 2 (sf2) uses a binary format with embedded player code. Currently there is no standalone Java model for reading, inspecting, or modifying the data portion of an SF2 file. The player code must be preserved verbatim during any round-trip or JSON-apply operation.
+SID Factory 2 (sf2) uses a binary format with embedded player code. Currently
+there is no standalone Java model for reading, inspecting, or modifying the
+data portion of an SF2 file. The player code must be preserved verbatim during
+any round-trip or JSON-apply operation.
 
 ## Reference Sources
 
 The implementation SHALL be derived from these authoritative sources:
 
 ### A. Format Specification
+
 `doc/SF2_Speficifation.md` (v1.1) — Implementation-agnostic binary format spec covering:
-- File topology: C64 PRG with `0x1337` signature, metadata TLV blocks, player code, song data, auxiliary data
-- Metadata blocks 0x01–0x09: all field-level binary layouts for descriptor, driver common, tables, instrument descriptor, music data, color/insdel/action rules, inst data descriptor
-- Song data formats: packed order list, packed sequence, row-major/column-major table layouts
+
+- File topology: C64 PRG with `0x1337` signature, metadata TLV blocks, player
+  code, song data, auxiliary data
+- Metadata blocks 0x01–0x09: all field-level binary layouts for descriptor,
+  driver common, tables, instrument descriptor, music data, color/insdel/action
+  rules, inst data descriptor
+- Song data formats: packed order list, packed sequence, row-major/column-major
+  table layouts
 - Jump/loop logic in instrument sub-tables
-- Section 6: relocation and packing — **critical**: the Java library does NOT implement relocation/packing (that's the editor's job), but the model must be capable of round-trip without it
+- Section 6: relocation and packing — **critical**: the Java library does NOT
+  implement relocation/packing (that's the editor's job), but the model must be
+  capable of round-trip without it
 - Section 7: auxiliary data chunk format (5 chunk types)
 
 ### B. Editor C++ Reference Implementation
+
 - `source/runtime/editor/driver/driver_info.h` + `driver_info.cpp` — `DriverInfo` class: reference parser with `ParseHeader()`, `ParseDescriptor()`, `ParseDriverCommon()`, `ParseDriverTables()`, `ParseMusicData()`, `ParseAuxilaryData()`. This is the canonical parse implementation the Java parser SHALL mirror.
 - `source/utils/c64file.h` — `C64FileReader`/`C64FileWriter` utilities: sequential read/write of words, bytes, null-terminated strings. Java equivalents SHALL follow the same API pattern.
 - `source/runtime/editor/utilities/editor_facility.cpp` — `SaveFile()` (line 756): reference serialize implementation that reads from emulated C64 memory, appends IRQ vector and auxiliary data, adjusts file header vectors.
@@ -24,7 +36,9 @@ The implementation SHALL be derived from these authoritative sources:
 - `source/runtime/editor/auxilarydata/auxilary_data_collection.h` — Auxiliary data serialization: 5 chunk types with `Save()`/`Load()`.
 
 ### C. 6502 Driver Sources
+
 `/Users/michel/dev/micheldebree/sidfactory2drivers/` — Kick Assembler driver implementations containing the canonical metadata block layout:
+
 - `common/sf2_driver_defines.asm` — Central format constants: all `HEADER_BLOCK_ID_*` values, table type/ property/layout enums, color codes. These constants define the exact byte values the parser SHALL expect.
 - Each driver (v11–v17, bonkers, np20, etc.) implements the metadata blocks in 6502 `.byte` directives — authoritative reference for block layout and field ordering.
 - Version scheme: 3-part (`major.minor.revision`), stored in descriptor block. Bit 7 of major flags legacy NP20.
@@ -32,6 +46,7 @@ The implementation SHALL be derived from these authoritative sources:
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Java 21+, Maven build, Spotless auto-formatting on build
 - Java library with minimal runtime dependencies (Jackson + stdlib)
 - Binary-exact round-trip: parse → serialize with no model changes produces identical bytes
@@ -41,6 +56,7 @@ The implementation SHALL be derived from these authoritative sources:
 - Driver version compatibility check for JSON-apply
 
 **Non-Goals:**
+
 - Audio rendering or playback
 - Editing/transformation utilities — the model is a data carrier, clients build manipulation on top
 - Performance optimization beyond reasonable baseline — clarity over micro-optimization
@@ -77,12 +93,15 @@ No module depends on parser, serializer, or json. Clients wire them together.
 ## Data Model Design
 
 ### Order lists and sequences as parsed domain objects
+
 Order lists SHALL be `List<OrderListEntry>` where `OrderListEntry = (int transpose, int sequenceIndex)`. Sequences SHALL be `List<SequenceEvent>` where `SequenceEvent` models all packed fields (note, instrument, command, duration, tie flag, gate). The serializer reconstructs the packed byte stream from these domain objects, guaranteeing round-trip identity.
 
 ### Table data with flat byte[] and layout-aware accessors
+
 Tables use a flat `byte[]` with `get(row, col)` / `set(row, col, byte)` methods that handle row-major vs column-major layout internally. Metadata (columnCount, rowCount, dataLayout) is bundled with the table data.
 
 ### Testing strategy
+
 - **Reference `.sf2` files** bundled as test resources for round-trip parse/serialize tests
 - **Synthetic builders** for edge case coverage (minimal SF2, empty sections, corrupt data)
 - Round-trip tests assert byte-for-byte identity for reference files
@@ -90,6 +109,7 @@ Tables use a flat `byte[]` with `get(row, col)` / `set(row, col, byte)` methods 
 ## Error Handling
 
 All parsing, serialization, and I/O errors use **checked exceptions**:
+
 - `Sf2ParseException extends Exception` — malformed or truncated input
 - `Sf2VersionMismatchException extends Exception` — driver version mismatch on JSON-apply
 - `Sf2Exception extends Exception` — base class for all library exceptions

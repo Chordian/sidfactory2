@@ -12,20 +12,20 @@ public enum HeaderBlockId {
     INSTRUMENT_DATA_DESCRIPTOR(9),
     END(0xFF);
 
-    private final int id;
+    private final int value;
 
-    HeaderBlockId(int id) {
-        this.id = id;
+    HeaderBlockId(int value) {
+        this.value = value;
     }
 
-    public int id() {
-        return id;
+    public int value() {
+        return value;
     }
 
-    public static HeaderBlockId fromId(int id) {
+    public static HeaderBlockId fromValue(int value) {
         for (HeaderBlockId block : values()) {
-            if (block.id == id) return block;
+            if (block.value == value) return block;
         }
-        throw new IllegalArgumentException("Unknown block ID: 0x" + Integer.toHexString(id));
+        throw new IllegalArgumentException("Unknown block ID: 0x" + Integer.toHexString(value));
     }
 }

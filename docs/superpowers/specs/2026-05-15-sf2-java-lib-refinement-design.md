@@ -8,7 +8,9 @@
 
 Refines the existing sf2-java-lib specs by:
 1. Adding a new `sf2-model` capability — the mutable data model that all other capabilities depend on
-2. Filling gaps in the existing 4 specs (parse, serialize, json-io, json-apply)
+2. Filling gaps in the existing 2 specs (parse, serialize)
+
+Note: JSON capabilities (sf2-json-io, sf2-json-apply) deferred to a separate change.
 
 ## Model Design
 
@@ -102,15 +104,3 @@ class SequenceEvent {
 - Pack `List<OrderListEntry>` → packed byte stream
 - Pack `List<SequenceEvent>` → packed byte stream
 - Handle missing/empty sections gracefully
-
-### sf2-json-io additions
-- `byte[]` → hex string (e.g. `"0A1B2C"`)
-- C64 addresses → hex string with `$` prefix (e.g. `"$1000"`)
-- Enums/bitfields → descriptive string (e.g. `"ROW_MAJOR"`)
-- Driver version always present as top-level `"driverVersion"`
-- Player code field absent from JSON
-
-### sf2-json-apply additions
-- Output to a new file (caller specifies path, never overwrites input)
-- Missing sections in JSON → preserve from target SF2
-- Data section size changes → serializer handles repacking

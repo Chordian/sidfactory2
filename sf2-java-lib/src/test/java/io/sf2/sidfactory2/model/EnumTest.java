@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class EnumTest {
     @Test
     void headerBlockIds() {
-        assertEquals(1, HeaderBlockId.DESCRIPTOR.id());
-        assertEquals(0xFF, HeaderBlockId.END.id());
-        assertEquals(HeaderBlockId.MUSIC_DATA, HeaderBlockId.fromId(5));
+        assertEquals(1, HeaderBlockId.DESCRIPTOR.value());
+        assertEquals(0xFF, HeaderBlockId.END.value());
+        assertEquals(HeaderBlockId.MUSIC_DATA, HeaderBlockId.fromValue(5));
     }
 
     @Test
@@ -40,8 +40,8 @@ class EnumTest {
 
     @Test
     void auxiliaryChunkTypes() {
-        assertEquals(3, AuxiliaryChunkType.PLAY_MARKERS.typeId());
-        assertEquals(AuxiliaryChunkType.SONGS, AuxiliaryChunkType.fromId(5));
-        assertThrows(IllegalArgumentException.class, () -> AuxiliaryChunkType.fromId(99));
+        assertEquals(3, AuxiliaryChunkType.PLAY_MARKERS.value());
+        assertEquals(AuxiliaryChunkType.SONGS, AuxiliaryChunkType.fromValue(5));
+        assertThrows(IllegalArgumentException.class, () -> AuxiliaryChunkType.fromValue(99));
     }
 }

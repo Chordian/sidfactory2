@@ -8,20 +8,20 @@ public enum AuxiliaryChunkType {
     TABLE_TEXT(4),
     SONGS(5);
 
-    private final int typeId;
+    private final int value;
 
-    AuxiliaryChunkType(int typeId) {
-        this.typeId = typeId;
+    AuxiliaryChunkType(int value) {
+        this.value = value;
     }
 
-    public int typeId() {
-        return typeId;
+    public int value() {
+        return value;
     }
 
-    public static AuxiliaryChunkType fromId(int id) {
+    public static AuxiliaryChunkType fromValue(int value) {
         for (AuxiliaryChunkType type : values()) {
-            if (type.typeId == id) return type;
+            if (type.value == value) return type;
         }
-        throw new IllegalArgumentException("Unknown auxiliary chunk type: 0x" + Integer.toHexString(id));
+        throw new IllegalArgumentException("Unknown auxiliary chunk type: 0x" + Integer.toHexString(value));
     }
 }

@@ -15,8 +15,9 @@ public enum DataLayout {
     }
 
     public static DataLayout fromValue(int value) {
-        if (value == 0) return ROW_MAJOR;
-        if (value == 1) return COLUMN_MAJOR;
-        throw new IllegalArgumentException("Unknown data layout: " + value);
+        for (DataLayout layout : values()) {
+            if (layout.value == value) return layout;
+        }
+        throw new IllegalArgumentException("Unknown data layout: 0x" + Integer.toHexString(value));
     }
 }
