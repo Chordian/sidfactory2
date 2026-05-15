@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableColorRule {
-    private int evaluationCellIndex;
-    private int evaluationCellMask;
-    private int evaluationCellConditionalValue;
-    private int backgroundColor;
+    public int evaluationCellIndex;
+    public int evaluationCellMask;
+    public int evaluationCellConditionalValue;
+    public int backgroundColor;
 
     public int getEvaluationCellIndex() { return evaluationCellIndex; }
     public void setEvaluationCellIndex(int v) { evaluationCellIndex = v; }
@@ -17,11 +17,4 @@ public class TableColorRule {
     public void setEvaluationCellConditionalValue(int v) { evaluationCellConditionalValue = v; }
     public int getBackgroundColor() { return backgroundColor; }
     public void setBackgroundColor(int v) { backgroundColor = v; }
-}
-
-class TableColorRules {
-    private List<TableColorRule> rules = new ArrayList<>();
-
-    public List<TableColorRule> getRules() { return rules; }
-    public void setRules(List<TableColorRule> v) { rules = v; }
 }

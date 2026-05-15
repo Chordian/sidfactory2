@@ -1,27 +1,27 @@
 package io.sf2.sidfactory2.model;
 
 public class DriverCommon {
-    private int initAddress;
-    private int stopAddress;
-    private int updateAddress;
-    private int sidChannelOffsetAddress;
-    private int driverStateAddress;
-    private int tickCounterAddress;
-    private int orderListIndexAddress;
-    private int sequenceIndexAddress;
-    private int sequenceInUseAddress;
-    private int currentSequenceAddress;
-    private int currentTransposeAddress;
-    private int currentSequenceEventDurationAddress;
-    private int nextInstrumentAddress;
-    private int nextCommandAddress;
-    private int nextNoteAddress;
-    private int nextNoteIsTiedAddress;
-    private int tempoCounterAddress;
-    private int triggerSyncAddress;
-    private int noteEventTriggerSyncValue;
-    private int reservedByte;
-    private int reservedWord;
+    public int initAddress;
+    public int stopAddress;
+    public int updateAddress;
+    public int sidChannelOffsetAddress;
+    public int driverStateAddress;
+    public int tickCounterAddress;
+    public int orderListIndexAddress;
+    public int sequenceIndexAddress;
+    public int sequenceInUseAddress;
+    public int currentSequenceAddress;
+    public int currentTransposeAddress;
+    public int currentSequenceEventDurationAddress;
+    public int nextInstrumentAddress;
+    public int nextCommandAddress;
+    public int nextNoteAddress;
+    public int nextNoteIsTiedAddress;
+    public int tempoCounterAddress;
+    public int triggerSyncAddress;
+    public int noteEventTriggerSyncValue;
+    public int reservedByte;
+    public int reservedWord;
 
     public int getInitAddress() { return initAddress; }
     public void setInitAddress(int v) { initAddress = v; }

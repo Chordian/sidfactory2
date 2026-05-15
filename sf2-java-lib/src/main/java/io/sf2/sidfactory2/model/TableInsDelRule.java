@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableInsDelRule {
-    private int targetTableId;
-    private int targetCellIndex;
-    private int evaluationCellIndex;
-    private int evaluationCellMask;
-    private int evaluationCellConditionalValue;
+    public int targetTableId;
+    public int targetCellIndex;
+    public int evaluationCellIndex;
+    public int evaluationCellMask;
+    public int evaluationCellConditionalValue;
 
     public int getTargetTableId() { return targetTableId; }
     public void setTargetTableId(int v) { targetTableId = v; }
@@ -20,11 +20,4 @@ public class TableInsDelRule {
     public void setEvaluationCellMask(int v) { evaluationCellMask = v; }
     public int getEvaluationCellConditionalValue() { return evaluationCellConditionalValue; }
     public void setEvaluationCellConditionalValue(int v) { evaluationCellConditionalValue = v; }
-}
-
-class TableInsDelRules {
-    private List<TableInsDelRule> rules = new ArrayList<>();
-
-    public List<TableInsDelRule> getRules() { return rules; }
-    public void setRules(List<TableInsDelRule> v) { rules = v; }
 }

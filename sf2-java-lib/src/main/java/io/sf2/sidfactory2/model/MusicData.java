@@ -1,16 +1,16 @@
 package io.sf2.sidfactory2.model;
 
 public class MusicData {
-    private int trackCount;
-    private int trackOrderListPointersLowAddress;
-    private int trackOrderListPointersHighAddress;
-    private int sequenceCount;
-    private int sequencePointersLowAddress;
-    private int sequencePointersHighAddress;
-    private int orderListSize;
-    private int orderListTrack1Address;
-    private int sequenceSize;
-    private int sequence00Address;
+    public int trackCount;
+    public int trackOrderListPointersLowAddress;
+    public int trackOrderListPointersHighAddress;
+    public int sequenceCount;
+    public int sequencePointersLowAddress;
+    public int sequencePointersHighAddress;
+    public int orderListSize;
+    public int orderListTrack1Address;
+    public int sequenceSize;
+    public int sequence00Address;
 
     public int getTrackCount() { return trackCount; }
     public void setTrackCount(int v) { trackCount = v; }

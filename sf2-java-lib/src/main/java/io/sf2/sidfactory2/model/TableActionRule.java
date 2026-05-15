@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableActionRule {
-    private int applicableCell;
-    private int targetTableId;
-    private int targetIndexCell;
-    private int targetIndexMask;
-    private int evaluationCellIndex;
-    private int evaluationCellMask;
-    private int evaluationCellConditionalValue;
+    public int applicableCell;
+    public int targetTableId;
+    public int targetIndexCell;
+    public int targetIndexMask;
+    public int evaluationCellIndex;
+    public int evaluationCellMask;
+    public int evaluationCellConditionalValue;
 
     public int getApplicableCell() { return applicableCell; }
     public void setApplicableCell(int v) { applicableCell = v; }
@@ -26,11 +26,4 @@ public class TableActionRule {
     public void setEvaluationCellMask(int v) { evaluationCellMask = v; }
     public int getEvaluationCellConditionalValue() { return evaluationCellConditionalValue; }
     public void setEvaluationCellConditionalValue(int v) { evaluationCellConditionalValue = v; }
-}
-
-class TableActionRules {
-    private List<TableActionRule> rules = new ArrayList<>();
-
-    public List<TableActionRule> getRules() { return rules; }
-    public void setRules(List<TableActionRule> v) { rules = v; }
 }
