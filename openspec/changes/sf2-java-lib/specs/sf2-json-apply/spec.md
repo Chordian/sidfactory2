@@ -38,3 +38,24 @@ When a model is created by parsing an SF2, serialized to JSON, and applied back 
 #### Scenario: Apply round-trip identical bytes
 - **WHEN** an SF2 file is parsed, serialized to JSON, and applied back to the same SF2
 - **THEN** the output SF2 bytes exactly match the original
+
+### Requirement: Output to new file
+The system SHALL write the result to a new file specified by the caller. The input SF2 file SHALL NOT be overwritten.
+
+#### Scenario: Input file preserved
+- **WHEN** a JSON model is applied to an SF2 file with output path specified
+- **THEN** the input file remains unchanged and the output file is created at the specified path
+
+### Requirement: Preserve missing sections from target
+The system SHALL preserve sections from the target SF2 file that are absent from the JSON model.
+
+#### Scenario: JSON has partial data
+- **WHEN** the JSON model omits certain sections (e.g., auxiliary data)
+- **THEN** those sections are copied from the target SF2 file to the output
+
+### Requirement: Handle data section size changes
+The system SHALL handle changes in data section sizes by repacking all data sections contiguously during serialization.
+
+#### Scenario: Data sections grow
+- **WHEN** the JSON model contains more data than the target SF2
+- **THEN** the serializer repacks all sections and updates all pointers accordingly

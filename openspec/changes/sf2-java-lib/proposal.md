@@ -13,6 +13,7 @@ SID Factory 2 needs a reusable Java library for parsing, modeling, and re-serial
 ## Capabilities
 
 ### New Capabilities
+- `sf2-model`: Mutable in-memory model of all SF2 data sections, with layout-aware table access, unpacked order lists/sequences, and raw data preservation
 - `sf2-parse`: Parse binary SF2 files into an in-memory model
 - `sf2-serialize`: Serialize the in-memory model back to a binary SF2 file with binary-exact round-trip guarantee
 - `sf2-json-io`: Serialize/deserialize the SF2 model to/from JSON, excluding player code, including driver version

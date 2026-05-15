@@ -34,3 +34,31 @@ The system SHALL reconstruct a model from its JSON representation.
 #### Scenario: JSON round-trip preserves data
 - **WHEN** a model is serialized to JSON and deserialized back
 - **THEN** all data fields match the original (player code comparison is N/A)
+
+### Requirement: JSON byte array encoding
+The system SHALL encode `byte[]` fields as uppercase hex strings without prefix (e.g. "0A1B2C").
+
+#### Scenario: Byte array encoded as hex
+- **WHEN** a table data byte array [0x0A, 0x1B, 0x2C] is serialized to JSON
+- **THEN** the JSON contains the string "0A1B2C"
+
+### Requirement: JSON address encoding
+The system SHALL encode C64 absolute addresses as hex strings with `$` prefix (e.g. "$1000").
+
+#### Scenario: Address encoded with $ prefix
+- **WHEN** an address value 0x1000 is serialized to JSON
+- **THEN** the JSON contains the string "$1000"
+
+### Requirement: JSON enum encoding
+The system SHALL encode enums and bitfields as descriptive strings (e.g. "ROW_MAJOR", "COLUMN_MAJOR", "EnableInsertDelete").
+
+#### Scenario: Data layout encoded as string
+- **WHEN** a table with row-major layout is serialized to JSON
+- **THEN** the JSON contains "ROW_MAJOR" for the layout field
+
+### Requirement: JSON driver version
+The system SHALL include driver version as a top-level `"driverVersion"` string field in JSON output.
+
+#### Scenario: Driver version at top level
+- **WHEN** a model with driver version "11.05.00" is serialized
+- **THEN** the JSON contains `"driverVersion": "11.05.00"` at the top level
