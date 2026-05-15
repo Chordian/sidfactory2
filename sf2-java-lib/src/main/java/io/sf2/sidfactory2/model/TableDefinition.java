@@ -1,21 +1,21 @@
 package io.sf2.sidfactory2.model;
 
 public class TableDefinition {
-    private TableType type;
-    private int id;
-    private int textFieldSize;
-    private String name;
-    private DataLayout dataLayout;
-    private boolean propertyEnabledInsertDelete;
-    private boolean propertyLayoutVertically;
-    private boolean propertyIndexAsContinuousMemory;
-    private int insertDeleteRuleId;
-    private int enterActionRuleId;
-    private int colorRuleId;
-    private int address;
-    private int columnCount;
-    private int rowCount;
-    private int visibleRowCount;
+    public TableType type;
+    public int id;
+    public int textFieldSize;
+    public String name;
+    public DataLayout dataLayout;
+    public boolean propertyEnabledInsertDelete;
+    public boolean propertyLayoutVertically;
+    public boolean propertyIndexAsContinuousMemory;
+    public int insertDeleteRuleId;
+    public int enterActionRuleId;
+    public int colorRuleId;
+    public int address;
+    public int columnCount;
+    public int rowCount;
+    public int visibleRowCount;
 
     public TableType getType() { return type; }
     public void setType(TableType v) { type = v; }
