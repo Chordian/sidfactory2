@@ -1,16 +1,16 @@
 package io.sf2.sidfactory2.model;
 
 public class InstDataPointerDescription {
-    public int tableId;
-    public int instrumentDataPointerPosition;
-    public int pointerAndValue;
-    public int instrumentDataConditionalValuePosition;
-    public int conditionValueAndValue;
-    public int conditionEqualityValue;
-    public int tableDataType;
-    public int tableJumpMarkerValuePosition;
-    public int tableJumpMarkerValue;
-    public int tableJumpDestinationIndexPosition;
+    private int tableId;
+    private int instrumentDataPointerPosition;
+    private int pointerAndValue;
+    private int instrumentDataConditionalValuePosition;
+    private int conditionValueAndValue;
+    private int conditionEqualityValue;
+    private int tableDataType;
+    private int tableJumpMarkerValuePosition;
+    private int tableJumpMarkerValue;
+    private int tableJumpDestinationIndexPosition;
 
     public int getTableId() { return tableId; }
     public void setTableId(int v) { tableId = v; }
