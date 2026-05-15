@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableInsDelRule {
-    public int targetTableId;
-    public int targetCellIndex;
-    public int evaluationCellIndex;
-    public int evaluationCellMask;
-    public int evaluationCellConditionalValue;
+    private int targetTableId;
+    private int targetCellIndex;
+    private int evaluationCellIndex;
+    private int evaluationCellMask;
+    private int evaluationCellConditionalValue;
 
     public int getTargetTableId() { return targetTableId; }
     public void setTargetTableId(int v) { targetTableId = v; }
