@@ -1,14 +1,14 @@
 package io.sf2.sidfactory2.model;
 
 public class Descriptor {
-    public int driverType;
-    public int driverSize;
-    public String driverName;
-    public int driverCodeTop;
-    public int driverCodeSize;
-    public int driverVersionMajor;
-    public int driverVersionMinor;
-    public int driverVersionRevision;
+    private int driverType;
+    private int driverSize;
+    private String driverName;
+    private int driverCodeTop;
+    private int driverCodeSize;
+    private int driverVersionMajor;
+    private int driverVersionMinor;
+    private int driverVersionRevision;
 
     public int getDriverType() { return driverType; }
     public void setDriverType(int driverType) { this.driverType = driverType; }

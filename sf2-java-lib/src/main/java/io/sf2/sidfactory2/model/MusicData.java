@@ -1,35 +1,35 @@
 package io.sf2.sidfactory2.model;
 
 public class MusicData {
-    public int trackCount;
-    public int trackOrderListPointersLowAddress;
-    public int trackOrderListPointersHighAddress;
-    public int sequenceCount;
-    public int sequencePointersLowAddress;
-    public int sequencePointersHighAddress;
-    public int orderListSize;
-    public int orderListTrack1Address;
-    public int sequenceSize;
-    public int sequence00Address;
+    private int trackCount;
+    private int trackOrderListPointersLowAddress;
+    private int trackOrderListPointersHighAddress;
+    private int sequenceCount;
+    private int sequencePointersLowAddress;
+    private int sequencePointersHighAddress;
+    private int orderListSize;
+    private int orderListTrack1Address;
+    private int sequenceSize;
+    private int sequence00Address;
 
     public int getTrackCount() { return trackCount; }
-    public void setTrackCount(int v) { trackCount = v; }
+    public void setTrackCount(int trackCount) { this.trackCount = trackCount; }
     public int getTrackOrderListPointersLowAddress() { return trackOrderListPointersLowAddress; }
-    public void setTrackOrderListPointersLowAddress(int v) { trackOrderListPointersLowAddress = v; }
+    public void setTrackOrderListPointersLowAddress(int trackOrderListPointersLowAddress) { this.trackOrderListPointersLowAddress = trackOrderListPointersLowAddress; }
     public int getTrackOrderListPointersHighAddress() { return trackOrderListPointersHighAddress; }
-    public void setTrackOrderListPointersHighAddress(int v) { trackOrderListPointersHighAddress = v; }
+    public void setTrackOrderListPointersHighAddress(int trackOrderListPointersHighAddress) { this.trackOrderListPointersHighAddress = trackOrderListPointersHighAddress; }
     public int getSequenceCount() { return sequenceCount; }
-    public void setSequenceCount(int v) { sequenceCount = v; }
+    public void setSequenceCount(int sequenceCount) { this.sequenceCount = sequenceCount; }
     public int getSequencePointersLowAddress() { return sequencePointersLowAddress; }
-    public void setSequencePointersLowAddress(int v) { sequencePointersLowAddress = v; }
+    public void setSequencePointersLowAddress(int sequencePointersLowAddress) { this.sequencePointersLowAddress = sequencePointersLowAddress; }
     public int getSequencePointersHighAddress() { return sequencePointersHighAddress; }
-    public void setSequencePointersHighAddress(int v) { sequencePointersHighAddress = v; }
+    public void setSequencePointersHighAddress(int sequencePointersHighAddress) { this.sequencePointersHighAddress = sequencePointersHighAddress; }
     public int getOrderListSize() { return orderListSize; }
-    public void setOrderListSize(int v) { orderListSize = v; }
+    public void setOrderListSize(int orderListSize) { this.orderListSize = orderListSize; }
     public int getOrderListTrack1Address() { return orderListTrack1Address; }
-    public void setOrderListTrack1Address(int v) { orderListTrack1Address = v; }
+    public void setOrderListTrack1Address(int orderListTrack1Address) { this.orderListTrack1Address = orderListTrack1Address; }
     public int getSequenceSize() { return sequenceSize; }
-    public void setSequenceSize(int v) { sequenceSize = v; }
+    public void setSequenceSize(int sequenceSize) { this.sequenceSize = sequenceSize; }
     public int getSequence00Address() { return sequence00Address; }
-    public void setSequence00Address(int v) { sequence00Address = v; }
+    public void setSequence00Address(int sequence00Address) { this.sequence00Address = sequence00Address; }
 }

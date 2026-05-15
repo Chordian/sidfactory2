@@ -75,7 +75,7 @@ class LeafModelTest {
         var dc = new DriverCommon();
         dc.setInitAddress(0x1000);
         assertEquals(0x1000, dc.getInitAddress());
-        dc.initAddress = 0x2000;
+        dc.setInitAddress(0x2000);
         assertEquals(0x2000, dc.getInitAddress());
     }
 
@@ -94,7 +94,42 @@ class LeafModelTest {
         var md = new MusicData();
         md.setTrackCount(3);
         assertEquals(3, md.getTrackCount());
-        md.trackCount = 4;
+        md.setTrackCount(4);
         assertEquals(4, md.getTrackCount());
+    }
+
+    @Test
+    void tableTypeEnum() {
+        assertEquals(0x80, TableType.INSTRUMENTS.value());
+        assertEquals(TableType.COMMANDS, TableType.fromValue(0x81));
+        assertThrows(IllegalArgumentException.class, () -> TableType.fromValue(0xFF));
+    }
+
+    @Test
+    void auxiliaryChunkTypeEnum() {
+        assertEquals(1, AuxiliaryChunkType.EDITING_PREFERENCES.value());
+        assertEquals(AuxiliaryChunkType.SONGS, AuxiliaryChunkType.fromValue(5));
+        assertThrows(IllegalArgumentException.class, () -> AuxiliaryChunkType.fromValue(99));
+    }
+
+    @Test
+    void headerBlockIdEnum() {
+        assertEquals(1, HeaderBlockId.DESCRIPTOR.value());
+        assertEquals(HeaderBlockId.END, HeaderBlockId.fromValue(0xFF));
+        assertThrows(IllegalArgumentException.class, () -> HeaderBlockId.fromValue(0xFE));
+    }
+
+    @Test
+    void tablePropertyEnum() {
+        assertTrue(TableProperty.ENABLE_INSERT_DELETE.isSet(0x01));
+        assertFalse(TableProperty.ENABLE_INSERT_DELETE.isSet(0x02));
+        assertTrue(TableProperty.hasFlag(0x05, TableProperty.INDEX_AS_CONTINUOUS_MEMORY));
+        assertEquals(0x04, TableProperty.INDEX_AS_CONTINUOUS_MEMORY.bit());
+    }
+
+    @Test
+    void dataLayoutEnum() {
+        assertEquals(DataLayout.ROW_MAJOR, DataLayout.valueOf("ROW_MAJOR"));
+        assertEquals(DataLayout.COLUMN_MAJOR, DataLayout.valueOf("COLUMN_MAJOR"));
     }
 }

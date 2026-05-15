@@ -1,9 +1,65 @@
 package io.sf2.sidfactory2.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class TableModelTest {
+    @Test
+    void tableDataEdgeCases() {
+        byte[] data = {42};
+        var td = new TableData(data, 1, 1, DataLayout.ROW_MAJOR);
+        assertEquals(42, td.get(0, 0));
+        assertThrows(IndexOutOfBoundsException.class, () -> td.get(1, 0));
+        assertThrows(IndexOutOfBoundsException.class, () -> td.get(0, 1));
+        
+        td.set(0, 0, (byte) 24);
+        assertEquals(24, td.getData()[0]);
+    }
+
+    @Test
+    void sf2ModelCollections() {
+        var m = new Sf2Model();
+        
+        // Tables list
+        var table = new TableDefinition();
+        table.setName("TestTable");
+        m.getTables().add(table);
+        assertEquals(1, m.getTables().size());
+        assertEquals("TestTable", m.getTables().get(0).getName());
+        
+        // TableData map
+        var data = new TableData(new byte[]{1, 2}, 1, 2, DataLayout.ROW_MAJOR);
+        m.getTableData().put(1, data);
+        assertEquals(data, m.getTableData().get(1));
+        
+        // OrderLists map
+        var entries = new ArrayList<OrderListEntry>();
+        entries.add(new OrderListEntry(0, 1));
+        m.getOrderLists().put(0, entries);
+        assertEquals(1, m.getOrderLists().get(0).size());
+        
+        // Sequences map
+        var events = new ArrayList<SequenceEvent>();
+        events.add(new SequenceEvent());
+        m.getSequences().put(5, events);
+        assertEquals(1, m.getSequences().get(5).size());
+        
+        // Rule lists
+        m.getColorRules().add(new TableColorRules());
+        assertEquals(1, m.getColorRules().size());
+        m.getInsDelRules().add(new TableInsDelRules());
+        assertEquals(1, m.getInsDelRules().size());
+        m.getActionRules().add(new TableActionRules());
+        assertEquals(1, m.getActionRules().size());
+        
+        // Raw data map
+        m.getRawData().put("CHUNK", new byte[]{0x53, 0x46});
+        assertArrayEquals(new byte[]{0x53, 0x46}, m.getRawData().get("CHUNK"));
+    }
+
     @Test
     void tableDataRowMajor() {
         byte[] data = {0, 1, 2, 3, 4, 5};
