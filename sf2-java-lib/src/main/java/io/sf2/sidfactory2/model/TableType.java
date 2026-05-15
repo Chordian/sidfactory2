@@ -19,6 +19,6 @@ public enum TableType {
         for (TableType type : values()) {
             if (type.value == value) return type;
         }
-        return GENERIC;
+        throw new IllegalArgumentException("Unknown table type: 0x" + Integer.toHexString(value));
     }
 }

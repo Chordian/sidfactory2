@@ -22,6 +22,6 @@ public enum AuxiliaryChunkType {
         for (AuxiliaryChunkType type : values()) {
             if (type.typeId == id) return type;
         }
-        return UNDEFINED;
+        throw new IllegalArgumentException("Unknown auxiliary chunk type: 0x" + Integer.toHexString(id));
     }
 }

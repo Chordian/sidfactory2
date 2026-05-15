@@ -15,6 +15,10 @@ public enum TableProperty {
         return bit;
     }
 
+    public boolean isSet(int bits) {
+        return (bits & bit) != 0;
+    }
+
     public static boolean hasFlag(int properties, TableProperty flag) {
         return (properties & flag.bit) != 0;
     }
