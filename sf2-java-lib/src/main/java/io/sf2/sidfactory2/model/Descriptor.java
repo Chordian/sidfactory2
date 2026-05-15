@@ -35,6 +35,6 @@ public class Descriptor {
     public void setDriverVersionRevision(int driverVersionRevision) { this.driverVersionRevision = driverVersionRevision; }
 
     public String getVersionString() {
-        return driverVersionMajor + "." + driverVersionMinor + "." + driverVersionRevision;
+        return String.format("%d.%02d.%02d", driverVersionMajor, driverVersionMinor, driverVersionRevision);
     }
 }
