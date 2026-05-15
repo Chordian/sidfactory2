@@ -10,7 +10,7 @@ class LeafModelTest {
         d.setDriverVersionMajor(11);
         d.setDriverVersionMinor(5);
         d.setDriverVersionRevision(0);
-        assertEquals("11.5.0", d.getVersionString());
+        assertEquals("11.05.00", d.getVersionString());
     }
 
     @Test
@@ -18,7 +18,7 @@ class LeafModelTest {
         var d = new Descriptor();
         d.setDriverVersionMajor(11);
         d.setDriverVersionMinor(5);
-        assertEquals("11.5.0", d.getVersionString());
+        assertEquals("11.05.00", d.getVersionString());
     }
 
     @Test

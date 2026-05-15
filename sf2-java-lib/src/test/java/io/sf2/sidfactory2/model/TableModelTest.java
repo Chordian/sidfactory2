@@ -116,7 +116,7 @@ class TableModelTest {
         m.getDescriptor().setDriverVersionMajor(11);
         m.getDescriptor().setDriverVersionMinor(5);
         m.getDescriptor().setDriverVersionRevision(0);
-        assertEquals("11.5.0", m.getDriverVersion());
+        assertEquals("11.05.00", m.getDriverVersion());
     }
 
     @Test
