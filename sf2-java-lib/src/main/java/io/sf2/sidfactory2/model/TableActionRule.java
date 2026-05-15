@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TableActionRule {
-    public int applicableCell;
-    public int targetTableId;
-    public int targetIndexCell;
-    public int targetIndexMask;
-    public int evaluationCellIndex;
-    public int evaluationCellMask;
-    public int evaluationCellConditionalValue;
+    private int applicableCell;
+    private int targetTableId;
+    private int targetIndexCell;
+    private int targetIndexMask;
+    private int evaluationCellIndex;
+    private int evaluationCellMask;
+    private int evaluationCellConditionalValue;
 
     public int getApplicableCell() { return applicableCell; }
     public void setApplicableCell(int v) { applicableCell = v; }
