@@ -49,6 +49,9 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
 
 ### Next release
 
+- Fixed: [#213](https://github.com/Chordian/sidfactory2/issues/213) Build
+  failed on Ubuntu 26.04
+
 ### Build 20260314
 
 - Added: [#183](https://github.com/Chordian/sidfactory2/issues/183) Toggle
