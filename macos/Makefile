@@ -1,6 +1,6 @@
 # Makefile for macOS version
 
-TARGET=x86_64-apple-macos10.09
+TARGET=x86_64-apple-macos10.11
 
 BUILD_NR=$(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 BUILD_NR_TARGET=$(BUILD_NR).$(TARGET)
