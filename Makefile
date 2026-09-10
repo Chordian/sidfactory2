@@ -137,7 +137,7 @@ debug: $(EXE)
 compile_commands.json: clean
 	bear -- make TARGET=DEBUG PLATFORM=$(PLATFORM)
 
-# --- DOCKER BUILDS ---
+# --- DOCKER BUILD FOR UBUNTU ---
 
 TMP_CONTAINER=sf2_build_tmp
 
@@ -149,16 +149,5 @@ ubuntu:
 	docker container rm $(TMP_CONTAINER) || true
 	docker build -t $(BUILD_IMAGE_UBUNTU) .
 	docker run --name $(TMP_CONTAINER) $(BUILD_IMAGE_UBUNTU)
-	docker cp $(TMP_CONTAINER):/home/$(ARTIFACTS_FOLDER) .
-	docker container rm $(TMP_CONTAINER)
-
-# Compile with the Archlinux image
-BUILD_IMAGE_ARCHLINUX=sidfactory2/build-archlinux
-
-.PHONY: archlinux
-archlinux:
-	docker container rm $(TMP_CONTAINER) || true
-	docker build -t $(BUILD_IMAGE_ARCHLINUX) -f Dockerfile.Archlinux .
-	docker run --name $(TMP_CONTAINER) $(BUILD_IMAGE_ARCHLINUX)
 	docker cp $(TMP_CONTAINER):/home/$(ARTIFACTS_FOLDER) .
 	docker container rm $(TMP_CONTAINER)

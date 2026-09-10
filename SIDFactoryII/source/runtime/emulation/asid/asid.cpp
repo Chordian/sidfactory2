@@ -4,6 +4,7 @@
 #include "runtime/environmentdefines.h"
 
 #include <array>
+#include <cstdint>
 #include <vector>
 
 namespace Emulation
