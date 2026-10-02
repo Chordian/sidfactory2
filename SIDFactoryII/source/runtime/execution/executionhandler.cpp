@@ -479,6 +479,10 @@ namespace Emulation
 		// Attach memory to cpu
 		m_CPU->SetMemory(m_Memory);
 
+		// Hardware output replays the cycle distance between writes: stamp writes on their real cycle.
+		// Other outputs keep the write stamped at the start of its instruction.
+		m_CPU->SetWriteOnLastCycle(m_OutputDevice == ExecutionHandler::OutputDevice::USBSID && m_USBSID != nullptr);
+
 		// Capture the frame (this will run the CPU )
 		CPUFrameCapture frameCapture(m_CPU, 0xd400, 0xd418, m_CyclesPerFrame);
 

@@ -289,6 +289,7 @@ namespace Emulation
 	CPUmos6510::State::State()
 		: m_Memory(nullptr)
 		, m_WriteCallback(nullptr)
+		, m_WriteOnLastCycle(false)
 	{
 		Reset();
 	}
