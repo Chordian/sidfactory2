@@ -600,17 +600,36 @@ namespace Editor
 		}
 	}
 
-	void ScreenEdit::DoToggleOutputDevice() 
+	void ScreenEdit::DoToggleOutputDevice()
 	{
-		ExecutionHandler::OutputDevice device = m_ExecutionHandler->GetOutputDevice();
+		static const ExecutionHandler::OutputDevice device_order[] =
+		{
+			ExecutionHandler::OutputDevice::RESID,
+			ExecutionHandler::OutputDevice::ASID,
+			ExecutionHandler::OutputDevice::USBSID
+		};
+		const int device_count = static_cast<int>(sizeof(device_order) / sizeof(device_order[0]));
 
-		if (device == ExecutionHandler::OutputDevice::RESID) {
-			device = ExecutionHandler::OutputDevice::ASID;
+		const ExecutionHandler::OutputDevice current_device = m_ExecutionHandler->GetOutputDevice();
+		int device_index = 0;
+
+		for (int i = 0; i < device_count; ++i)
+		{
+			if (device_order[i] == current_device)
+				device_index = i;
 		}
-		else {
-			device = ExecutionHandler::OutputDevice::RESID;
+
+		// Step to the first following device that accepts the switch, reSID always does
+		ExecutionHandler::OutputDevice device = current_device;
+
+		for (int i = 1; i <= device_count; ++i)
+		{
+			device = device_order[(device_index + i) % device_count];
+			m_ExecutionHandler->SetOutputDevice(device);
+
+			if (m_ExecutionHandler->GetOutputDevice() == device)
+				break;
 		}
-		m_ExecutionHandler->SetOutputDevice(device);
 
 		if (device == ExecutionHandler::OutputDevice::ASID)
 		{

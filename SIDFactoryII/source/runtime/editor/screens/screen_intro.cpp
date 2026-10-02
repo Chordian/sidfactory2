@@ -12,6 +12,8 @@
 #include "foundation/base/assert.h"
 #include "libraries/rtmidi/RtMidi.h"
 #include "runtime/editor/dialog/dialog_selection_list.h"
+#include "runtime/editor/dialog/dialog_usbsid_boards.h"
+#include "runtime/emulation/usbsid/usbsidpico.h"
 #include "utils/rtmidi_utils.h"
 
 #include <string>
@@ -27,6 +29,7 @@ namespace Editor
 		DisplayState& inDisplayState,
 		KeyHookStore& inKeyHookStore,
 		RtMidiOut* inRtMidiOut,
+		Emulation::USBSid* inUSBSID,
 		std::shared_ptr<DriverInfo>& inDriverInfo,
 		std::function<void(void)> inExitScreenCallback,
 		std::function<void(void)> inExitScreenToLoadCallback)
@@ -35,7 +38,11 @@ namespace Editor
 		, m_ExitScreenCallback(inExitScreenCallback)
 		, m_ExitScreenToLoadCallback(inExitScreenToLoadCallback)
 		, m_RtMidiOut(inRtMidiOut)
+		, m_USBSID(inUSBSID)
 		, m_AddMidiPortSelectionOption(false)
+		, m_AddUSBSIDBoardSelectionOption(false)
+		, m_AddUSBSIDSIDSelectionOption(false)
+		, m_StartUSBSIDBoardSelection(false)
 	{
 	}
 
@@ -46,6 +53,11 @@ namespace Editor
 		ScreenBase::Activate();
 
 		m_AddMidiPortSelectionOption = !RtMidiUtils::RtMidiOut_HasOpenPort(m_RtMidiOut);
+
+		const size_t usbsid_board_count = m_USBSID != nullptr ? m_USBSID->GetDetectedBoards().size() : 0;
+		m_AddUSBSIDBoardSelectionOption = usbsid_board_count > 1;
+		m_AddUSBSIDSIDSelectionOption = usbsid_board_count > 0;
+		m_StartUSBSIDBoardSelection = m_USBSID != nullptr && m_USBSID->IsBoardSelectionRequired();
 
 		// Build string
 #ifdef _BUILD_NR
@@ -86,6 +98,7 @@ namespace Editor
 
 		const int credits_y = 26;
 		const int driver_info_y = 41;
+		const int usbsid_info_y = 42;
 		const int continue_info_y = 43;
 		const int build_y = dimensions.m_Height - 1;
 		const int build_x = dimensions.m_Width;
@@ -103,7 +116,7 @@ namespace Editor
 
 		OutputBlock(0, "Programming by:\nThomas Egeskov Petersen\nJens-Christian Huus\nMichel de Bree\nThomas Jansson\n \nAdditional design and suggestions by:\n Torben Korgaard Hansen\nThomas Laurits Mogensen\nThomas Bendt");
 		OutputBlock(1, "reSID-fp Engine by:\nDag Lem\nAntti S. Lankila \n \npicoPNG by:\nLode Vandevenne\n \nminiz by:\nRich Geldreich");
-		OutputBlock(2, "ghc::filesystem for c++11 by:\nSteffen Schumann\n \nRtMidi by:\nGary P. Scavone");
+		OutputBlock(2, "ghc::filesystem for c++11 by:\nSteffen Schumann\n \nRtMidi by:\nGary P. Scavone\n \nUSBSID-Pico driver by:\nLouD");
 
 		if (m_DriverInfo->IsValid())
 		{
@@ -112,6 +125,11 @@ namespace Editor
 		}
 		else
 			PrintCenteredText(driver_info_y * font_height_scale_factor, "Driver has not been loaded!");
+
+		if (m_AddUSBSIDBoardSelectionOption)
+			PrintCenteredText(usbsid_info_y * font_height_scale_factor, "USBSID-Pico boards detected: " + std::to_string(usbsid_board_count) + ", press F2 to choose board(s) or F3 to choose SID(s)!");
+		else if (usbsid_board_count == 1)
+			PrintCenteredText(usbsid_info_y * font_height_scale_factor, "USBSID-Pico board detected, press F3 to choose SID(s)!");
 
 		if (m_AddMidiPortSelectionOption)
 			PrintCenteredText(continue_info_y * font_height_scale_factor, "Press SPACE to continue, F1 to choose midi output device or F10 for disk menu!");
@@ -156,6 +174,18 @@ namespace Editor
 
 			return true;
 		}
+		if (inKeyEvent == SDLK_F2 && m_AddUSBSIDBoardSelectionOption)
+		{
+			TryStartDialogForUSBSIDBoardSelection();
+
+			return true;
+		}
+		if (inKeyEvent == SDLK_F3 && m_AddUSBSIDSIDSelectionOption)
+		{
+			TryStartDialogForUSBSIDSIDSelection();
+
+			return true;
+		}
 		if (inKeyEvent == SDLK_F10)
 		{
 			m_ExitScreenToLoadCallback();
@@ -163,6 +193,19 @@ namespace Editor
 		}
 
 		return false;
+	}
+
+
+	void ScreenIntro::Update(int inDeltaTick)
+	{
+		ScreenBase::Update(inDeltaTick);
+
+		// More than one board and no selection made yet: ask
+		if (m_StartUSBSIDBoardSelection && !m_ComponentsManager->IsDisplayingDialog())
+		{
+			m_StartUSBSIDBoardSelection = false;
+			TryStartDialogForUSBSIDBoardSelection();
+		}
 	}
 
 
@@ -192,6 +235,102 @@ namespace Editor
 				{
 					RtMidiUtils::RtMidiOut_OpenPort(m_RtMidiOut, MidiOutPorts[inSelectionIndex]);
 					m_ExitScreenCallback();
+				},
+				[]() {}
+			)
+		);
+
+		return true;
+	}
+
+
+	bool ScreenIntro::TryStartDialogForUSBSIDBoardSelection()
+	{
+		if (m_USBSID == nullptr)
+			return false;
+
+		const std::vector<std::string> board_serials = m_USBSID->GetDetectedBoards();
+		if (board_serials.size() < 2)
+			return false;
+
+		std::vector<std::string> labels;
+
+		for (size_t i = 0; i < board_serials.size(); ++i)
+			labels.push_back("Board " + std::to_string(i + 1) + " [" + (board_serials[i].empty() ? "no serial" : board_serials[i]) + "]");
+
+		m_ComponentsManager->StartDialog(
+			std::make_shared<DialogUSBSIDSelection>
+			(
+				60,
+				"USBSID-Pico: SPACE marks board, ENTER confirms",
+				labels,
+				std::vector<bool>(),
+				[this, board_serials](const std::vector<bool>& inRows)
+				{
+					std::vector<std::string> serials;
+
+					for (size_t i = 0; i < inRows.size() && i < board_serials.size(); ++i)
+					{
+						if (inRows[i])
+							serials.push_back(board_serials[i]);
+					}
+
+					m_USBSID->SelectBoards(serials);
+				},
+				[this]()
+				{
+					// Fall back to the first board
+					if (m_USBSID->IsBoardSelectionRequired())
+						m_USBSID->SelectBoards({});
+				}
+			)
+		);
+
+		return true;
+	}
+
+
+	bool ScreenIntro::TryStartDialogForUSBSIDSIDSelection()
+	{
+		if (m_USBSID == nullptr)
+			return false;
+
+		// Opens the boards in use to read their SID configuration
+		const std::vector<Emulation::USBSid::SIDInfo> sids = m_USBSID->QuerySIDs();
+		if (sids.empty())
+			return false;
+
+		static const char* sid_type_names[] = { "unknown", "none", "8580", "6581", "FMopl" };
+
+		std::vector<std::string> labels;
+		std::vector<bool> marked;
+
+		for (const auto& sid : sids)
+		{
+			const std::string type_name = sid.m_Type >= 0 && sid.m_Type <= 4 ? sid_type_names[sid.m_Type] : "unknown";
+
+			labels.push_back("Board " + std::to_string(sid.m_BoardNumber) + " [" + (sid.m_BoardSerial.empty() ? "no serial" : sid.m_BoardSerial) + "] SID " + std::to_string(sid.m_SIDNumber) + " (" + type_name + ")");
+			marked.push_back(sid.m_Selected);
+		}
+
+		m_ComponentsManager->StartDialog(
+			std::make_shared<DialogUSBSIDSelection>
+			(
+				60,
+				"USBSID-Pico: SPACE marks SID, ENTER confirms",
+				labels,
+				marked,
+				[this, sids](const std::vector<bool>& inRows)
+				{
+					std::vector<Emulation::USBSid::SIDInfo> selection;
+
+					for (size_t i = 0; i < inRows.size() && i < sids.size(); ++i)
+					{
+						if (inRows[i])
+							selection.push_back(sids[i]);
+					}
+
+					m_USBSID->SelectSIDs(selection);
 				},
 				[]() {}
 			)
