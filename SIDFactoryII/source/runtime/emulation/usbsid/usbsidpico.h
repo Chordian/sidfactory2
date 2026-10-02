@@ -47,6 +47,9 @@ namespace Emulation
 		bool IsOpen() const { return m_IsOpen; }
 		void SetPAL(bool inPAL);
 
+		// Number of SIDs the tune plays on. Target n receives tune SID n modulo this count
+		void SetSIDCount(unsigned int inSIDCount);
+
 		// Restart the write timeline on the first following write
 		void Resync();
 		// Zero all SID registers
@@ -57,7 +60,7 @@ namespace Emulation
 
 		// Frame feed, cycles count from the start of the frame
 		void BeginFrame();
-		void Write(unsigned char inSidReg, unsigned char inData, int inCycle);
+		void Write(unsigned int inSID, unsigned char inSidReg, unsigned char inData, int inCycle);
 		void EndFrame(unsigned int inCyclesInFrame);
 		void Flush();
 
@@ -83,6 +86,7 @@ namespace Emulation
 		bool Open(bool inAllDetectedBoards = false);
 		void Close();
 		void ApplyClockRate();
+		void BuildTargets();
 		void QueueWrite(const Target& inTarget, unsigned char inSidReg, unsigned char inData, uint64_t inNow, unsigned int inCycle);
 		void QueueSilence();
 
@@ -101,6 +105,7 @@ namespace Emulation
 		bool m_IsOpen;
 		bool m_PAL;
 		bool m_AllSIDs;
+		unsigned int m_SIDCount;
 
 		unsigned int m_LeadTimeMs;
 		unsigned int m_LeadCycles;

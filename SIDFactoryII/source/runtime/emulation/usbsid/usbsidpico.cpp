@@ -84,6 +84,7 @@ namespace Emulation
 		, m_IsOpen(false)
 		, m_PAL(true)
 		, m_AllSIDs(false)
+		, m_SIDCount(1)
 		, m_LeadTimeMs(30)
 		, m_LeadCycles(0)
 		, m_FrameBase(0)
@@ -117,6 +118,23 @@ namespace Emulation
 
 			if (sid_number > 0)
 				m_SelectedSIDs.push_back({ entry.substr(0, separator), sid_number });
+		}
+
+		// Selected SIDs name their boards
+		if (!m_BoardsSelected)
+		{
+			for (const auto& selected : m_SelectedSIDs)
+			{
+				bool known_board = false;
+
+				for (const std::string& serial : m_SelectedBoards)
+					known_board |= serial == selected.first;
+
+				if (!known_board)
+					m_SelectedBoards.push_back(selected.first);
+			}
+
+			m_BoardsSelected = !m_SelectedBoards.empty();
 		}
 
 		DetectBoards();
@@ -285,6 +303,27 @@ namespace Emulation
 	}
 
 
+	void USBSid::SetSIDCount(unsigned int inSIDCount)
+	{
+		std::lock_guard<std::mutex> lock(m_Mutex);
+
+		const unsigned int sid_count = inSIDCount < 1 ? 1 : inSIDCount;
+
+		if (sid_count == m_SIDCount)
+			return;
+
+		m_SIDCount = sid_count;
+
+		// The default choice of SIDs depends on the count
+		if (m_IsOpen)
+		{
+			QueueSilence();
+			m_Manager->FlushAll();
+			BuildTargets();
+		}
+	}
+
+
 	void USBSid::Resync()
 	{
 		std::lock_guard<std::mutex> lock(m_Mutex);
@@ -391,7 +430,7 @@ namespace Emulation
 	}
 
 
-	void USBSid::Write(unsigned char inSidReg, unsigned char inData, int inCycle)
+	void USBSid::Write(unsigned int inSID, unsigned char inSidReg, unsigned char inData, int inCycle)
 	{
 		if (!m_Active || inSidReg >= SID_REGISTER_COUNT)
 			return;
@@ -401,8 +440,12 @@ namespace Emulation
 		const unsigned int cycle = inCycle < 0 ? 0 : static_cast<unsigned int>(inCycle);
 		const uint64_t now = m_FrameBase + cycle;
 
-		for (const Target& target : m_Targets)
-			QueueWrite(target, inSidReg, inData, now, cycle);
+		// Target n plays tune SID n modulo the SID count: more targets than tune SIDs mirror
+		for (size_t i = 0; i < m_Targets.size(); ++i)
+		{
+			if (i % m_SIDCount == inSID)
+				QueueWrite(m_Targets[i], inSidReg, inData, now, cycle);
+		}
 	}
 
 
@@ -479,12 +522,36 @@ namespace Emulation
 			return false;
 		}
 
-		// Collect the SIDs to write to: the selected SIDs, else the first SID of every board, or all of them
+		BuildTargets();
+
+		if (m_Targets.empty())
+		{
+			Logging::instance().Warning("USBSID-Pico: opened boards have no SID configured");
+			m_Manager->CloseAll();
+			return false;
+		}
+
+		m_FrameBase = 0;
+		m_IsOpen = true;
+
+		for (const auto& board : m_Manager->Boards())
+			Logging::instance().Info("USBSID-Pico: opened board %d [%s] with %d SID(s)", board.index, board.serial.c_str(), board.numsids);
+
+		m_Manager->ResetAllRegistersAll();
+		ApplyClockRate();
+
+		return true;
+	}
+
+
+	void USBSid::BuildTargets()
+	{
 		const auto& boards = m_Manager->Boards();
 		const auto& logical_map = m_Manager->LogicalMap();
 
 		m_Targets.clear();
 
+		// The selected SIDs, in board order
 		for (size_t i = 0; i < logical_map.size(); ++i)
 		{
 			const auto& slot = logical_map[i];
@@ -499,26 +566,22 @@ namespace Emulation
 		if (m_Targets.empty())
 		{
 			if (!m_SelectedSIDs.empty())
-				Logging::instance().Warning("USBSID-Pico: none of the selected SIDs found, using the default SID of every board");
+				Logging::instance().Warning("USBSID-Pico: none of the selected SIDs found, using the default SIDs");
 
+			// Default: every SID with AllSIDs, the first SIDs in board order for a multi SID tune,
+			// else the first SID of every board
 			int last_board = -1;
 
 			for (size_t i = 0; i < logical_map.size(); ++i)
 			{
 				const auto& slot = logical_map[i];
+				const bool use = m_AllSIDs || (m_SIDCount > 1 ? m_Targets.size() < m_SIDCount : slot.board_index != last_board);
 
-				if (m_AllSIDs || slot.board_index != last_board)
+				if (use)
 					m_Targets.push_back({ static_cast<int>(i), slot.board_index, static_cast<unsigned char>(slot.local_slot * 0x20) });
 
 				last_board = slot.board_index;
 			}
-		}
-
-		if (m_Targets.empty())
-		{
-			Logging::instance().Warning("USBSID-Pico: opened boards have no SID configured");
-			m_Manager->CloseAll();
-			return false;
 		}
 
 		m_BoardStates.assign(m_Manager->BoardCount(), BoardState());
@@ -526,19 +589,11 @@ namespace Emulation
 		for (const Target& target : m_Targets)
 			m_BoardStates[target.m_Board].m_LogicalSID = target.m_LogicalSID;
 
-		m_FrameBase = 0;
-		m_IsOpen = true;
+		for (size_t i = 0; i < m_Targets.size(); ++i)
+			Logging::instance().Info("USBSID-Pico: tune SID %d on board %d SID %d", static_cast<int>(i % m_SIDCount) + 1, m_Targets[i].m_Board + 1, m_Targets[i].m_RegisterBase / 0x20 + 1);
 
-		for (const auto& board : m_Manager->Boards())
-			Logging::instance().Info("USBSID-Pico: opened board %d [%s] with %d SID(s)", board.index, board.serial.c_str(), board.numsids);
-
-		for (const Target& target : m_Targets)
-			Logging::instance().Info("USBSID-Pico: writing to board %d SID %d", target.m_Board + 1, target.m_RegisterBase / 0x20 + 1);
-
-		m_Manager->ResetAllRegistersAll();
-		ApplyClockRate();
-
-		return true;
+		if (m_Targets.size() < m_SIDCount)
+			Logging::instance().Warning("USBSID-Pico: the tune uses %d SIDs, %d available, the remaining SIDs stay silent", static_cast<int>(m_SIDCount), static_cast<int>(m_Targets.size()));
 	}
 
 
