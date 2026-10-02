@@ -90,6 +90,7 @@ namespace Emulation
 			inline void SetCycle(int iCycle) { m_Cycle = iCycle; }
 			inline int GetCycle() const { return m_Cycle; }
 			inline void AddCycles(int iCycles) { m_Cycle += iCycles; }
+			inline void SetWriteCycleOffset(int iCycles) { m_WriteCycleOffset = iCycles; }
 
 			// Memory
 			inline CPUMemory& GetMemory() { FOUNDATION_ASSERT(m_Memory); return *m_Memory; }
@@ -98,7 +99,7 @@ namespace Emulation
 				if(m_WriteCallback != nullptr)
 				{
 					const unsigned int address = m_Memory->GetAddress(pAddress);
-					m_WriteCallback->Write(static_cast<unsigned short>(address), ucVal, m_Cycle);
+					m_WriteCallback->Write(static_cast<unsigned short>(address), ucVal, m_Cycle + m_WriteCycleOffset);
 				}
 			}
 
@@ -126,6 +127,9 @@ namespace Emulation
 
 			// Cycle counter
 			int m_Cycle;
+
+			// Cycles from the start of the executing instruction to its write cycle
+			int m_WriteCycleOffset;
 		};
 
 		struct Instruction
