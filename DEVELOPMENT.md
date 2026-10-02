@@ -37,7 +37,7 @@ This creates a DMG image in the `artifacts` folder.
 Install prerequisites:
 
     apt-get update
-    apt-get install g++ make git libsdl2-dev
+    apt-get install g++ make git libsdl2-dev libjack-jackd2-dev libusb-1.0-0-dev pkg-config
 
 To build:
 
@@ -51,6 +51,23 @@ Then look in the `artifacts` folder.
 
 PicoPNG files were copied from https://lodev.org/lodepng
 A small change was made to `picopng.h` in relation to [issue 134](https://github.com/Chordian/sidfactory2/issues/134)
+
+### USBSID-Pico driver
+
+`SIDFactoryII/source/libraries/usbsid` holds unmodified copies of `USBSID.cpp`,
+`USBSID.h`, `USBSID_Manager.cpp` and `USBSID_Manager.h` from
+https://github.com/LouDnl/USBSID-Pico-driver (`src/`). Update by copying the
+files again, never patch them in place.
+
+The driver needs libusb-1.0 and POSIX threads:
+
+- Linux: system libusb-1.0 through pkg-config.
+- macOS: `libs/libusb` (vendored libusb 1.0.30 subset) is compiled into the
+  binary by `macos/Makefile`.
+- Windows: `libs/libusb` is compiled into the binary by the Visual Studio
+  project, `libs/usbsid-windows/pthread.h` maps the pthread calls of the
+  driver to Win32. The board needs the WinUSB driver on its
+  "USBSID-Pico Data" interface (install with [Zadig](https://zadig.akeo.ie)).
 
 ## Releases and nightly builds
 

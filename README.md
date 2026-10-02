@@ -49,6 +49,18 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
 
 ### Next release
 
+- Added: Native [USBSID-Pico](https://github.com/LouDnl/USBSID-Pico) output
+  over USB, alongside ASID. Every SID write is sent with its cycle distance to
+  the previous write and the board replays the exact timing, including the
+  idle cycles between frames. Press alt-o to switch between reSID, ASID and
+  USBSID. With more than one board connected a selection dialog is shown in
+  the startup screen (F2 to reopen), writes go to every selected board. F3 in
+  the startup screen lists every SID on the boards in use and lets you pick
+  the ones to play on.
+- Added: Config options `Playback.USBSID.Boards`, `Playback.USBSID.SIDs`,
+  `Playback.USBSID.AllSIDs` and `Playback.USBSID.LeadTime`
+- Changed: The emulated CPU reports a SID write on the last cycle of its
+  instruction instead of the first
 - Fixed: [#213](https://github.com/Chordian/sidfactory2/issues/213) Build
   failed on Ubuntu 26.04
 

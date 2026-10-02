@@ -15,6 +15,8 @@ We hope you'll have a lot of fun composing. Enjoy! =)
 Context         Windows keys                macOS keys                  Purpose
 --------------------------------------------------------------------------------------------------------------------------------------
 STARTUP         F1                          F1                          Select MIDI output device for ASID protocol
+                F2                          F2                          Select USBSID-Pico board(s), if more than one is connected
+                F3                          F3                          Select the SID(s) on the USBSID-Pico board(s) to play on
                 F10                         F10                         Load SF2 song or driver
                 Space                       Space                       Enter the main editor
 --------------------------------------------------------------------------------------------------------------------------------------
@@ -167,7 +169,7 @@ SETTINGS        F9                          F9                          Toggle 6
 
                 Ctrl + p                    Ctrl + p                    Toggle follow-play
 
-                Alt + o                     Alt + o                     Toggle output (ASID or reSID emulator)
+                Alt + o                     Alt + o                     Toggle output (reSID emulator, ASID or USBSID-Pico)
 --------------------------------------------------------------------------------------------------------------------------------------
 SONGLIST        Up/Down                     Up/Down                     Move up or down in the songlist
                 Page Up/Down                Fn + Up/Down                Move several rows up/down in the songlist
