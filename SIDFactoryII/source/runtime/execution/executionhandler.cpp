@@ -60,6 +60,7 @@ namespace Emulation
 		, m_SIDCount(1)
 		, m_RenderGeneration(0)
 		, m_RenderPending(0)
+		, m_RenderNext(0)
 		, m_RenderCyclesInFrame(0)
 		, m_RenderQuit(false)
 	{
@@ -243,7 +244,8 @@ namespace Emulation
 				{
 					if (m_OutputDevice == ExecutionHandler::OutputDevice::RESID)
 					{
-						const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
+						// A multi SID frame holds the average of its SIDs, see MixExtraSIDs()
+						const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain * static_cast<float>(m_SIDCount);
 						const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
 						pTarget[i] = static_cast<short>(fClampedSample);
 					}
@@ -302,6 +304,10 @@ namespace Emulation
 		{
 			StopExtraSIDThreads();
 
+			// Samples left of the last frame are scaled for the old SID count
+			m_SampleBufferReadCursor = 0;
+			m_SampleBufferWriteCursor = 0;
+
 			m_SIDCount = sid_count;
 			m_ExtraSIDs.clear();
 
@@ -353,8 +359,11 @@ namespace Emulation
 		m_RenderQuit = false;
 		m_RenderPending = 0;
 
-		for (unsigned int i = 0; i < m_ExtraSIDs.size(); ++i)
-			m_ExtraSIDs[i]->m_Thread = std::thread(&ExecutionHandler::ExtraSIDThread, this, i);
+		// No frame handed over: nothing to take
+		m_RenderNext = static_cast<unsigned int>(m_ExtraSIDs.size());
+
+		for (auto& extra_sid : m_ExtraSIDs)
+			extra_sid->m_Thread = std::thread(&ExecutionHandler::ExtraSIDThread, this);
 	}
 
 
@@ -375,7 +384,7 @@ namespace Emulation
 	}
 
 
-	void ExecutionHandler::ExtraSIDThread(unsigned int inIndex)
+	void ExecutionHandler::ExtraSIDThread()
 	{
 		unsigned int generation = 0;
 
@@ -399,7 +408,23 @@ namespace Emulation
 				cycles_in_frame = m_RenderCyclesInFrame;
 			}
 
-			RenderExtraSID(*m_ExtraSIDs[inIndex], cycles_in_frame);
+			RenderClaimedExtraSIDs(cycles_in_frame);
+		}
+	}
+
+
+	void ExecutionHandler::RenderClaimedExtraSIDs(int inCyclesInFrame)
+	{
+		// Every thread takes the first extra SID no other thread has taken, the audio callback
+		// thread included: a thread that wakes up late finds its work done
+		for (;;)
+		{
+			const unsigned int index = m_RenderNext.fetch_add(1);
+
+			if (index >= m_ExtraSIDs.size())
+				return;
+
+			RenderExtraSID(*m_ExtraSIDs[index], inCyclesInFrame);
 
 			{
 				std::lock_guard<std::mutex> lock(m_RenderMutex);
@@ -447,22 +472,25 @@ namespace Emulation
 	{
 		short* sample_buffer = static_cast<short*>(m_SampleBuffer);
 		const int sample_count = static_cast<int>(m_SampleBufferWriteCursor);
+		const int sid_count = static_cast<int>(m_ExtraSIDs.size()) + 1;
 
-		for (auto& extra_sid : m_ExtraSIDs)
+		// The sum of the SIDs does not fit a sample: store the average, FeedPCM multiplies it by the
+		// SID count together with the output gain and clamps once
+		for (int i = 0; i < sample_count; ++i)
 		{
-			const short* extra_samples = extra_sid->m_Samples.data();
-			const int extra_count = extra_sid->m_SampleCount;
+			int mixed = static_cast<int>(sample_buffer[i]);
 
-			if (extra_count <= 0)
-				continue;
-
-			// The sample count of a frame differs by one between SIDs at times: hold the last sample,
-			// a gap in the output of one SID is heard as a tick
-			for (int i = 0; i < sample_count; ++i)
+			for (auto& extra_sid : m_ExtraSIDs)
 			{
-				const int mixed = static_cast<int>(sample_buffer[i]) + static_cast<int>(extra_samples[i < extra_count ? i : extra_count - 1]);
-				sample_buffer[i] = static_cast<short>(mixed > 32767 ? 32767 : (mixed < -32768 ? -32768 : mixed));
+				const int extra_count = extra_sid->m_SampleCount;
+
+				// The sample count of a frame differs by one between SIDs at times: hold the last sample,
+				// a gap in the output of one SID is heard as a tick
+				if (extra_count > 0)
+					mixed += static_cast<int>(extra_sid->m_Samples[i < extra_count ? i : extra_count - 1]);
 			}
+
+			sample_buffer[i] = static_cast<short>(mixed / sid_count);
 		}
 	}
 
@@ -808,6 +836,7 @@ namespace Emulation
 				std::lock_guard<std::mutex> lock(m_RenderMutex);
 				m_RenderCyclesInFrame = static_cast<int>(m_CyclesPerFrame);
 				m_RenderPending = static_cast<unsigned int>(m_ExtraSIDs.size());
+				m_RenderNext = 0;
 				++m_RenderGeneration;
 			}
 
@@ -868,6 +897,9 @@ namespace Emulation
 		// Add the output of the extra SIDs once their threads are done with the frame
 		if (render_extra_sids)
 		{
+			// Take what no thread has started on, then wait for the rest
+			RenderClaimedExtraSIDs(static_cast<int>(m_CyclesPerFrame));
+
 			{
 				std::unique_lock<std::mutex> lock(m_RenderMutex);
 				m_RenderDone.wait(lock, [&]() { return m_RenderPending == 0; });

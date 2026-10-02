@@ -2,6 +2,7 @@
 #define __EXECUTIONHANDLER_H__
 
 #include "foundation/sound/audiostream.h"
+#include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <memory>
@@ -155,7 +156,7 @@ namespace Emulation
 			unsigned char m_Value;
 		};
 
-		// SID 2 and up of a multi SID driver. A frame is rendered on a thread of its own, the
+		// SID 2 and up of a multi SID driver. Their frame is rendered on other threads, the
 		// audio callback has no time to clock more than one SID
 		struct ExtraSID
 		{
@@ -171,7 +172,8 @@ namespace Emulation
 
 		void StartExtraSIDThreads();
 		void StopExtraSIDThreads();
-		void ExtraSIDThread(unsigned int inIndex);
+		void ExtraSIDThread();
+		void RenderClaimedExtraSIDs(int inCyclesInFrame);
 		void RenderExtraSID(ExtraSID& inExtraSID, int inCyclesInFrame);
 		void MixExtraSIDs();
 
@@ -225,7 +227,8 @@ namespace Emulation
 		std::condition_variable m_RenderStart;
 		std::condition_variable m_RenderDone;
 		unsigned int m_RenderGeneration;	// Counts the frames handed over
-		unsigned int m_RenderPending;		// Threads still busy with the current frame
+		unsigned int m_RenderPending;		// Extra SIDs not done with the current frame
+		std::atomic<unsigned int> m_RenderNext;	// First extra SID of the current frame no thread has taken
 		int m_RenderCyclesInFrame;
 		bool m_RenderQuit;
 		CPUmos6510* m_CPU;
