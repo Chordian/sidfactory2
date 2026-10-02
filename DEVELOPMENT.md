@@ -37,11 +37,16 @@ This creates a DMG image in the `artifacts` folder.
 Install prerequisites:
 
     apt-get update
-    apt-get install g++ make git libsdl2-dev libjack-jackd2-dev libusb-1.0-0-dev pkg-config
+    apt-get install g++ make git libsdl2-dev libasound2-dev libusb-1.0-0-dev pkg-config
 
 To build:
 
     make dist
+
+MIDI (ASID) uses ALSA by default. For JACK install `libjack-jackd2-dev` instead of
+`libasound2-dev` and build with:
+
+    make LINUXAUDIO=JACK dist
 
 Then look in the `artifacts` folder.
 
