@@ -11,6 +11,7 @@
 # - git
 # - sdl2
 # - libusb-1.0 and pkg-config (USBSID-Pico output)
+# - libasound2 (LINUXAUDIO=ALSA, default) or libjack (LINUXAUDIO=JACK)
 #
 # Make an executable:
 #   make
@@ -24,7 +25,8 @@
 # Build artifacts are in /artifacts
 
 PLATFORM=LINUX
-LINUXAUDIO=ALSA
+# MIDI backend on Linux: ALSA or JACK, override with `make LINUXAUDIO=JACK` or the environment
+LINUXAUDIO?=ALSA
 
 APP_NAME=SIDFactoryII
 BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
