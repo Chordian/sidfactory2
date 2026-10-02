@@ -12,6 +12,7 @@
 #include "foundation/platform/imutex.h"
 #include "foundation/platform/iplatform.h"
 #include "runtime/emulation/asid/asid.h"
+#include "runtime/emulation/usbsid/usbsidpico.h"
 #include "libraries/rtmidi/RtMidi.h"
 
 #include "utils/configfile.h"
@@ -38,11 +39,13 @@ namespace Emulation
 		CPUMemory* pMemory,
 		SIDProxy* pSIDProxy,
 		ASid* inASID,
+		USBSid* inUSBSID,
 		FlightRecorder* inFlightRecorder)
 		: m_CPU(inCPU)
 		, m_Memory(pMemory)
 		, m_SIDProxy(pSIDProxy)
 		, m_ASID(inASID)
+		, m_USBSID(inUSBSID)
 		, m_SIDRegisterFlightRecorder(inFlightRecorder)
 		, m_IsStarted(false)
 		, m_FeedCount(0)
@@ -53,6 +56,7 @@ namespace Emulation
 		, m_UpdateEnabled(false)
 		, m_ErrorState(false)
 		, m_OutputDevice(OutputDevice::RESID)
+		, m_SkipSIDSimulation(false)
 	{
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
@@ -104,6 +108,9 @@ namespace Emulation
 				m_SIDRegisterFlightRecorder->Unlock();
 			}
 
+			if (m_USBSID != nullptr)
+				m_USBSID->Resync();
+
 			m_IsStarted = true;
 		}
 	}
@@ -114,6 +121,10 @@ namespace Emulation
 		{
 			m_SampleBufferReadCursor = 0;
 			m_SampleBufferWriteCursor = 0;
+
+			// No frames are fed while stopped, do not leave notes hanging on the board
+			if (m_USBSID != nullptr && m_OutputDevice == OutputDevice::USBSID)
+				m_USBSID->Silence();
 
 			m_IsStarted = false;
 		}
@@ -147,20 +158,28 @@ namespace Emulation
 
 	void ExecutionHandler::SetOutputDevice(const OutputDevice device)
 	{
-
 		if (m_OutputDevice == device)
 			return;
 
 		// if MIDI port is not open, do not switch to ASID
-		if (!m_ASID->isPortOpen())
+		if (device == OutputDevice::ASID && (m_ASID == nullptr || !m_ASID->isPortOpen()))
 			return;
+
+		// if no USBSID-Pico board can be opened, do not switch to USBSID
+		if (device == OutputDevice::USBSID && (m_USBSID == nullptr || !m_USBSID->SetActive(true)))
+			return;
+
+		if (device != OutputDevice::USBSID && m_USBSID != nullptr)
+			m_USBSID->SetActive(false);
 
 		m_OutputDevice = device;
 
 		// mute/unmute ASID depending on its selection
-		m_ASID->SetMuted(m_OutputDevice != OutputDevice::ASID);
+		if (m_ASID != nullptr && m_ASID->isPortOpen())
+			m_ASID->SetMuted(m_OutputDevice != OutputDevice::ASID);
 
-		Utility::Logging::instance().Info("OutputDevice set to %s", m_OutputDevice == ExecutionHandler::OutputDevice::ASID ? "ASID" : "RESID");
+		Utility::Logging::instance().Info("OutputDevice set to %s",
+			m_OutputDevice == OutputDevice::ASID ? "ASID" : (m_OutputDevice == OutputDevice::USBSID ? "USBSID" : "RESID"));
 	}
 
 	const ExecutionHandler::OutputDevice ExecutionHandler::GetOutputDevice() const
@@ -176,6 +195,19 @@ namespace Emulation
 		if (!m_IsStarted)
 		{
 			memset(inBuffer, 0, inByteCount);
+		}
+		else if (m_OutputDevice == OutputDevice::USBSID && m_USBSID != nullptr)
+		{
+			// The board makes the sound: feed frames by the wall clock, not by sample demand
+			memset(inBuffer, 0, inByteCount);
+
+			const unsigned int frames_due = m_USBSID->FramesDue(m_CyclesPerFrame);
+
+			for (unsigned int i = 0; i < frames_due; ++i)
+				CaptureNewFrame();
+
+			// Send writes the frame flush left in the driver buffer
+			m_USBSID->Flush();
 		}
 		else
 		{
@@ -244,6 +276,9 @@ namespace Emulation
 	void ExecutionHandler::SetPAL(const bool inPALMode)
 	{
 		m_CyclesPerFrame = inPALMode ? EMULATION_CYCLES_PER_FRAME_PAL : EMULATION_CYCLES_PER_FRAME_NTSC;
+
+		if (m_USBSID != nullptr)
+			m_USBSID->SetPAL(inPALMode);
 	}
 
 
@@ -400,6 +435,9 @@ namespace Emulation
 
 	void ExecutionHandler::SimulateSID(int inDeltaCycles)
 	{
+		if (m_SkipSIDSimulation)
+			return;
+
 		short* pSampleBuffer = static_cast<short*>(m_SampleBuffer);
 
 		//while (inDeltaCycles > 0)
@@ -540,6 +578,14 @@ namespace Emulation
 		// Do all writes to the SID and emulate cycles spend
 		int nCycle = 0;
 
+		const bool usbsid_output = m_OutputDevice == ExecutionHandler::OutputDevice::USBSID && m_USBSID != nullptr;
+
+		// No samples are needed while the board plays, skip the SID emulation
+		m_SkipSIDSimulation = usbsid_output;
+
+		if (usbsid_output)
+			m_USBSID->BeginFrame();
+
 		while (frameCapture.HasNext())
 		{
 			const CPUFrameCapture::WriteCapture& capture = frameCapture.GetNext();
@@ -553,12 +599,20 @@ namespace Emulation
 
 			if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID &&  m_ASID != nullptr)
 				m_ASID->WriteToSIDRegister(static_cast<unsigned char>(capture.m_usReg & 0xff), capture.m_ucVal);
+
+			// Pass the cycle of the write within the frame, the board replays the exact spacing
+			if (usbsid_output)
+				m_USBSID->Write(static_cast<unsigned char>(capture.m_usReg & 0xff), capture.m_ucVal, capture.m_iCycle);
 		}
 
 		// Do the rest of the frame
 		if(m_ASID != nullptr)
 			m_ASID->SendToDevice();
-		
+
+		// Close the frame at its full length, idle cycles after the last write carry into the following frame
+		if (usbsid_output)
+			m_USBSID->EndFrame(m_CyclesPerFrame);
+
 		while (nCycle < (int)m_CyclesPerFrame)
 		{
 			const int deltaCycles = m_CyclesPerFrame - nCycle;

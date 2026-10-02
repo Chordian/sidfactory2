@@ -29,6 +29,7 @@ namespace Emulation
 	class CPUMemory;
 	class SIDProxy;
 	class ASid;
+	class USBSid;
 	class FlightRecorder;
 
 	class ExecutionHandler : public Foundation::IAudioStreamFeeder
@@ -44,6 +45,7 @@ namespace Emulation
 			CPUMemory* pMemory,
 			SIDProxy* pSIDProxy,
 			ASid* inASID,
+			USBSid* inUSBSID,
 			FlightRecorder* inFlightRecorder);
 		~ExecutionHandler();
 
@@ -111,7 +113,8 @@ namespace Emulation
 		enum class OutputDevice: int
 		{
 			RESID,
-			ASID
+			ASID,
+			USBSID
 		};
 
 		void SetOutputDevice(const OutputDevice device);
@@ -180,6 +183,7 @@ namespace Emulation
 		CPUmos6510* m_CPU;
 		CPUMemory* m_Memory;
 		ASid* m_ASID;
+		USBSid* m_USBSID;
 
 		std::shared_ptr<Foundation::IMutex> m_Mutex;
 
@@ -194,6 +198,7 @@ namespace Emulation
 		short* m_SampleBuffer;
 		float m_OutputGain;
 		OutputDevice m_OutputDevice;
+		bool m_SkipSIDSimulation;
 	};
 }
 
