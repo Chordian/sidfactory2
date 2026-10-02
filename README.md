@@ -56,11 +56,11 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
   USBSID. With more than one board connected a selection dialog is shown in
   the startup screen (F2 to reopen), writes go to every selected board. F3 in
   the startup screen lists every SID on the boards in use and lets you pick
-  the ones to play on.
+  the ones to play on. For USBSID output the emulated CPU reports a SID write
+  on the last cycle of its instruction instead of the first, reSID and ASID
+  output are unchanged.
 - Added: Config options `Playback.USBSID.Boards`, `Playback.USBSID.SIDs`,
   `Playback.USBSID.AllSIDs` and `Playback.USBSID.LeadTime`
-- Changed: The emulated CPU reports a SID write on the last cycle of its
-  instruction instead of the first
 - Fixed: [#213](https://github.com/Chordian/sidfactory2/issues/213) Build
   failed on Ubuntu 26.04
 
