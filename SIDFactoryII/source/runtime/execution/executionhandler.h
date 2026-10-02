@@ -2,9 +2,12 @@
 #define __EXECUTIONHANDLER_H__
 
 #include "foundation/sound/audiostream.h"
+#include <condition_variable>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 #include "runtime/editor/driver/driver_utils.h"
 
@@ -144,8 +147,33 @@ namespace Emulation
 
 		const unsigned short GetAddressFromActionType(ActionType inActionType) const;
 
+		// One write to a SID register within a frame
+		struct SIDWrite
+		{
+			int m_Cycle;
+			unsigned short m_Address;
+			unsigned char m_Value;
+		};
+
+		// SID 2 and up of a multi SID driver. A frame is rendered on a thread of its own, the
+		// audio callback has no time to clock more than one SID
+		struct ExtraSID
+		{
+			std::unique_ptr<SIDProxy> m_SID;
+			std::vector<SIDWrite> m_Writes;		// Writes of the current frame, m_Address holds the register
+			std::vector<short> m_Samples;		// Output of the current frame
+			int m_SampleCount = 0;
+			std::thread m_Thread;
+		};
+
 		void SimulateSID(int inDeltaCycles);
 		void SyncExtraSIDs();
+
+		void StartExtraSIDThreads();
+		void StopExtraSIDThreads();
+		void ExtraSIDThread(unsigned int inIndex);
+		void RenderExtraSID(ExtraSID& inExtraSID, int inCyclesInFrame);
+		void MixExtraSIDs();
 
 		void ASIDSend();
 		
@@ -189,8 +217,17 @@ namespace Emulation
 
 		// SID 2 and up of a multi SID driver, mixed into the output of the first SID
 		unsigned int m_SIDCount;
-		std::vector<std::unique_ptr<SIDProxy>> m_ExtraSIDs;
-		short* m_MixBuffer;
+		std::vector<std::unique_ptr<ExtraSID>> m_ExtraSIDs;
+		std::vector<SIDWrite> m_FrameWrites;
+
+		// Hand over of a frame to the threads of the extra SIDs
+		std::mutex m_RenderMutex;
+		std::condition_variable m_RenderStart;
+		std::condition_variable m_RenderDone;
+		unsigned int m_RenderGeneration;	// Counts the frames handed over
+		unsigned int m_RenderPending;		// Threads still busy with the current frame
+		int m_RenderCyclesInFrame;
+		bool m_RenderQuit;
 		CPUmos6510* m_CPU;
 		CPUMemory* m_Memory;
 		ASid* m_ASID;

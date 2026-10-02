@@ -58,14 +58,16 @@ namespace Emulation
 		, m_OutputDevice(OutputDevice::RESID)
 		, m_SkipSIDSimulation(false)
 		, m_SIDCount(1)
-		, m_MixBuffer(nullptr)
+		, m_RenderGeneration(0)
+		, m_RenderPending(0)
+		, m_RenderCyclesInFrame(0)
+		, m_RenderQuit(false)
 	{
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
 		// Create a sample buffer. The sample frequency is used for determining the size, which is probably 50 times the size required.
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
-		m_MixBuffer = new short[m_SampleBufferSize];
 		m_Mutex = Global::instance().GetPlatform().CreateMutex();
 		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", -1.0f);
 
@@ -82,12 +84,12 @@ namespace Emulation
 
 	ExecutionHandler::~ExecutionHandler()
 	{
+		StopExtraSIDThreads();
+
 		m_Mutex = nullptr;
 
 		if (m_SampleBuffer != nullptr)
 			delete[] m_SampleBuffer;
-
-		delete[] m_MixBuffer;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -107,7 +109,7 @@ namespace Emulation
 				m_SIDProxy->Reset();
 
 			for (auto& extra_sid : m_ExtraSIDs)
-				extra_sid->Reset();
+				extra_sid->m_SID->Reset();
 
 			if (m_SIDRegisterFlightRecorder != nullptr)
 			{
@@ -298,15 +300,26 @@ namespace Emulation
 
 		if (sid_count != m_SIDCount)
 		{
+			StopExtraSIDThreads();
+
 			m_SIDCount = sid_count;
 			m_ExtraSIDs.clear();
 
 			// Same configuration as the first SID, kept in step by SyncExtraSIDs()
 			for (unsigned int i = 1; i < m_SIDCount; ++i)
 			{
-				m_ExtraSIDs.push_back(std::make_unique<SIDProxy>(m_SIDProxy->GetConfiguration()));
-				m_ExtraSIDs.back()->Reset();
+				m_ExtraSIDs.push_back(std::make_unique<ExtraSID>());
+
+				ExtraSID& extra_sid = *m_ExtraSIDs.back();
+
+				extra_sid.m_SID = std::make_unique<SIDProxy>(m_SIDProxy->GetConfiguration());
+				extra_sid.m_SID->Reset();
+
+				// Room for more than one frame at the lowest frame rate
+				extra_sid.m_Samples.resize(static_cast<size_t>(m_SIDProxy->GetSampleFrequency()) / 8);
 			}
+
+			StartExtraSIDThreads();
 		}
 
 		Unlock();
@@ -320,10 +333,135 @@ namespace Emulation
 	{
 		for (auto& extra_sid : m_ExtraSIDs)
 		{
-			if (extra_sid->GetModel() != m_SIDProxy->GetModel() || extra_sid->GetEnvironment() != m_SIDProxy->GetEnvironment())
+			SIDProxy& sid = *extra_sid->m_SID;
+
+			if (sid.GetModel() != m_SIDProxy->GetModel() || sid.GetEnvironment() != m_SIDProxy->GetEnvironment())
 			{
-				extra_sid->SetConfiguration(m_SIDProxy->GetConfiguration());
-				extra_sid->ApplySettings();
+				sid.SetConfiguration(m_SIDProxy->GetConfiguration());
+				sid.ApplySettings();
+			}
+		}
+	}
+
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Extra SID threads
+	//----------------------------------------------------------------------------------------------------------------
+
+	void ExecutionHandler::StartExtraSIDThreads()
+	{
+		m_RenderQuit = false;
+		m_RenderPending = 0;
+
+		for (unsigned int i = 0; i < m_ExtraSIDs.size(); ++i)
+			m_ExtraSIDs[i]->m_Thread = std::thread(&ExecutionHandler::ExtraSIDThread, this, i);
+	}
+
+
+	void ExecutionHandler::StopExtraSIDThreads()
+	{
+		{
+			std::lock_guard<std::mutex> lock(m_RenderMutex);
+			m_RenderQuit = true;
+		}
+
+		m_RenderStart.notify_all();
+
+		for (auto& extra_sid : m_ExtraSIDs)
+		{
+			if (extra_sid->m_Thread.joinable())
+				extra_sid->m_Thread.join();
+		}
+	}
+
+
+	void ExecutionHandler::ExtraSIDThread(unsigned int inIndex)
+	{
+		unsigned int generation = 0;
+
+		{
+			std::lock_guard<std::mutex> lock(m_RenderMutex);
+			generation = m_RenderGeneration;
+		}
+
+		for (;;)
+		{
+			int cycles_in_frame = 0;
+
+			{
+				std::unique_lock<std::mutex> lock(m_RenderMutex);
+				m_RenderStart.wait(lock, [&]() { return m_RenderQuit || m_RenderGeneration != generation; });
+
+				if (m_RenderQuit)
+					return;
+
+				generation = m_RenderGeneration;
+				cycles_in_frame = m_RenderCyclesInFrame;
+			}
+
+			RenderExtraSID(*m_ExtraSIDs[inIndex], cycles_in_frame);
+
+			{
+				std::lock_guard<std::mutex> lock(m_RenderMutex);
+				--m_RenderPending;
+			}
+
+			m_RenderDone.notify_one();
+		}
+	}
+
+
+	void ExecutionHandler::RenderExtraSID(ExtraSID& inExtraSID, int inCyclesInFrame)
+	{
+		short* samples = inExtraSID.m_Samples.data();
+		const int sample_capacity = static_cast<int>(inExtraSID.m_Samples.size());
+
+		int cycle = 0;
+		int sample_count = 0;
+
+		auto clock_to = [&](int inCycle)
+		{
+			int delta_cycles = inCycle - cycle;
+
+			// A clock of 1 cycle yields 1 sample at most, stop before the buffer is full
+			if (delta_cycles > 0 && sample_count + delta_cycles / 4 + 1 < sample_capacity)
+				sample_count += inExtraSID.m_SID->Clock(delta_cycles, samples + sample_count, sample_capacity - sample_count);
+
+			if (inCycle > cycle)
+				cycle = inCycle;
+		};
+
+		for (const SIDWrite& write : inExtraSID.m_Writes)
+		{
+			clock_to(write.m_Cycle);
+			inExtraSID.m_SID->Write(static_cast<unsigned char>(write.m_Address), write.m_Value);
+		}
+
+		clock_to(inCyclesInFrame);
+
+		inExtraSID.m_SampleCount = sample_count;
+	}
+
+
+	void ExecutionHandler::MixExtraSIDs()
+	{
+		short* sample_buffer = static_cast<short*>(m_SampleBuffer);
+		const int sample_count = static_cast<int>(m_SampleBufferWriteCursor);
+
+		for (auto& extra_sid : m_ExtraSIDs)
+		{
+			const short* extra_samples = extra_sid->m_Samples.data();
+			const int extra_count = extra_sid->m_SampleCount;
+
+			if (extra_count <= 0)
+				continue;
+
+			// The sample count of a frame differs by one between SIDs at times: hold the last sample,
+			// a gap in the output of one SID is heard as a tick
+			for (int i = 0; i < sample_count; ++i)
+			{
+				const int mixed = static_cast<int>(sample_buffer[i]) + static_cast<int>(extra_samples[i < extra_count ? i : extra_count - 1]);
+				sample_buffer[i] = static_cast<short>(mixed > 32767 ? 32767 : (mixed < -32768 ? -32768 : mixed));
 			}
 		}
 	}
@@ -501,20 +639,6 @@ namespace Emulation
 			// Negative sample count written is invalid!
 			FOUNDATION_ASSERT(nSamplesWritten >= 0);
 
-			// Clock the other SIDs of a multi SID driver over the same cycles and add their output
-			for (auto& extra_sid : m_ExtraSIDs)
-			{
-				int delta_cycles = inDeltaCycles;
-				const int extra_samples = extra_sid->Clock(delta_cycles, m_MixBuffer, uiRemainingSamplesInBuffer);
-				const int mix_count = extra_samples < nSamplesWritten ? extra_samples : nSamplesWritten;
-
-				for (int i = 0; i < mix_count; ++i)
-				{
-					const int mixed = static_cast<int>(sample_buffer_write_location[i]) + static_cast<int>(m_MixBuffer[i]);
-					sample_buffer_write_location[i] = static_cast<short>(mixed > 32767 ? 32767 : (mixed < -32768 ? -32768 : mixed));
-				}
-			}
-
 			// Move the write cursor
 			m_SampleBufferWriteCursor += static_cast<unsigned int>(nSamplesWritten);
 
@@ -655,18 +779,59 @@ namespace Emulation
 		if (usbsid_output)
 			m_USBSID->BeginFrame();
 
+		// Collect the writes of the frame, the extra SIDs need theirs before the first SID is clocked
+		m_FrameWrites.clear();
+
+		for (auto& extra_sid : m_ExtraSIDs)
+			extra_sid->m_Writes.clear();
+
 		while (frameCapture.HasNext())
 		{
 			const CPUFrameCapture::WriteCapture& capture = frameCapture.GetNext();
 
-			FOUNDATION_ASSERT(nCycle <= capture.m_iCycle);
+			m_FrameWrites.push_back({ capture.m_iCycle, capture.m_usReg, capture.m_ucVal });
 
-			const int deltaCycles = capture.m_iCycle - nCycle;
+			const unsigned char sid_address = static_cast<unsigned char>(capture.m_usReg & 0xff);
+			const unsigned int sid_index = sid_address >> 5;
+			const unsigned char sid_register = sid_address & 0x1f;
+
+			if (sid_register <= 0x18 && sid_index > 0 && sid_index < m_SIDCount)
+				m_ExtraSIDs[sid_index - 1]->m_Writes.push_back({ capture.m_iCycle, sid_register, capture.m_ucVal });
+		}
+
+		// Render the extra SIDs next to the first SID. While the board plays, the registers are kept up to date only
+		const bool render_extra_sids = !m_SkipSIDSimulation && !m_ExtraSIDs.empty();
+
+		if (render_extra_sids)
+		{
+			{
+				std::lock_guard<std::mutex> lock(m_RenderMutex);
+				m_RenderCyclesInFrame = static_cast<int>(m_CyclesPerFrame);
+				m_RenderPending = static_cast<unsigned int>(m_ExtraSIDs.size());
+				++m_RenderGeneration;
+			}
+
+			m_RenderStart.notify_all();
+		}
+		else
+		{
+			for (auto& extra_sid : m_ExtraSIDs)
+			{
+				for (const SIDWrite& write : extra_sid->m_Writes)
+					extra_sid->m_SID->Write(static_cast<unsigned char>(write.m_Address), write.m_Value);
+			}
+		}
+
+		for (const SIDWrite& write : m_FrameWrites)
+		{
+			FOUNDATION_ASSERT(nCycle <= write.m_Cycle);
+
+			const int deltaCycles = write.m_Cycle - nCycle;
 			SimulateSID(deltaCycles);
 			nCycle += deltaCycles;
 
 			// Split the address in SID number and register, skip the unused registers behind $18
-			const unsigned char sid_address = static_cast<unsigned char>(capture.m_usReg & 0xff);
+			const unsigned char sid_address = static_cast<unsigned char>(write.m_Address & 0xff);
 			const unsigned int sid_index = sid_address >> 5;
 			const unsigned char sid_register = sid_address & 0x1f;
 
@@ -674,17 +839,15 @@ namespace Emulation
 				continue;
 
 			if (sid_index == 0)
-				m_SIDProxy->Write(sid_register, capture.m_ucVal);
-			else
-				m_ExtraSIDs[sid_index - 1]->Write(sid_register, capture.m_ucVal);
+				m_SIDProxy->Write(sid_register, write.m_Value);
 
 			// ASID carries one SID
 			if(sid_index == 0 && m_OutputDevice == ExecutionHandler::OutputDevice::ASID &&  m_ASID != nullptr)
-				m_ASID->WriteToSIDRegister(sid_register, capture.m_ucVal);
+				m_ASID->WriteToSIDRegister(sid_register, write.m_Value);
 
 			// Pass the cycle of the write within the frame, the board replays the exact spacing
 			if (usbsid_output)
-				m_USBSID->Write(sid_index, sid_register, capture.m_ucVal, capture.m_iCycle);
+				m_USBSID->Write(sid_index, sid_register, write.m_Value, write.m_Cycle);
 		}
 
 		// Do the rest of the frame
@@ -700,6 +863,17 @@ namespace Emulation
 			const int deltaCycles = m_CyclesPerFrame - nCycle;
 			SimulateSID(deltaCycles);
 			nCycle += deltaCycles;
+		}
+
+		// Add the output of the extra SIDs once their threads are done with the frame
+		if (render_extra_sids)
+		{
+			{
+				std::unique_lock<std::mutex> lock(m_RenderMutex);
+				m_RenderDone.wait(lock, [&]() { return m_RenderPending == 0; });
+			}
+
+			MixExtraSIDs();
 		}
 
 		// Reset cycle counter
