@@ -24,11 +24,12 @@
 # Build artifacts are in /artifacts
 
 PLATFORM=LINUX
+LINUXAUDIO=ALSA
 
 APP_NAME=SIDFactoryII
 BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 ARTIFACTS_FOLDER=artifacts
-DIST_FOLDER=$(ARTIFACTS_FOLDER)/$(APP_NAME)_$(PLATFORM)_$(BUILD_NR)
+DIST_FOLDER=$(ARTIFACTS_FOLDER)/$(APP_NAME)_$(PLATFORM)_$(LINUXAUDIO)_$(BUILD_NR)
 
 # SF2 sources
 PROJECT_ROOT=./SIDFactoryII
@@ -49,8 +50,15 @@ CC_FLAGS := $(CC_FLAGS) $(shell pkg-config --cflags libusb-1.0)
 LINKER_FLAGS := $(LINKER_FLAGS) $(shell pkg-config --libs libusb-1.0) -lpthread
 
 ifeq ($(PLATFORM),LINUX)
-	CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
-	LINKER_FLAGS := $(LINKER_FLAGS) -ljack
+	ifeq ($(LINUXAUDIO),JACK)
+		CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
+		LINKER_FLAGS := $(LINKER_FLAGS) -ljack
+	endif
+
+	ifeq ($(LINUXAUDIO),ALSA)
+		CC_FLAGS := $(CC_FLAGS) -D__LINUX_ALSA__
+		LINKER_FLAGS := $(LINKER_FLAGS) -lasound
+	endif
 endif
 
 ifeq ($(PLATFORM),MACOS)
