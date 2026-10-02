@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install Dependencies
-        run: sudo apt-get update && sudo apt-get -y install libsdl2-dev 
+        run: sudo apt-get update && sudo apt-get -y install libsdl2-dev libasound2-dev libusb-1.0-0-dev pkg-config
       - name: Build binaries
         run: LINUXAUDIO=ALSA make dist
       - name: Upload artifact
