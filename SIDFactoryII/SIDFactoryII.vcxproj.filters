@@ -122,6 +122,24 @@
     <Filter Include="source\runtime\editor\converters\jch">
       <UniqueIdentifier>{4d2fdef3-6e28-47e2-a1bb-33aa7b571002}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\runtime\emulation\usbsid">
+      <UniqueIdentifier>{472ae8bc-999b-48d6-ba30-380d630b1754}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\libraries\usbsid">
+      <UniqueIdentifier>{b97a3bc6-caaa-45e6-bade-f99c7f194899}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs">
+      <UniqueIdentifier>{6d79a97b-282c-4722-b329-7e86d74dfe30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\libusb">
+      <UniqueIdentifier>{1dc7ac5b-a7b3-40c5-9eb4-4a2d9c575218}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\libusb\os">
+      <UniqueIdentifier>{2cd7a9c3-d9a4-47f1-87e5-c70875cd7fa2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libs\usbsid-windows">
+      <UniqueIdentifier>{07bc3445-d5ef-437d-93f3-430ac214a299}</UniqueIdentifier>
+    </Filter>
     <Filter Include="source\libraries\miniz">
       <UniqueIdentifier>{bbc1c76c-cb73-4a17-80cb-ac9619b7d9a4}</UniqueIdentifier>
     </Filter>
@@ -541,6 +559,51 @@
     </ClCompile>
     <ClCompile Include="source\runtime\editor\converters\jch\converter_jch.cpp">
       <Filter>source\runtime\editor\converters\jch</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\emulation\usbsid\usbsidpico.cpp">
+      <Filter>source\runtime\emulation\usbsid</Filter>
+    </ClCompile>
+    <ClCompile Include="source\runtime\editor\dialog\dialog_usbsid_boards.cpp">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\usbsid\USBSID.cpp">
+      <Filter>source\libraries\usbsid</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libraries\usbsid\USBSID_Manager.cpp">
+      <Filter>source\libraries\usbsid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\core.c">
+      <Filter>libs\libusb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\descriptor.c">
+      <Filter>libs\libusb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\hotplug.c">
+      <Filter>libs\libusb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\io.c">
+      <Filter>libs\libusb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\strerror.c">
+      <Filter>libs\libusb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\sync.c">
+      <Filter>libs\libusb</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\events_windows.c">
+      <Filter>libs\libusb\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\threads_windows.c">
+      <Filter>libs\libusb\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\windows_common.c">
+      <Filter>libs\libusb\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\windows_usbdk.c">
+      <Filter>libs\libusb\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\windows_winusb.c">
+      <Filter>libs\libusb\os</Filter>
     </ClCompile>
     <ClCompile Include="source\libraries\miniz\miniz.c">
       <Filter>source\libraries\miniz</Filter>
@@ -1149,6 +1212,18 @@
     </ClInclude>
     <ClInclude Include="source\runtime\editor\converters\mod\converter_mod.h">
       <Filter>source\runtime\editor\converters\mod</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\emulation\usbsid\usbsidpico.h">
+      <Filter>source\runtime\emulation\usbsid</Filter>
+    </ClInclude>
+    <ClInclude Include="source\runtime\editor\dialog\dialog_usbsid_boards.h">
+      <Filter>source\runtime\editor\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\usbsid\USBSID.h">
+      <Filter>source\libraries\usbsid</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libraries\usbsid\USBSID_Manager.h">
+      <Filter>source\libraries\usbsid</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\editor\dialog\dialog_selection_list.h">
       <Filter>source\runtime\editor\dialogs</Filter>
