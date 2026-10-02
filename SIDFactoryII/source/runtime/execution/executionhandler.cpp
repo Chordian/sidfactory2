@@ -642,6 +642,10 @@ namespace Emulation
 
 	void ExecutionHandler::TellSIDEnvironment()
 	{
+		// The region toggle changes the SID clock only, the board clock follows it
+		if (m_USBSID != nullptr)
+			m_USBSID->SetPAL(m_SIDProxy->GetEnvironment() == SID_ENVIRONMENT_PAL);
+
 		if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID && m_ASID != nullptr)
 		{
 			m_ASID->SendSIDEnvironment(m_SIDProxy->GetEnvironment() == SID_ENVIRONMENT_PAL);
