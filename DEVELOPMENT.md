@@ -74,6 +74,20 @@ The driver needs libusb-1.0 and POSIX threads:
   driver to Win32. The board needs the WinUSB driver on its
   "USBSID-Pico Data" interface (install with [Zadig](https://zadig.akeo.ie)).
 
+### Licences of bundled code
+
+| Code | Location | Licence |
+|---|---|---|
+| reSID-fp | `SIDFactoryII/source/libraries/residfp` | GPL-2.0-or-later |
+| RtMidi | `SIDFactoryII/source/libraries/rtmidi` | MIT style |
+| USBSID-Pico driver | `SIDFactoryII/source/libraries/usbsid` | GPL-3.0-or-later, see `LICENSE` and `LICENSE-EXCEPTION` there |
+| libusb (macOS, Windows) | `libs/libusb` | LGPL-2.1-or-later, see `COPYING` there |
+| pthread layer for Windows | `libs/usbsid-windows` | GPL-3.0-or-later |
+
+SID Factory II ships the GPL version 2 text in `SIDFactoryII/COPYING` without naming a
+version in its sources. Section 9 of that licence then allows any published GPL version. A
+build that contains the USBSID-Pico driver is distributed under GPL version 3 or later.
+
 ## Releases and nightly builds
 
 There are two sets of binaries:
