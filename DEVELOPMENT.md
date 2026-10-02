@@ -74,6 +74,13 @@ The driver needs libusb-1.0 and POSIX threads:
   driver to Win32. The board needs the WinUSB driver on its
   "USBSID-Pico Data" interface (install with [Zadig](https://zadig.akeo.ie)).
 
+### Multi SID drivers
+
+`SIDFactoryII/drivers/sf2driver11_05_2sid.prg`, `_3sid.prg` and `_4sid.prg` are built from one
+KickAssembler source derived from driver 11.05 (`sf2driver11_05_multisid.a`, argument `:sids=2`,
+`3` or `4`). The editor takes the number of SIDs from the track count of the driver (three tracks
+per SID) and expects SID n at `$D400 + n * $20`.
+
 ### Licences of bundled code
 
 | Code | Location | Licence |

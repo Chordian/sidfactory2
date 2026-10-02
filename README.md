@@ -61,6 +61,16 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
   output are unchanged.
 - Added: Config options `Playback.USBSID.Boards`, `Playback.USBSID.SIDs`,
   `Playback.USBSID.AllSIDs` and `Playback.USBSID.LeadTime`
+- Added: Multi SID drivers `sf2driver11_05_2sid.prg`, `sf2driver11_05_3sid.prg`
+  and `sf2driver11_05_4sid.prg`: driver 11.05 with three tracks per SID, SID n
+  at $D400 + n * $20. Instruments, commands and tables are shared, every SID
+  has its own filter and volume. reSID mixes all SIDs, USBSID-Pico plays every
+  tune SID on its own hardware SID, exported `.sid` files carry the second and
+  third SID address (PSID v3/v4). Set `Window.Width` to make room for the extra
+  tracks (1736 for 2 SIDs).
+- Added: Config option `Window.Width`
+- Fixed: On Linux the configuration could silently fail to load, depending on
+  the name and location of the executable (unterminated `readlink` result)
 - Fixed: [#213](https://github.com/Chordian/sidfactory2/issues/213) Build
   failed on Ubuntu 26.04
 
