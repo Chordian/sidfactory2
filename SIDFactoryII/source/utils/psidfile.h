@@ -27,7 +27,7 @@ namespace Utility
 			unsigned char m_StartPage;			// 0x78
 			unsigned char m_PageLength;			// 0x79
 			unsigned char m_SecondSIDAddress;	// 0x7a
-			unsigned char m_ThirdSIDAddress;	// 0x7a
+			unsigned char m_ThirdSIDAddress;	// 0x7b
 		};
 #pragma pack(pop)
 
@@ -43,7 +43,9 @@ namespace Utility
 			const std::string& inAuthor,
 			const std::string& inCopyright,
 			const bool in6581,
-			const bool inPAL);
+			const bool inPAL,
+			const unsigned int inSIDCount = 1
+		);
 
 		~PSIDFile();
 

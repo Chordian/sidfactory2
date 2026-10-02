@@ -21,7 +21,8 @@ namespace Utility
 		const std::string& inAuthor,
 		const std::string& inCopyright,
 		const bool in6581,
-		const bool inPAL)
+		const bool inPAL,
+		const unsigned int inSIDCount)
 	{
 		memset(&m_Header, 0, sizeof(Header));
 
@@ -36,7 +37,8 @@ namespace Utility
 		m_Header.m_MagicNumber[2] = 'I';
 		m_Header.m_MagicNumber[3] = 'D';
 
-		m_Header.m_Version = endian_convert(0x02);
+		// Version 3 adds the address of a second SID, version 4 of a third
+		m_Header.m_Version = endian_convert(inSIDCount >= 3 ? 0x04 : (inSIDCount == 2 ? 0x03 : 0x02));
 		m_Header.m_DataOffset = endian_convert(data_offset);
 		m_Header.m_LoadAddress = 0x0000;
 		m_Header.m_InitAddress = endian_convert(driver_address + inInitOffset);
@@ -49,7 +51,22 @@ namespace Utility
 		CopyString(inAuthor, m_Header.m_Author);
 		CopyString(inCopyright, m_Header.m_Copyright);
 
-		m_Header.m_Flags = endian_convert((in6581 ? 0x10 : 0x20) | (inPAL ? 0x04 : 0x08));
+		unsigned short flags = (in6581 ? 0x10 : 0x20) | (inPAL ? 0x04 : 0x08);
+
+		// SID n sits at $d400 + n * $20, the header stores the middle byte of the address. Same model for all
+		if (inSIDCount >= 2)
+		{
+			m_Header.m_SecondSIDAddress = 0x42;
+			flags |= (in6581 ? 0x40 : 0x80);
+		}
+
+		if (inSIDCount >= 3)
+		{
+			m_Header.m_ThirdSIDAddress = 0x44;
+			flags |= (in6581 ? 0x100 : 0x200);
+		}
+
+		m_Header.m_Flags = endian_convert(flags);
 
 		unsigned short header_size = sizeof(Header);
 

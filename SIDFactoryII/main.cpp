@@ -65,10 +65,23 @@ void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 {
 
 	// Create viewport (client view size)
-	const int width = 1280;
 	const int height = 720;
 
 	const ConfigFile& configFile = Global::instance().GetConfig();
+
+	// A multi SID driver shows three more tracks per extra SID and needs a wider window
+	int width = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueInt>(configFile, "Window.Width", 1280);
+
+	if (width < 1280)
+	{
+		Utility::Logging::instance().Warning("Window.Width %d is lower than 1280. Using 1280", width);
+		width = 1280;
+	}
+	else if (width > 4096)
+	{
+		Utility::Logging::instance().Warning("Window.Width %d is higher than 4096. Limiting to 4096", width);
+		width = 4096;
+	}
 
 	float window_scaling = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(configFile, "Window.Scaling", 1.0f);
 

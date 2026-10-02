@@ -57,12 +57,15 @@ namespace Emulation
 		, m_ErrorState(false)
 		, m_OutputDevice(OutputDevice::RESID)
 		, m_SkipSIDSimulation(false)
+		, m_SIDCount(1)
+		, m_MixBuffer(nullptr)
 	{
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
 		// Create a sample buffer. The sample frequency is used for determining the size, which is probably 50 times the size required.
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
+		m_MixBuffer = new short[m_SampleBufferSize];
 		m_Mutex = Global::instance().GetPlatform().CreateMutex();
 		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", -1.0f);
 
@@ -83,6 +86,8 @@ namespace Emulation
 
 		if (m_SampleBuffer != nullptr)
 			delete[] m_SampleBuffer;
+
+		delete[] m_MixBuffer;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -100,6 +105,9 @@ namespace Emulation
 
 			if (m_SIDProxy != nullptr)
 				m_SIDProxy->Reset();
+
+			for (auto& extra_sid : m_ExtraSIDs)
+				extra_sid->Reset();
 
 			if (m_SIDRegisterFlightRecorder != nullptr)
 			{
@@ -282,6 +290,45 @@ namespace Emulation
 	}
 
 
+	void ExecutionHandler::SetSIDCount(unsigned int inSIDCount)
+	{
+		const unsigned int sid_count = inSIDCount < 1 ? 1 : (inSIDCount > MaxSIDCount ? MaxSIDCount : inSIDCount);
+
+		Lock();
+
+		if (sid_count != m_SIDCount)
+		{
+			m_SIDCount = sid_count;
+			m_ExtraSIDs.clear();
+
+			// Same configuration as the first SID, kept in step by SyncExtraSIDs()
+			for (unsigned int i = 1; i < m_SIDCount; ++i)
+			{
+				m_ExtraSIDs.push_back(std::make_unique<SIDProxy>(m_SIDProxy->GetConfiguration()));
+				m_ExtraSIDs.back()->Reset();
+			}
+		}
+
+		Unlock();
+
+		if (m_USBSID != nullptr)
+			m_USBSID->SetSIDCount(sid_count);
+	}
+
+
+	void ExecutionHandler::SyncExtraSIDs()
+	{
+		for (auto& extra_sid : m_ExtraSIDs)
+		{
+			if (extra_sid->GetModel() != m_SIDProxy->GetModel() || extra_sid->GetEnvironment() != m_SIDProxy->GetEnvironment())
+			{
+				extra_sid->SetConfiguration(m_SIDProxy->GetConfiguration());
+				extra_sid->ApplySettings();
+			}
+		}
+	}
+
+
 	//----------------------------------------------------------------------------------------------------------------
 	// Error
 	//----------------------------------------------------------------------------------------------------------------
@@ -454,6 +501,20 @@ namespace Emulation
 			// Negative sample count written is invalid!
 			FOUNDATION_ASSERT(nSamplesWritten >= 0);
 
+			// Clock the other SIDs of a multi SID driver over the same cycles and add their output
+			for (auto& extra_sid : m_ExtraSIDs)
+			{
+				int delta_cycles = inDeltaCycles;
+				const int extra_samples = extra_sid->Clock(delta_cycles, m_MixBuffer, uiRemainingSamplesInBuffer);
+				const int mix_count = extra_samples < nSamplesWritten ? extra_samples : nSamplesWritten;
+
+				for (int i = 0; i < mix_count; ++i)
+				{
+					const int mixed = static_cast<int>(sample_buffer_write_location[i]) + static_cast<int>(m_MixBuffer[i]);
+					sample_buffer_write_location[i] = static_cast<short>(mixed > 32767 ? 32767 : (mixed < -32768 ? -32768 : mixed));
+				}
+			}
+
 			// Move the write cursor
 			m_SampleBufferWriteCursor += static_cast<unsigned int>(nSamplesWritten);
 
@@ -484,7 +545,10 @@ namespace Emulation
 		m_CPU->SetWriteOnLastCycle(m_OutputDevice == ExecutionHandler::OutputDevice::USBSID && m_USBSID != nullptr);
 
 		// Capture the frame (this will run the CPU )
-		CPUFrameCapture frameCapture(m_CPU, 0xd400, 0xd418, m_CyclesPerFrame);
+		// Capture the register blocks of all SIDs, SID n sits at $d400 + n * $20
+		CPUFrameCapture frameCapture(m_CPU, 0xd400, 0xd400 + MaxSIDCount * 0x20 - 1, m_CyclesPerFrame);
+
+		SyncExtraSIDs();
 
 		// Execute queued actions
 		for (const Action& action : m_ActionQueue)
@@ -493,7 +557,8 @@ namespace Emulation
 			{
 			case ActionType::ApplyMuteState:
 			{
-				const unsigned short offset = action.m_ActionArgument * 7;
+				// Three voices per SID, seven registers per voice
+				const unsigned short offset = (action.m_ActionArgument / 3) * 0x20 + (action.m_ActionArgument % 3) * 7;
 				const unsigned short address = 0xd400 + offset;
 
 				for (int i = 0; i < 7; ++i)
@@ -598,15 +663,28 @@ namespace Emulation
 
 			const int deltaCycles = capture.m_iCycle - nCycle;
 			SimulateSID(deltaCycles);
-			m_SIDProxy->Write((unsigned char)(capture.m_usReg & 0xff), capture.m_ucVal);
 			nCycle += deltaCycles;
 
-			if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID &&  m_ASID != nullptr)
-				m_ASID->WriteToSIDRegister(static_cast<unsigned char>(capture.m_usReg & 0xff), capture.m_ucVal);
+			// Split the address in SID number and register, skip the unused registers behind $18
+			const unsigned char sid_address = static_cast<unsigned char>(capture.m_usReg & 0xff);
+			const unsigned int sid_index = sid_address >> 5;
+			const unsigned char sid_register = sid_address & 0x1f;
+
+			if (sid_register > 0x18 || sid_index >= m_SIDCount)
+				continue;
+
+			if (sid_index == 0)
+				m_SIDProxy->Write(sid_register, capture.m_ucVal);
+			else
+				m_ExtraSIDs[sid_index - 1]->Write(sid_register, capture.m_ucVal);
+
+			// ASID carries one SID
+			if(sid_index == 0 && m_OutputDevice == ExecutionHandler::OutputDevice::ASID &&  m_ASID != nullptr)
+				m_ASID->WriteToSIDRegister(sid_register, capture.m_ucVal);
 
 			// Pass the cycle of the write within the frame, the board replays the exact spacing
 			if (usbsid_output)
-				m_USBSID->Write(static_cast<unsigned char>(capture.m_usReg & 0xff), capture.m_ucVal, capture.m_iCycle);
+				m_USBSID->Write(sid_index, sid_register, capture.m_ucVal, capture.m_iCycle);
 		}
 
 		// Do the rest of the frame

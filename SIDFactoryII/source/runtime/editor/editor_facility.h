@@ -82,6 +82,7 @@ namespace Editor
 
 		bool IsFileSF2(const std::string& inPathAndFilename);
 		bool LoadFile(const std::string& inPathAndFilename);
+		bool DoesDriverFitWindow(const DriverInfo& inDriverInfo) const;
 		bool LoadFileForImport(const std::string& inPathAndFilename, std::shared_ptr<DriverInfo>& outDriverInfo, std::shared_ptr<Utility::C64File>& outC64File);
 		bool LoadAndConvertFile(const std::string& inPathAndFilename, ScreenBase* inCallerScreen, std::function<void()> inSuccesfullConversionAction);
 		bool SaveFile(const std::string& inSavename);

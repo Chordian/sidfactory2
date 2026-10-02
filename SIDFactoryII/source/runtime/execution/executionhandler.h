@@ -68,6 +68,11 @@ namespace Emulation
 		// Settings
 		void SetPAL(const bool inPALMode);
 
+		// Number of SID chips the loaded driver plays on, SID n sits at $d400 + n * $20
+		static const unsigned int MaxSIDCount = 4;
+		void SetSIDCount(unsigned int inSIDCount);
+		unsigned int GetSIDCount() const { return m_SIDCount; }
+
 		// Error
 		bool IsInErrorState() const;
 		std::string GetErrorMessage() const;
@@ -140,6 +145,7 @@ namespace Emulation
 		const unsigned short GetAddressFromActionType(ActionType inActionType) const;
 
 		void SimulateSID(int inDeltaCycles);
+		void SyncExtraSIDs();
 
 		void ASIDSend();
 		
@@ -180,6 +186,11 @@ namespace Emulation
 
 		// SID and CPU
 		SIDProxy* m_SIDProxy;
+
+		// SID 2 and up of a multi SID driver, mixed into the output of the first SID
+		unsigned int m_SIDCount;
+		std::vector<std::unique_ptr<SIDProxy>> m_ExtraSIDs;
+		short* m_MixBuffer;
 		CPUmos6510* m_CPU;
 		CPUMemory* m_Memory;
 		ASid* m_ASID;

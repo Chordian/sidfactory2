@@ -592,7 +592,7 @@ namespace Editor
 			if (c64_file != nullptr)
 				driver_info->Parse(*c64_file);
 
-			if (driver_info->IsValid())
+			if (driver_info->IsValid() && DoesDriverFitWindow(*driver_info))
 			{
 				m_DriverInfo->GetAuxilaryDataCollection().Reset();
 				m_DriverInfo = driver_info;
@@ -629,7 +629,24 @@ namespace Editor
 			delete[] static_cast<char*>(data);
 		}
 
-		return driver_info->IsValid();
+		return driver_info->IsValid() && DoesDriverFitWindow(*driver_info);
+	}
+
+
+	bool EditorFacility::DoesDriverFitWindow(const DriverInfo& inDriverInfo) const
+	{
+		// The edit screen is laid out for three tracks in the standard width. Every further track takes
+		// 16 characters in the track view and 3 in the order list overview
+		const int standard_width = 1280;
+		const int track_count = inDriverInfo.GetMusicData().m_TrackCount;
+		const int required_width = standard_width + (track_count > 3 ? (track_count - 3) * (16 + 3) * m_Viewport->GetFont().width : 0);
+
+		if (m_Viewport->GetClientWidth() >= required_width)
+			return true;
+
+		Logging::instance().Error("The driver has %d tracks and does not fit the window. Set Window.Width to %d or higher in the configuration", track_count, required_width);
+
+		return false;
 	}
 
 
@@ -690,7 +707,7 @@ namespace Editor
 			{
 				driver_info->Parse(*inC64File);
 
-				if (driver_info->IsValid())
+				if (driver_info->IsValid() && DoesDriverFitWindow(*driver_info))
 				{
 					m_DriverInfo->GetAuxilaryDataCollection().Reset();
 					m_DriverInfo = driver_info;
@@ -852,7 +869,8 @@ namespace Editor
 					inAuthor,
 					inCopyright,
 					hardware_preferences.GetSIDModel() == AuxilaryDataHardwarePreferences::MOS6581,
-					hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::PAL);
+					hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::PAL,
+					m_ExecutionHandler->GetSIDCount());
 
 				const unsigned char* psid_data = psid_file.GetData();
 
@@ -968,7 +986,7 @@ namespace Editor
 		{
 			driver_info->Parse(*inConversionResult);
 
-			if (driver_info->IsValid())
+			if (driver_info->IsValid() && DoesDriverFitWindow(*driver_info))
 			{
 				m_DriverInfo->GetAuxilaryDataCollection().Reset();
 				m_DriverInfo = driver_info;

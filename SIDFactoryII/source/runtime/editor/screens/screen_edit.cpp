@@ -180,6 +180,9 @@ namespace Editor
 
 		m_ExecutionHandler->Unlock();
 
+		// Three tracks per SID
+		m_ExecutionHandler->SetSIDCount((m_DriverInfo->GetMusicData().m_TrackCount + 2) / 3);
+
 		// Create debug views
 		m_DebugViews = std::make_unique<DebugViews>(m_Viewport, &*m_ComponentsManager, m_CPUMemory, m_MainTextField->GetDimensions(), m_DriverInfo);
 
@@ -1605,12 +1608,19 @@ namespace Editor
 	}
 
 
+	unsigned char ScreenEdit::GetSIDRegisterOffsetOfTrack(int inTrack)
+	{
+		// Three voices per SID, seven registers per voice, SID n at $d400 + n * $20
+		return static_cast<unsigned char>((inTrack / 3) * 0x20 + (inTrack % 3) * 7);
+	}
+
+
 	void ScreenEdit::OnDriverPostApplyChannelMuteState(CPUMemory* inCPUMemory, int inTrack)
 	{
 		bool track_is_muted = m_TracksComponent->IsMuted(inTrack);
 
 		unsigned short sid_offset_address = m_DriverInfo->GetDriverCommon().m_SIDChannelOffsetAddress;
-		unsigned char sid_offset_value = !track_is_muted ? (7 * static_cast<unsigned char>(inTrack)) : 0x19;
+		unsigned char sid_offset_value = !track_is_muted ? GetSIDRegisterOffsetOfTrack(inTrack) : 0x19;
 
 		(*inCPUMemory)[sid_offset_address + inTrack] = sid_offset_value;
 	}
@@ -1628,7 +1638,7 @@ namespace Editor
 		for (int i = 0; i < m_DriverInfo->GetMusicData().m_TrackCount; ++i)
 		{
 			unsigned short sid_offset_address = m_DriverInfo->GetDriverCommon().m_SIDChannelOffsetAddress;
-			unsigned char sid_offset_value = 7 * static_cast<unsigned char>(i);
+			unsigned char sid_offset_value = GetSIDRegisterOffsetOfTrack(i);
 
 			(*inCPUMemory)[sid_offset_address + i] = sid_offset_value;
 		}
@@ -1782,7 +1792,7 @@ namespace Editor
 			for (int i = 0; i < m_DriverInfo->GetMusicData().m_TrackCount; ++i)
 			{
 				unsigned short sid_offset_address = m_DriverInfo->GetDriverCommon().m_SIDChannelOffsetAddress;
-				unsigned char sid_offset_value = 7 * static_cast<unsigned char>(i);
+				unsigned char sid_offset_value = GetSIDRegisterOffsetOfTrack(i);
 
 				(*m_CPUMemory)[sid_offset_address + i] = sid_offset_value;
 			}

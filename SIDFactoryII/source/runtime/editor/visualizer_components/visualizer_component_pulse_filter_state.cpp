@@ -67,69 +67,57 @@ namespace Editor
 
 			m_DrawField->DrawBox(color_background, 0, 0, m_Dimensions.m_Width, m_Dimensions.m_Height);
 
-			const int bar_width = m_Dimensions.m_Width - 4;
+			// One column per SID: three pulse width bars and a filter cutoff bar
+			const int track_count = m_Tracks->GetSize();
+			const int sid_count = track_count > 3 ? (track_count + 2) / 3 : 1;
+
+			const int column_width = (m_Dimensions.m_Width - 2) / sid_count;
+			const int bar_width = column_width - 2;
 			const int bar_spacing = m_Dimensions.m_Height / 4;
 			const int bar_height = bar_spacing - 2;
 
-			int bar_x = 2;
-			int bar_y = 2;
-
 			const auto& data_source = *m_DataSource;
 
-			const auto get_pulse_value = [&data_source](unsigned int inChannel) -> unsigned short
+			for (int sid = 0; sid < sid_count; ++sid)
 			{
-				if (inChannel > 2)
-					return 0;
+				// SID n sits at $d400 + n * $20
+				const unsigned int sid_offset = static_cast<unsigned int>(sid) * 0x20;
+				const int bar_x = 2 + sid * column_width;
+				int bar_y = 2;
 
-				const unsigned int offset = inChannel * 7;
-
-				const unsigned short pulse_high = data_source[offset + 3] & 0x0f;
-				const unsigned short pulse_low = data_source[offset + 2];
-
-				const unsigned short value = (pulse_high << 8) | pulse_low;
-
-				return value;
-			};
-
-			const auto is_channel_filtered = [&data_source](unsigned int inChannel) -> bool
-			{
-				if (inChannel > 2)
-					return false;
-
-				return (data_source[0x17] & (1 << inChannel)) != 0;
-			};
-
-			for (unsigned int i = 0; i < 3; ++i)
-			{
-				if ((*m_Tracks)[i]->IsMuted())
+				for (int voice = 0; voice < 3; ++voice)
 				{
-					m_DrawField->DrawBox(color_muted, bar_x, bar_y, bar_width, bar_height);
+					const int track = sid * 3 + voice;
+					const unsigned int offset = sid_offset + static_cast<unsigned int>(voice) * 7;
+
+					if (track < track_count && (*m_Tracks)[track]->IsMuted())
+					{
+						m_DrawField->DrawBox(color_muted, bar_x, bar_y, bar_width, bar_height);
+					}
+					else
+					{
+						const unsigned short pulse_high = data_source[offset + 3] & 0x0f;
+						const unsigned short pulse_low = data_source[offset + 2];
+						const bool is_channel_filtered = (data_source[sid_offset + 0x17] & (1 << voice)) != 0;
+
+						DrawPulseWidthBar(
+							bar_x,
+							bar_y,
+							bar_width,
+							bar_height,
+							(pulse_high << 8) | pulse_low,
+							is_channel_filtered ? color_bar_filtered_channel : color_bar, color_bar_fill,
+							color_separator);
+					}
+
+					bar_y += bar_spacing;
 				}
-				else
-				{
-					DrawPulseWidthBar(
-						bar_x,
-						bar_y,
-						bar_width,
-						bar_height,
-						get_pulse_value(i),
-						is_channel_filtered(i) ? color_bar_filtered_channel : color_bar, color_bar_fill,
-						color_separator);
-				}
-				bar_y += bar_spacing;
+
+				const unsigned short filter_high = data_source[sid_offset + 0x16];
+				const unsigned short filter_low = data_source[sid_offset + 0x15] & 7;
+
+				DrawBar(bar_x, bar_y, bar_width, bar_height, (filter_high << 3) | filter_low, 0x07ff, color_bar, color_bar_fill_filter);
 			}
-
-			const auto get_filter_value = [&data_source]() -> unsigned short
-			{
-				const unsigned short filter_high = data_source[0x16];
-				const unsigned short filter_low = data_source[0x15] & 7;
-
-				const unsigned short value = (filter_high << 3) | filter_low;
-
-				return value;
-			};
-
-			DrawBar(bar_x, bar_y, bar_width, bar_height, get_filter_value(), 0x07ff, color_bar, color_bar_fill_filter);
 		}
 	}
 
