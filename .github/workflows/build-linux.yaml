@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Dependencies
-        run: sudo apt-get update && sudo apt-get -y install libsdl2-dev libjack-jackd2-dev
+        run: sudo apt-get update && sudo apt-get -y install libsdl2-dev libjack-jackd2-dev libusb-1.0-0-dev pkg-config
       - name: Build binaries
         run: make dist
       - name: Upload artifact

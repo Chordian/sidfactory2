@@ -160,6 +160,78 @@
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl.cpp" />
     <ClCompile Include="source\foundation\platform\sdl\platform_sdl_windows.cpp" />
     <ClCompile Include="source\foundation\sound\audiostream.cpp" />
+    <ClCompile Include="..\libs\libusb\libusb\core.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\descriptor.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\hotplug.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\io.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\strerror.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\sync.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\events_windows.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\threads_windows.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\windows_common.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\windows_usbdk.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="..\libs\libusb\libusb\os\windows_winusb.c">
+      <AdditionalIncludeDirectories>..\libs\libusb\msvc;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsC</CompileAs>
+      <ObjectFileName>$(IntDir)libusb\</ObjectFileName>
+      <SDLCheck>false</SDLCheck>
+    </ClCompile>
+    <ClCompile Include="source\libraries\usbsid\USBSID.cpp">
+      <AdditionalIncludeDirectories>..\libs\usbsid-windows;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile Include="source\libraries\usbsid\USBSID_Manager.cpp">
+      <AdditionalIncludeDirectories>..\libs\usbsid-windows;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="source\libraries\miniz\miniz.c" />
     <ClCompile Include="source\libraries\picopng\picopng.cpp" />
     <ClCompile Include="source\libraries\residfp\Dac.cpp" />
@@ -328,6 +400,7 @@
     <ClCompile Include="source\runtime\editor\dialog\dialog_optimize.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_packing_options.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_selection_list.cpp" />
+    <ClCompile Include="source\runtime\editor\dialog\dialog_usbsid_boards.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_sid_file_info.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_songs.cpp" />
     <ClCompile Include="source\runtime\editor\dialog\dialog_text_input.cpp" />
@@ -366,6 +439,9 @@
     <ClCompile Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.cpp" />
     <ClCompile Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.cpp" />
     <ClCompile Include="source\runtime\emulation\asid\asid.cpp" />
+    <ClCompile Include="source\runtime\emulation\usbsid\usbsidpico.cpp">
+      <AdditionalIncludeDirectories>..\libs\usbsid-windows;..\libs\libusb\libusb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
     <ClCompile Include="source\runtime\emulation\cpuframecapture.cpp" />
     <ClCompile Include="source\runtime\emulation\cpumemory.cpp" />
     <ClCompile Include="source\runtime\emulation\cpumos6510.cpp" />
@@ -592,6 +668,7 @@
     <ClInclude Include="source\runtime\editor\dialog\dialog_optimize.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_packing_options.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_selection_list.h" />
+    <ClInclude Include="source\runtime\editor\dialog\dialog_usbsid_boards.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_sid_file_info.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_songs.h" />
     <ClInclude Include="source\runtime\editor\dialog\dialog_text_input.h" />
@@ -638,6 +715,9 @@
     <ClInclude Include="source\runtime\editor\visualizer_components\visualizer_component_pulse_filter_state.h" />
     <ClInclude Include="source\runtime\editor\visualizer_components\vizualizer_component_emulation_state.h" />
     <ClInclude Include="source\runtime\emulation\asid\asid.h" />
+    <ClInclude Include="source\runtime\emulation\usbsid\usbsidpico.h" />
+    <ClInclude Include="source\libraries\usbsid\USBSID.h" />
+    <ClInclude Include="source\libraries\usbsid\USBSID_Manager.h" />
     <ClInclude Include="source\runtime\emulation\cpuframecapture.h" />
     <ClInclude Include="source\runtime\emulation\cpumemory.h" />
     <ClInclude Include="source\runtime\emulation\cpumos6510.h" />

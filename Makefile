@@ -10,6 +10,7 @@
 # - g++ (Xcode with command line utilities on macOS)
 # - git
 # - sdl2
+# - libusb-1.0 and pkg-config (USBSID-Pico output)
 #
 # Make an executable:
 #   make
@@ -42,6 +43,10 @@ EXE=$(ARTIFACTS_FOLDER)/$(APP_NAME)
 CC=g++
 CC_FLAGS=$(shell sdl2-config --cflags) -I$(SOURCE) -D_SF2_$(PLATFORM) -D_BUILD_NR=\"$(BUILD_NR)\" -std=gnu++14 -g
 LINKER_FLAGS=$(shell sdl2-config --libs) -lstdc++ -flto
+
+# USBSID-Pico driver
+CC_FLAGS := $(CC_FLAGS) $(shell pkg-config --cflags libusb-1.0)
+LINKER_FLAGS := $(LINKER_FLAGS) $(shell pkg-config --libs libusb-1.0) -lpthread
 
 ifeq ($(PLATFORM),LINUX)
 	CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
