@@ -78,9 +78,10 @@ ifneq ($(TARGET),DEBUG)
 endif
 
 
-# Rule to compile .o from .cpp
+# Rule to compile .o from .cpp. -MMD writes a .d file next to the object that lists the headers
+# it was built from, a changed header rebuilds every object that includes it
 %.o: %.cpp
-	$(CC) $(CC_FLAGS) -c $< -o $@
+	$(CC) $(CC_FLAGS) -MMD -MP -c $< -o $@
 
 # Rule to compile .o from .c
 %.o: %.c
@@ -88,6 +89,10 @@ endif
 
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
+
+# Header dependencies written by the compiler. They define targets, keep the executable the default goal
+.DEFAULT_GOAL := $(EXE)
+-include $(OBJ:.o=.d)
 
 # Compile SIDFactoryII
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER) \
@@ -135,6 +140,7 @@ $(DIST_FOLDER):
 .PHONY: clean
 clean:
 	rm ${OBJ} || true
+	rm -f $(OBJ:.o=.d)
 	rm -rf $(ARTIFACTS_FOLDER) || true
 
 # Local development specific
