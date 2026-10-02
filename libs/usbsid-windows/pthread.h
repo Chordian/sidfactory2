@@ -28,7 +28,11 @@
 #error "usbsid/pthread.h is for Windows builds only"
 #endif
 
-#include <winsock2.h> /* struct timeval for libusb event timeouts */
+/* struct timeval for libusb event timeouts. windows.h may be included already
+ * and brings the older winsock.h, which defines it too and clashes with winsock2.h */
+#ifndef _WINSOCKAPI_
+#include <winsock2.h>
+#endif
 #include <windows.h>
 #include <process.h>
 #include <errno.h>
