@@ -24,6 +24,8 @@
 #include "utils/keyhook.h"
 #include "utils/keyhookstore.h"
 #include "utils/usercolors.h"
+#include "utils/global.h"
+#include "utils/configfile.h"
 
 #include <string>
 #include "foundation/base/assert.h"
@@ -31,6 +33,7 @@
 
 using namespace Foundation;
 using namespace Utility;
+using namespace Utility::Config;
 
 namespace Editor
 {
@@ -141,6 +144,7 @@ namespace Editor
 		, m_IsMarkingArea(false)
 		, m_MarkingFromEventPos(0)
 		, m_MarkingToEventPos(0)
+		, m_ShowPackedSize(GetSingleConfigurationValue<ConfigValueInt>(Global::instance().GetConfig(), "Visualizer.Tracklist.ShowPackedSize", 0) != 0)
 	{
 		UpdateMaxEventPos();
 
@@ -509,10 +513,13 @@ namespace Editor
 				const Color color_orderlist_value = ToColor(UserColor::OrderlistValue);
 				const Color color_orderlist_value_loop_marker = ToColor(UserColor::OrderlistValueLoopMarker);
 				const Color color_orderlist_value_input = ToColor(UserColor::OrderlistValueInput);
+				const Color color_sequence_packed_size = ToColor(UserColor::SequenceInstrumentEmpty);
 				
 				while (current_event < bottom_event)
 				{
 					DataSourceOrderList::Entry& order_list_entry = (*m_DataSourceOrderList)[orderlist_index];
+
+					const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 
 					if (sequence_index == 0)
 					{
@@ -534,6 +541,13 @@ namespace Editor
 								m_TextField->PrintHexValue(m_Position.m_X, current_y, color, is_uppercase, order_list_entry.m_Transposition);
 								m_TextField->PrintHexValue(m_Position.m_X + 2, current_y, color, is_uppercase, order_list_entry.m_SequenceIndex);
 							}
+
+							if (m_ShowPackedSize && sequence->GetLength() > 1)
+							{
+								unsigned int packed_size = sequence->GetPackedSize();
+								std::string packed_size_str = ComponentTrack::ToHexValueString(packed_size, is_uppercase);
+								m_TextField->Print(m_Position.m_X, current_y + 1, color_sequence_packed_size, packed_size_str.c_str());
+							}
 						}
 					}
 
@@ -542,8 +556,6 @@ namespace Editor
 
 					int transposition = static_cast<int>(order_list_entry.m_Transposition);
 					FOUNDATION_ASSERT(transposition < 0xfe);
-
-					const std::shared_ptr<DataSourceSequence>& sequence = m_DataSourceSequenceList[order_list_entry.m_SequenceIndex];
 
 					DrawSequenceLine(m_Position.m_X + 5, current_y, sequence_colors, is_uppercase, sequence, sequence_index, transposition - 0xa0, current_event == m_EventPos, current_instrument);
 
@@ -1091,7 +1103,7 @@ namespace Editor
 			else if (event.m_Instrument == 0x90)
 				m_TextField->Print(instrument_pos, tie_note, "**");
 			else if ((event.m_Instrument & 0xe0) == 0xa0)
-				m_TextField->Print(instrument_pos, value, ComponentTrack::ToHexValueString(event.m_Instrument & 0x1f, inIsHexUppercase));
+				m_TextField->Print(instrument_pos, value, ComponentTrack::ToHexValueString(static_cast<unsigned char>(event.m_Instrument & 0x1f), inIsHexUppercase));
 			else
 				m_TextField->Print(instrument_pos, inColors.m_ErrorState, "??");
 		}
@@ -1108,7 +1120,7 @@ namespace Editor
 			if (event.m_Command == 0x80)
 				m_TextField->Print(command_pos, empty, "--");
 			else if ((event.m_Command & 0xc0) == 0xc0)
-				m_TextField->Print(command_pos, value, ComponentTrack::ToHexValueString(event.m_Command & 0x3f, inIsHexUppercase));
+				m_TextField->Print(command_pos, value, ComponentTrack::ToHexValueString(static_cast<unsigned char>(event.m_Command & 0x3f), inIsHexUppercase));
 			else
 				m_TextField->Print(command_pos, inColors.m_ErrorState, "??");
 		}
@@ -3251,21 +3263,43 @@ namespace Editor
 	}
 
 
-	std::string ComponentTrack::ToHexValueString(unsigned char inValue, const bool inUppercase)
+std::string ComponentTrack::ToHexValueString(unsigned char inValue, const bool inUppercase)
+{
+	auto make_character = [&inUppercase](unsigned char inValue) -> char
 	{
-		auto make_character = [&inUppercase](unsigned char inValue) -> char
-		{
-			if (inValue > 0x0f)
-				return 'x';
-			if (inValue < 10)
-				return '0' + inValue;
+		if (inValue > 0x0f)
+			return 'x';
+		if (inValue < 10)
+			return '0' + inValue;
 
-			if (inUppercase)
-				return 'A' + inValue - 10;
+		if (inUppercase)
+			return 'A' + inValue - 10;
 
-			return 'a' + inValue - 10;
-		};
+		return 'a' + inValue - 10;
+	};
 
-		return std::string({ make_character(inValue >> 4), make_character(inValue & 0x0f) });
+	return std::string({ make_character(inValue >> 4), make_character(inValue & 0x0f) });
+}
+
+std::string ComponentTrack::ToHexValueString(unsigned int inValue, const bool inUppercase)
+{
+	if (inValue == 0)
+		return "0";
+
+	std::string result;
+	while (inValue > 0)
+	{
+		unsigned int digit = inValue & 0x0f;
+		char c;
+		if (digit < 10)
+			c = '0' + digit;
+		else if (inUppercase)
+			c = 'A' + digit - 10;
+		else
+			c = 'a' + digit - 10;
+		result.insert(result.begin(), c);
+		inValue >>= 4;
 	}
+	return result;
+}
 }
