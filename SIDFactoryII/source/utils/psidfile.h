@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include "utils/sidpanning.h"
 
 namespace Utility
 {
@@ -26,8 +28,8 @@ namespace Utility
 			unsigned short m_Flags;				// 0x76
 			unsigned char m_StartPage;			// 0x78
 			unsigned char m_PageLength;			// 0x79
-			unsigned char m_SecondSIDAddress;	// 0x7a
-			unsigned char m_ThirdSIDAddress;	// 0x7b
+			unsigned char m_SecondSIDAddress;	// 0x7a, v5: multiSidConfig
+			unsigned char m_ThirdSIDAddress;	// 0x7b, v5: sidAddressConfigStart
 		};
 #pragma pack(pop)
 
@@ -44,7 +46,11 @@ namespace Utility
 			const std::string& inCopyright,
 			const bool in6581,
 			const bool inPAL,
-			const unsigned int inSIDCount = 1
+			const unsigned int inSIDCount = 1,
+			const bool inVersion5 = false,
+			const SIDPanLayout inPanLayout = SIDPanLayout::Standard,
+			const SIDPanMode inPanMode = SIDPanMode::Direct,
+			const std::vector<unsigned int>& inSongLengthsInMilliseconds = std::vector<unsigned int>()
 		);
 
 		~PSIDFile();

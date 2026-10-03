@@ -845,7 +845,7 @@ namespace Editor
 	{
 		if (m_PackedData != nullptr)
 		{
-			auto do_save = [&, inFileName](std::string inTitle, std::string inAuthor, std::string inCopyright)
+			auto do_save = [&, inFileName](std::string inTitle, std::string inAuthor, std::string inCopyright, DialogSIDFileInfo::ExportOptions inExportOptions)
 			{
 				unsigned short top_of_file_address = m_PackedData->GetTopAddress();
 				unsigned short data_size = static_cast<unsigned short>(m_PackedData->GetDataSize());
@@ -860,10 +860,42 @@ namespace Editor
 				for (int i = 0; i < data_size; ++i)
 					data[i + 2] = packed_data[i];
 
+				// The panning chosen for the export is the panning of the tune: the reSID output follows it
+				auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+
+				if (m_ExecutionHandler->GetSIDCount() > 1)
+				{
+					hardware_preferences.SetPanLayout(inExportOptions.m_PanLayout);
+					hardware_preferences.SetPanMode(inExportOptions.m_PanMode);
+					m_ExecutionHandler->SetPanning(hardware_preferences.GetPanLayout(), hardware_preferences.GetPanMode(), hardware_preferences.GetSingleSIDPan());
+				}
+
 				// Save PSID file to disk, also
 				const auto& driver_common = m_DriverInfo->GetDriverCommon();
-				const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
 				const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
+				const bool is_pal = hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::PAL;
+
+				// SID v5 carries the play time of every song. One song that does not loop or stop within
+				// the time the table holds leaves the whole table out
+				std::vector<unsigned int> song_lengths;
+
+				if (inExportOptions.m_Version5)
+				{
+					for (unsigned int i = 0; i < song_count; ++i)
+					{
+						const unsigned int song_length = DriverUtils::GetSongLengthInMilliseconds(*m_CPUMemory, *m_DriverInfo, static_cast<unsigned char>(i), is_pal, 5999999);
+
+						if (song_length == 0)
+						{
+							Logging::instance().Warning("Song %u does not loop or stop within 99:59, the SID file holds no song lengths", i + 1);
+							song_lengths.clear();
+							break;
+						}
+
+						Logging::instance().Info("Song %u length: %u ms", i + 1, song_length);
+						song_lengths.push_back(song_length);
+					}
+				}
 
 				Utility::PSIDFile psid_file(
 					data,
@@ -875,8 +907,12 @@ namespace Editor
 					inAuthor,
 					inCopyright,
 					hardware_preferences.GetSIDModel() == AuxilaryDataHardwarePreferences::MOS6581,
-					hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::PAL,
-					m_ExecutionHandler->GetSIDCount());
+					is_pal,
+					m_ExecutionHandler->GetSIDCount(),
+					inExportOptions.m_Version5,
+					inExportOptions.m_PanLayout,
+					inExportOptions.m_PanMode,
+					song_lengths);
 
 				const unsigned char* psid_data = psid_file.GetData();
 
@@ -887,7 +923,15 @@ namespace Editor
 				RequestScreen(m_EditScreen.get());
 			};
 
-			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogSIDFileInfo>(do_save, []() { }));
+			// SID v5 by default when the tune has a panning other than the one of all header bits cleared
+			const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+
+			DialogSIDFileInfo::ExportOptions export_options;
+			export_options.m_PanLayout = hardware_preferences.GetPanLayout();
+			export_options.m_PanMode = hardware_preferences.GetPanMode();
+			export_options.m_Version5 = export_options.m_PanLayout != SIDPanLayout::Standard || export_options.m_PanMode != SIDPanMode::Direct;
+
+			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogSIDFileInfo>(m_ExecutionHandler->GetSIDCount(), export_options, do_save, []() { }));
 
 			return true;
 		}
