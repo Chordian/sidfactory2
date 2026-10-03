@@ -182,6 +182,7 @@ namespace Editor
 
 		// Three tracks per SID
 		m_ExecutionHandler->SetSIDCount((m_DriverInfo->GetMusicData().m_TrackCount + 2) / 3);
+		ApplyPanning();
 
 		// Create debug views
 		m_DebugViews = std::make_unique<DebugViews>(m_Viewport, &*m_ComponentsManager, m_CPUMemory, m_MainTextField->GetDimensions(), m_DriverInfo);
@@ -201,6 +202,11 @@ namespace Editor
 		auto mouse_button_sid_model = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
 		{
 			DoToggleSIDModelAndRegion(KeyboardUtils::IsModifierExclusivelyDown(inKeyboardModifiers, Keyboard::Control));
+		};
+
+		auto mouse_button_panning = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
+		{
+			DoCyclePanning(KeyboardUtils::IsModifierExclusivelyDown(inKeyboardModifiers, Keyboard::Control));
 		};
 
 		auto mouse_button_output_device = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
@@ -229,7 +235,7 @@ namespace Editor
 			: song_name;
 
 		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), *m_ExecutionHandler,
-				mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_output_device, mouse_button_context_highlight, mouse_button_follow_play);
+				mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_panning, mouse_button_output_device, mouse_button_context_highlight, mouse_button_follow_play);
 		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500, false);
 		m_ActivationMessage = "";
 
@@ -811,6 +817,50 @@ namespace Editor
 
 		m_ExecutionHandler->TellSIDEnvironment();
 	}
+
+	void ScreenEdit::DoCyclePanning(bool inCycleMode)
+	{
+		auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+		const unsigned int sid_count = m_ExecutionHandler->GetSIDCount();
+
+		std::string message;
+
+		if (sid_count == 1)
+		{
+			// A single SID has no layout: C, L, R
+			const SIDPan pan = hardware_preferences.GetSingleSIDPan();
+			const SIDPan next_pan = pan == SIDPan::Center ? SIDPan::Left : (pan == SIDPan::Left ? SIDPan::Right : SIDPan::Center);
+
+			hardware_preferences.SetSingleSIDPan(next_pan);
+			message = std::string(" Stereo position of the SID: ") + GetSIDPanName(next_pan);
+		}
+		else
+		{
+			if (inCycleMode)
+				hardware_preferences.SetPanMode(static_cast<SIDPanMode>((static_cast<int>(hardware_preferences.GetPanMode()) + 1) & 0x03));
+			else
+				hardware_preferences.SetPanLayout(static_cast<SIDPanLayout>((static_cast<int>(hardware_preferences.GetPanLayout()) + 1) & 0x03));
+
+			SIDPan pan[ExecutionHandler::MaxSIDCount];
+			hardware_preferences.GetPanning(sid_count, pan);
+
+			message = std::string(" SID panning: ") + GetSIDPanLayoutName(hardware_preferences.GetPanLayout())
+				+ ", " + GetSIDPanModeName(hardware_preferences.GetPanMode())
+				+ " (" + SIDPanningToString(pan, sid_count) + ")";
+		}
+
+		ApplyPanning();
+
+		m_StatusBar->SetText(message, 2500, false);
+	}
+
+
+	void ScreenEdit::ApplyPanning()
+	{
+		const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+		m_ExecutionHandler->SetPanning(hardware_preferences.GetPanLayout(), hardware_preferences.GetPanMode(), hardware_preferences.GetSingleSIDPan());
+	}
+
 
 	void ScreenEdit::DoToggleContextHighlight()
 	{
@@ -1947,6 +1997,18 @@ namespace Editor
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleRegion", m_KeyHookStore, [&]()
 		{
 			DoToggleSIDModelAndRegion(true);
+			return true;
+		} });
+
+		m_KeyHooks.push_back({ "Key.ScreenEdit.CyclePanLayout", m_KeyHookStore, [&]()
+		{
+			DoCyclePanning(false);
+			return true;
+		} });
+
+		m_KeyHooks.push_back({ "Key.ScreenEdit.CyclePanMode", m_KeyHookStore, [&]()
+		{
+			DoCyclePanning(true);
 			return true;
 		} });
 

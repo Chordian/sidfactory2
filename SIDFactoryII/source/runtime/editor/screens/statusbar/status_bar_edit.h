@@ -32,6 +32,7 @@ namespace Editor
 			std::function<void(Foundation::Mouse::Button, int)> inOctaveMousePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inSharpFlatMousePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inSIDMousePressCallback,
+			std::function<void(Foundation::Mouse::Button, int)> inPanMousePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inOuputDevicePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inContextHighlightMousePressCallback,
 			std::function<void(Foundation::Mouse::Button, int)> inFollowPlayerMousePressCallback
@@ -49,6 +50,7 @@ namespace Editor
 		std::shared_ptr<TextSection> m_TextSectionOctave;
 		std::shared_ptr<TextSection> m_TextSectionSharpFlat;
 		std::shared_ptr<TextSection> m_TextSectionSID;
+		std::shared_ptr<TextSection> m_TextSectionPan;
 		std::shared_ptr<TextSection> m_TextSectionContextHighlight;
 		std::shared_ptr<TextSection> m_TextSectionFollowPlay;
 		std::shared_ptr<TextSection> m_TextSectionOutputDevice;
@@ -65,5 +67,6 @@ namespace Editor
 		AuxilaryDataHardwarePreferences::SIDModel m_CachedSIDModel;
 		AuxilaryDataHardwarePreferences::Region m_CachedRegion;
 		Emulation::ExecutionHandler::OutputDevice m_CachedOutputDevice; 
+		std::string m_CachedPanText;
 	};
 }

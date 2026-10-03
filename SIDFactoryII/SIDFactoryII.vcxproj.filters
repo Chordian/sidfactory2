@@ -425,6 +425,9 @@
     <ClCompile Include="source\utils\psidfile.cpp">
       <Filter>source\utils</Filter>
     </ClCompile>
+    <ClCompile Include="source\utils\sidpanning.cpp">
+      <Filter>source\utils</Filter>
+    </ClCompile>
     <ClCompile Include="source\runtime\editor\dialog\dialog_sid_file_info.cpp">
       <Filter>source\runtime\editor\dialogs</Filter>
     </ClCompile>
@@ -995,6 +998,9 @@
       <Filter>source\runtime\editor\optimize</Filter>
     </ClInclude>
     <ClInclude Include="source\utils\psidfile.h">
+      <Filter>source\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="source\utils\sidpanning.h">
       <Filter>source\utils</Filter>
     </ClInclude>
     <ClInclude Include="source\runtime\editor\editor_types.h">

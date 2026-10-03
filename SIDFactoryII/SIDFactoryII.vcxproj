@@ -459,6 +459,7 @@
     <ClCompile Include="source\utils\keyhookstore.cpp" />
     <ClCompile Include="source\utils\logging.cpp" />
     <ClCompile Include="source\utils\psidfile.cpp" />
+    <ClCompile Include="source\utils\sidpanning.cpp" />
     <ClCompile Include="source\utils\rtmidi_utils.cpp">
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>Release\</AssemblerListingLocation>
@@ -741,6 +742,7 @@
     <ClInclude Include="source\utils\keyhookstore.h" />
     <ClInclude Include="source\utils\logging.h" />
     <ClInclude Include="source\utils\psidfile.h" />
+    <ClInclude Include="source\utils\sidpanning.h" />
     <ClInclude Include="source\utils\rtmidi_utils.h" />
     <ClInclude Include="source\utils\usercolors.h" />
     <ClInclude Include="source\utils\utilities.h" />

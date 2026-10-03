@@ -132,6 +132,8 @@ namespace Editor
 		void DoToggleSharpFlat();
 		void DoOctaveChange(bool inUp);
 		void DoToggleSIDModelAndRegion(bool inToggleRegion);
+		void DoCyclePanning(bool inCycleMode);
+		void ApplyPanning();
 		void DoToggleContextHighlight();
 		void DoToggleFollowPlay();
 		void DoIncrementInstrumentIndex();

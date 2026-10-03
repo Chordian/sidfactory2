@@ -58,6 +58,10 @@ namespace Emulation
 		, m_OutputDevice(OutputDevice::RESID)
 		, m_SkipSIDSimulation(false)
 		, m_SIDCount(1)
+		, m_PanLayout(SIDPanLayout::Standard)
+		, m_PanMode(SIDPanMode::Direct)
+		, m_SingleSIDPan(SIDPan::Center)
+		, m_OutputChannelCount(1)
 		, m_RenderGeneration(0)
 		, m_RenderPending(0)
 		, m_RenderNext(0)
@@ -69,6 +73,7 @@ namespace Emulation
 		// Create a sample buffer. The sample frequency is used for determining the size, which is probably 50 times the size required.
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
+		m_SampleBufferRight = new short[m_SampleBufferSize];
 		m_Mutex = Global::instance().GetPlatform().CreateMutex();
 		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", -1.0f);
 
@@ -81,6 +86,8 @@ namespace Emulation
 
 		// Clear SID registers after last driver update
 		memset(m_SIDRegisterLastDriverUpdate.m_Buffer, 0, sizeof(m_SIDRegisterLastDriverUpdate.m_Buffer));
+
+		UpdateSIDPanning();
 	}
 
 	ExecutionHandler::~ExecutionHandler()
@@ -91,6 +98,9 @@ namespace Emulation
 
 		if (m_SampleBuffer != nullptr)
 			delete[] m_SampleBuffer;
+
+		if (m_SampleBufferRight != nullptr)
+			delete[] m_SampleBufferRight;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -167,6 +177,19 @@ namespace Emulation
 		FeedPCM(inBuffer, inByteCount);
 	}
 
+	void ExecutionHandler::SetChannelCount(unsigned int inChannelCount)
+	{
+		Lock();
+
+		m_OutputChannelCount = inChannelCount == 2 ? 2 : 1;
+
+		// Samples left of the last frame are mixed for the old layout
+		m_SampleBufferReadCursor = 0;
+		m_SampleBufferWriteCursor = 0;
+
+		Unlock();
+	}
+
 	void ExecutionHandler::SetOutputDevice(const OutputDevice device)
 	{
 		if (m_OutputDevice == device)
@@ -222,10 +245,21 @@ namespace Emulation
 		}
 		else
 		{
-			unsigned int uiRemainingSamples = (inByteCount >> 1);
+			// A sample frame holds one sample per channel, stereo interleaves left and right
+			const unsigned int channel_count = m_OutputChannelCount;
+			unsigned int uiRemainingSamples = (inByteCount >> 1) / channel_count;
 
 			short* pSource = static_cast<short*>(m_SampleBuffer);
+			short* pSourceRight = static_cast<short*>(m_SampleBufferRight);
 			short* pTarget = static_cast<short*>(inBuffer);
+
+			auto scale = [&](short inSample)
+			{
+				// A multi SID frame holds the average of its SIDs, see MixSIDs()
+				const float fSample = static_cast<float>(inSample) * m_OutputGain * static_cast<float>(m_SIDCount);
+				const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
+				return static_cast<short>(fClampedSample);
+			};
 
 			while (uiRemainingSamples > 0)
 			{
@@ -242,16 +276,17 @@ namespace Emulation
 
 				for (unsigned int i = 0; i < uiSamplesToCopy; ++i)
 				{
-					if (m_OutputDevice == ExecutionHandler::OutputDevice::RESID)
+					const unsigned int source_index = i + m_SampleBufferReadCursor;
+					const bool resid_output = m_OutputDevice == ExecutionHandler::OutputDevice::RESID;
+
+					if (channel_count == 2)
 					{
-						// A multi SID frame holds the average of its SIDs, see MixExtraSIDs()
-						const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain * static_cast<float>(m_SIDCount);
-						const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
-						pTarget[i] = static_cast<short>(fClampedSample);
+						pTarget[i * 2] = resid_output ? scale(pSource[source_index]) : 0;
+						pTarget[i * 2 + 1] = resid_output ? scale(pSourceRight[source_index]) : 0;
 					}
 					else
 					{
-						pTarget[i] = 0;
+						pTarget[i] = resid_output ? scale(pSource[source_index]) : 0;
 					}
 				}
 
@@ -259,7 +294,7 @@ namespace Emulation
 				m_SampleBufferReadCursor += uiSamplesToCopy;
 
 				// Forward the target pointer
-				pTarget += uiSamplesToCopy;
+				pTarget += uiSamplesToCopy * channel_count;
 
 				// Decrement the remaining number of samples
 				uiRemainingSamples -= uiSamplesToCopy;
@@ -328,10 +363,56 @@ namespace Emulation
 			StartExtraSIDThreads();
 		}
 
+		UpdateSIDPanning();
+
 		Unlock();
 
 		if (m_USBSID != nullptr)
 			m_USBSID->SetSIDCount(sid_count);
+	}
+
+
+	void ExecutionHandler::SetPanning(SIDPanLayout inLayout, SIDPanMode inMode, SIDPan inSingleSIDPan)
+	{
+		Lock();
+
+		m_PanLayout = inLayout;
+		m_PanMode = inMode;
+		m_SingleSIDPan = inSingleSIDPan;
+
+		UpdateSIDPanning();
+
+		Unlock();
+	}
+
+
+	SIDPan ExecutionHandler::GetSIDPan(unsigned int inSIDIndex) const
+	{
+		return inSIDIndex < m_SIDCount ? m_SIDPan[inSIDIndex] : SIDPan::Center;
+	}
+
+
+	unsigned int ExecutionHandler::GetWantedChannelCount() const
+	{
+		for (unsigned int i = 0; i < m_SIDCount; ++i)
+		{
+			if (m_SIDPan[i] != SIDPan::Center)
+				return 2;
+		}
+
+		return 1;
+	}
+
+
+	void ExecutionHandler::UpdateSIDPanning()
+	{
+		for (unsigned int i = 0; i < MaxSIDCount; ++i)
+			m_SIDPan[i] = SIDPan::Center;
+
+		if (m_SIDCount == 1)
+			m_SIDPan[0] = m_SingleSIDPan;
+		else
+			ComputeSIDPanning(m_PanLayout, m_PanMode, m_SIDCount, m_SIDPan);
 	}
 
 
@@ -468,29 +549,50 @@ namespace Emulation
 	}
 
 
-	void ExecutionHandler::MixExtraSIDs()
+	void ExecutionHandler::MixSIDs()
 	{
 		short* sample_buffer = static_cast<short*>(m_SampleBuffer);
+		short* sample_buffer_right = static_cast<short*>(m_SampleBufferRight);
 		const int sample_count = static_cast<int>(m_SampleBufferWriteCursor);
 		const int sid_count = static_cast<int>(m_ExtraSIDs.size()) + 1;
+		const bool stereo = m_OutputChannelCount == 2;
 
 		// The sum of the SIDs does not fit a sample: store the average, FeedPCM multiplies it by the
-		// SID count together with the output gain and clamps once
+		// SID count together with the output gain and clamps once. Stereo: a SID panned left adds to
+		// the left side only, right to the right side only, center to both
 		for (int i = 0; i < sample_count; ++i)
 		{
-			int mixed = static_cast<int>(sample_buffer[i]);
+			int mixed_left = 0;
+			int mixed_right = 0;
 
-			for (auto& extra_sid : m_ExtraSIDs)
+			for (int sid = 0; sid < sid_count; ++sid)
 			{
-				const int extra_count = extra_sid->m_SampleCount;
+				int sample = 0;
 
-				// The sample count of a frame differs by one between SIDs at times: hold the last sample,
-				// a gap in the output of one SID is heard as a tick
-				if (extra_count > 0)
-					mixed += static_cast<int>(extra_sid->m_Samples[i < extra_count ? i : extra_count - 1]);
+				if (sid == 0)
+					sample = static_cast<int>(sample_buffer[i]);
+				else
+				{
+					const ExtraSID& extra_sid = *m_ExtraSIDs[sid - 1];
+					const int extra_count = extra_sid.m_SampleCount;
+
+					// The sample count of a frame differs by one between SIDs at times: hold the last sample,
+					// a gap in the output of one SID is heard as a tick
+					if (extra_count > 0)
+						sample = static_cast<int>(extra_sid.m_Samples[i < extra_count ? i : extra_count - 1]);
+				}
+
+				if (!stereo || m_SIDPan[sid] != SIDPan::Right)
+					mixed_left += sample;
+
+				if (stereo && m_SIDPan[sid] != SIDPan::Left)
+					mixed_right += sample;
 			}
 
-			sample_buffer[i] = static_cast<short>(mixed / sid_count);
+			sample_buffer[i] = static_cast<short>(mixed_left / sid_count);
+
+			if (stereo)
+				sample_buffer_right[i] = static_cast<short>(mixed_right / sid_count);
 		}
 	}
 
@@ -904,9 +1006,11 @@ namespace Emulation
 				std::unique_lock<std::mutex> lock(m_RenderMutex);
 				m_RenderDone.wait(lock, [&]() { return m_RenderPending == 0; });
 			}
-
-			MixExtraSIDs();
 		}
+
+		// Stereo output splits even a single SID over the sides
+		if (render_extra_sids || (!m_SkipSIDSimulation && m_OutputChannelCount == 2))
+			MixSIDs();
 
 		// Reset cycle counter
 		m_CurrentCycle = 0;

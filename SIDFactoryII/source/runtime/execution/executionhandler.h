@@ -11,6 +11,7 @@
 #include <thread>
 #include <vector>
 #include "runtime/editor/driver/driver_utils.h"
+#include "utils/sidpanning.h"
 
 #define ASID_NUM_REGS 28
 
@@ -64,6 +65,7 @@ namespace Emulation
 
 		virtual void PreFeedPCM(void* inBuffer, unsigned int inByteCount);
 		virtual void FeedPCM(void* inBuffer, unsigned int inByteCount);
+		virtual void SetChannelCount(unsigned int inChannelCount);
 
 		// Lock and unlock
 		void Lock();
@@ -76,6 +78,14 @@ namespace Emulation
 		static const unsigned int MaxSIDCount = 4;
 		void SetSIDCount(unsigned int inSIDCount);
 		unsigned int GetSIDCount() const { return m_SIDCount; }
+
+		// Stereo position of the SIDs in the reSID output. Multi SID: SID v5 layout and mode,
+		// single SID: inSingleSIDPan
+		void SetPanning(Utility::SIDPanLayout inLayout, Utility::SIDPanMode inMode, Utility::SIDPan inSingleSIDPan);
+		Utility::SIDPan GetSIDPan(unsigned int inSIDIndex) const;
+
+		// 2 when a SID is panned left or right, the audio stream is reopened to match
+		unsigned int GetWantedChannelCount() const;
 
 		// Error
 		bool IsInErrorState() const;
@@ -175,7 +185,8 @@ namespace Emulation
 		void ExtraSIDThread();
 		void RenderClaimedExtraSIDs(int inCyclesInFrame);
 		void RenderExtraSID(ExtraSID& inExtraSID, int inCyclesInFrame);
-		void MixExtraSIDs();
+		void MixSIDs();
+		void UpdateSIDPanning();
 
 		void ASIDSend();
 		
@@ -219,6 +230,10 @@ namespace Emulation
 
 		// SID 2 and up of a multi SID driver, mixed into the output of the first SID
 		unsigned int m_SIDCount;
+		Utility::SIDPanLayout m_PanLayout;
+		Utility::SIDPanMode m_PanMode;
+		Utility::SIDPan m_SingleSIDPan;
+		Utility::SIDPan m_SIDPan[MaxSIDCount];
 		std::vector<std::unique_ptr<ExtraSID>> m_ExtraSIDs;
 		std::vector<SIDWrite> m_FrameWrites;
 
@@ -246,7 +261,9 @@ namespace Emulation
 
 		// Audio output
 		unsigned int m_SampleBufferSize;
-		short* m_SampleBuffer;
+		short* m_SampleBuffer;			// Mono output, or the left side of stereo output
+		short* m_SampleBufferRight;		// Right side of stereo output
+		unsigned int m_OutputChannelCount;
 		float m_OutputGain;
 		OutputDevice m_OutputDevice;
 		bool m_SkipSIDSimulation;

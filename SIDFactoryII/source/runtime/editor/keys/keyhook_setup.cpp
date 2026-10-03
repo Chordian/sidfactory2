@@ -71,6 +71,8 @@ namespace Editor
 		definitions.push_back({ "Key.ScreenEdit.Config.Reload", {{ SDLK_F7, Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleSIDModel", {{ SDLK_F9, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleRegion", {{ SDLK_F9, Keyboard::Shift }} });
+		definitions.push_back({ "Key.ScreenEdit.CyclePanLayout", {{ SDLK_F9, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.CyclePanMode", {{ SDLK_F9, Keyboard::Control | Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.LoadSong", {{ SDLK_F10, Keyboard::None }} });
 		definitions.push_back({ "Key.ScreenEdit.LoadInstrument", {{ SDLK_F10, Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ImportSong", {{ SDLK_F10, Keyboard::Control }} });

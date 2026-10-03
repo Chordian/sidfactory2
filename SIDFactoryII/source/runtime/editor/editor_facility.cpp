@@ -362,6 +362,12 @@ namespace Editor
 			m_CurrentScreen->Update(inDeltaTicks);
 		}
 
+		// Stereo output while a SID is panned left or right, mono otherwise
+		const unsigned int wanted_channel_count = m_ExecutionHandler->GetWantedChannelCount();
+
+		if (wanted_channel_count != m_AudioStream->GetChannelCount())
+			m_AudioStream->SetChannelCount(wanted_channel_count);
+
 		// Handle overlay flip
 		UpdateOverlayEnableDisable();
 
