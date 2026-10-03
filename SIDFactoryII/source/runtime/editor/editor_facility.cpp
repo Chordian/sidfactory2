@@ -1238,21 +1238,11 @@ namespace Editor
 	{
 		m_LastSF2PathAndFilename = inLastSavedPathAndFilename;
 
-		const size_t length = inLastSavedPathAndFilename.size();
+		// A name without a folder, as given on the command line, is the file name itself
+		const size_t separator = inLastSavedPathAndFilename.find_last_of("/\\");
+		const std::string file_name = separator == std::string::npos ? inLastSavedPathAndFilename : inLastSavedPathAndFilename.substr(separator + 1);
 
-		for (size_t i = length - 1; i >= 0; --i)
-		{
-			const char character = inLastSavedPathAndFilename[i];
-			if (character == '/' || character == '\\')
-			{
-				std::string file_name = inLastSavedPathAndFilename.substr(i + 1, length - (i + 1));
-				m_Viewport->SetAdditionTitleInfo(file_name);
-
-				return;
-			}
-		}
-
-		m_Viewport->SetAdditionTitleInfo("");
+		m_Viewport->SetAdditionTitleInfo(file_name);
 	}
 
 
