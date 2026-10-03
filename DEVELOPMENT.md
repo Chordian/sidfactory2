@@ -81,6 +81,15 @@ KickAssembler source derived from driver 11.05 (`sf2driver11_05_multisid.a`, arg
 `3` or `4`). The editor takes the number of SIDs from the track count of the driver (three tracks
 per SID) and expects SID n at `$D400 + n * $20`.
 
+### Stereo panning and SID v5 export
+
+`utils/sidpanning` computes the stereo position of every SID from the panning layout and mode of
+the SID file format v5, as listed in the tables of the format description. The panning of a tune is
+stored in the hardware preferences block of the `.sf2` (version 2, three bytes appended to the two
+of version 1). `PSIDFile` writes the v5 header and the song length table. The song lengths come from
+`DriverUtils::GetSongLengthInMilliseconds`: it plays the song on a copy of the memory until every
+track has fetched an order list entry a second time, or the driver state reports a stop.
+
 ### Licences of bundled code
 
 | Code | Location | Licence |

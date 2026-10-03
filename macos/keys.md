@@ -16,6 +16,8 @@ functions behind the keys, please consult the manual.
 | <kbd>y / n </kbd>                      | Yes / No in popup dialogs      |
 | <kbd>F9</kbd>                          | 6581 / 8580                    |
 | &#8679; <kbd>F9</kbd>                  | PAL / NTSC                     |
+| <kbd>ctrl</kbd> <kbd>F9</kbd>          | Stereo panning layout          |
+| &#8679; <kbd>ctrl</kbd> <kbd>F9</kbd>  | Stereo panning mode            |
 | <kbd>ctrl</kbd> u                      | Upper / lower case hex numbers |
 | <kbd>ctrl</kbd> <kbd>F7</kbd>          | Cycle colorscheme              |
 | <kbd>F6</kbd>                          | File utilities                 |

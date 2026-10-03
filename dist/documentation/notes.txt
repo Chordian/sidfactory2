@@ -163,6 +163,8 @@ TABLES          Alt + c/i/w/p/f/h/a/t       Alt + c/i/w/p/f/h/a/t       Jump to 
 --------------------------------------------------------------------------------------------------------------------------------------
 SETTINGS        F9                          F9                          Toggle 6581 or 8580 (SID chip model)
                 Shift + F9                  Shift + F9                  Toggle PAL or NTSC
+                Ctrl + F9                   Ctrl + F9                   Cycle stereo panning layout (single SID: center, left, right)
+                Ctrl + Shift + F9           Ctrl + Shift + F9           Cycle stereo panning mode (multi SID)
 
                 Shift + F7                  Shift + F7                  Reload the settings
                 Ctrl + F7                   Ctrl + F7                   Select the next color scheme

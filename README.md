@@ -66,11 +66,31 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
   at $D400 + n * $20. Instruments, commands and tables are shared, every SID
   has its own filter and volume. reSID mixes all SIDs, USBSID-Pico plays every
   tune SID on its own hardware SID, exported `.sid` files carry the second and
-  third SID address (PSID v3/v4). Set `Window.Width` to make room for the extra
-  tracks (1736 for 2 SIDs).
+  third SID address (PSID v3/v4) or every SID (SID v5). Set `Window.Width` to
+  make room for the extra tracks (1736 for 2 SIDs, 2192 for 3, 2648 for 4).
 - Added: Config option `Window.Width`
+- Added: Stereo reSID output. Every tune stores a stereo panning: for a multi
+  SID tune the panning layout and mode of the SID file format v5 (Standard,
+  L/C/R, Center first, Fully centered; Direct, Reverse, Group, Spread), for a
+  single SID tune center, left or right. Ctrl-F9 cycles the layout (single
+  SID: the position), Ctrl-Shift-F9 the mode, the status bar shows where every
+  SID plays (click and Ctrl-click cycle as well). The audio output switches to
+  stereo while a SID plays left or right. Tunes without a stored panning play
+  their SIDs alternating left and right, Fully centered gives the mono mix.
+  The panning is saved in the `.sf2`, older versions load these files.
+- Added: SID v5 export. Exporting a multi SID tune to `.sid` asks for the
+  format (PSID v3/v4 or SID v5, a 4 SID tune is always SID v5) and the
+  panning, which is stored in the tune. A SID v5 file holds the SID count, the
+  panning and the play time of every song: the song is played until every
+  track starts over or the song stops (no song lengths when a song does not
+  end within 99:59).
 - Fixed: On Linux the configuration could silently fail to load, depending on
   the name and location of the executable (unterminated `readlink` result)
+- Fixed: Crash at start when the file to load was given without a folder on
+  the command line (`SIDFactoryII tune.sf2`)
+- Fixed: Crash or heap corruption after packing from the utilities dialog (F6):
+  a dialog opened from another dialog used the destroyed text field of the
+  first one
 - Fixed: [#213](https://github.com/Chordian/sidfactory2/issues/213) Build
   failed on Ubuntu 26.04
 
