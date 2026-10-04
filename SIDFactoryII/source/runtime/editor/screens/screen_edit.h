@@ -88,6 +88,7 @@ namespace Editor
 			std::function<void(unsigned short, unsigned char)> inPackCallback,
 			std::function<void(void)> inToggleShowOverlay,
 			std::function<void()> inToggleFullScreen,
+			std::function<void()> inCycleWindowWidth,
 			std::function<void(unsigned int)> inConfigReload);
 		virtual ~ScreenEdit();
 
@@ -195,6 +196,7 @@ namespace Editor
 		std::function<void(unsigned short, unsigned char)> m_PackCallback;
 		std::function<void(void)> m_ToggleShowOverlay;
 		std::function<void(void)> m_ToggleFullScreen;
+		std::function<void(void)> m_CycleWindowWidth;
 		std::function<void(unsigned int)> m_ConfigReconfigure;
 
 		// Dynamic key codes

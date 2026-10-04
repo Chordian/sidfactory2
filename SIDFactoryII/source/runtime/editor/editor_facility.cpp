@@ -67,6 +67,10 @@ namespace Editor
 {
 	const unsigned int EditorFacility::DefaultDialogWidth = 100;
 
+	// The edit screen is laid out for three tracks in the standard width, the maximum is the one main accepts
+	static const int StandardClientWidth = 1280;
+	static const int MaximumClientWidth = 4096;
+
 	EditorFacility::EditorFacility(Viewport* inViewport)
 		: m_Viewport(inViewport)
 		, m_IsDone(false)
@@ -74,7 +78,10 @@ namespace Editor
 		, m_RequestedScreen(nullptr)
 		, m_FlipOverlayState(false)
 		, m_IsFullScreen(false)
+		, m_ClientWidthFollowsDriver(false)
+		, m_MinimumClientWidth(inViewport->GetClientWidth())
 		, m_SelectedColorScheme(0)
+		, m_ScreenAfterResize(nullptr)
 	{
 		ConfigFile& config = Global::instance().GetConfig();
 		IPlatform& platform = Global::instance().GetPlatform();
@@ -160,6 +167,7 @@ namespace Editor
 
 		// Create overlay control
 		m_OverlayControl = std::make_unique<OverlayControl>(inViewport);
+		m_OverlayControl->SetClientWidthHandler([&](int inClientWidth) { ApplyClientWidth(inClientWidth); });
 
 		// Apply fullscreen setting
 		ConfigFile& configFile = Global::instance().GetConfig();
@@ -237,6 +245,8 @@ namespace Editor
 			{ m_FlipOverlayState = true; },
 			[&]()
 			{ ToggleFullScreen(); },
+			[&]()
+			{ CycleClientWidth(); },
 			[&](unsigned int inReconfigureOption)
 			{ Reconfigure(inReconfigureOption); });
 
@@ -291,6 +301,12 @@ namespace Editor
 			std::string drivers_folder = platform.Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}
+
+		// Size the window for the loaded driver before any screen is shown
+		if (m_DriverInfo->IsValid())
+			m_OverlayControl->SetClientWidth(GetClientWidthForDriver());
+
+		m_ClientWidthFollowsDriver = false;
 
 		// After loading, set the current path, so that opening the disk menu will be correct.
 		const std::string default_start_path = platform.Storage_GetHomePath();
@@ -537,6 +553,24 @@ namespace Editor
 		if (m_CurrentScreen != nullptr)
 			m_CurrentScreen->Deactivate();
 
+		// After a load the window follows the driver. No screen is active while the window fades out,
+		// the editor is activated at the new width
+		if (inCurrentScreen == m_EditScreen.get() && m_ClientWidthFollowsDriver)
+		{
+			m_ClientWidthFollowsDriver = false;
+
+			const int client_width = GetClientWidthForDriver();
+
+			if (client_width != m_Viewport->GetClientWidth())
+			{
+				m_CurrentScreen = nullptr;
+				m_ScreenAfterResize = inCurrentScreen;
+				m_OverlayControl->RequestClientWidth(client_width);
+
+				return;
+			}
+		}
+
 		m_CurrentScreen = inCurrentScreen;
 
 		if (m_CurrentScreen != nullptr)
@@ -630,6 +664,9 @@ namespace Editor
 
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
+
+				// Resize the window for the driver on entering the editor
+				m_ClientWidthFollowsDriver = true;
 			}
 
 			delete[] static_cast<char*>(data);
@@ -641,18 +678,97 @@ namespace Editor
 
 	bool EditorFacility::DoesDriverFitWindow(const DriverInfo& inDriverInfo) const
 	{
-		// The edit screen is laid out for three tracks in the standard width. Every further track takes
-		// 16 characters in the track view and 3 in the order list overview
-		const int standard_width = 1280;
 		const int track_count = inDriverInfo.GetMusicData().m_TrackCount;
-		const int required_width = standard_width + (track_count > 3 ? (track_count - 3) * (16 + 3) * m_Viewport->GetFont().width : 0);
+		const int required_width = GetRequiredClientWidth(track_count);
 
-		if (m_Viewport->GetClientWidth() >= required_width)
+		if (required_width <= MaximumClientWidth)
 			return true;
 
-		Logging::instance().Error("The driver has %d tracks and does not fit the window. Set Window.Width to %d or higher in the configuration", track_count, required_width);
+		Logging::instance().Error("The driver has %d tracks and needs a window width of %d, the maximum is %d", track_count, required_width, MaximumClientWidth);
 
 		return false;
+	}
+
+
+	// Every track past the third takes 16 characters in the track view and 3 in the order list overview
+	int EditorFacility::GetRequiredClientWidth(int inTrackCount) const
+	{
+		return StandardClientWidth + (inTrackCount > 3 ? (inTrackCount - 3) * (16 + 3) * m_Viewport->GetFont().width : 0);
+	}
+
+
+	// Width the driver needs, never less than Window.Width
+	int EditorFacility::GetClientWidthForDriver() const
+	{
+		return std::max<int>(m_MinimumClientWidth, GetRequiredClientWidth(m_DriverInfo->GetMusicData().m_TrackCount));
+	}
+
+
+	// Resize the client and the main text field, then activate the screen again to lay it out for the new size
+	void EditorFacility::ApplyClientWidth(int inClientWidth)
+	{
+		m_Viewport->SetClientResolution(inClientWidth, m_Viewport->GetClientHeight());
+		m_TextField->Resize(m_Viewport->GetClientWidth() / m_Viewport->GetFont().width, m_Viewport->GetClientHeight() / m_Viewport->GetFont().height);
+
+		ScreenBase* screen = m_ScreenAfterResize != nullptr ? m_ScreenAfterResize : m_CurrentScreen;
+		m_ScreenAfterResize = nullptr;
+
+		if (m_CurrentScreen != nullptr)
+			m_CurrentScreen->Deactivate();
+
+		m_CurrentScreen = screen;
+
+		if (m_CurrentScreen != nullptr)
+			m_CurrentScreen->Activate();
+	}
+
+
+	// Cycle the window width through the widths for 1 to 4 SIDs, skip widths too narrow for the driver
+	void EditorFacility::CycleClientWidth()
+	{
+		const int required_width = GetRequiredClientWidth(m_DriverInfo->GetMusicData().m_TrackCount);
+		const int requested_width = m_OverlayControl->GetRequestedClientWidth();
+		const int current_width = requested_width != 0 ? requested_width : m_Viewport->GetClientWidth();
+
+		int first_width = 0;
+		int next_width = 0;
+		int next_sid_count = 0;
+		int first_sid_count = 0;
+
+		for (int sid_count = 1; sid_count <= static_cast<int>(ExecutionHandler::MaxSIDCount); ++sid_count)
+		{
+			const int width = GetRequiredClientWidth(sid_count * 3);
+
+			if (width < required_width || width > MaximumClientWidth)
+				continue;
+
+			if (first_width == 0)
+			{
+				first_width = width;
+				first_sid_count = sid_count;
+			}
+
+			if (next_width == 0 && width > current_width)
+			{
+				next_width = width;
+				next_sid_count = sid_count;
+			}
+		}
+
+		if (next_width == 0)
+		{
+			next_width = first_width;
+			next_sid_count = first_sid_count;
+		}
+
+		if (next_width == 0 || next_width == current_width)
+			return;
+
+		// Going back to the current width cancels the pending request, the editor is not activated again
+		m_OverlayControl->RequestClientWidth(next_width);
+
+		const bool is_resizing = m_OverlayControl->GetRequestedClientWidth() != 0;
+		m_EditScreen->SetActivationMessage(is_resizing ? " Window width: " + std::to_string(next_sid_count) + (next_sid_count == 1 ? " SID" : " SIDs") : "");
 	}
 
 
@@ -1063,6 +1179,9 @@ namespace Editor
 
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
+
+				// Resize the window for the driver on entering the editor
+				m_ClientWidthFollowsDriver = true;
 
 				return true;
 			}

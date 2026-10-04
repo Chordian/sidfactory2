@@ -91,6 +91,7 @@ namespace Editor
 		std::function<void(unsigned short, unsigned char)> inPackCallback,
 		std::function<void(void)> inToggleShowOverlay,
 		std::function<void()> inToggleFullScreen,
+		std::function<void()> inCycleWindowWidth,
 		std::function<void(unsigned int)> inReconfigure)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
 		, m_EditState(inEditState)
@@ -111,6 +112,7 @@ namespace Editor
 		, m_PackCallback(inPackCallback)
 		, m_ToggleShowOverlay(inToggleShowOverlay)
 		, m_ToggleFullScreen(inToggleFullScreen)
+		, m_CycleWindowWidth(inCycleWindowWidth)
 		, m_ConfigReconfigure(inReconfigure)
 		, m_PlayTimerTicks(0)
 		, m_PlayTimerSeconds(0)
@@ -1977,6 +1979,12 @@ namespace Editor
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleFullScreen", m_KeyHookStore, [&]()
 		{
 			m_ToggleFullScreen();
+			return true;
+		} });
+
+		m_KeyHooks.push_back({ "Key.ScreenEdit.CycleWindowWidth", m_KeyHookStore, [&]()
+		{
+			m_CycleWindowWidth();
 			return true;
 		} });
 

@@ -69,7 +69,7 @@ void Run(const IPlatform& inPlatform, int inArgc, char* inArgv[])
 
 	const ConfigFile& configFile = Global::instance().GetConfig();
 
-	// A multi SID driver shows three more tracks per extra SID and needs a wider window
+	// Minimum client width, the editor widens the window for a multi SID driver
 	int width = Utility::GetSingleConfigurationValue<Utility::Config::ConfigValueInt>(configFile, "Window.Width", 1280);
 
 	if (width < 1280)

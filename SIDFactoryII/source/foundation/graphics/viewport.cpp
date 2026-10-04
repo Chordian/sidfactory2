@@ -90,6 +90,25 @@ namespace Foundation
 	}
 
 
+	// Change the client resolution and recreate the render target, the window size is left to the caller
+	void Viewport::SetClientResolution(int inResolutionX, int inResolutionY)
+	{
+		if (inResolutionX == m_ClientResolutionX && inResolutionY == m_ClientResolutionY)
+			return;
+
+		m_ClientResolutionX = inResolutionX;
+		m_ClientResolutionY = inResolutionY;
+
+		if (m_RenderTarget != nullptr)
+			SDL_DestroyTexture(m_RenderTarget);
+
+		m_RenderTarget = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_TARGET, m_ClientResolutionX, m_ClientResolutionY);
+		FOUNDATION_ASSERT(m_RenderTarget != nullptr);
+
+		SDL_RenderSetLogicalSize(m_Renderer, m_ClientResolutionX, m_ClientResolutionY);
+	}
+
+
 	void Viewport::SetClientPositionInWindow(const Point& inClientPosition)
 	{
 		m_ClientX = inClientPosition.m_X;
@@ -147,6 +166,35 @@ namespace Foundation
 	}
 
 
+	// Move the window left or up when it sticks out of the usable area of its display. A window larger
+	// than the display keeps its top left corner on the display
+	void Viewport::KeepWindowOnDisplay()
+	{
+		if (IsFullScreen())
+			return;
+
+		const int display_index = SDL_GetWindowDisplayIndex(m_Window);
+		SDL_Rect bounds;
+
+		if (display_index < 0 || SDL_GetDisplayUsableBounds(display_index, &bounds) != 0)
+			return;
+
+		Point position = GetWindowPosition();
+		const Extent size = GetWindowSize();
+
+		if (position.m_X + size.m_Width > bounds.x + bounds.w)
+			position.m_X = bounds.x + bounds.w - size.m_Width;
+		if (position.m_Y + size.m_Height > bounds.y + bounds.h)
+			position.m_Y = bounds.y + bounds.h - size.m_Height;
+		if (position.m_X < bounds.x)
+			position.m_X = bounds.x;
+		if (position.m_Y < bounds.y)
+			position.m_Y = bounds.y;
+
+		SetWindowPosition(position);
+	}
+
+
 	void Viewport::SetFadeValue(float inFadeValue)
 	{
 		m_FadeValue = inFadeValue;
@@ -195,6 +243,13 @@ namespace Foundation
 		overlay.m_Rect = inImageRect;
 
 		SDL_FreeSurface(surface);
+	}
+
+
+	void Viewport::SetOverlayPosition(int inIndex, const Point& inPosition)
+	{
+		if (inIndex >= 0 && inIndex < static_cast<int>(m_OverlayList.size()))
+			m_OverlayList[inIndex].m_Rect.m_Position = inPosition;
 	}
 
 

@@ -68,11 +68,16 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
   tune SID on its own hardware SID, ASID sends SID 2 to 4 with the multi SID
   commands $50 to $52 (one message per SID each frame, SID 1 first, the SID
   type message goes out for every SID), exported `.sid` files carry the second and
-  third SID address (PSID v3/v4) or every SID (SID v5). Set `Window.Width` to
-  make room for the extra tracks (1736 for 2 SIDs, 2192 for 3, 2648 for 4).
+  third SID address (PSID v3/v4) or every SID (SID v5). The window widens for
+  the extra tracks when such a driver is loaded (1736 pixels for 2 SIDs, 2192
+  for 3, 2648 for 4) and narrows again, not below `Window.Width`, when a tune
+  with fewer SIDs is loaded.
 - Added: Mute keys for the tracks of SID 2 to 4: Ctrl-4 to Ctrl-9 mute or
   unmute track 4 to 9, Ctrl-Shift-1/2/3 track 10 to 12
-- Added: Config option `Window.Width`
+- Added: Ctrl-F12 steps the window width through the widths for 1, 2, 3 and
+  4 SIDs (widths too narrow for the loaded driver are skipped), with the same
+  fade as F12. The F12 overlay grows with a wider window.
+- Added: Config option `Window.Width`, the minimum width of the window
 - Added: Stereo reSID output. Every tune stores a stereo panning: for a multi
   SID tune the panning layout and mode of the SID file format v5 (Standard,
   L/C/R, Center first, Fully centered; Direct, Reverse, Group, Spread), for a

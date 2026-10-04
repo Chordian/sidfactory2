@@ -20,6 +20,7 @@ functions behind the keys, please consult the manual.
 | &#8679; <kbd>ctrl</kbd> <kbd>F9</kbd>  | Stereo panning mode            |
 | <kbd>ctrl</kbd> u                      | Upper / lower case hex numbers |
 | <kbd>ctrl</kbd> <kbd>F7</kbd>          | Cycle colorscheme              |
+| <kbd>ctrl</kbd> <kbd>F12</kbd>         | Window width 1 / 2 / 3 / 4 SID |
 | <kbd>F6</kbd>                          | File utilities                 |
 | <kbd>ctrl</kbd> <kbd>F10</kbd>         | Load tune in current driver    |
 

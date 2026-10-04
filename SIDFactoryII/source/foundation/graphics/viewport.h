@@ -25,6 +25,7 @@ namespace Foundation
 
 		int GetClientWidth() const;
 		int GetClientHeight() const;
+		void SetClientResolution(int inResolutionX, int inResolutionY);
 
 		void SetClientPositionInWindow(const Point& inClientPosition);
 		Rect GetClientRectInWindow() const;
@@ -35,12 +36,14 @@ namespace Foundation
 		Extent GetWindowSize() const;
 		void SetWindowSize(const Extent& inSize);
 		void SetLogicalSize(const Extent& inSize);
+		void KeepWindowOnDisplay();
 
 		void SetFadeValue(float inFadeValue);
 		void SetAdditionTitleInfo(const std::string& inAdditionTitleInfo);
 
 		void ShowOverlay(bool inShowOverlay);
 		void SetOverlayPNG(int inIndex, void* inData, const Rect& inImageRect);
+		void SetOverlayPosition(int inIndex, const Point& inPosition);
 		void SetWindowFullScreen(int flags);
 		bool IsFullScreen() const;
 
@@ -73,8 +76,8 @@ namespace Foundation
 			Rect m_Rect;
 		};
 
-		const int m_ClientResolutionX;
-		const int m_ClientResolutionY;
+		int m_ClientResolutionX;
+		int m_ClientResolutionY;
 		const float m_Scaling;
 
 		int m_ClientX;

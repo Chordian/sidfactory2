@@ -34,6 +34,7 @@ GENERAL         Tab                         Tab                         Next inp
                 Ctrl + F7                   Ctrl + F7                   Select the next color scheme
 
                 F12                         F12                         Toggle showing the expanding help overlay
+                Ctrl + F12                  Ctrl + F12                  Cycle the window width for 1, 2, 3 or 4 SIDs
 
                 Ctrl + u                    Ctrl + u                    Toggle upper or lower case hexadecimal numbers
 
