@@ -2,36 +2,75 @@
 
 ## Building from source
 
+Clone the repository with git: the build number shown in the editor is made from the date and
+hash of the last commit.
+
+    git clone https://github.com/Chordian/sidfactory2.git
+    cd sidfactory2
+
+Every platform puts its build in an `artifacts` folder (`macos/artifacts` on macOS). The executable needs the `config`
+(or `config.ini`), `drivers`, `overlay` and `color_schemes` resources in its folder, the build
+copies them there.
+
 ### Windows
 
 Prerequisites:
 
-- Visual Studio
+- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) (the Community edition is
+  fine) or the Build Tools for Visual Studio 2022, with the workload "Desktop development with
+  C++" (MSVC v143 toolset and a Windows 10 or 11 SDK)
+- git
 
-To build:
+SDL2 (`libs/SDL2-2.32.10`) and libusb (`libs/libusb`) come with the repository, nothing else
+needs to be installed.
+
+To build from the command line, open the "Developer Command Prompt for VS 2022" (it puts
+`MSBuild.exe` on the path), go to the root folder of the repository and run:
 
     build_windows.bat
+
+This builds the `Release|x86` configuration of `SIDFactoryII.sln` and collects the executable,
+`SDL2.dll`, `config.ini`, the drivers, music, overlays, color schemes and documentation in
+`artifacts`. Start `artifacts\SIDFactoryII.exe`. The script stops when the `artifacts` folder
+already exists: remove or rename it before building again.
+
+To build in the Visual Studio IDE, open `SIDFactoryII.sln`, select the `Release` (or `Debug`)
+configuration and the `x86` platform and build the solution. The executable lands in
+`Release\` (or `Debug\`); run `build_windows.bat` once to collect everything in `artifacts`, or copy
+`SDL2.dll`, `config.ini` and the `drivers`, `overlay` and `color_schemes` folders from
+`SIDFactoryII\` into the folder of the executable.
+
+USBSID-Pico output needs the WinUSB driver on the "USBSID-Pico Data" interface of the board.
+Install it once with [Zadig](https://zadig.akeo.ie): Options, List All Devices, select
+"USBSID-Pico Data", select WinUSB and press Install Driver (or Replace Driver).
 
 ### macOS
 
 Prerequisites:
 
-- XCode command line tools
-- git
-- gnu-sed
-- pandoc
+- Xcode command line tools: `xcode-select --install`
+- [Homebrew](https://brew.sh)
+- git, gnu-sed, librsvg (`rsvg-convert` for the icon) and pandoc (the keys document):
 
-If [Homebrew](https://brew.sh) is installed, most prerequisites can be installed with:
+      brew install git gnu-sed librsvg pandoc
 
-    brew install git gnu-sed pandoc
-
-To build:
+SDL2 (`macos/App/Contents/Frameworks/SDL2.framework`) and libusb (`libs/libusb`) come with the
+repository. To build:
 
     cd macos
     make raw
 
-This creates a DMG image in the `artifacts` folder. SDL2 and libusb come with the repository
-(`macos/App/Contents/Frameworks/SDL2.framework`, `libs/libusb`).
+This compiles a universal binary (x86_64 for macOS 10.11 and up, arm64 for macOS 11 and up),
+packages `SIDFactoryII.app` and writes a read-write disk image
+`artifacts/SIDFactoryII_macOS_<build>-RAW.dmg`. For a release, mount it, lay out the window by
+hand, unmount it and run `make dmg` for the final compressed image. Other targets in
+`macos/Makefile`:
+
+- `make app`: only the universal `artifacts/SIDFactoryII.app`
+- `make universal`: only the universal executable `artifacts/SIDFactoryII`
+- `make clean`: remove the objects and the `artifacts` folder
+
+USBSID-Pico output needs no driver installation on macOS.
 
 A 'linux-style' binary for debugging is built from the root folder with the Homebrew SDL2 and
 libusb instead:
@@ -39,23 +78,62 @@ libusb instead:
     brew install sdl2 libusb pkg-config
     make PLATFORM=MACOS
 
-### Linux (Ubuntu)
+Add `TARGET=DEBUG` for a build without optimization. `make PLATFORM=MACOS debug` starts the
+binary in `lldb`, `make PLATFORM=MACOS run` starts it with a demo tune.
 
-Install prerequisites:
+### Linux
 
-    apt-get update
-    apt-get install g++ make git libsdl2-dev libasound2-dev libusb-1.0-0-dev pkg-config
+Install the compiler, SDL2, ALSA, libusb and pkg-config.
 
-To build:
+Debian, Ubuntu and derivatives:
+
+    sudo apt-get update
+    sudo apt-get install g++ make git libsdl2-dev libasound2-dev libusb-1.0-0-dev pkg-config
+
+Fedora:
+
+    sudo dnf install gcc-c++ make git SDL2-devel alsa-lib-devel libusb1-devel pkgconf-pkg-config
+
+Arch Linux and derivatives:
+
+    sudo pacman -S --needed gcc make git sdl2 alsa-lib libusb pkgconf
+
+openSUSE:
+
+    sudo zypper install gcc-c++ make git SDL2-devel alsa-devel libusb-1_0-devel pkgconf-pkg-config
+
+To build and run from the root folder:
+
+    make
+    cd artifacts && ./SIDFactoryII
+
+`make` builds `artifacts/SIDFactoryII` with the resources in the same folder, `make run` starts it with a
+demo tune. For a distribution folder `artifacts/SIDFactoryII_LINUX_ALSA_<build>` with the
+stripped executable, music and documentation:
 
     make dist
 
-MIDI (ASID) uses ALSA by default. For JACK install `libjack-jackd2-dev` instead of
-`libasound2-dev` and build with:
+Options, passed on the `make` command line:
 
-    make LINUXAUDIO=JACK dist
+- `TARGET=DEBUG`: no optimization, for debugging (`make debug` starts the binary in `lldb`)
+- `LINUXAUDIO=JACK`: MIDI (ASID) through JACK instead of ALSA. Install the JACK development
+  package instead of the ALSA one (`libjack-jackd2-dev` on Debian/Ubuntu,
+  `pipewire-jack-audio-connection-kit-devel` on Fedora,
+  `pipewire-jack` or `jack2` on Arch, `libjack-devel` on openSUSE):
 
-Then look in the `artifacts` folder.
+      make LINUXAUDIO=JACK dist
+
+Run `make clean` after changing `TARGET` or `LINUXAUDIO`, objects are not rebuilt for a changed
+option.
+
+`make ubuntu` builds `make dist` in an Ubuntu 26.04 Docker container (see `Dockerfile`) and
+copies the `artifacts` folder out of it.
+
+USBSID-Pico output needs read and write access to the USB device of the board. Install the udev
+rule [`69-usbsid-permissions.rules`](https://github.com/LouDnl/USBSID-Pico/blob/master/examples/udev-rules/69-usbsid-permissions.rules)
+in `/etc/udev/rules.d` and reload the rules:
+
+    sudo udevadm control --reload-rules && sudo udevadm trigger
 
 ## External dependencies
 
