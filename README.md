@@ -68,6 +68,8 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
   tune SID on its own hardware SID, exported `.sid` files carry the second and
   third SID address (PSID v3/v4) or every SID (SID v5). Set `Window.Width` to
   make room for the extra tracks (1736 for 2 SIDs, 2192 for 3, 2648 for 4).
+- Added: Mute keys for the tracks of SID 2 to 4: Ctrl-4 to Ctrl-9 mute or
+  unmute track 4 to 9, Ctrl-Shift-1/2/3 track 10 to 12
 - Added: Config option `Window.Width`
 - Added: Stereo reSID output. Every tune stores a stereo panning: for a multi
   SID tune the panning layout and mode of the SID file format v5 (Standard,

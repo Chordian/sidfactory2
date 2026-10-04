@@ -85,6 +85,15 @@ namespace Editor
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel1", {{ SDLK_1, Keyboard::Control }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel2", {{ SDLK_2, Keyboard::Control }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel3", {{ SDLK_3, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel4", {{ SDLK_4, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel5", {{ SDLK_5, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel6", {{ SDLK_6, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel7", {{ SDLK_7, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel8", {{ SDLK_8, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel9", {{ SDLK_9, Keyboard::Control }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel10", {{ SDLK_1, Keyboard::Control | Keyboard::Shift }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel11", {{ SDLK_2, Keyboard::Control | Keyboard::Shift }} });
+		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel12", {{ SDLK_3, Keyboard::Control | Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleOutputDevice", {{ SDLK_o, Keyboard::Alt }} });
 		definitions.push_back({ "Key.ScreenEdit.SetMarker", {{ SDLK_m, Keyboard::Control }} });
 		definitions.push_back({ "Key.ScreenEdit.GotoMarker", {{ SDLK_g, Keyboard::Control }} });

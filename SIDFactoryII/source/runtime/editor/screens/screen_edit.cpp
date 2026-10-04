@@ -599,6 +599,10 @@ namespace Editor
 
 	void ScreenEdit::DoToggleMute(unsigned int inChannel)
 	{
+		// The mute keys cover four SIDs, the song can have fewer tracks
+		if (inChannel >= static_cast<unsigned int>(m_DriverInfo->GetMusicData().m_TrackCount))
+			return;
+
 		const bool muted = m_TracksComponent->IsMuted(inChannel);
 		m_TracksComponent->SetMuted(inChannel, !muted);
 
@@ -2066,26 +2070,16 @@ namespace Editor
 			return true;
 		} });
 
-		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleMuteChannel1", m_KeyHookStore, [&]()
+		// One mute key per track, four SIDs of three tracks each
+		for (unsigned int track = 0; track < 12; ++track)
 		{
-			DoToggleMute(0);
+			m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleMuteChannel" + std::to_string(track + 1), m_KeyHookStore, [&, track]()
+			{
+				DoToggleMute(track);
 
-			return true;
-		} });
-
-		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleMuteChannel2", m_KeyHookStore, [&]()
-		{
-			DoToggleMute(1);
-
-			return true;
-		} });
-
-		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleMuteChannel3", m_KeyHookStore, [&]()
-		{
-			DoToggleMute(2);
-
-			return true;
-		} });
+				return true;
+			} });
+		}
 
 		m_KeyHooks.push_back( { "Key.ScreenEdit.ToggleOutputDevice", m_KeyHookStore, [&]()
 		{

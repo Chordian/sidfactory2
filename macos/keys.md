@@ -45,6 +45,8 @@ functions behind the keys, please consult the manual.
 | -                        | Fast forward                 |
 | &#8679; -                | Faster forward               |
 | <kbd>ctrl</kbd> 1 / 2 /3 | Mute / unmute track 1 / 2 /3 |
+| <kbd>ctrl</kbd> 4 &ndash; 9 | Mute / unmute track 4 &ndash; 9 |
+| &#8679; <kbd>ctrl</kbd> 1 / 2 /3 | Mute / unmute track 10 / 11 / 12 |
 | &#8997; 1 &ndash; 8      | Select bookmark slot         |
 | <kbd>ctrl</kbd> g        | Jump to bookmark             |
 | <kbd>ctrl</kbd> m        | Set bookmark                 |
