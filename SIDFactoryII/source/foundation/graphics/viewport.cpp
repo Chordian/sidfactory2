@@ -305,6 +305,23 @@ namespace Foundation
 
 					SDL_RenderCopy(m_Renderer, overlay.m_Texture, nullptr, &overlay_destination_rect);
 				}
+
+				// A window wider than the overlay images leaves a gap between the editor and the driver image.
+				// Stretch the last column of the editor image across it, it holds the overlay background and frame
+				if (m_OverlayList.size() >= 2 && m_OverlayList[0].m_Texture != nullptr && m_OverlayList[1].m_Texture != nullptr)
+				{
+					const Rect& editor_rect = m_OverlayList[0].m_Rect;
+					const int gap_x = editor_rect.m_Position.m_X + editor_rect.m_Dimensions.m_Width;
+					const int gap_width = m_OverlayList[1].m_Rect.m_Position.m_X - gap_x;
+
+					if (gap_width > 0 && editor_rect.m_Dimensions.m_Width > 0)
+					{
+						SDL_Rect gap_source_rect = { editor_rect.m_Dimensions.m_Width - 1, 0, 1, editor_rect.m_Dimensions.m_Height };
+						SDL_Rect gap_destination_rect = { gap_x, editor_rect.m_Position.m_Y, gap_width, editor_rect.m_Dimensions.m_Height };
+
+						SDL_RenderCopy(m_Renderer, m_OverlayList[0].m_Texture, &gap_source_rect, &gap_destination_rect);
+					}
+				}
 			}
 
 			SDL_Rect client_destination_rect = { m_ClientX, m_ClientY, m_ClientResolutionX, m_ClientResolutionY };
