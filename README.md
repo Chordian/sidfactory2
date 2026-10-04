@@ -65,7 +65,9 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
   and `sf2driver11_05_4sid.prg`: driver 11.05 with three tracks per SID, SID n
   at $D400 + n * $20. Instruments, commands and tables are shared, every SID
   has its own filter and volume. reSID mixes all SIDs, USBSID-Pico plays every
-  tune SID on its own hardware SID, exported `.sid` files carry the second and
+  tune SID on its own hardware SID, ASID sends SID 2 to 4 with the multi SID
+  commands $50 to $52 (one message per SID each frame, SID 1 first, the SID
+  type message goes out for every SID), exported `.sid` files carry the second and
   third SID address (PSID v3/v4) or every SID (SID v5). Set `Window.Width` to
   make room for the extra tracks (1736 for 2 SIDs, 2192 for 3, 2648 for 4).
 - Added: Mute keys for the tracks of SID 2 to 4: Ctrl-4 to Ctrl-9 mute or

@@ -365,6 +365,9 @@ namespace Emulation
 
 		UpdateSIDPanning();
 
+		if (m_ASID != nullptr)
+			m_ASID->SetSIDCount(sid_count);
+
 		Unlock();
 
 		if (m_USBSID != nullptr)
@@ -972,9 +975,8 @@ namespace Emulation
 			if (sid_index == 0)
 				m_SIDProxy->Write(sid_register, write.m_Value);
 
-			// ASID carries one SID
-			if(sid_index == 0 && m_OutputDevice == ExecutionHandler::OutputDevice::ASID &&  m_ASID != nullptr)
-				m_ASID->WriteToSIDRegister(sid_register, write.m_Value);
+			if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID && m_ASID != nullptr)
+				m_ASID->WriteToSIDRegister(sid_index, sid_register, write.m_Value);
 
 			// Pass the cycle of the write within the frame, the board replays the exact spacing
 			if (usbsid_output)
