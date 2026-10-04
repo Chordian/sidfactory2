@@ -20,10 +20,15 @@ Prerequisites:
 - git
 - gnu-sed
 - pandoc
+- SDL2, libusb and pkg-config
 
 If [Homebrew](https://brew.sh) is installed, most prerequisites can be installed with:
 
     brew git gnu-sed pandoc
+
+SDL2, libusb and pkg-config:
+
+    brew install sdl2 libusb pkg-config
 
 To build:
 
