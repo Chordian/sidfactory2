@@ -20,22 +20,24 @@ Prerequisites:
 - git
 - gnu-sed
 - pandoc
-- SDL2, libusb and pkg-config
 
 If [Homebrew](https://brew.sh) is installed, most prerequisites can be installed with:
 
-    brew git gnu-sed pandoc
-
-SDL2, libusb and pkg-config:
-
-    brew install sdl2 libusb pkg-config
+    brew install git gnu-sed pandoc
 
 To build:
 
     cd macos
     make raw
 
-This creates a DMG image in the `artifacts` folder.
+This creates a DMG image in the `artifacts` folder. SDL2 and libusb come with the repository
+(`macos/App/Contents/Frameworks/SDL2.framework`, `libs/libusb`).
+
+A 'linux-style' binary for debugging is built from the root folder with the Homebrew SDL2 and
+libusb instead:
+
+    brew install sdl2 libusb pkg-config
+    make PLATFORM=MACOS
 
 ### Linux (Ubuntu)
 
