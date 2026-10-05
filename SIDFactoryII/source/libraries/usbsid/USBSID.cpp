@@ -817,6 +817,7 @@ void* USBSID_Class::USBSID_Thread(void)
      * USBSID_SendThreadBuffer() releases us_mutex during USB I/O, a
      * producer never waits on a transfer. */
     if (run_thread == 1
+        && flush_buffer != 1  /* Rest of a flush still to send */
         && !((us_ringbuffer.ring_read != us_ringbuffer.ring_write)
              && (USBSID_RingDiff() > diff_size))) {
       struct timespec ts;
@@ -1066,7 +1067,11 @@ void USBSID_Class::USBSID_FlushBuffer(void)
    * this drains whatever is waiting in the ring on a flush deadline instead
    * of leaving it to the thread's own diff_size-gated drain loop, which
    * otherwise leaves writes sitting in the ring far longer than their caller
-   * intended. */
+   * intended.
+   *
+   * Runs on the driver thread, USBSID_Flush() only raises flush_buffer. More
+   * waiting than one packet holds keeps flush_buffer raised, the next thread
+   * loop sends the rest: a flush always empties the ring in full packets. */
   const int rec = (withcycles == 1) ? 4 : 2;
   const int cap = (withcycles == 1) ? 61 : 63;
   int waiting = (us_ringbuffer.ring_write - us_ringbuffer.ring_read
@@ -1086,6 +1091,9 @@ void USBSID_Class::USBSID_FlushBuffer(void)
       : (uint8_t)(WRITE << 6 | (buffer_pos - 1));
     flush_buffer = 0;
     USBSID_SendThreadBuffer();
+    /* Rest goes out on the next thread loop,
+       a flush raised during the send stays raised */
+    if (waiting >= rec) flush_buffer = 1;
   } else {
     flush_buffer = 0;
   }
@@ -1155,10 +1163,11 @@ void USBSID_Class::USBSID_RingPopCycled(void)
   thread_buffer[buffer_pos++] = USBSID_RingGet();  /* n cycles high */
   thread_buffer[buffer_pos++] = USBSID_RingGet();  /* n cycles low */
 
-  if (buffer_pos == 61  /* >= 61 || >= 4 */
-      || buffer_pos == len_out_buffer
-      || flush_buffer == 1) {
-    flush_buffer = 0;
+  if (flush_buffer == 1) {
+    /* Fill the packet from the ring before sending, not one write per packet */
+    USBSID_FlushBuffer();
+  } else if (buffer_pos == 61  /* >= 61 || >= 4 */
+      || buffer_pos == len_out_buffer) {
     thread_buffer[0] = (uint8_t)((CYCLED_WRITE << 6) | (buffer_pos - 1));
     USBSID_SendThreadBuffer();
   }
@@ -1176,10 +1185,11 @@ void USBSID_Class::USBSID_RingPop(void)
   /* Ex: 0xD418 */
   thread_buffer[buffer_pos++] = USBSID_RingGet();  /* register */
   thread_buffer[buffer_pos++] = USBSID_RingGet();  /* value */
-  if (buffer_pos == 63  /* >= 61 || >= 4 */
-    || buffer_pos == len_out_buffer
-    || flush_buffer == 1) {
-    flush_buffer = 0;
+  if (flush_buffer == 1) {
+    /* Fill the packet from the ring before sending, not one write per packet */
+    USBSID_FlushBuffer();
+  } else if (buffer_pos == 63  /* >= 61 || >= 4 */
+    || buffer_pos == len_out_buffer) {
     thread_buffer[0] = (uint8_t)((WRITE << 6) | (buffer_pos - 1));
     USBSID_SendThreadBuffer();
   }
