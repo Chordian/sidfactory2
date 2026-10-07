@@ -41,6 +41,15 @@ namespace Editor
 	}
 
 
+	void ComponentButton::SetText(const std::string& inButtonText)
+	{
+		FOUNDATION_ASSERT(inButtonText.length() <= static_cast<size_t>(m_Dimensions.m_Width));
+
+		m_ButtonText = inButtonText;
+		m_RequireRefresh = true;
+	}
+
+
 	void ComponentButton::SetHasControl(GetControlType inGetControlType, CursorControl& inCursorControl)
 	{
 		m_HasControl = true;

@@ -14,11 +14,14 @@ namespace Emulation
 	{
 		using namespace Utility;
 		
-		// Reset the ASID buffer
-		for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+		// Reset the ASID buffers
+		for (unsigned int sid = 0; sid < ASID_MAX_SIDS; ++sid)
 		{
-			m_ASIDRegisterBuffer[i] = 0;
-			m_ASIDRegisterUpdated[i] = false;
+			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+			{
+				m_ASIDRegisterBuffer[sid][i] = 0;
+				m_ASIDRegisterUpdated[sid][i] = false;
+			}
 		}
 	}
 
@@ -37,6 +40,43 @@ namespace Emulation
 			SendSetChannelsSilent();
 
 		m_Muted = inMuted;
+	}
+
+	void ASid::SetSIDCount(unsigned int inSIDCount)
+	{
+		const unsigned int sid_count = inSIDCount < 1 ? 1 : (inSIDCount > ASID_MAX_SIDS ? ASID_MAX_SIDS : inSIDCount);
+
+		if (sid_count == m_SIDCount)
+			return;
+
+		// Silence the SIDs that drop out, their registers are no longer sent
+		if (!m_Muted && sid_count < m_SIDCount)
+		{
+			for (unsigned int sid = sid_count; sid < m_SIDCount; ++sid)
+			{
+				for (unsigned int voice = 0; voice < 3; ++voice)
+				{
+					const unsigned char channel_offset = static_cast<unsigned char>(voice * 7);
+
+					WriteToSIDRegister(sid, 0x04 + channel_offset, 0);
+					WriteToSIDRegister(sid, 0x05 + channel_offset, 0);
+					WriteToSIDRegister(sid, 0x06 + channel_offset, 0);
+				}
+			}
+
+			SendToDevice();
+		}
+
+		for (unsigned int sid = sid_count; sid < ASID_MAX_SIDS; ++sid)
+		{
+			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+			{
+				m_ASIDRegisterBuffer[sid][i] = 0;
+				m_ASIDRegisterUpdated[sid][i] = false;
+			}
+		}
+
+		m_SIDCount = sid_count;
 	}
 
 	void ASid::SendSIDRegisterWriteOrderAndCycleInfo(std::vector<Editor::SIDWriteInformation> inSIDWriteInfoList)
@@ -172,57 +212,67 @@ namespace Emulation
 
 	void ASid::SendSIDType(bool is6581)
 	{
-		// Physical out buffer, including protocol overhead
-		unsigned char ASidOutBuffer[6];
-		int index = 0;
+		// One message per SID, all SIDs share the model
+		for (unsigned int sid = 0; sid < m_SIDCount; ++sid)
+		{
+			// Physical out buffer, including protocol overhead
+			unsigned char ASidOutBuffer[6];
+			int index = 0;
 
-		// Sysex start data for an ASID message
-		ASidOutBuffer[index++] = 0xf0;
-		ASidOutBuffer[index++] = 0x2d;
-		ASidOutBuffer[index++] = 0x32; // SID type
+			// Sysex start data for an ASID message
+			ASidOutBuffer[index++] = 0xf0;
+			ASidOutBuffer[index++] = 0x2d;
+			ASidOutBuffer[index++] = 0x32; // SID type
 
-		// Payload
-		ASidOutBuffer[index++] = 0; // Chip index, only one chip
-		ASidOutBuffer[index++] = is6581? 0x00 : 0x01; // bits 7-1 reserved
+			// Payload
+			ASidOutBuffer[index++] = static_cast<unsigned char>(sid); // Chip index
+			ASidOutBuffer[index++] = is6581? 0x00 : 0x01; // bits 7-1 reserved
 
-		// Sysex end marker
-		ASidOutBuffer[index++] = 0xf7;
+			// Sysex end marker
+			ASidOutBuffer[index++] = 0xf7;
 
-		// Send to physical MIDI port
-		if (m_RtMidiOut->isPortOpen())
-			m_RtMidiOut->sendMessage(ASidOutBuffer, index);
+			// Send to physical MIDI port
+			if (m_RtMidiOut->isPortOpen())
+				m_RtMidiOut->sendMessage(ASidOutBuffer, index);
+		}
 	}
 	
-	void ASid::WriteToSIDRegister(unsigned char inSidReg, unsigned char inData)
+	void ASid::WriteToSIDRegister(unsigned int inSIDIndex, unsigned char inSidReg, unsigned char inData)
 	{
 		if (m_Muted)
 			return;
+		if (inSIDIndex >= m_SIDCount)
+			return;
 		if (inSidReg > 0x18) 
 			return;
+
+		unsigned char* RegisterBuffer = m_ASIDRegisterBuffer[inSIDIndex];
+		bool* RegisterUpdated = m_ASIDRegisterUpdated[inSIDIndex];
 
 		// Get the ASID transformed register
 		unsigned char MappedAddress = GetASIDPositionFromRegisterIndex(inSidReg);
 
 		// If a write occurs to a waveform register, check if first block is already allocated
-		if (MappedAddress >= 0x16 && MappedAddress <= 0x18 && m_ASIDRegisterUpdated[MappedAddress])
+		if (MappedAddress >= 0x16 && MappedAddress <= 0x18 && RegisterUpdated[MappedAddress])
 		{
 			MappedAddress += 3;
 
 			// If second block is also updated, move it to the first to make sure to always keep the last one
-			if(m_ASIDRegisterUpdated[MappedAddress])
-				m_ASIDRegisterBuffer[MappedAddress - 3] = m_ASIDRegisterBuffer[MappedAddress];
+			if(RegisterUpdated[MappedAddress])
+				RegisterBuffer[MappedAddress - 3] = RegisterBuffer[MappedAddress];
 		}
 
-		// If we're trying to update a control register that is already mapped, flush it directly
-		if(m_ASIDRegisterUpdated[MappedAddress])
+		// If we're trying to update a control register that is already mapped, flush it directly.
+		// All SIDs are flushed, the receiver expects one message per SID in every set
+		if(RegisterUpdated[MappedAddress])
 		{
 			if(MappedAddress >= 0x16)
 				SendToDevice();
 		}
 
 		// Store the data
-		m_ASIDRegisterBuffer[MappedAddress] = inData;
-		m_ASIDRegisterUpdated[MappedAddress] = true;
+		RegisterBuffer[MappedAddress] = inData;
+		RegisterUpdated[MappedAddress] = true;
 	}
 	
 	void ASid::SendToDevice()
@@ -230,12 +280,15 @@ namespace Emulation
 		if(m_Muted)
 			return;
 		
-		const bool RequireUpdate = [&RegisterUpdated = m_ASIDRegisterUpdated]()
+		const bool RequireUpdate = [this]()
 		{
-			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+			for (unsigned int sid = 0; sid < m_SIDCount; ++sid)
 			{
-				if (RegisterUpdated[i])
-					return true;
+				for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+				{
+					if (m_ASIDRegisterUpdated[sid][i])
+						return true;
+				}
 			}
 
 			return false;
@@ -244,75 +297,92 @@ namespace Emulation
 		if (!RequireUpdate)
 			return;
 
+		// Send every SID in order, SID 1 first, also the ones without updates. A receiver
+		// paces its playback on the SID 1 messages and plays one message per SID per frame
 		if (m_RtMidiOut->isPortOpen())
 		{
-			// Sysex start data for an ASID message
-			m_ASIDOutBuffer[0] = 0xf0;
-			m_ASIDOutBuffer[1] = 0x2d;
-			m_ASIDOutBuffer[2] = 0x4e;
-		
-			size_t index = 3;
-
-			// Setup mask bytes (one bit per register)
-			unsigned char ucReg;
-		
-			for (unsigned char ucMask = 0; ucMask<4; ++ucMask)
-			{
-				ucReg = 0x00;
-				for (unsigned char ucRegOffset = 0; ucRegOffset < 7; ++ucRegOffset)
-				{
-					if (m_ASIDRegisterUpdated[ucMask*7+ucRegOffset])
-						ucReg |= (1<<ucRegOffset);
-				}
-				m_ASIDOutBuffer[index++] = ucReg;
-			}
-
-			// Setup the MSB bits, one per register (since MIDI only allows for 7-bit data bytes)
-			for (unsigned char ucMsb=0; ucMsb<4; ++ucMsb)
-			{
-				ucReg = 0x00;
-				for (unsigned char ucRegOffset = 0; ucRegOffset < 7; ++ucRegOffset)
-				{
-					if (m_ASIDRegisterBuffer[ucMsb*7 + ucRegOffset] & 0x80)
-						ucReg |= (1 << ucRegOffset);
-				}
-				m_ASIDOutBuffer[index++] = ucReg;
-			}
-
-			// Add data for all updated registers (the 7 LSB bits)
-			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
-			{
-				if (m_ASIDRegisterUpdated[i])
-					m_ASIDOutBuffer[index++] = m_ASIDRegisterBuffer[i] & 0x7f;
-			}
-
-			// Sysex end marker
-			m_ASIDOutBuffer[index++] = 0xf7;
-
-			// Send to physical MIDI port
-			m_RtMidiOut->sendMessage(m_ASIDOutBuffer, index);
+			for (unsigned int sid = 0; sid < m_SIDCount; ++sid)
+				SendSIDRegisters(sid);
 		}
 
 		// Prepare for next buffer
-		for (int i = 0; i < ASID_NUM_REGS; ++i)
-			m_ASIDRegisterUpdated[i] = false;
+		for (unsigned int sid = 0; sid < m_SIDCount; ++sid)
+		{
+			for (int i = 0; i < ASID_NUM_REGS; ++i)
+				m_ASIDRegisterUpdated[sid][i] = false;
+		}
+	}
+
+	void ASid::SendSIDRegisters(unsigned int inSIDIndex)
+	{
+		const unsigned char* RegisterBuffer = m_ASIDRegisterBuffer[inSIDIndex];
+		const bool* RegisterUpdated = m_ASIDRegisterUpdated[inSIDIndex];
+
+		// Sysex start data for an ASID message
+		m_ASIDOutBuffer[0] = 0xf0;
+		m_ASIDOutBuffer[1] = 0x2d;
+		m_ASIDOutBuffer[2] = static_cast<unsigned char>(inSIDIndex == 0 ? 0x4e : 0x4f + inSIDIndex);
+	
+		size_t index = 3;
+
+		// Setup mask bytes (one bit per register)
+		unsigned char ucReg;
+	
+		for (unsigned char ucMask = 0; ucMask<4; ++ucMask)
+		{
+			ucReg = 0x00;
+			for (unsigned char ucRegOffset = 0; ucRegOffset < 7; ++ucRegOffset)
+			{
+				if (RegisterUpdated[ucMask*7+ucRegOffset])
+					ucReg |= (1<<ucRegOffset);
+			}
+			m_ASIDOutBuffer[index++] = ucReg;
+		}
+
+		// Setup the MSB bits, one per register (since MIDI only allows for 7-bit data bytes)
+		for (unsigned char ucMsb=0; ucMsb<4; ++ucMsb)
+		{
+			ucReg = 0x00;
+			for (unsigned char ucRegOffset = 0; ucRegOffset < 7; ++ucRegOffset)
+			{
+				if (RegisterBuffer[ucMsb*7 + ucRegOffset] & 0x80)
+					ucReg |= (1 << ucRegOffset);
+			}
+			m_ASIDOutBuffer[index++] = ucReg;
+		}
+
+		// Add data for all updated registers (the 7 LSB bits)
+		for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+		{
+			if (RegisterUpdated[i])
+				m_ASIDOutBuffer[index++] = RegisterBuffer[i] & 0x7f;
+		}
+
+		// Sysex end marker
+		m_ASIDOutBuffer[index++] = 0xf7;
+
+		// Send to physical MIDI port
+		m_RtMidiOut->sendMessage(m_ASIDOutBuffer, index);
 	}
 
 	void ASid::SendSetChannelsSilent()
 	{
-		for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+		for (unsigned int sid = 0; sid < m_SIDCount; ++sid)
 		{
-			m_ASIDRegisterBuffer[i] = 0;
-			m_ASIDRegisterUpdated[i] = false;
-		}
+			for (unsigned int i = 0; i < ASID_NUM_REGS; ++i)
+			{
+				m_ASIDRegisterBuffer[sid][i] = 0;
+				m_ASIDRegisterUpdated[sid][i] = false;
+			}
 
-		for(unsigned int i=0; i<3; ++i)
-		{
-			unsigned char channel_offset = static_cast<unsigned char>(i * 7);
-				
-			WriteToSIDRegister(0x04 + channel_offset, 0);
-			WriteToSIDRegister(0x05 + channel_offset, 0);
-			WriteToSIDRegister(0x06 + channel_offset, 0);
+			for(unsigned int i=0; i<3; ++i)
+			{
+				unsigned char channel_offset = static_cast<unsigned char>(i * 7);
+					
+				WriteToSIDRegister(sid, 0x04 + channel_offset, 0);
+				WriteToSIDRegister(sid, 0x05 + channel_offset, 0);
+				WriteToSIDRegister(sid, 0x06 + channel_offset, 0);
+			}
 		}
 
 		SendToDevice();

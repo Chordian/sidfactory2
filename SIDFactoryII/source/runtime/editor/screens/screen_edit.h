@@ -88,6 +88,7 @@ namespace Editor
 			std::function<void(unsigned short, unsigned char)> inPackCallback,
 			std::function<void(void)> inToggleShowOverlay,
 			std::function<void()> inToggleFullScreen,
+			std::function<void()> inCycleWindowWidth,
 			std::function<void(unsigned int)> inConfigReload);
 		virtual ~ScreenEdit();
 
@@ -118,6 +119,8 @@ namespace Editor
 		void DoStop();
 		void DoToggleMute(unsigned int inChannel);
 		void DoToggleOutputDevice();
+		void DoUSBSIDDialog();
+		void UpdateUSBSID();
 		void DoClearAllMuteState();
 		void DoRestoreMuteState();
 		void DoMoveToEventPositionOfSelectedMarker();
@@ -132,6 +135,8 @@ namespace Editor
 		void DoToggleSharpFlat();
 		void DoOctaveChange(bool inUp);
 		void DoToggleSIDModelAndRegion(bool inToggleRegion);
+		void DoCyclePanning(bool inCycleMode);
+		void ApplyPanning();
 		void DoToggleContextHighlight();
 		void DoToggleFollowPlay();
 		void DoIncrementInstrumentIndex();
@@ -176,6 +181,7 @@ namespace Editor
 		void ShowSequenceUsageCount(unsigned char inSequenceIndex);
 
 		void SendASIDinformation();
+		static unsigned char GetSIDRegisterOffsetOfTrack(int inTrack);
 
 		template<typename EXECUTION_CALLBACK>
 		void StartSongsDialogWithSelectionExecution(const std::string& headline, EXECUTION_CALLBACK&& inExecutionCallback);
@@ -192,6 +198,7 @@ namespace Editor
 		std::function<void(unsigned short, unsigned char)> m_PackCallback;
 		std::function<void(void)> m_ToggleShowOverlay;
 		std::function<void(void)> m_ToggleFullScreen;
+		std::function<void(void)> m_CycleWindowWidth;
 		std::function<void(unsigned int)> m_ConfigReconfigure;
 
 		// Dynamic key codes

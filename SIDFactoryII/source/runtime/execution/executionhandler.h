@@ -2,11 +2,16 @@
 #define __EXECUTIONHANDLER_H__
 
 #include "foundation/sound/audiostream.h"
+#include <atomic>
+#include <condition_variable>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <vector>
 #include "runtime/editor/driver/driver_utils.h"
+#include "utils/sidpanning.h"
 
 #define ASID_NUM_REGS 28
 
@@ -29,6 +34,7 @@ namespace Emulation
 	class CPUMemory;
 	class SIDProxy;
 	class ASid;
+	class USBSid;
 	class FlightRecorder;
 
 	class ExecutionHandler : public Foundation::IAudioStreamFeeder
@@ -44,6 +50,7 @@ namespace Emulation
 			CPUMemory* pMemory,
 			SIDProxy* pSIDProxy,
 			ASid* inASID,
+			USBSid* inUSBSID,
 			FlightRecorder* inFlightRecorder);
 		~ExecutionHandler();
 
@@ -58,6 +65,7 @@ namespace Emulation
 
 		virtual void PreFeedPCM(void* inBuffer, unsigned int inByteCount);
 		virtual void FeedPCM(void* inBuffer, unsigned int inByteCount);
+		virtual void SetChannelCount(unsigned int inChannelCount);
 
 		// Lock and unlock
 		void Lock();
@@ -65,6 +73,19 @@ namespace Emulation
 
 		// Settings
 		void SetPAL(const bool inPALMode);
+
+		// Number of SID chips the loaded driver plays on, SID n sits at $d400 + n * $20
+		static const unsigned int MaxSIDCount = 4;
+		void SetSIDCount(unsigned int inSIDCount);
+		unsigned int GetSIDCount() const { return m_SIDCount; }
+
+		// Stereo position of the SIDs in the reSID output. Multi SID: SID v5 layout and mode,
+		// single SID: inSingleSIDPan
+		void SetPanning(Utility::SIDPanLayout inLayout, Utility::SIDPanMode inMode, Utility::SIDPan inSingleSIDPan);
+		Utility::SIDPan GetSIDPan(unsigned int inSIDIndex) const;
+
+		// 2 when a SID is panned left or right, the audio stream is reopened to match
+		unsigned int GetWantedChannelCount() const;
 
 		// Error
 		bool IsInErrorState() const;
@@ -111,11 +132,13 @@ namespace Emulation
 		enum class OutputDevice: int
 		{
 			RESID,
-			ASID
+			ASID,
+			USBSID
 		};
 
 		void SetOutputDevice(const OutputDevice device);
 		const OutputDevice GetOutputDevice() const;
+		USBSid* GetUSBSID() const { return m_USBSID; }
 
 	private:
 		enum class ActionType : int
@@ -136,7 +159,35 @@ namespace Emulation
 
 		const unsigned short GetAddressFromActionType(ActionType inActionType) const;
 
+		// One write to a SID register within a frame
+		struct SIDWrite
+		{
+			int m_Cycle;
+			unsigned short m_Address;
+			unsigned char m_Value;
+		};
+
+		// SID 2 and up of a multi SID driver. Their frame is rendered on other threads, the
+		// audio callback has no time to clock more than one SID
+		struct ExtraSID
+		{
+			std::unique_ptr<SIDProxy> m_SID;
+			std::vector<SIDWrite> m_Writes;		// Writes of the current frame, m_Address holds the register
+			std::vector<short> m_Samples;		// Output of the current frame
+			int m_SampleCount = 0;
+			std::thread m_Thread;
+		};
+
 		void SimulateSID(int inDeltaCycles);
+		void SyncExtraSIDs();
+
+		void StartExtraSIDThreads();
+		void StopExtraSIDThreads();
+		void ExtraSIDThread();
+		void RenderClaimedExtraSIDs(int inCyclesInFrame);
+		void RenderExtraSID(ExtraSID& inExtraSID, int inCyclesInFrame);
+		void MixSIDs();
+		void UpdateSIDPanning();
 
 		void ASIDSend();
 		
@@ -177,9 +228,29 @@ namespace Emulation
 
 		// SID and CPU
 		SIDProxy* m_SIDProxy;
+
+		// SID 2 and up of a multi SID driver, mixed into the output of the first SID
+		unsigned int m_SIDCount;
+		Utility::SIDPanLayout m_PanLayout;
+		Utility::SIDPanMode m_PanMode;
+		Utility::SIDPan m_SingleSIDPan;
+		Utility::SIDPan m_SIDPan[MaxSIDCount];
+		std::vector<std::unique_ptr<ExtraSID>> m_ExtraSIDs;
+		std::vector<SIDWrite> m_FrameWrites;
+
+		// Hand over of a frame to the threads of the extra SIDs
+		std::mutex m_RenderMutex;
+		std::condition_variable m_RenderStart;
+		std::condition_variable m_RenderDone;
+		unsigned int m_RenderGeneration;	// Counts the frames handed over
+		unsigned int m_RenderPending;		// Extra SIDs not done with the current frame
+		std::atomic<unsigned int> m_RenderNext;	// First extra SID of the current frame no thread has taken
+		int m_RenderCyclesInFrame;
+		bool m_RenderQuit;
 		CPUmos6510* m_CPU;
 		CPUMemory* m_Memory;
 		ASid* m_ASID;
+		USBSid* m_USBSID;
 
 		std::shared_ptr<Foundation::IMutex> m_Mutex;
 
@@ -191,9 +262,12 @@ namespace Emulation
 
 		// Audio output
 		unsigned int m_SampleBufferSize;
-		short* m_SampleBuffer;
+		short* m_SampleBuffer;			// Mono output, or the left side of stereo output
+		short* m_SampleBufferRight;		// Right side of stereo output
+		unsigned int m_OutputChannelCount;
 		float m_OutputGain;
 		OutputDevice m_OutputDevice;
+		bool m_SkipSIDSimulation;
 	};
 }
 

@@ -165,9 +165,11 @@ namespace Foundation
 		std::string resourcePath;
 		// try executable path
 		char result[PATH_MAX];
-		ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+		ssize_t count = readlink("/proc/self/exe", result, PATH_MAX - 1);
 		if (count > 0)
 		{
+			// readlink does not terminate the string
+			result[count] = '\0';
 			resourcePath = std::string(dirname(result));
 		}
 		else

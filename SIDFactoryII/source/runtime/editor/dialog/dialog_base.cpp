@@ -10,6 +10,7 @@ namespace Editor
 	DialogBase::DialogBase()
 		: m_Active(false)
 		, m_Done(false)
+		, m_CursorControl(nullptr)
 	{
 
 	}
@@ -36,6 +37,11 @@ namespace Editor
 
 	void DialogBase::Deactivate(Foundation::Viewport* inViewport)
 	{
+		// The cursor may point at a text field of this dialog, which DeactivateInternal destroys. A dialog
+		// started from inside this one would otherwise switch the cursor off on the freed text field
+		if (m_CursorControl != nullptr)
+			m_CursorControl->SetTargetTextField(nullptr);
+
 		DeactivateInternal(inViewport);
 	}
 

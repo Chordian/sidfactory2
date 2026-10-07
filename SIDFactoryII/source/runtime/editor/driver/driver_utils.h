@@ -41,6 +41,10 @@ namespace Editor
 
 		std::vector<SIDWriteInformation> GetSIDWriteInformationFromDriver(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo);
 
+		// Plays the song on a copy of the memory until every track has started over once or the driver stops.
+		// Returns the play time in milliseconds, or 0 when that takes longer than inMaxMilliseconds
+		unsigned int GetSongLengthInMilliseconds(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned char inSongIndex, bool inPAL, unsigned int inMaxMilliseconds);
+
 		void InsertIRQ(const Editor::DriverInfo& inDriverInfo, Utility::C64FileWriter& inFileWriter);
 	}
 }

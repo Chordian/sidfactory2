@@ -18,7 +18,7 @@ namespace Editor
 	{
 	public:
 		StatusBar(Foundation::TextField* inTextField);
-		~StatusBar();
+		virtual ~StatusBar();
 
 		void Clear();
 		void SetDirty();

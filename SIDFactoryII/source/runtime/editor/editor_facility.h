@@ -26,6 +26,7 @@ namespace Foundation
 namespace Emulation
 {
 	class ASid;
+	class USBSid;
 	class CPUmos6510;
 	class CPUMemory;
 	class SIDProxy;
@@ -81,6 +82,11 @@ namespace Editor
 
 		bool IsFileSF2(const std::string& inPathAndFilename);
 		bool LoadFile(const std::string& inPathAndFilename);
+		bool DoesDriverFitWindow(const DriverInfo& inDriverInfo) const;
+		int GetRequiredClientWidth(int inTrackCount) const;
+		int GetClientWidthForDriver() const;
+		void ApplyClientWidth(int inClientWidth);
+		void CycleClientWidth();
 		bool LoadFileForImport(const std::string& inPathAndFilename, std::shared_ptr<DriverInfo>& outDriverInfo, std::shared_ptr<Utility::C64File>& outC64File);
 		bool LoadAndConvertFile(const std::string& inPathAndFilename, ScreenBase* inCallerScreen, std::function<void()> inSuccesfullConversionAction);
 		bool SaveFile(const std::string& inSavename);
@@ -114,6 +120,9 @@ namespace Editor
 		bool m_IsDone;
 		bool m_FlipOverlayState;
 		bool m_IsFullScreen;
+		bool m_ClientWidthFollowsDriver;
+
+		int m_MinimumClientWidth;
 
 		int m_ColorSchemeCount;
 		int m_SelectedColorScheme;
@@ -128,6 +137,7 @@ namespace Editor
 		Emulation::CPUMemory* m_CPUMemory;
 		Emulation::SIDProxy* m_SIDProxy;
 		Emulation::ASid *m_ASID;
+		Emulation::USBSid *m_USBSID;
 		Emulation::ExecutionHandler* m_ExecutionHandler;
 		Emulation::FlightRecorder* m_FlightRecorder;
 
@@ -140,6 +150,7 @@ namespace Editor
 
 		ScreenBase* m_RequestedScreen;
 		ScreenBase* m_CurrentScreen;
+		ScreenBase* m_ScreenAfterResize;
 
 		std::shared_ptr<DriverInfo> m_DriverInfo;
 		std::unique_ptr<OverlayControl> m_OverlayControl;

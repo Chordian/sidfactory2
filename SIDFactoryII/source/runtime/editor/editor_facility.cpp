@@ -29,6 +29,7 @@
 #include "runtime/editor/utilities/editor_utils.h"
 #include "runtime/editor/utilities/import_utils.h"
 #include "runtime/emulation/asid/asid.h"
+#include "runtime/emulation/usbsid/usbsidpico.h"
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/cpumos6510.h"
 #include "runtime/emulation/sid/sidproxy.h"
@@ -66,6 +67,10 @@ namespace Editor
 {
 	const unsigned int EditorFacility::DefaultDialogWidth = 100;
 
+	// The edit screen is laid out for three tracks in the standard width, the maximum is the one main accepts
+	static const int StandardClientWidth = 1280;
+	static const int MaximumClientWidth = 4096;
+
 	EditorFacility::EditorFacility(Viewport* inViewport)
 		: m_Viewport(inViewport)
 		, m_IsDone(false)
@@ -73,7 +78,10 @@ namespace Editor
 		, m_RequestedScreen(nullptr)
 		, m_FlipOverlayState(false)
 		, m_IsFullScreen(false)
+		, m_ClientWidthFollowsDriver(false)
+		, m_MinimumClientWidth(inViewport->GetClientWidth())
 		, m_SelectedColorScheme(0)
+		, m_ScreenAfterResize(nullptr)
 	{
 		ConfigFile& config = Global::instance().GetConfig();
 		IPlatform& platform = Global::instance().GetPlatform();
@@ -128,11 +136,12 @@ namespace Editor
 
 		m_RtMidiOut = new RtMidiOut();
 		m_ASID = new ASid(m_RtMidiOut);
+		m_USBSID = new USBSid();
 		m_SIDProxy = new SIDProxy(sid_configuration);
 		m_CPUMemory = new CPUMemory(0x10000, &platform);
 		m_CPU = new CPUmos6510();
 		m_FlightRecorder = new FlightRecorder(&platform, 0x800);
-		m_ExecutionHandler = new ExecutionHandler(m_CPU, m_CPUMemory, m_SIDProxy, m_ASID, m_FlightRecorder);
+		m_ExecutionHandler = new ExecutionHandler(m_CPU, m_CPUMemory, m_SIDProxy, m_ASID, m_USBSID, m_FlightRecorder);
 
 		// Create audio stream
 		const int audio_buffer_size = GetSingleConfigurationValue<ConfigValueInt>(config, "Sound.Buffer.Size", 256);
@@ -158,6 +167,7 @@ namespace Editor
 
 		// Create overlay control
 		m_OverlayControl = std::make_unique<OverlayControl>(inViewport);
+		m_OverlayControl->SetClientWidthHandler([&](int inClientWidth) { ApplyClientWidth(inClientWidth); });
 
 		// Apply fullscreen setting
 		ConfigFile& configFile = Global::instance().GetConfig();
@@ -171,6 +181,7 @@ namespace Editor
 			m_DisplayState,
 			m_KeyHookSetup.GetKeyHookStore(),
 			m_RtMidiOut,
+			m_USBSID,
 			m_DriverInfo,
 			[&]()
 			{ OnExitIntroScreen(); },
@@ -234,6 +245,8 @@ namespace Editor
 			{ m_FlipOverlayState = true; },
 			[&]()
 			{ ToggleFullScreen(); },
+			[&]()
+			{ CycleClientWidth(); },
 			[&](unsigned int inReconfigureOption)
 			{ Reconfigure(inReconfigureOption); });
 
@@ -253,6 +266,7 @@ namespace Editor
 		delete m_ExecutionHandler;
 		delete m_FlightRecorder;
 		delete m_ASID;
+		delete m_USBSID;
 		delete m_SIDProxy;
 		delete m_CPU;
 		delete m_CPUMemory;
@@ -287,6 +301,12 @@ namespace Editor
 			std::string drivers_folder = platform.Storage_GetDriversHomePath();
 			LoadFile(drivers_folder + default_driver_filename);
 		}
+
+		// Size the window for the loaded driver before any screen is shown
+		if (m_DriverInfo->IsValid())
+			m_OverlayControl->SetClientWidth(GetClientWidthForDriver());
+
+		m_ClientWidthFollowsDriver = false;
 
 		// After loading, set the current path, so that opening the disk menu will be correct.
 		const std::string default_start_path = platform.Storage_GetHomePath();
@@ -357,6 +377,12 @@ namespace Editor
 			m_CurrentScreen->ConsumeInput(inKeyboard, inMouse);
 			m_CurrentScreen->Update(inDeltaTicks);
 		}
+
+		// Stereo output while a SID is panned left or right, mono otherwise
+		const unsigned int wanted_channel_count = m_ExecutionHandler->GetWantedChannelCount();
+
+		if (wanted_channel_count != m_AudioStream->GetChannelCount())
+			m_AudioStream->SetChannelCount(wanted_channel_count);
 
 		// Handle overlay flip
 		UpdateOverlayEnableDisable();
@@ -527,6 +553,24 @@ namespace Editor
 		if (m_CurrentScreen != nullptr)
 			m_CurrentScreen->Deactivate();
 
+		// After a load the window follows the driver. No screen is active while the window fades out,
+		// the editor is activated at the new width
+		if (inCurrentScreen == m_EditScreen.get() && m_ClientWidthFollowsDriver)
+		{
+			m_ClientWidthFollowsDriver = false;
+
+			const int client_width = GetClientWidthForDriver();
+
+			if (client_width != m_Viewport->GetClientWidth())
+			{
+				m_CurrentScreen = nullptr;
+				m_ScreenAfterResize = inCurrentScreen;
+				m_OverlayControl->RequestClientWidth(client_width);
+
+				return;
+			}
+		}
+
 		m_CurrentScreen = inCurrentScreen;
 
 		if (m_CurrentScreen != nullptr)
@@ -588,7 +632,7 @@ namespace Editor
 			if (c64_file != nullptr)
 				driver_info->Parse(*c64_file);
 
-			if (driver_info->IsValid())
+			if (driver_info->IsValid() && DoesDriverFitWindow(*driver_info))
 			{
 				m_DriverInfo->GetAuxilaryDataCollection().Reset();
 				m_DriverInfo = driver_info;
@@ -620,12 +664,111 @@ namespace Editor
 
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
+
+				// Resize the window for the driver on entering the editor
+				m_ClientWidthFollowsDriver = true;
 			}
 
 			delete[] static_cast<char*>(data);
 		}
 
-		return driver_info->IsValid();
+		return driver_info->IsValid() && DoesDriverFitWindow(*driver_info);
+	}
+
+
+	bool EditorFacility::DoesDriverFitWindow(const DriverInfo& inDriverInfo) const
+	{
+		const int track_count = inDriverInfo.GetMusicData().m_TrackCount;
+		const int required_width = GetRequiredClientWidth(track_count);
+
+		if (required_width <= MaximumClientWidth)
+			return true;
+
+		Logging::instance().Error("The driver has %d tracks and needs a window width of %d, the maximum is %d", track_count, required_width, MaximumClientWidth);
+
+		return false;
+	}
+
+
+	// Every track past the third takes 16 characters in the track view and 3 in the order list overview
+	int EditorFacility::GetRequiredClientWidth(int inTrackCount) const
+	{
+		return StandardClientWidth + (inTrackCount > 3 ? (inTrackCount - 3) * (16 + 3) * m_Viewport->GetFont().width : 0);
+	}
+
+
+	// Width the driver needs, never less than Window.Width
+	int EditorFacility::GetClientWidthForDriver() const
+	{
+		return std::max<int>(m_MinimumClientWidth, GetRequiredClientWidth(m_DriverInfo->GetMusicData().m_TrackCount));
+	}
+
+
+	// Resize the client and the main text field, then activate the screen again to lay it out for the new size
+	void EditorFacility::ApplyClientWidth(int inClientWidth)
+	{
+		m_Viewport->SetClientResolution(inClientWidth, m_Viewport->GetClientHeight());
+		m_TextField->Resize(m_Viewport->GetClientWidth() / m_Viewport->GetFont().width, m_Viewport->GetClientHeight() / m_Viewport->GetFont().height);
+
+		ScreenBase* screen = m_ScreenAfterResize != nullptr ? m_ScreenAfterResize : m_CurrentScreen;
+		m_ScreenAfterResize = nullptr;
+
+		if (m_CurrentScreen != nullptr)
+			m_CurrentScreen->Deactivate();
+
+		m_CurrentScreen = screen;
+
+		if (m_CurrentScreen != nullptr)
+			m_CurrentScreen->Activate();
+	}
+
+
+	// Cycle the window width through the widths for 1 to 4 SIDs, skip widths too narrow for the driver
+	void EditorFacility::CycleClientWidth()
+	{
+		const int required_width = GetRequiredClientWidth(m_DriverInfo->GetMusicData().m_TrackCount);
+		const int requested_width = m_OverlayControl->GetRequestedClientWidth();
+		const int current_width = requested_width != 0 ? requested_width : m_Viewport->GetClientWidth();
+
+		int first_width = 0;
+		int next_width = 0;
+		int next_sid_count = 0;
+		int first_sid_count = 0;
+
+		for (int sid_count = 1; sid_count <= static_cast<int>(ExecutionHandler::MaxSIDCount); ++sid_count)
+		{
+			const int width = GetRequiredClientWidth(sid_count * 3);
+
+			if (width < required_width || width > MaximumClientWidth)
+				continue;
+
+			if (first_width == 0)
+			{
+				first_width = width;
+				first_sid_count = sid_count;
+			}
+
+			if (next_width == 0 && width > current_width)
+			{
+				next_width = width;
+				next_sid_count = sid_count;
+			}
+		}
+
+		if (next_width == 0)
+		{
+			next_width = first_width;
+			next_sid_count = first_sid_count;
+		}
+
+		if (next_width == 0 || next_width == current_width)
+			return;
+
+		// Going back to the current width cancels the pending request, the editor is not activated again
+		m_OverlayControl->RequestClientWidth(next_width);
+
+		const bool is_resizing = m_OverlayControl->GetRequestedClientWidth() != 0;
+		m_EditScreen->SetActivationMessage(is_resizing ? " Window width: " + std::to_string(next_sid_count) + (next_sid_count == 1 ? " SID" : " SIDs") : "");
 	}
 
 
@@ -686,7 +829,7 @@ namespace Editor
 			{
 				driver_info->Parse(*inC64File);
 
-				if (driver_info->IsValid())
+				if (driver_info->IsValid() && DoesDriverFitWindow(*driver_info))
 				{
 					m_DriverInfo->GetAuxilaryDataCollection().Reset();
 					m_DriverInfo = driver_info;
@@ -818,7 +961,7 @@ namespace Editor
 	{
 		if (m_PackedData != nullptr)
 		{
-			auto do_save = [&, inFileName](std::string inTitle, std::string inAuthor, std::string inCopyright)
+			auto do_save = [&, inFileName](std::string inTitle, std::string inAuthor, std::string inCopyright, DialogSIDFileInfo::ExportOptions inExportOptions)
 			{
 				unsigned short top_of_file_address = m_PackedData->GetTopAddress();
 				unsigned short data_size = static_cast<unsigned short>(m_PackedData->GetDataSize());
@@ -833,10 +976,42 @@ namespace Editor
 				for (int i = 0; i < data_size; ++i)
 					data[i + 2] = packed_data[i];
 
+				// The panning chosen for the export is the panning of the tune: the reSID output follows it
+				auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+
+				if (m_ExecutionHandler->GetSIDCount() > 1)
+				{
+					hardware_preferences.SetPanLayout(inExportOptions.m_PanLayout);
+					hardware_preferences.SetPanMode(inExportOptions.m_PanMode);
+					m_ExecutionHandler->SetPanning(hardware_preferences.GetPanLayout(), hardware_preferences.GetPanMode(), hardware_preferences.GetSingleSIDPan());
+				}
+
 				// Save PSID file to disk, also
 				const auto& driver_common = m_DriverInfo->GetDriverCommon();
-				const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
 				const unsigned char song_count = m_DriverInfo->GetAuxilaryDataCollection().GetSongs().GetSongCount();
+				const bool is_pal = hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::PAL;
+
+				// SID v5 carries the play time of every song. One song that does not loop or stop within
+				// the time the table holds leaves the whole table out
+				std::vector<unsigned int> song_lengths;
+
+				if (inExportOptions.m_Version5)
+				{
+					for (unsigned int i = 0; i < song_count; ++i)
+					{
+						const unsigned int song_length = DriverUtils::GetSongLengthInMilliseconds(*m_CPUMemory, *m_DriverInfo, static_cast<unsigned char>(i), is_pal, 5999999);
+
+						if (song_length == 0)
+						{
+							Logging::instance().Warning("Song %u does not loop or stop within 99:59, the SID file holds no song lengths", i + 1);
+							song_lengths.clear();
+							break;
+						}
+
+						Logging::instance().Info("Song %u length: %u ms", i + 1, song_length);
+						song_lengths.push_back(song_length);
+					}
+				}
 
 				Utility::PSIDFile psid_file(
 					data,
@@ -848,7 +1023,12 @@ namespace Editor
 					inAuthor,
 					inCopyright,
 					hardware_preferences.GetSIDModel() == AuxilaryDataHardwarePreferences::MOS6581,
-					hardware_preferences.GetRegion() == AuxilaryDataHardwarePreferences::PAL);
+					is_pal,
+					m_ExecutionHandler->GetSIDCount(),
+					inExportOptions.m_Version5,
+					inExportOptions.m_PanLayout,
+					inExportOptions.m_PanMode,
+					song_lengths);
 
 				const unsigned char* psid_data = psid_file.GetData();
 
@@ -859,7 +1039,15 @@ namespace Editor
 				RequestScreen(m_EditScreen.get());
 			};
 
-			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogSIDFileInfo>(do_save, []() { }));
+			// SID v5 by default when the tune has a panning other than the one of all header bits cleared
+			const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+
+			DialogSIDFileInfo::ExportOptions export_options;
+			export_options.m_PanLayout = hardware_preferences.GetPanLayout();
+			export_options.m_PanMode = hardware_preferences.GetPanMode();
+			export_options.m_Version5 = export_options.m_PanLayout != SIDPanLayout::Standard || export_options.m_PanMode != SIDPanMode::Direct;
+
+			inCallerScreen->GetComponentsManager().StartDialog(std::make_shared<DialogSIDFileInfo>(m_ExecutionHandler->GetSIDCount(), export_options, do_save, []() { }));
 
 			return true;
 		}
@@ -964,7 +1152,7 @@ namespace Editor
 		{
 			driver_info->Parse(*inConversionResult);
 
-			if (driver_info->IsValid())
+			if (driver_info->IsValid() && DoesDriverFitWindow(*driver_info))
 			{
 				m_DriverInfo->GetAuxilaryDataCollection().Reset();
 				m_DriverInfo = driver_info;
@@ -991,6 +1179,9 @@ namespace Editor
 
 				// Notify overlay
 				m_OverlayControl->OnChange(*m_DriverInfo);
+
+				// Resize the window for the driver on entering the editor
+				m_ClientWidthFollowsDriver = true;
 
 				return true;
 			}
@@ -1216,21 +1407,11 @@ namespace Editor
 	{
 		m_LastSF2PathAndFilename = inLastSavedPathAndFilename;
 
-		const size_t length = inLastSavedPathAndFilename.size();
+		// A name without a folder, as given on the command line, is the file name itself
+		const size_t separator = inLastSavedPathAndFilename.find_last_of("/\\");
+		const std::string file_name = separator == std::string::npos ? inLastSavedPathAndFilename : inLastSavedPathAndFilename.substr(separator + 1);
 
-		for (size_t i = length - 1; i >= 0; --i)
-		{
-			const char character = inLastSavedPathAndFilename[i];
-			if (character == '/' || character == '\\')
-			{
-				std::string file_name = inLastSavedPathAndFilename.substr(i + 1, length - (i + 1));
-				m_Viewport->SetAdditionTitleInfo(file_name);
-
-				return;
-			}
-		}
-
-		m_Viewport->SetAdditionTitleInfo("");
+		m_Viewport->SetAdditionTitleInfo(file_name);
 	}
 
 

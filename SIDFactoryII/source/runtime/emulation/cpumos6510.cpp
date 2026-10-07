@@ -289,6 +289,7 @@ namespace Emulation
 	CPUmos6510::State::State()
 		: m_Memory(nullptr)
 		, m_WriteCallback(nullptr)
+		, m_WriteOnLastCycle(false)
 	{
 		Reset();
 	}
@@ -316,6 +317,7 @@ namespace Emulation
 
 		// Reset cycle counter
 		m_Cycle = 0;
+		m_WriteCycleOffset = 0;
 
 		// Suspend the CPU
 		m_IsSuspended = true;
@@ -354,6 +356,9 @@ namespace Emulation
 
 			// Get the address of the processing if any, according to the opcode addressing mode
 			const void* inAddress = ms_aInstructions[opcode].m_pmAdressingMode(m_State, added_cycles);
+
+			// A write lands on the last cycle of its instruction
+			m_State.SetWriteCycleOffset((int)ms_aInstructions[opcode].m_ucBaseCycles + added_cycles - 1);
 
 			// Execute the instruction
 			if (ms_aInstructions[opcode].m_pmInstruction(m_State, inAddress))

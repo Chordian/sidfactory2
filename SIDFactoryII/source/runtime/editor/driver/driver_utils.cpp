@@ -8,6 +8,9 @@
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/imemoryrandomreadaccess.h"
 #include "runtime/emulation/cpumos6510.h"
+#include "runtime/emulation/cpuframecapture.h"
+#include "runtime/environmentdefines.h"
+#include "utils/global.h"
 #include "utils/c64file.h"
 #include "foundation/base/assert.h"
 
@@ -421,6 +424,112 @@ namespace Editor
 				it.m_CycleOffset -= first_cycle;
 
 			// Return the result
+			return result;
+		}
+
+
+		unsigned int GetSongLengthInMilliseconds(Emulation::CPUMemory& inCPUMemory, const DriverInfo& inDriverInfo, unsigned char inSongIndex, bool inPAL, unsigned int inMaxMilliseconds)
+		{
+			const auto& driver_common = inDriverInfo.GetDriverCommon();
+			const unsigned int track_count = inDriverInfo.GetMusicData().m_TrackCount;
+
+			const unsigned int cycles_per_frame = inPAL ? EMULATION_CYCLES_PER_FRAME_PAL : EMULATION_CYCLES_PER_FRAME_NTSC;
+			const unsigned int cycles_per_second = inPAL ? EMULATION_CYCLES_PER_SECOND_PAL : EMULATION_CYCLES_PER_SECOND_NTSC;
+
+			auto frames_to_milliseconds = [&](unsigned long long inFrames)
+			{
+				return static_cast<unsigned int>(inFrames * cycles_per_frame * 1000ULL / cycles_per_second);
+			};
+
+			// Driver state after the order lists ran into an end mark without loop
+			const unsigned char driver_state_stopped = 0x40;
+
+			// The editor keeps playing on its own memory, the song plays on a copy
+			std::vector<unsigned char> data(0x10000);
+
+			inCPUMemory.Lock();
+			inCPUMemory.GetData(0, data.data(), static_cast<unsigned int>(data.size()));
+			inCPUMemory.Unlock();
+
+			Emulation::CPUMemory memory(0x10000, &Utility::Global::instance().GetPlatform());
+			Emulation::CPUmos6510 cpu;
+
+			memory.Lock();
+			memory.SetData(0, data.data(), static_cast<unsigned int>(data.size()));
+			cpu.SetMemory(&memory);
+
+			auto run = [&](unsigned short inAddress, unsigned char inAccumulator)
+			{
+				Emulation::CPUFrameCapture frame_capture(&cpu, 0xd400, 0xd400, cycles_per_frame);
+				frame_capture.Capture(inAddress, inAccumulator);
+			};
+
+			// Frame n runs update n, its end is the play time
+			run(driver_common.m_InitAddress, inSongIndex);
+
+			// The order list index after a sequence fetch points behind the fetched entry. A track has looped
+			// once a fetch lands on an index an earlier fetch had: a loop onto the last entry leaves the index
+			// unchanged, the restart of the sequence shows the fetch
+			const unsigned short order_list_index_address = driver_common.m_OrderListIndexAddress;
+			const unsigned short sequence_index_address = driver_common.m_SequenceIndexAddress;
+
+			std::vector<std::vector<bool>> fetched_index(track_count, std::vector<bool>(0x100, false));
+			std::vector<unsigned char> last_order_list_index(track_count);
+			std::vector<unsigned char> last_sequence_index(track_count);
+			std::vector<bool> looped(track_count, false);
+
+			for (unsigned int i = 0; i < track_count; ++i)
+			{
+				last_order_list_index[i] = memory[order_list_index_address + i];
+				last_sequence_index[i] = memory[sequence_index_address + i];
+				fetched_index[i][last_order_list_index[i]] = true;
+			}
+
+			unsigned int result = 0;
+
+			for (unsigned long long frame = 1; frames_to_milliseconds(frame) <= inMaxMilliseconds; ++frame)
+			{
+				run(driver_common.m_UpdateAddress, 0);
+
+				if (memory[driver_common.m_DriverStateAddress] == driver_state_stopped)
+				{
+					result = frames_to_milliseconds(frame);
+					break;
+				}
+
+				bool all_looped = true;
+
+				for (unsigned int i = 0; i < track_count; ++i)
+				{
+					const unsigned char order_list_index = memory[order_list_index_address + i];
+					const unsigned char sequence_index = memory[sequence_index_address + i];
+
+					const bool fetched = order_list_index != last_order_list_index[i] || sequence_index < last_sequence_index[i];
+
+					if (fetched)
+					{
+						if (fetched_index[i][order_list_index])
+							looped[i] = true;
+
+						fetched_index[i][order_list_index] = true;
+					}
+
+					last_order_list_index[i] = order_list_index;
+					last_sequence_index[i] = sequence_index;
+
+					all_looped = all_looped && looped[i];
+				}
+
+				// The song is through once the last track starts over
+				if (all_looped)
+				{
+					result = frames_to_milliseconds(frame);
+					break;
+				}
+			}
+
+			memory.Unlock();
+
 			return result;
 		}
 

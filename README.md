@@ -49,6 +49,57 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
 
 ### Next release
 
+- Added: Native [USBSID-Pico](https://github.com/LouDnl/USBSID-Pico) output
+  over USB, alongside ASID. Every SID write is sent with its cycle distance to
+  the previous write and the board replays the exact timing, including the
+  idle cycles between frames. Press alt-o to switch between reSID, ASID and
+  USBSID. With more than one board connected a selection dialog is shown in
+  the startup screen (F2 to reopen), writes go to every selected board. F3 in
+  the startup screen lists every SID on the boards in use and lets you pick
+  the ones to play on. For USBSID output the emulated CPU reports a SID write
+  on the last cycle of its instruction instead of the first, reSID and ASID
+  output are unchanged.
+- Added: Config options `Playback.USBSID.Boards`, `Playback.USBSID.SIDs`,
+  `Playback.USBSID.AllSIDs` and `Playback.USBSID.LeadTime`
+- Added: Multi SID drivers `sf2driver11_05_2sid.prg`, `sf2driver11_05_3sid.prg`
+  and `sf2driver11_05_4sid.prg`: driver 11.05 with three tracks per SID, SID n
+  at $D400 + n * $20. Instruments, commands and tables are shared, every SID
+  has its own filter and volume. reSID mixes all SIDs, USBSID-Pico plays every
+  tune SID on its own hardware SID, ASID sends SID 2 to 4 with the multi SID
+  commands $50 to $52 (one message per SID each frame, SID 1 first, the SID
+  type message goes out for every SID), exported `.sid` files carry the second and
+  third SID address (PSID v3/v4) or every SID (SID v5). The window widens for
+  the extra tracks when such a driver is loaded (1736 pixels for 2 SIDs, 2192
+  for 3, 2648 for 4) and narrows again, not below `Window.Width`, when a tune
+  with fewer SIDs is loaded.
+- Added: Mute keys for the tracks of SID 2 to 4: Ctrl-4 to Ctrl-9 mute or
+  unmute track 4 to 9, Ctrl-Shift-1/2/3 track 10 to 12
+- Added: Ctrl-F12 steps the window width through the widths for 1, 2, 3 and
+  4 SIDs (widths too narrow for the loaded driver are skipped), with the same
+  fade as F12. The F12 overlay grows with a wider window.
+- Added: Config option `Window.Width`, the minimum width of the window
+- Added: Stereo reSID output. Every tune stores a stereo panning: for a multi
+  SID tune the panning layout and mode of the SID file format v5 (Standard,
+  L/C/R, Center first, Fully centered; Direct, Reverse, Group, Spread), for a
+  single SID tune center, left or right. Ctrl-F9 cycles the layout (single
+  SID: the position), Ctrl-Shift-F9 the mode, the status bar shows where every
+  SID plays (click and Ctrl-click cycle as well). The audio output switches to
+  stereo while a SID plays left or right. Tunes without a stored panning play
+  their SIDs alternating left and right, Fully centered gives the mono mix.
+  The panning is saved in the `.sf2`, older versions load these files.
+- Added: SID v5 export. Exporting a multi SID tune to `.sid` asks for the
+  format (PSID v3/v4 or SID v5, a 4 SID tune is always SID v5) and the
+  panning, which is stored in the tune. A SID v5 file holds the SID count, the
+  panning and the play time of every song: the song is played until every
+  track starts over or the song stops (no song lengths when a song does not
+  end within 99:59).
+- Fixed: On Linux the configuration could silently fail to load, depending on
+  the name and location of the executable (unterminated `readlink` result)
+- Fixed: Crash at start when the file to load was given without a folder on
+  the command line (`SIDFactoryII tune.sf2`)
+- Fixed: Crash or heap corruption after packing from the utilities dialog (F6):
+  a dialog opened from another dialog used the destroyed text field of the
+  first one
 - Fixed: [#213](https://github.com/Chordian/sidfactory2/issues/213) Build
   failed on Ubuntu 26.04
 
