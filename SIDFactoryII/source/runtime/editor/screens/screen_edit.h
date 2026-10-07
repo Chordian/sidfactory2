@@ -119,6 +119,8 @@ namespace Editor
 		void DoStop();
 		void DoToggleMute(unsigned int inChannel);
 		void DoToggleOutputDevice();
+		void DoUSBSIDDialog();
+		void UpdateUSBSID();
 		void DoClearAllMuteState();
 		void DoRestoreMuteState();
 		void DoMoveToEventPositionOfSelectedMarker();

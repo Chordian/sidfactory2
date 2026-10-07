@@ -300,16 +300,12 @@ namespace Editor
 		if (sids.empty())
 			return false;
 
-		static const char* sid_type_names[] = { "unknown", "none", "8580", "6581", "FMopl" };
-
 		std::vector<std::string> labels;
 		std::vector<bool> marked;
 
 		for (const auto& sid : sids)
 		{
-			const std::string type_name = sid.m_Type >= 0 && sid.m_Type <= 4 ? sid_type_names[sid.m_Type] : "unknown";
-
-			labels.push_back("Board " + std::to_string(sid.m_BoardNumber) + " [" + (sid.m_BoardSerial.empty() ? "no serial" : sid.m_BoardSerial) + "] SID " + std::to_string(sid.m_SIDNumber) + " (" + type_name + ")");
+			labels.push_back(Emulation::USBSid::DescribeSID(sid));
 			marked.push_back(sid.m_Selected);
 		}
 

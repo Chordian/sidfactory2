@@ -96,6 +96,7 @@ namespace Editor
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel11", {{ SDLK_2, Keyboard::Control | Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleMuteChannel12", {{ SDLK_3, Keyboard::Control | Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.ToggleOutputDevice", {{ SDLK_o, Keyboard::Alt }} });
+		definitions.push_back({ "Key.ScreenEdit.OpenUSBSIDDialog", {{ SDLK_o, Keyboard::Alt | Keyboard::Shift }} });
 		definitions.push_back({ "Key.ScreenEdit.SetMarker", {{ SDLK_m, Keyboard::Control }} });
 		definitions.push_back({ "Key.ScreenEdit.GotoMarker", {{ SDLK_g, Keyboard::Control }} });
 		definitions.push_back({ "Key.ScreenEdit.QuickSave", {{ SDLK_s, Keyboard::Control }} });

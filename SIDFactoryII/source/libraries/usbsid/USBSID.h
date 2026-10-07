@@ -194,6 +194,46 @@ namespace USBSID_NS
    */
   #define SOCKET_BUFFER_SIZE 12
 
+  /* Config sub commands, byte 1 after (COMMAND << 6 | CONFIG) */
+  enum {
+    US_FEATURES         = 0x82,  /* Read compiled firmware features, 1 byte */
+    /* Onboard emulator, firmware built with ONBOARD_EMULATOR=1 only */
+    UPLOAD_SID_START    = 0xD0,  /* Enter receiving mode, byte 2 = file type */
+    UPLOAD_SID_DATA     = 0xD1,  /* Data packet, 62 payload bytes */
+    UPLOAD_SID_END      = 0xD2,  /* Leave receiving mode */
+    UPLOAD_SID_SIZE     = 0xD3,  /* File size, 16 bit big endian */
+    UPLOAD_SID_PLAYTIME = 0xD4,  /* Max play time in ms, 32 bit big endian */
+    SID_PLAYER_TUNE     = 0xE0,  /* Load uploaded tune, byte 3 = subtune (0 based), starts play */
+    SID_PLAYER_START    = 0xE1,  /* Start play of a loaded tune */
+    SID_PLAYER_STOP     = 0xE2,  /* Stop play */
+    SID_PLAYER_PAUSE    = 0xE3,  /* Toggle pause */
+    SID_PLAYER_NEXT     = 0xE4,  /* Next subtune */
+    SID_PLAYER_PREV     = 0xE5,  /* Previous subtune */
+    SID_PLAYER_TWO      = 0xE6,  /* Force play on socket two or SID two */
+    SID_PLAYER_MUTE     = 0xE9,  /* Mute chip/voice, bytes 2-4 = chip, voice, mute */
+    SID_PLAYER_MUTED    = 0xEA,  /* Read mute state, 5 byte reply */
+    SID_PLAYER_TIME     = 0xEB,  /* Read play time in ms, 4 byte big endian reply */
+  };
+
+  /* File types for UPLOAD_SID_START */
+  enum {
+    UPLOAD_FILE_STDIN = 0x00,
+    UPLOAD_FILE_SID   = 0x01,
+    UPLOAD_FILE_PRG   = 0x02,
+  };
+
+  /* US_FEATURES reply bits */
+  enum {
+    US_FEATURE_RP2350   = 0x01,
+    US_FEATURE_RGBVU    = 0x04,
+    US_FEATURE_NET      = 0x10,
+    US_FEATURE_NSD      = 0x20,
+    US_FEATURE_EMULATOR = 0x80,
+  };
+
+  #define UPLOAD_PACKET_SIZE  64  /* Every upload packet is a full 64 byte packet */
+  #define UPLOAD_PAYLOAD_SIZE 62  /* Data bytes per UPLOAD_SID_DATA packet */
+
 
   /* Ringbuffer related */
 
@@ -208,6 +248,7 @@ namespace USBSID_NS
   static const int min_ring_size = 256;
   static const int default_diff_size = 64;
   static const int default_ring_size = 8192;
+  static const int MAX_OUT_FAILURES = 3;     /* failed out transfers in a row that mark the device lost */
 
 
   /* Clockspeed related */
@@ -327,6 +368,8 @@ namespace USBSID_NS
       struct libusb_transfer *transfer_in = NULL;    /* IN-coming transfers (IN to host PC from USB-device) */
       bool transfer_out_pending = false;             /* for better transfer out sync */
       bool transfer_in_pending = false;              /* for better transfer in sync */
+      std::atomic_bool device_lost{false};           /* unplugged or out transfers keep failing */
+      int out_failures = 0;                          /* consecutive failed out transfers */
       bool in_buffer_dma = false;                    /* is the in buffer DMA or not */
       bool out_buffer_dma = false;                   /* is the out buffer DMA or not */
 
@@ -359,6 +402,8 @@ namespace USBSID_NS
       int fmoplsid = -1;
       int pcbversion = -1;
       int socketconfig = -1;
+      int features = -1;                             /* US_FEATURES reply, -1 until read */
+      bool passive = false;                          /* open without touching SID state */
 
       /* Threading the needle */
       int run_thread = 0;
@@ -377,6 +422,7 @@ namespace USBSID_NS
       int LIBUSB_DetachKernelDriver(void);
       int LIBUSB_ConfigureDevice(void);
       int LIBUSB_ReadIn(unsigned char *buff, size_t len, int *actual_length);
+      void LIBUSB_CheckLost(int error);
       void LIBUSB_InitOutBuffer(void);
       void LIBUSB_FreeOutBuffer(void);
       void LIBUSB_InitInBuffer(void);
@@ -427,6 +473,7 @@ namespace USBSID_NS
       bool USBSID_isInitialised(void){ return us_Initialised; };               /* Probability 50% */
       bool USBSID_isAvailable(void){ return us_Available; };                   /* Only if you're nice */
       bool USBSID_isOpen(void){ return us_PortIsOpen; };                       /* Adults only */
+      bool USBSID_IsDeviceLost(void){ return device_lost; };                   /* Unplugged or no longer accepting writes, close and open again */
 
       /* USBSID & SID control */
       void USBSID_Pause(void);                                                 /* Pause playing by releasing chipselect pins */
@@ -462,6 +509,23 @@ namespace USBSID_NS
       unsigned char USBSID_SingleRead(uint8_t reg);                            /* Single read register, return result */
       unsigned char USBSID_SingleReadConfig(unsigned char *buff, size_t len);  /* Single to buffer of specified length ~ example: config reading */
       int USBSID_ReadConfig(unsigned char *buff, size_t len);                  /* Single to buffer of specified length ~ returns size of data */
+
+      /* Command channel, synchronous, use with the thread disabled */
+      void USBSID_SetPassive(bool on) { passive = on; }                        /* Before USBSID_Init(): skip mute, bus clear and clock query on open */
+      int USBSID_SendCommand(const unsigned char *buff, size_t len);           /* Send raw command bytes, returns bytes sent or -1 */
+      int USBSID_ReadResponse(unsigned char *buff, size_t len);                /* Read up to len reply bytes, returns bytes read or -1 */
+      int USBSID_SendConfig(uint8_t sub, uint8_t a, uint8_t b,                 /* Send (COMMAND << 6 | CONFIG), sub, a..d as a 6 byte packet */
+                            uint8_t c, uint8_t d);
+      int USBSID_GetFeatures(void);                                            /* US_FEATURES bitmask, cached, -1 on failure */
+
+      /* Onboard emulator (firmware with ONBOARD_EMULATOR=1) */
+      int USBSID_UploadTune(const uint8_t *data, size_t len, uint8_t filetype);/* Upload a SID/PRG file, returns bytes sent or -1 */
+      int USBSID_PlayerSetPlaytime(uint32_t ms);                               /* Max play time for the uploaded tune */
+      int USBSID_PlayerLoad(uint8_t subtune);                                  /* Load uploaded tune at subtune (0 based) and start it */
+      int USBSID_PlayerCommand(uint8_t cmd);                                   /* SID_PLAYER_START/STOP/PAUSE/NEXT/PREV/TWO */
+      int USBSID_PlayerMute(uint8_t chip, uint8_t voice, bool mute);           /* chip 0 = all, voice 0 = whole chip */
+      long USBSID_PlayerTime(void);                                            /* Play time in ms, -1 on failure */
+      bool USBSID_PlayerMuted(uint8_t state[5]);                               /* Chip mask, then voice masks of chips 1-4 */
 
       /* Asynchronous direct */
       void USBSID_Write(unsigned char *buff, size_t len);                      /* Write buffer of size_t len */

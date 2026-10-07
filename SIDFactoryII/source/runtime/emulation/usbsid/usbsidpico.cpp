@@ -40,6 +40,9 @@ namespace Emulation
 		// Feed gap after which the board has run dry
 		const std::chrono::milliseconds RESYNC_GAP(250);
 
+		// Interval of the attached board check while a lost output waits for its boards
+		const std::chrono::milliseconds RECONNECT_POLL(1000);
+
 		// Largest lead time that still fits a cycled write together with a full frame
 		const unsigned int LEAD_TIME_MAX_MS = 40;
 
@@ -80,6 +83,8 @@ namespace Emulation
 	USBSid::USBSid()
 		: m_Manager(new USBSID_Manager())
 		, m_BoardsSelected(false)
+		, m_Reconnecting(false)
+		, m_ReconnectPoll(std::chrono::steady_clock::now())
 		, m_Active(false)
 		, m_IsOpen(false)
 		, m_PAL(true)
@@ -153,6 +158,8 @@ namespace Emulation
 
 	unsigned int USBSid::DetectBoards()
 	{
+		CloseIfLost();
+
 		m_DetectedBoards.clear();
 
 		// An open board is claimed and can not be enumerated again
@@ -192,14 +199,85 @@ namespace Emulation
 		m_SelectedBoards = inSerials;
 		m_BoardsSelected = true;
 		m_SelectedSIDs.clear();
+		m_Reconnecting = false;
 
 		if (was_active)
 			SetActive(true);
 	}
 
 
-	std::vector<USBSid::SIDInfo> USBSid::QuerySIDs()
+	std::vector<USBSid::SIDInfo> USBSid::QuerySIDs(bool inAllBoards)
 	{
+		CloseIfLost();
+
+		if (inAllBoards)
+		{
+			std::vector<SIDInfo> sids;
+
+			// Mark the chosen SIDs, else the SIDs in use
+			std::vector<std::pair<std::string, int>> marks = m_SelectedSIDs;
+
+			if (marks.empty() && m_IsOpen)
+			{
+				std::lock_guard<std::mutex> lock(m_Mutex);
+
+				const auto& boards = m_Manager->Boards();
+
+				for (const Target& target : m_Targets)
+					marks.push_back({ boards[target.m_Board].serial, target.m_RegisterBase / 0x20 + 1 });
+			}
+
+			// The socket configuration is readable on an open board only: open every attached board
+			const bool was_active = m_Active;
+
+			m_Active = false;
+			Close();
+			DetectBoards();
+
+			if (!m_DetectedBoards.empty() && OpenBoards(m_DetectedBoards))
+			{
+				{
+					std::lock_guard<std::mutex> lock(m_Mutex);
+
+					const auto& boards = m_Manager->Boards();
+					const auto& logical_map = m_Manager->LogicalMap();
+
+					for (size_t i = 0; i < logical_map.size(); ++i)
+					{
+						const auto& slot = logical_map[i];
+						const std::string& serial = boards[slot.board_index].serial;
+						bool selected = false;
+
+						if (!marks.empty())
+						{
+							for (const auto& mark : marks)
+								selected |= mark.first == serial && mark.second == slot.local_slot + 1;
+						}
+						else
+						{
+							// Default SIDs, limited to the chosen boards
+							bool board_in_use = !m_BoardsSelected;
+
+							for (const std::string& selected_serial : m_SelectedBoards)
+								board_in_use |= selected_serial == serial;
+
+							for (const Target& target : m_Targets)
+								selected |= board_in_use && target.m_LogicalSID == static_cast<int>(i);
+						}
+
+						sids.push_back({ serial, slot.board_index + 1, slot.local_slot + 1, slot.sid_type, selected });
+					}
+				}
+
+				Close();
+			}
+
+			if (was_active)
+				SetActive(true);
+
+			return sids;
+		}
+
 		std::vector<SIDInfo> sids;
 
 		// The SID list comes from the socket configuration, readable on an open board only
@@ -242,6 +320,7 @@ namespace Emulation
 
 		m_SelectedSIDs.clear();
 		m_SelectedBoards.clear();
+		m_Reconnecting = false;
 
 		for (const SIDInfo& sid : inSIDs)
 		{
@@ -262,6 +341,81 @@ namespace Emulation
 			SetActive(true);
 	}
 
+	std::string USBSid::DescribeSID(const SIDInfo& inSID)
+	{
+		static const char* sid_type_names[] = { "unknown", "none", "8580", "6581", "FMopl" };
+
+		const std::string type_name = inSID.m_Type >= 0 && inSID.m_Type <= 4 ? sid_type_names[inSID.m_Type] : "unknown";
+		const std::string serial = inSID.m_BoardSerial.empty() ? "no serial" : inSID.m_BoardSerial;
+
+		return "Board " + std::to_string(inSID.m_BoardNumber) + " [" + serial + "] SID " + std::to_string(inSID.m_SIDNumber) + " (" + type_name + ")";
+	}
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Lost boards
+	//----------------------------------------------------------------------------------------------------------------
+
+	USBSid::Event USBSid::Update()
+	{
+		if (m_IsOpen && m_Manager->AnyBoardLost())
+		{
+			const bool was_active = m_Active;
+
+			m_ReconnectSerials.clear();
+
+			for (const auto& board : m_Manager->Boards())
+			{
+				if (m_Manager->BoardLost(board.index))
+					Logging::instance().Warning("USBSID-Pico: board %d [%s] lost", board.index + 1, board.serial.c_str());
+
+				m_ReconnectSerials.push_back(board.serial);
+			}
+
+			m_Active = false;
+			Close();
+
+			// An output not in use closes without a trace, the next activation opens it again
+			if (!was_active)
+				return Event::None;
+
+			m_Reconnecting = true;
+			m_ReconnectPoll = std::chrono::steady_clock::now();
+
+			return Event::Lost;
+		}
+
+		if (!m_Reconnecting)
+			return Event::None;
+
+		// Opened by other means in the meantime
+		if (m_IsOpen)
+		{
+			m_Reconnecting = false;
+			return Event::None;
+		}
+
+		const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+
+		if (now - m_ReconnectPoll < RECONNECT_POLL)
+			return Event::None;
+
+		m_ReconnectPoll = now;
+
+		if (!AreBoardsAttached(m_ReconnectSerials))
+			return Event::None;
+
+		DetectBoards();
+
+		// A board still starting up fails to open, try again on the next poll
+		if (!OpenBoards(m_ReconnectSerials))
+			return Event::None;
+
+		m_Reconnecting = false;
+		Logging::instance().Info("USBSID-Pico: reconnected");
+
+		return Event::Reconnected;
+	}
+
 	//----------------------------------------------------------------------------------------------------------------
 	// Output control
 	//----------------------------------------------------------------------------------------------------------------
@@ -273,10 +427,13 @@ namespace Emulation
 
 		if (inActive)
 		{
+			CloseIfLost();
+
 			if (!m_IsOpen && !Open())
 				return false;
 
 			Resync();
+			m_Reconnecting = false;
 			m_Active = true;
 		}
 		else
@@ -502,16 +659,24 @@ namespace Emulation
 
 	bool USBSid::Open(bool inAllDetectedBoards)
 	{
+		std::vector<std::string> serials = m_SelectedBoards;
+
+		if (serials.empty() && inAllDetectedBoards)
+			serials = m_DetectedBoards;
+
+		return OpenBoards(serials);
+	}
+
+
+	bool USBSid::OpenBoards(const std::vector<std::string>& inSerials)
+	{
 		std::lock_guard<std::mutex> lock(m_Mutex);
 
 		if (m_IsOpen)
 			return true;
 
 		// An empty serial opens the first board in bus and port order
-		std::vector<std::string> serials = m_SelectedBoards;
-
-		if (serials.empty() && inAllDetectedBoards)
-			serials = m_DetectedBoards;
+		std::vector<std::string> serials = inSerials;
 
 		if (serials.empty())
 			serials.push_back(std::string());
@@ -612,6 +777,37 @@ namespace Emulation
 		m_Targets.clear();
 		m_BoardStates.clear();
 		m_IsOpen = false;
+	}
+
+
+	void USBSid::CloseIfLost()
+	{
+		// An active output is closed by Update(), which reports the loss
+		if (m_IsOpen && !m_Active && m_Manager->AnyBoardLost())
+		{
+			Logging::instance().Warning("USBSID-Pico: board lost while not in use, closing");
+			Close();
+		}
+	}
+
+
+	bool USBSid::AreBoardsAttached(const std::vector<std::string>& inSerials) const
+	{
+		const std::vector<USBSID_NS::USBSID_DeviceInfo> devices = USBSID_Manager::Enumerate();
+
+		for (const std::string& serial : inSerials)
+		{
+			bool attached = false;
+
+			// An empty serial stands for the first board found
+			for (const auto& device : devices)
+				attached |= serial.empty() || device.serial == serial;
+
+			if (!attached)
+				return false;
+		}
+
+		return !devices.empty();
 	}
 
 

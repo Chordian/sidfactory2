@@ -25,6 +25,13 @@ namespace Emulation
 			bool m_Selected;
 		};
 
+		enum class Event : int
+		{
+			None,
+			Lost,			// A board of the active output went away, the output is closed
+			Reconnected		// The boards of a lost output are back and open again
+		};
+
 		USBSid();
 		~USBSid();
 
@@ -37,9 +44,14 @@ namespace Emulation
 		bool IsBoardSelectionRequired() const;
 		void SelectBoards(const std::vector<std::string>& inSerials);
 
-		// SID selection: list every SID on the boards in use, pick the ones that receive the writes
-		std::vector<SIDInfo> QuerySIDs();
+		// SID selection: list every SID on the boards in use, pick the ones that receive the writes.
+		// With inAllBoards every attached board is listed, the boards in use stay as they are
+		std::vector<SIDInfo> QuerySIDs(bool inAllBoards = false);
 		void SelectSIDs(const std::vector<SIDInfo>& inSIDs);
+		static std::string DescribeSID(const SIDInfo& inSID);
+
+		// Main thread: close a lost output, open it again once its boards are back
+		Event Update();
 
 		// Output control
 		bool SetActive(bool inActive);
@@ -84,7 +96,10 @@ namespace Emulation
 		};
 
 		bool Open(bool inAllDetectedBoards = false);
+		bool OpenBoards(const std::vector<std::string>& inSerials);
 		void Close();
+		void CloseIfLost();
+		bool AreBoardsAttached(const std::vector<std::string>& inSerials) const;
 		void ApplyClockRate();
 		void BuildTargets();
 		void QueueWrite(const Target& inTarget, unsigned char inSidReg, unsigned char inData, uint64_t inNow, unsigned int inCycle);
@@ -100,6 +115,11 @@ namespace Emulation
 
 		std::vector<Target> m_Targets;
 		std::vector<BoardState> m_BoardStates;
+
+		// Reconnect after a lost board
+		bool m_Reconnecting;
+		std::vector<std::string> m_ReconnectSerials;
+		std::chrono::steady_clock::time_point m_ReconnectPoll;
 
 		std::atomic<bool> m_Active;
 		bool m_IsOpen;

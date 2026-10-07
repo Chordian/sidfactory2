@@ -34,6 +34,7 @@
 #include "runtime/editor/dialog/dialog_optimize.h"
 #include "runtime/editor/dialog/dialog_packing_options.h"
 #include "runtime/editor/dialog/dialog_text_input.h"
+#include "runtime/editor/dialog/dialog_usbsid_boards.h"
 #include "runtime/editor/screens/statusbar/status_bar_edit.h"
 #include "runtime/editor/overlays/overlay_flightrecorder.h"
 #include "runtime/editor/datacopy/copypaste.h"
@@ -41,6 +42,7 @@
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/emulation/sid/sidproxydefines.h"
+#include "runtime/emulation/usbsid/usbsidpico.h"
 #include "runtime/execution/executionhandler.h"
 
 #include "utils/delegate.h"
@@ -394,6 +396,8 @@ namespace Editor
 
 		m_ComponentsManager->Update(inDeltaTick, m_CPUMemory);
 
+		UpdateUSBSID();
+
 		// Update play timer
 		const bool is_playing = m_DriverState.GetPlayState() == Editor::DriverState::PlayState::Playing;
 		if (is_playing)
@@ -651,6 +655,98 @@ namespace Editor
 			this->SendASIDinformation();
 		}
 
+	}
+
+
+	void ScreenEdit::UpdateUSBSID()
+	{
+		Emulation::USBSid* usbsid = m_ExecutionHandler->GetUSBSID();
+
+		if (usbsid == nullptr)
+			return;
+
+		switch (usbsid->Update())
+		{
+		case Emulation::USBSid::Event::Lost:
+			// The board is gone: stop and fall back to reSID
+			if (IsPlaying())
+				DoStop();
+
+			m_ExecutionHandler->SetOutputDevice(ExecutionHandler::OutputDevice::RESID);
+			SetStatusBarMessage(" USBSID-Pico disconnected, output set to reSID", 5000);
+			break;
+
+		case Emulation::USBSid::Event::Reconnected:
+			// Return to the board unless another output was chosen meanwhile
+			if (m_ExecutionHandler->GetOutputDevice() == ExecutionHandler::OutputDevice::RESID)
+			{
+				if (IsPlaying())
+					DoStop();
+
+				m_ExecutionHandler->SetOutputDevice(ExecutionHandler::OutputDevice::USBSID);
+			}
+
+			SetStatusBarMessage(m_ExecutionHandler->GetOutputDevice() == ExecutionHandler::OutputDevice::USBSID
+				? " USBSID-Pico reconnected, output set to USBSID-Pico"
+				: " USBSID-Pico reconnected", 5000);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+
+	void ScreenEdit::DoUSBSIDDialog()
+	{
+		Emulation::USBSid* usbsid = m_ExecutionHandler->GetUSBSID();
+
+		if (usbsid == nullptr || m_ComponentsManager->IsDisplayingDialog())
+			return;
+
+		// Choosing SIDs opens and resets every board, no switching while playing
+		if (IsPlaying())
+			DoStop();
+
+		const std::vector<Emulation::USBSid::SIDInfo> sids = usbsid->QuerySIDs(true);
+
+		if (sids.empty())
+		{
+			m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("USBSID-Pico", "No USBSID-Pico board with a configured SID found!", 60, true, []() {}));
+			return;
+		}
+
+		std::vector<std::string> labels;
+		std::vector<bool> marked;
+
+		for (const auto& sid : sids)
+		{
+			labels.push_back(Emulation::USBSid::DescribeSID(sid));
+			marked.push_back(sid.m_Selected);
+		}
+
+		m_ComponentsManager->StartDialog(
+			std::make_shared<DialogUSBSIDSelection>
+			(
+				60,
+				"USBSID-Pico: SPACE marks SID, ENTER confirms",
+				labels,
+				marked,
+				[this, usbsid, sids](const std::vector<bool>& inRows)
+				{
+					std::vector<Emulation::USBSid::SIDInfo> selection;
+
+					for (size_t i = 0; i < inRows.size() && i < sids.size(); ++i)
+					{
+						if (inRows[i])
+							selection.push_back(sids[i]);
+					}
+
+					usbsid->SelectSIDs(selection);
+				},
+				[]() {}
+			)
+		);
 	}
 
 
@@ -2092,6 +2188,12 @@ namespace Editor
 		m_KeyHooks.push_back( { "Key.ScreenEdit.ToggleOutputDevice", m_KeyHookStore, [&]()
 		{
 			DoToggleOutputDevice();
+			return true;
+		}});
+
+		m_KeyHooks.push_back({ "Key.ScreenEdit.OpenUSBSIDDialog", m_KeyHookStore, [&]()
+		{
+			DoUSBSIDDialog();
 			return true;
 		}});
 

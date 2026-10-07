@@ -138,6 +138,7 @@ namespace Emulation
 
 		void SetOutputDevice(const OutputDevice device);
 		const OutputDevice GetOutputDevice() const;
+		USBSid* GetUSBSID() const { return m_USBSID; }
 
 	private:
 		enum class ActionType : int

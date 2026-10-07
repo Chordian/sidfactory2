@@ -211,6 +211,20 @@ void USBSID_Manager::FlushBoard(int logical_sid)
   devices_[logical_map_[logical_sid].board_index]->USBSID_SetFlush();
 }
 
+bool USBSID_Manager::BoardLost(int board_index)
+{
+  if (board_index < 0 || (size_t)board_index >= devices_.size()) return false;
+  return devices_[board_index]->USBSID_IsDeviceLost();
+}
+
+bool USBSID_Manager::AnyBoardLost(void)
+{
+  for (auto &dev : devices_) {
+    if (dev->USBSID_IsDeviceLost()) return true;
+  }
+  return false;
+}
+
 void USBSID_Manager::FlushAll(void)
 {
   for (auto &dev : devices_) dev->USBSID_SetFlush();
