@@ -487,7 +487,7 @@ void USBSID_Class::USBSID_SetStereo(int state)
   if (pcbversion == -1) {
     USBSID_GetPCBVersion();
   }
-  if (pcbversion == 13) {
+  if (pcbversion >= 13) { /* PCB_VERSION_INT >= 13 have an audio switch */
     uint8_t configbuff[6] = {(COMMAND << 6 | CONFIG), 0x89, (uint8_t)state, 0, 0, 0};
     USBSID_SingleWrite(configbuff, 6);
   }
@@ -500,7 +500,7 @@ void USBSID_Class::USBSID_ToggleStereo(void)
   if (pcbversion == -1) {
     USBSID_GetPCBVersion();
   }
-  if (pcbversion == 13) {
+  if (pcbversion >= 13) { /* PCB_VERSION_INT >= 13 have an audio switch */
     uint8_t configbuff[6] = {(COMMAND << 6 | CONFIG), 0x88, 0x0, 0, 0, 0};
     USBSID_SingleWrite(configbuff, 6);
   }

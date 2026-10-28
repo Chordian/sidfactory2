@@ -579,8 +579,8 @@ namespace USBSID_NS
       int USBSID_GetNumSIDs(void);                                             /* Get the total number of sids configured */
       int USBSID_GetFMOplSID(void);                                            /* Get the sid number (if configured) to address FMOpl */
       int USBSID_GetPCBVersion(void);                                          /* Get the PCB version */
-      void USBSID_SetStereo(int state);                                        /* Set device to mono or stereo ~ v1.3 PCB only */
-      void USBSID_ToggleStereo(void);                                          /* Toggle between mono and stereo ~ v1.3 PCB only */
+      void USBSID_SetStereo(int state);                                        /* Set device to mono or stereo ~ PCB v1.3 and newer */
+      void USBSID_ToggleStereo(void);                                          /* Toggle between mono and stereo ~ PCB v1.3 and newer */
 
       /* Synchronous direct */
       void USBSID_SingleWrite(unsigned char *buff, size_t len);                /* Single write buffer of size_t ~ e.g. config writing */
