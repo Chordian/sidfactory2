@@ -339,8 +339,8 @@ namespace Editor
 		m_DriverCommon.m_TempoCounterAddress = inReader.ReadWord();
 		m_DriverCommon.m_TriggerSyncAddress = inReader.ReadWord();
 		m_DriverCommon.m_NoteEventTriggerSyncValue = inReader.ReadByte();
-		m_DriverCommon.m_ReservedByte = inReader.ReadByte();
-		m_DriverCommon.m_ReservedWord = inReader.ReadWord();
+		m_DriverCommon.m_UpdatesPerFrameAddress = inReader.ReadWord();
+		m_DriverCommon.m_MaxUpdatesPerFrame = inReader.ReadByte();
 	}
 
 
