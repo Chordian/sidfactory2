@@ -45,7 +45,7 @@ LINKER_FLAGS=$(shell sdl2-config --libs) -lstdc++ -flto
 
 ifeq ($(PLATFORM),LINUX)
 	CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
-	LINKER_FLAGS := $(LINKER_FLAGS) -ljack
+	LINKER_FLAGS := $(LINKER_FLAGS) $(shell pkgconf --libs jack)
 endif
 
 ifeq ($(PLATFORM),MACOS)
