@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -28,6 +29,11 @@ namespace Editor
 
 		void SetFullScreenState(bool inIsFullScreen);
 
+		void SetClientWidthHandler(std::function<void(int)> inClientWidthHandler);
+		void RequestClientWidth(int inClientWidth);
+		void SetClientWidth(int inClientWidth);
+		int GetRequestedClientWidth() const;
+
 		void Update(int inDeltaTicks);
 
 		void OnChange(const DriverInfo& inDriverInfo);
@@ -37,12 +43,20 @@ namespace Editor
 		void ReadConfigValues(const Utility::ConfigFile& inConfigFile);
 		void EnumeratePlatformFiles(const Foundation::IPlatform& inPlatform);
 		void LoadOverlay(bool inIsEditorOverlay, const std::string& inFilename);
+		void ApplyClientWidth();
+
+		int GetExtraClientWidth() const;
+		int GetOverlayWidth() const;
+		int GetDriverImageX() const;
 
 		bool m_Enabled;
 		bool m_OverlayEnabledState;
 		bool m_IsFading;
 		float m_FadeValue;
 		bool m_IsFullScreen;
+		int m_RequestedClientWidth;
+
+		std::function<void(int)> m_ClientWidthHandler;
 
 		Foundation::Viewport* m_Viewport;
 		std::vector<std::string> m_OverlayFileList;

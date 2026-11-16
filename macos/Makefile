@@ -12,6 +12,20 @@ SRC_TMP=$(PROJECT_ROOT)/main.cpp $(shell find $(SOURCE) -name "*.cpp")
 SRC=$(patsubst %miniz_tester.cpp,,$(SRC_TMP))
 DOCS=../dist/documentation
 
+# Vendored libusb for the USBSID-Pico driver
+LIBUSB_ROOT=../libs/libusb
+LIBUSB_SRC= \
+	$(LIBUSB_ROOT)/libusb/core.c \
+	$(LIBUSB_ROOT)/libusb/descriptor.c \
+	$(LIBUSB_ROOT)/libusb/hotplug.c \
+	$(LIBUSB_ROOT)/libusb/io.c \
+	$(LIBUSB_ROOT)/libusb/strerror.c \
+	$(LIBUSB_ROOT)/libusb/sync.c \
+	$(LIBUSB_ROOT)/libusb/os/darwin_usb.c \
+	$(LIBUSB_ROOT)/libusb/os/events_posix.c \
+	$(LIBUSB_ROOT)/libusb/os/threads_posix.c
+LIBUSB_OBJ=$(LIBUSB_SRC:.c=.o)
+
 # Artifacts
 APP_NAME=SIDFactoryII
 ARTIFACTS_FOLDER=artifacts
@@ -29,6 +43,7 @@ CC=clang++
 
 CC_FLAGS= \
   -I$(SOURCE) \
+	-I$(LIBUSB_ROOT)/libusb \
 	-I./App/Contents/Frameworks/SDL2.framework/Headers \
 	-D_BUILD_NR=\"$(BUILD_NR_TARGET)\" \
 	-F./App/Contents/Frameworks \
@@ -46,6 +61,9 @@ LINKER_FLAGS=\
 	-framework CoreMIDI \
 	-framework CoreAudio \
 	-framework CoreFoundation \
+	-framework IOKit \
+	-framework Security \
+	-lobjc \
 	-F./App/Contents/Frameworks \
 	-lstdc++ \
 	-flto \
@@ -56,12 +74,16 @@ LINKER_FLAGS=\
 %.o: %.cpp
 	$(CC) $(CC_FLAGS) -c $< -o $@
 
+# Rule to compile vendored libusb as C
+$(LIBUSB_ROOT)/%.o: $(LIBUSB_ROOT)/%.c
+	clang -target $(TARGET) -O2 -I$(LIBUSB_ROOT)/Xcode -I$(LIBUSB_ROOT)/libusb -c $< -o $@
+
 # Rule to compile .o from .c
 %.o: %.c
 	$(CC) -target $(TARGET) -c $< -o $@
 
 # Determine all .o files to be built
-OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
+OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o $(LIBUSB_OBJ)
 
 # Compile executable
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER)

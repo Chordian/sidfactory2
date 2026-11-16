@@ -22,6 +22,8 @@ namespace Foundation
 
 		virtual void PreFeedPCM(void* inBuffer, unsigned int inByteCount) = 0;		// Called when pre feeding the buffer before starting it
 		virtual void FeedPCM(void* inBuffer, unsigned int inByteCount) = 0;			// Called when ever the stream needs more data while running
+
+		virtual void SetChannelCount(unsigned int /*inChannelCount*/) { }				// Called while no data is fed: 1 = mono, 2 = interleaved stereo
 	};
 
 	class AudioStream final
@@ -32,11 +34,20 @@ namespace Foundation
 
 		void Start();
 		void Stop();
+
+		// Reopens the device with 1 (mono) or 2 (stereo) channels, keeps it running if it was
+		void SetChannelCount(unsigned int inChannelCount);
+		unsigned int GetChannelCount() const { return m_ChannelCount; }
 	
 	private:
+		void Open();
+		void Close();
+
 		unsigned int m_Frequency;
 		unsigned int m_BitDepth;
 		unsigned int m_BufferDuration;
+		unsigned int m_ChannelCount;
+		bool m_IsRunning;
 
 		IAudioStreamFeeder* m_StreamFeeder;
 

@@ -30,6 +30,7 @@ SIDFactoryII/*.vcxproj.user
 *.dll
 *.exe
 *.o
+*.d
 artifacts
 xcuserdata
 .ccls-cache

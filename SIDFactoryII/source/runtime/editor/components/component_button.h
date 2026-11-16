@@ -27,6 +27,9 @@ namespace Editor
 
 		void SetColors(const Foundation::Color& inTextColor, const Foundation::Color& inBackgroundColor);
 
+		// Text no longer than the button. A shorter text does not clear the old one, pad it with spaces
+		void SetText(const std::string& inButtonText);
+
 		bool ConsumeInput(const Foundation::Keyboard& inKeyboard, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeInput(const Foundation::Mouse& inMouse, bool inModifierKeyMask, CursorControl& inCursorControl, ComponentsManager& inComponentsManager) override;
 		bool ConsumeNonExclusiveInput(const Foundation::Mouse& inMouse) override;

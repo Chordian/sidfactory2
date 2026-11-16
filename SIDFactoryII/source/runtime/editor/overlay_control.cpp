@@ -20,9 +20,13 @@ namespace Editor
 	using namespace Foundation;
 	using namespace Utility::Config;
 
+	// Client width the overlay images and their positions in the configuration are made for
+	static const int OverlayClientWidth = 1280;
+
 	OverlayControl::OverlayControl(Foundation::Viewport* inViewport)
 		: m_OverlayEnabledState(false)
 		, m_IsFullScreen(false)
+		, m_RequestedClientWidth(0)
 
 		, m_Viewport(inViewport)
 		, m_IsFading(true)
@@ -45,34 +49,48 @@ namespace Editor
 		if (m_IsFading)
 		{
 			float fade_delta = m_OverlayFadeDuration > 0 ? (static_cast<float>(inDeltaTicks) / m_OverlayFadeDuration) : 1.0f;
-			if (m_Enabled != m_OverlayEnabledState)
+			const bool overlay_change = m_Enabled != m_OverlayEnabledState;
+			const bool client_width_change = m_RequestedClientWidth != 0;
+
+			if (overlay_change || client_width_change)
 			{
 				if (m_FadeValue > 0.0f)
 					m_FadeValue = std::max<float>(m_FadeValue - fade_delta, 0.0f);
 				else
 				{
-					const Foundation::Point editor_client_offset = { m_OverlayEditorClientOffsetX, m_OverlayEditorClientOffsetY };
-					const Foundation::Point window_position = m_Viewport->GetWindowPosition();
+					// Faded out: resize the client first, the overlay window size depends on it
+					if (client_width_change)
+						ApplyClientWidth();
 
-					if (m_Enabled)
+					if (overlay_change)
 					{
-						if (!m_IsFullScreen)
+						const Foundation::Point editor_client_offset = { m_OverlayEditorClientOffsetX, m_OverlayEditorClientOffsetY };
+						const Foundation::Point window_position = m_Viewport->GetWindowPosition();
+
+						if (m_Enabled)
 						{
-							m_Viewport->SetWindowSize({ m_OverlayWidth, m_OverlayHeight });
-							m_Viewport->SetWindowPosition(window_position - editor_client_offset);
+							if (!m_IsFullScreen)
+							{
+								m_Viewport->SetWindowSize({ GetOverlayWidth(), m_OverlayHeight });
+								m_Viewport->SetWindowPosition(window_position - editor_client_offset);
+							}
 						}
-					}
-					else
-					{
-						if (!m_IsFullScreen)
+						else
 						{
-							m_Viewport->SetWindowSize({ m_Viewport->GetClientWidth(), m_Viewport->GetClientHeight() });
-							m_Viewport->SetWindowPosition(window_position + editor_client_offset);
+							if (!m_IsFullScreen)
+							{
+								m_Viewport->SetWindowSize({ m_Viewport->GetClientWidth(), m_Viewport->GetClientHeight() });
+								m_Viewport->SetWindowPosition(window_position + editor_client_offset);
+							}
 						}
+
+						m_OverlayEnabledState = m_Enabled;
 					}
 
-					m_OverlayEnabledState = m_Enabled;
 					OnWindowResized();
+
+					if (client_width_change)
+						m_Viewport->KeepWindowOnDisplay();
 				}
 			}
 			else
@@ -106,6 +124,78 @@ namespace Editor
 	void OverlayControl::SetFullScreenState(bool inIsFullScreen)
 	{
 		m_IsFullScreen = inIsFullScreen;
+	}
+
+
+	void OverlayControl::SetClientWidthHandler(std::function<void(int)> inClientWidthHandler)
+	{
+		m_ClientWidthHandler = inClientWidthHandler;
+	}
+
+
+	// Fade out, call the client width handler, fade in. The current width cancels a pending request
+	void OverlayControl::RequestClientWidth(int inClientWidth)
+	{
+		m_RequestedClientWidth = inClientWidth != m_Viewport->GetClientWidth() ? inClientWidth : 0;
+
+		if (m_RequestedClientWidth != 0)
+			m_IsFading = true;
+	}
+
+
+	// Client width of a pending request, 0 if none
+	int OverlayControl::GetRequestedClientWidth() const
+	{
+		return m_RequestedClientWidth;
+	}
+
+
+	// Resize without fading, any pending request is replaced
+	void OverlayControl::SetClientWidth(int inClientWidth)
+	{
+		m_RequestedClientWidth = 0;
+
+		if (inClientWidth != m_Viewport->GetClientWidth())
+		{
+			m_RequestedClientWidth = inClientWidth;
+			ApplyClientWidth();
+			OnWindowResized();
+			m_Viewport->KeepWindowOnDisplay();
+		}
+	}
+
+
+	void OverlayControl::ApplyClientWidth()
+	{
+		const int client_width = m_RequestedClientWidth;
+		m_RequestedClientWidth = 0;
+
+		if (m_ClientWidthHandler)
+			m_ClientWidthHandler(client_width);
+		else
+			m_Viewport->SetClientResolution(client_width, m_Viewport->GetClientHeight());
+
+		m_Viewport->SetOverlayPosition(1, { GetDriverImageX(), m_OverlayDriverImageY });
+	}
+
+
+	// Width the client has above the width the overlay is made for
+	int OverlayControl::GetExtraClientWidth() const
+	{
+		return std::max<int>(m_Viewport->GetClientWidth() - OverlayClientWidth, 0);
+	}
+
+
+	// The overlay window grows by the extra client width, the driver image moves right by the same amount
+	int OverlayControl::GetOverlayWidth() const
+	{
+		return m_OverlayWidth + GetExtraClientWidth();
+	}
+
+
+	int OverlayControl::GetDriverImageX() const
+	{
+		return m_OverlayDriverImageX + GetExtraClientWidth();
 	}
 
 
@@ -160,7 +250,7 @@ namespace Editor
 		{
 			const Foundation::Point editor_client_offset = { m_OverlayEditorClientOffsetX, m_OverlayEditorClientOffsetY };
 			m_Viewport->SetClientPositionInWindow(editor_client_offset);
-			m_Viewport->SetWindowSize({ m_OverlayWidth, m_OverlayHeight });
+			m_Viewport->SetWindowSize({ GetOverlayWidth(), m_OverlayHeight });
 		}
 		else
 		{
@@ -229,7 +319,7 @@ namespace Editor
 
 				Rect rect = {
 
-					inIsEditorOverlay ? m_OverlayEditorImageX : m_OverlayDriverImageX,
+					inIsEditorOverlay ? m_OverlayEditorImageX : GetDriverImageX(),
 					inIsEditorOverlay ? m_OverlayEditorImageY : m_OverlayDriverImageY,
 					static_cast<int>(decoded_image_width),
 					static_cast<int>(decoded_image_height)

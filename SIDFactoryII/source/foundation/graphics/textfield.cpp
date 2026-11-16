@@ -163,6 +163,41 @@ namespace Foundation
 	}
 
 
+	// Change the size in characters, the contents are cleared. Not to be called between Begin and End
+	void TextField::Resize(int inWidth, int inHeight)
+	{
+		if (inWidth == m_Dimensions.m_Width && inHeight == m_Dimensions.m_Height)
+			return;
+
+		m_Dimensions = { inWidth, inHeight };
+		m_ResolutionX = inWidth * m_Viewport.GetFont().width;
+		m_ResolutionY = inHeight * m_Viewport.GetFont().height;
+
+		SDL_FreeSurface(m_Surface);
+		SDL_DestroyTexture(m_Texture);
+
+		m_Surface = SDL_CreateRGBSurface(0, m_ResolutionX, m_ResolutionY, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+		FOUNDATION_ASSERT(m_Surface);
+
+		m_Texture = SDL_CreateTexture(m_Renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, m_ResolutionX, m_ResolutionY);
+		FOUNDATION_ASSERT(m_Texture);
+
+		const int cell_buffer_size = m_Dimensions.m_Width * m_Dimensions.m_Height;
+
+		delete[] m_ScreenCharacterCellBuffer;
+		delete[] m_ScreenColorCellBuffer;
+
+		m_ScreenCharacterCellBuffer = new char[cell_buffer_size];
+		m_ScreenColorCellBuffer = new unsigned short[cell_buffer_size];
+		m_ScreenDirtyCell.Resize(cell_buffer_size);
+
+		Clear();
+
+		m_Cursor.SetEnabled(false);
+		m_CursorLast = m_Cursor;
+	}
+
+
 	const Point& TextField::GetPosition() const
 	{
 		return m_Position;

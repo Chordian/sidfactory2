@@ -12,6 +12,7 @@
 #include "foundation/platform/imutex.h"
 #include "foundation/platform/iplatform.h"
 #include "runtime/emulation/asid/asid.h"
+#include "runtime/emulation/usbsid/usbsidpico.h"
 #include "libraries/rtmidi/RtMidi.h"
 
 #include "utils/configfile.h"
@@ -38,11 +39,13 @@ namespace Emulation
 		CPUMemory* pMemory,
 		SIDProxy* pSIDProxy,
 		ASid* inASID,
+		USBSid* inUSBSID,
 		FlightRecorder* inFlightRecorder)
 		: m_CPU(inCPU)
 		, m_Memory(pMemory)
 		, m_SIDProxy(pSIDProxy)
 		, m_ASID(inASID)
+		, m_USBSID(inUSBSID)
 		, m_SIDRegisterFlightRecorder(inFlightRecorder)
 		, m_IsStarted(false)
 		, m_FeedCount(0)
@@ -53,12 +56,24 @@ namespace Emulation
 		, m_UpdateEnabled(false)
 		, m_ErrorState(false)
 		, m_OutputDevice(OutputDevice::RESID)
+		, m_SkipSIDSimulation(false)
+		, m_SIDCount(1)
+		, m_PanLayout(SIDPanLayout::Standard)
+		, m_PanMode(SIDPanMode::Direct)
+		, m_SingleSIDPan(SIDPan::Center)
+		, m_OutputChannelCount(1)
+		, m_RenderGeneration(0)
+		, m_RenderPending(0)
+		, m_RenderNext(0)
+		, m_RenderCyclesInFrame(0)
+		, m_RenderQuit(false)
 	{
 		m_CyclesPerFrame = EMULATION_CYCLES_PER_FRAME_PAL;
 
 		// Create a sample buffer. The sample frequency is used for determining the size, which is probably 50 times the size required.
 		m_SampleBufferSize = (static_cast<unsigned int>(pSIDProxy->GetSampleFrequency()) << 8);
 		m_SampleBuffer = new short[m_SampleBufferSize];
+		m_SampleBufferRight = new short[m_SampleBufferSize];
 		m_Mutex = Global::instance().GetPlatform().CreateMutex();
 		m_OutputGain = GetSingleConfigurationValue<Utility::Config::ConfigValueFloat>(Global::instance().GetConfig(), "Sound.Output.Gain", -1.0f);
 
@@ -71,14 +86,21 @@ namespace Emulation
 
 		// Clear SID registers after last driver update
 		memset(m_SIDRegisterLastDriverUpdate.m_Buffer, 0, sizeof(m_SIDRegisterLastDriverUpdate.m_Buffer));
+
+		UpdateSIDPanning();
 	}
 
 	ExecutionHandler::~ExecutionHandler()
 	{
+		StopExtraSIDThreads();
+
 		m_Mutex = nullptr;
 
 		if (m_SampleBuffer != nullptr)
 			delete[] m_SampleBuffer;
+
+		if (m_SampleBufferRight != nullptr)
+			delete[] m_SampleBufferRight;
 	}
 
 	//----------------------------------------------------------------------------------------------------------------
@@ -97,12 +119,18 @@ namespace Emulation
 			if (m_SIDProxy != nullptr)
 				m_SIDProxy->Reset();
 
+			for (auto& extra_sid : m_ExtraSIDs)
+				extra_sid->m_SID->Reset();
+
 			if (m_SIDRegisterFlightRecorder != nullptr)
 			{
 				m_SIDRegisterFlightRecorder->Lock();
 				m_SIDRegisterFlightRecorder->Reset();
 				m_SIDRegisterFlightRecorder->Unlock();
 			}
+
+			if (m_USBSID != nullptr)
+				m_USBSID->Resync();
 
 			m_IsStarted = true;
 		}
@@ -114,6 +142,10 @@ namespace Emulation
 		{
 			m_SampleBufferReadCursor = 0;
 			m_SampleBufferWriteCursor = 0;
+
+			// No frames are fed while stopped, do not leave notes hanging on the board
+			if (m_USBSID != nullptr && m_OutputDevice == OutputDevice::USBSID)
+				m_USBSID->Silence();
 
 			m_IsStarted = false;
 		}
@@ -145,22 +177,43 @@ namespace Emulation
 		FeedPCM(inBuffer, inByteCount);
 	}
 
+	void ExecutionHandler::SetChannelCount(unsigned int inChannelCount)
+	{
+		Lock();
+
+		m_OutputChannelCount = inChannelCount == 2 ? 2 : 1;
+
+		// Samples left of the last frame are mixed for the old layout
+		m_SampleBufferReadCursor = 0;
+		m_SampleBufferWriteCursor = 0;
+
+		Unlock();
+	}
+
 	void ExecutionHandler::SetOutputDevice(const OutputDevice device)
 	{
-
 		if (m_OutputDevice == device)
 			return;
 
 		// if MIDI port is not open, do not switch to ASID
-		if (!m_ASID->isPortOpen())
+		if (device == OutputDevice::ASID && (m_ASID == nullptr || !m_ASID->isPortOpen()))
 			return;
+
+		// if no USBSID-Pico board can be opened, do not switch to USBSID
+		if (device == OutputDevice::USBSID && (m_USBSID == nullptr || !m_USBSID->SetActive(true)))
+			return;
+
+		if (device != OutputDevice::USBSID && m_USBSID != nullptr)
+			m_USBSID->SetActive(false);
 
 		m_OutputDevice = device;
 
 		// mute/unmute ASID depending on its selection
-		m_ASID->SetMuted(m_OutputDevice != OutputDevice::ASID);
+		if (m_ASID != nullptr && m_ASID->isPortOpen())
+			m_ASID->SetMuted(m_OutputDevice != OutputDevice::ASID);
 
-		Utility::Logging::instance().Info("OutputDevice set to %s", m_OutputDevice == ExecutionHandler::OutputDevice::ASID ? "ASID" : "RESID");
+		Utility::Logging::instance().Info("OutputDevice set to %s",
+			m_OutputDevice == OutputDevice::ASID ? "ASID" : (m_OutputDevice == OutputDevice::USBSID ? "USBSID" : "RESID"));
 	}
 
 	const ExecutionHandler::OutputDevice ExecutionHandler::GetOutputDevice() const
@@ -177,12 +230,36 @@ namespace Emulation
 		{
 			memset(inBuffer, 0, inByteCount);
 		}
+		else if (m_OutputDevice == OutputDevice::USBSID && m_USBSID != nullptr)
+		{
+			// The board makes the sound: feed frames by the wall clock, not by sample demand
+			memset(inBuffer, 0, inByteCount);
+
+			const unsigned int frames_due = m_USBSID->FramesDue(m_CyclesPerFrame);
+
+			for (unsigned int i = 0; i < frames_due; ++i)
+				CaptureNewFrame();
+
+			// Send writes the frame flush left in the driver buffer
+			m_USBSID->Flush();
+		}
 		else
 		{
-			unsigned int uiRemainingSamples = (inByteCount >> 1);
+			// A sample frame holds one sample per channel, stereo interleaves left and right
+			const unsigned int channel_count = m_OutputChannelCount;
+			unsigned int uiRemainingSamples = (inByteCount >> 1) / channel_count;
 
 			short* pSource = static_cast<short*>(m_SampleBuffer);
+			short* pSourceRight = static_cast<short*>(m_SampleBufferRight);
 			short* pTarget = static_cast<short*>(inBuffer);
+
+			auto scale = [&](short inSample)
+			{
+				// A multi SID frame holds the average of its SIDs, see MixSIDs()
+				const float fSample = static_cast<float>(inSample) * m_OutputGain * static_cast<float>(m_SIDCount);
+				const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
+				return static_cast<short>(fClampedSample);
+			};
 
 			while (uiRemainingSamples > 0)
 			{
@@ -199,15 +276,17 @@ namespace Emulation
 
 				for (unsigned int i = 0; i < uiSamplesToCopy; ++i)
 				{
-					if (m_OutputDevice == ExecutionHandler::OutputDevice::RESID)
+					const unsigned int source_index = i + m_SampleBufferReadCursor;
+					const bool resid_output = m_OutputDevice == ExecutionHandler::OutputDevice::RESID;
+
+					if (channel_count == 2)
 					{
-						const float fSample = static_cast<float>(pSource[i + m_SampleBufferReadCursor]) * m_OutputGain;
-						const float fClampedSample = fmin(sampleCeiling, fmax(fSample, sampleFloor));
-						pTarget[i] = static_cast<short>(fClampedSample);
+						pTarget[i * 2] = resid_output ? scale(pSource[source_index]) : 0;
+						pTarget[i * 2 + 1] = resid_output ? scale(pSourceRight[source_index]) : 0;
 					}
 					else
 					{
-						pTarget[i] = 0;
+						pTarget[i] = resid_output ? scale(pSource[source_index]) : 0;
 					}
 				}
 
@@ -215,7 +294,7 @@ namespace Emulation
 				m_SampleBufferReadCursor += uiSamplesToCopy;
 
 				// Forward the target pointer
-				pTarget += uiSamplesToCopy;
+				pTarget += uiSamplesToCopy * channel_count;
 
 				// Decrement the remaining number of samples
 				uiRemainingSamples -= uiSamplesToCopy;
@@ -244,6 +323,280 @@ namespace Emulation
 	void ExecutionHandler::SetPAL(const bool inPALMode)
 	{
 		m_CyclesPerFrame = inPALMode ? EMULATION_CYCLES_PER_FRAME_PAL : EMULATION_CYCLES_PER_FRAME_NTSC;
+
+		if (m_USBSID != nullptr)
+			m_USBSID->SetPAL(inPALMode);
+	}
+
+
+	void ExecutionHandler::SetSIDCount(unsigned int inSIDCount)
+	{
+		const unsigned int sid_count = inSIDCount < 1 ? 1 : (inSIDCount > MaxSIDCount ? MaxSIDCount : inSIDCount);
+
+		Lock();
+
+		if (sid_count != m_SIDCount)
+		{
+			StopExtraSIDThreads();
+
+			// Samples left of the last frame are scaled for the old SID count
+			m_SampleBufferReadCursor = 0;
+			m_SampleBufferWriteCursor = 0;
+
+			m_SIDCount = sid_count;
+			m_ExtraSIDs.clear();
+
+			// Same configuration as the first SID, kept in step by SyncExtraSIDs()
+			for (unsigned int i = 1; i < m_SIDCount; ++i)
+			{
+				m_ExtraSIDs.push_back(std::make_unique<ExtraSID>());
+
+				ExtraSID& extra_sid = *m_ExtraSIDs.back();
+
+				extra_sid.m_SID = std::make_unique<SIDProxy>(m_SIDProxy->GetConfiguration());
+				extra_sid.m_SID->Reset();
+
+				// Room for more than one frame at the lowest frame rate
+				extra_sid.m_Samples.resize(static_cast<size_t>(m_SIDProxy->GetSampleFrequency()) / 8);
+			}
+
+			StartExtraSIDThreads();
+		}
+
+		UpdateSIDPanning();
+
+		if (m_ASID != nullptr)
+			m_ASID->SetSIDCount(sid_count);
+
+		Unlock();
+
+		if (m_USBSID != nullptr)
+			m_USBSID->SetSIDCount(sid_count);
+	}
+
+
+	void ExecutionHandler::SetPanning(SIDPanLayout inLayout, SIDPanMode inMode, SIDPan inSingleSIDPan)
+	{
+		Lock();
+
+		m_PanLayout = inLayout;
+		m_PanMode = inMode;
+		m_SingleSIDPan = inSingleSIDPan;
+
+		UpdateSIDPanning();
+
+		Unlock();
+	}
+
+
+	SIDPan ExecutionHandler::GetSIDPan(unsigned int inSIDIndex) const
+	{
+		return inSIDIndex < m_SIDCount ? m_SIDPan[inSIDIndex] : SIDPan::Center;
+	}
+
+
+	unsigned int ExecutionHandler::GetWantedChannelCount() const
+	{
+		for (unsigned int i = 0; i < m_SIDCount; ++i)
+		{
+			if (m_SIDPan[i] != SIDPan::Center)
+				return 2;
+		}
+
+		return 1;
+	}
+
+
+	void ExecutionHandler::UpdateSIDPanning()
+	{
+		for (unsigned int i = 0; i < MaxSIDCount; ++i)
+			m_SIDPan[i] = SIDPan::Center;
+
+		if (m_SIDCount == 1)
+			m_SIDPan[0] = m_SingleSIDPan;
+		else
+			ComputeSIDPanning(m_PanLayout, m_PanMode, m_SIDCount, m_SIDPan);
+	}
+
+
+	void ExecutionHandler::SyncExtraSIDs()
+	{
+		for (auto& extra_sid : m_ExtraSIDs)
+		{
+			SIDProxy& sid = *extra_sid->m_SID;
+
+			if (sid.GetModel() != m_SIDProxy->GetModel() || sid.GetEnvironment() != m_SIDProxy->GetEnvironment())
+			{
+				sid.SetConfiguration(m_SIDProxy->GetConfiguration());
+				sid.ApplySettings();
+			}
+		}
+	}
+
+
+	//----------------------------------------------------------------------------------------------------------------
+	// Extra SID threads
+	//----------------------------------------------------------------------------------------------------------------
+
+	void ExecutionHandler::StartExtraSIDThreads()
+	{
+		m_RenderQuit = false;
+		m_RenderPending = 0;
+
+		// No frame handed over: nothing to take
+		m_RenderNext = static_cast<unsigned int>(m_ExtraSIDs.size());
+
+		for (auto& extra_sid : m_ExtraSIDs)
+			extra_sid->m_Thread = std::thread(&ExecutionHandler::ExtraSIDThread, this);
+	}
+
+
+	void ExecutionHandler::StopExtraSIDThreads()
+	{
+		{
+			std::lock_guard<std::mutex> lock(m_RenderMutex);
+			m_RenderQuit = true;
+		}
+
+		m_RenderStart.notify_all();
+
+		for (auto& extra_sid : m_ExtraSIDs)
+		{
+			if (extra_sid->m_Thread.joinable())
+				extra_sid->m_Thread.join();
+		}
+	}
+
+
+	void ExecutionHandler::ExtraSIDThread()
+	{
+		unsigned int generation = 0;
+
+		{
+			std::lock_guard<std::mutex> lock(m_RenderMutex);
+			generation = m_RenderGeneration;
+		}
+
+		for (;;)
+		{
+			int cycles_in_frame = 0;
+
+			{
+				std::unique_lock<std::mutex> lock(m_RenderMutex);
+				m_RenderStart.wait(lock, [&]() { return m_RenderQuit || m_RenderGeneration != generation; });
+
+				if (m_RenderQuit)
+					return;
+
+				generation = m_RenderGeneration;
+				cycles_in_frame = m_RenderCyclesInFrame;
+			}
+
+			RenderClaimedExtraSIDs(cycles_in_frame);
+		}
+	}
+
+
+	void ExecutionHandler::RenderClaimedExtraSIDs(int inCyclesInFrame)
+	{
+		// Every thread takes the first extra SID no other thread has taken, the audio callback
+		// thread included: a thread that wakes up late finds its work done
+		for (;;)
+		{
+			const unsigned int index = m_RenderNext.fetch_add(1);
+
+			if (index >= m_ExtraSIDs.size())
+				return;
+
+			RenderExtraSID(*m_ExtraSIDs[index], inCyclesInFrame);
+
+			{
+				std::lock_guard<std::mutex> lock(m_RenderMutex);
+				--m_RenderPending;
+			}
+
+			m_RenderDone.notify_one();
+		}
+	}
+
+
+	void ExecutionHandler::RenderExtraSID(ExtraSID& inExtraSID, int inCyclesInFrame)
+	{
+		short* samples = inExtraSID.m_Samples.data();
+		const int sample_capacity = static_cast<int>(inExtraSID.m_Samples.size());
+
+		int cycle = 0;
+		int sample_count = 0;
+
+		auto clock_to = [&](int inCycle)
+		{
+			int delta_cycles = inCycle - cycle;
+
+			// A clock of 1 cycle yields 1 sample at most, stop before the buffer is full
+			if (delta_cycles > 0 && sample_count + delta_cycles / 4 + 1 < sample_capacity)
+				sample_count += inExtraSID.m_SID->Clock(delta_cycles, samples + sample_count, sample_capacity - sample_count);
+
+			if (inCycle > cycle)
+				cycle = inCycle;
+		};
+
+		for (const SIDWrite& write : inExtraSID.m_Writes)
+		{
+			clock_to(write.m_Cycle);
+			inExtraSID.m_SID->Write(static_cast<unsigned char>(write.m_Address), write.m_Value);
+		}
+
+		clock_to(inCyclesInFrame);
+
+		inExtraSID.m_SampleCount = sample_count;
+	}
+
+
+	void ExecutionHandler::MixSIDs()
+	{
+		short* sample_buffer = static_cast<short*>(m_SampleBuffer);
+		short* sample_buffer_right = static_cast<short*>(m_SampleBufferRight);
+		const int sample_count = static_cast<int>(m_SampleBufferWriteCursor);
+		const int sid_count = static_cast<int>(m_ExtraSIDs.size()) + 1;
+		const bool stereo = m_OutputChannelCount == 2;
+
+		// The sum of the SIDs does not fit a sample: store the average, FeedPCM multiplies it by the
+		// SID count together with the output gain and clamps once. Stereo: a SID panned left adds to
+		// the left side only, right to the right side only, center to both
+		for (int i = 0; i < sample_count; ++i)
+		{
+			int mixed_left = 0;
+			int mixed_right = 0;
+
+			for (int sid = 0; sid < sid_count; ++sid)
+			{
+				int sample = 0;
+
+				if (sid == 0)
+					sample = static_cast<int>(sample_buffer[i]);
+				else
+				{
+					const ExtraSID& extra_sid = *m_ExtraSIDs[sid - 1];
+					const int extra_count = extra_sid.m_SampleCount;
+
+					// The sample count of a frame differs by one between SIDs at times: hold the last sample,
+					// a gap in the output of one SID is heard as a tick
+					if (extra_count > 0)
+						sample = static_cast<int>(extra_sid.m_Samples[i < extra_count ? i : extra_count - 1]);
+				}
+
+				if (!stereo || m_SIDPan[sid] != SIDPan::Right)
+					mixed_left += sample;
+
+				if (stereo && m_SIDPan[sid] != SIDPan::Left)
+					mixed_right += sample;
+			}
+
+			sample_buffer[i] = static_cast<short>(mixed_left / sid_count);
+
+			if (stereo)
+				sample_buffer_right[i] = static_cast<short>(mixed_right / sid_count);
+		}
 	}
 
 
@@ -400,6 +753,9 @@ namespace Emulation
 
 	void ExecutionHandler::SimulateSID(int inDeltaCycles)
 	{
+		if (m_SkipSIDSimulation)
+			return;
+
 		short* pSampleBuffer = static_cast<short*>(m_SampleBuffer);
 
 		//while (inDeltaCycles > 0)
@@ -441,8 +797,15 @@ namespace Emulation
 		// Attach memory to cpu
 		m_CPU->SetMemory(m_Memory);
 
+		// Hardware output replays the cycle distance between writes: stamp writes on their real cycle.
+		// Other outputs keep the write stamped at the start of its instruction.
+		m_CPU->SetWriteOnLastCycle(m_OutputDevice == ExecutionHandler::OutputDevice::USBSID && m_USBSID != nullptr);
+
 		// Capture the frame (this will run the CPU )
-		CPUFrameCapture frameCapture(m_CPU, 0xd400, 0xd418, m_CyclesPerFrame);
+		// Capture the register blocks of all SIDs, SID n sits at $d400 + n * $20
+		CPUFrameCapture frameCapture(m_CPU, 0xd400, 0xd400 + MaxSIDCount * 0x20 - 1, m_CyclesPerFrame);
+
+		SyncExtraSIDs();
 
 		// Execute queued actions
 		for (const Action& action : m_ActionQueue)
@@ -451,7 +814,8 @@ namespace Emulation
 			{
 			case ActionType::ApplyMuteState:
 			{
-				const unsigned short offset = action.m_ActionArgument * 7;
+				// Three voices per SID, seven registers per voice
+				const unsigned short offset = (action.m_ActionArgument / 3) * 0x20 + (action.m_ActionArgument % 3) * 7;
 				const unsigned short address = 0xd400 + offset;
 
 				for (int i = 0; i < 7; ++i)
@@ -540,31 +904,115 @@ namespace Emulation
 		// Do all writes to the SID and emulate cycles spend
 		int nCycle = 0;
 
+		const bool usbsid_output = m_OutputDevice == ExecutionHandler::OutputDevice::USBSID && m_USBSID != nullptr;
+
+		// No samples are needed while the board plays, skip the SID emulation
+		m_SkipSIDSimulation = usbsid_output;
+
+		if (usbsid_output)
+			m_USBSID->BeginFrame();
+
+		// Collect the writes of the frame, the extra SIDs need theirs before the first SID is clocked
+		m_FrameWrites.clear();
+
+		for (auto& extra_sid : m_ExtraSIDs)
+			extra_sid->m_Writes.clear();
+
 		while (frameCapture.HasNext())
 		{
 			const CPUFrameCapture::WriteCapture& capture = frameCapture.GetNext();
 
-			FOUNDATION_ASSERT(nCycle <= capture.m_iCycle);
+			m_FrameWrites.push_back({ capture.m_iCycle, capture.m_usReg, capture.m_ucVal });
 
-			const int deltaCycles = capture.m_iCycle - nCycle;
+			const unsigned char sid_address = static_cast<unsigned char>(capture.m_usReg & 0xff);
+			const unsigned int sid_index = sid_address >> 5;
+			const unsigned char sid_register = sid_address & 0x1f;
+
+			if (sid_register <= 0x18 && sid_index > 0 && sid_index < m_SIDCount)
+				m_ExtraSIDs[sid_index - 1]->m_Writes.push_back({ capture.m_iCycle, sid_register, capture.m_ucVal });
+		}
+
+		// Render the extra SIDs next to the first SID. While the board plays, the registers are kept up to date only
+		const bool render_extra_sids = !m_SkipSIDSimulation && !m_ExtraSIDs.empty();
+
+		if (render_extra_sids)
+		{
+			{
+				std::lock_guard<std::mutex> lock(m_RenderMutex);
+				m_RenderCyclesInFrame = static_cast<int>(m_CyclesPerFrame);
+				m_RenderPending = static_cast<unsigned int>(m_ExtraSIDs.size());
+				m_RenderNext = 0;
+				++m_RenderGeneration;
+			}
+
+			m_RenderStart.notify_all();
+		}
+		else
+		{
+			for (auto& extra_sid : m_ExtraSIDs)
+			{
+				for (const SIDWrite& write : extra_sid->m_Writes)
+					extra_sid->m_SID->Write(static_cast<unsigned char>(write.m_Address), write.m_Value);
+			}
+		}
+
+		for (const SIDWrite& write : m_FrameWrites)
+		{
+			FOUNDATION_ASSERT(nCycle <= write.m_Cycle);
+
+			const int deltaCycles = write.m_Cycle - nCycle;
 			SimulateSID(deltaCycles);
-			m_SIDProxy->Write((unsigned char)(capture.m_usReg & 0xff), capture.m_ucVal);
 			nCycle += deltaCycles;
 
-			if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID &&  m_ASID != nullptr)
-				m_ASID->WriteToSIDRegister(static_cast<unsigned char>(capture.m_usReg & 0xff), capture.m_ucVal);
+			// Split the address in SID number and register, skip the unused registers behind $18
+			const unsigned char sid_address = static_cast<unsigned char>(write.m_Address & 0xff);
+			const unsigned int sid_index = sid_address >> 5;
+			const unsigned char sid_register = sid_address & 0x1f;
+
+			if (sid_register > 0x18 || sid_index >= m_SIDCount)
+				continue;
+
+			if (sid_index == 0)
+				m_SIDProxy->Write(sid_register, write.m_Value);
+
+			if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID && m_ASID != nullptr)
+				m_ASID->WriteToSIDRegister(sid_index, sid_register, write.m_Value);
+
+			// Pass the cycle of the write within the frame, the board replays the exact spacing
+			if (usbsid_output)
+				m_USBSID->Write(sid_index, sid_register, write.m_Value, write.m_Cycle);
 		}
 
 		// Do the rest of the frame
 		if(m_ASID != nullptr)
 			m_ASID->SendToDevice();
-		
+
+		// Close the frame at its full length, idle cycles after the last write carry into the following frame
+		if (usbsid_output)
+			m_USBSID->EndFrame(m_CyclesPerFrame);
+
 		while (nCycle < (int)m_CyclesPerFrame)
 		{
 			const int deltaCycles = m_CyclesPerFrame - nCycle;
 			SimulateSID(deltaCycles);
 			nCycle += deltaCycles;
 		}
+
+		// Add the output of the extra SIDs once their threads are done with the frame
+		if (render_extra_sids)
+		{
+			// Take what no thread has started on, then wait for the rest
+			RenderClaimedExtraSIDs(static_cast<int>(m_CyclesPerFrame));
+
+			{
+				std::unique_lock<std::mutex> lock(m_RenderMutex);
+				m_RenderDone.wait(lock, [&]() { return m_RenderPending == 0; });
+			}
+		}
+
+		// Stereo output splits even a single SID over the sides
+		if (render_extra_sids || (!m_SkipSIDSimulation && m_OutputChannelCount == 2))
+			MixSIDs();
 
 		// Reset cycle counter
 		m_CurrentCycle = 0;
@@ -584,6 +1032,10 @@ namespace Emulation
 
 	void ExecutionHandler::TellSIDEnvironment()
 	{
+		// The region toggle changes the SID clock only, the board clock follows it
+		if (m_USBSID != nullptr)
+			m_USBSID->SetPAL(m_SIDProxy->GetEnvironment() == SID_ENVIRONMENT_PAL);
+
 		if(m_OutputDevice == ExecutionHandler::OutputDevice::ASID && m_ASID != nullptr)
 		{
 			m_ASID->SendSIDEnvironment(m_SIDProxy->GetEnvironment() == SID_ENVIRONMENT_PAL);
