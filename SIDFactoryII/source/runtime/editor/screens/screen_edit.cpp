@@ -34,6 +34,7 @@
 #include "runtime/editor/dialog/dialog_optimize.h"
 #include "runtime/editor/dialog/dialog_packing_options.h"
 #include "runtime/editor/dialog/dialog_text_input.h"
+#include "runtime/editor/dialog/dialog_usbsid_boards.h"
 #include "runtime/editor/screens/statusbar/status_bar_edit.h"
 #include "runtime/editor/overlays/overlay_flightrecorder.h"
 #include "runtime/editor/datacopy/copypaste.h"
@@ -41,6 +42,7 @@
 #include "runtime/emulation/cpumemory.h"
 #include "runtime/emulation/sid/sidproxy.h"
 #include "runtime/emulation/sid/sidproxydefines.h"
+#include "runtime/emulation/usbsid/usbsidpico.h"
 #include "runtime/execution/executionhandler.h"
 
 #include "utils/delegate.h"
@@ -91,6 +93,7 @@ namespace Editor
 		std::function<void(unsigned short, unsigned char)> inPackCallback,
 		std::function<void(void)> inToggleShowOverlay,
 		std::function<void()> inToggleFullScreen,
+		std::function<void()> inCycleWindowWidth,
 		std::function<void(unsigned int)> inReconfigure)
 		: ScreenBase(inViewport, inMainTextField, inCursorControl, inDisplayState, inKeyHookStore)
 		, m_EditState(inEditState)
@@ -111,6 +114,7 @@ namespace Editor
 		, m_PackCallback(inPackCallback)
 		, m_ToggleShowOverlay(inToggleShowOverlay)
 		, m_ToggleFullScreen(inToggleFullScreen)
+		, m_CycleWindowWidth(inCycleWindowWidth)
 		, m_ConfigReconfigure(inReconfigure)
 		, m_PlayTimerTicks(0)
 		, m_PlayTimerSeconds(0)
@@ -180,6 +184,10 @@ namespace Editor
 
 		m_ExecutionHandler->Unlock();
 
+		// Three tracks per SID
+		m_ExecutionHandler->SetSIDCount((m_DriverInfo->GetMusicData().m_TrackCount + 2) / 3);
+		ApplyPanning();
+
 		// Create debug views
 		m_DebugViews = std::make_unique<DebugViews>(m_Viewport, &*m_ComponentsManager, m_CPUMemory, m_MainTextField->GetDimensions(), m_DriverInfo);
 
@@ -198,6 +206,11 @@ namespace Editor
 		auto mouse_button_sid_model = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
 		{
 			DoToggleSIDModelAndRegion(KeyboardUtils::IsModifierExclusivelyDown(inKeyboardModifiers, Keyboard::Control));
+		};
+
+		auto mouse_button_panning = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
+		{
+			DoCyclePanning(KeyboardUtils::IsModifierExclusivelyDown(inKeyboardModifiers, Keyboard::Control));
 		};
 
 		auto mouse_button_output_device = [&](Foundation::Mouse::Button inMouseButton, int inKeyboardModifiers)
@@ -226,7 +239,7 @@ namespace Editor
 			: song_name;
 
 		m_StatusBar = std::make_unique<StatusBarEdit>(m_MainTextField, m_EditState, m_DriverState, m_DriverInfo->GetAuxilaryDataCollection(), *m_ExecutionHandler,
-				mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_output_device, mouse_button_context_highlight, mouse_button_follow_play);
+				mouse_button_octave, mouse_button_flat_sharp, mouse_button_sid_model, mouse_button_panning, mouse_button_output_device, mouse_button_context_highlight, mouse_button_follow_play);
 		m_StatusBar->SetText(m_ActivationMessage.length() > 0 ? m_ActivationMessage : " SID Factory II [Selected song: " + song_selection_text + "]", 2500, false);
 		m_ActivationMessage = "";
 
@@ -382,6 +395,8 @@ namespace Editor
 		m_ExecutionHandler->Unlock();
 
 		m_ComponentsManager->Update(inDeltaTick, m_CPUMemory);
+
+		UpdateUSBSID();
 
 		// Update play timer
 		const bool is_playing = m_DriverState.GetPlayState() == Editor::DriverState::PlayState::Playing;
@@ -590,6 +605,10 @@ namespace Editor
 
 	void ScreenEdit::DoToggleMute(unsigned int inChannel)
 	{
+		// The mute keys cover four SIDs, the song can have fewer tracks
+		if (inChannel >= static_cast<unsigned int>(m_DriverInfo->GetMusicData().m_TrackCount))
+			return;
+
 		const bool muted = m_TracksComponent->IsMuted(inChannel);
 		m_TracksComponent->SetMuted(inChannel, !muted);
 
@@ -600,23 +619,134 @@ namespace Editor
 		}
 	}
 
-	void ScreenEdit::DoToggleOutputDevice() 
+	void ScreenEdit::DoToggleOutputDevice()
 	{
-		ExecutionHandler::OutputDevice device = m_ExecutionHandler->GetOutputDevice();
+		static const ExecutionHandler::OutputDevice device_order[] =
+		{
+			ExecutionHandler::OutputDevice::RESID,
+			ExecutionHandler::OutputDevice::ASID,
+			ExecutionHandler::OutputDevice::USBSID
+		};
+		const int device_count = static_cast<int>(sizeof(device_order) / sizeof(device_order[0]));
 
-		if (device == ExecutionHandler::OutputDevice::RESID) {
-			device = ExecutionHandler::OutputDevice::ASID;
+		const ExecutionHandler::OutputDevice current_device = m_ExecutionHandler->GetOutputDevice();
+		int device_index = 0;
+
+		for (int i = 0; i < device_count; ++i)
+		{
+			if (device_order[i] == current_device)
+				device_index = i;
 		}
-		else {
-			device = ExecutionHandler::OutputDevice::RESID;
+
+		// Step to the first following device that accepts the switch, reSID always does
+		ExecutionHandler::OutputDevice device = current_device;
+
+		for (int i = 1; i <= device_count; ++i)
+		{
+			device = device_order[(device_index + i) % device_count];
+			m_ExecutionHandler->SetOutputDevice(device);
+
+			if (m_ExecutionHandler->GetOutputDevice() == device)
+				break;
 		}
-		m_ExecutionHandler->SetOutputDevice(device);
 
 		if (device == ExecutionHandler::OutputDevice::ASID)
 		{
 			this->SendASIDinformation();
 		}
 
+	}
+
+
+	void ScreenEdit::UpdateUSBSID()
+	{
+		Emulation::USBSid* usbsid = m_ExecutionHandler->GetUSBSID();
+
+		if (usbsid == nullptr)
+			return;
+
+		switch (usbsid->Update())
+		{
+		case Emulation::USBSid::Event::Lost:
+			// The board is gone: stop and fall back to reSID
+			if (IsPlaying())
+				DoStop();
+
+			m_ExecutionHandler->SetOutputDevice(ExecutionHandler::OutputDevice::RESID);
+			SetStatusBarMessage(" USBSID-Pico disconnected, output set to reSID", 5000);
+			break;
+
+		case Emulation::USBSid::Event::Reconnected:
+			// Return to the board unless another output was chosen meanwhile
+			if (m_ExecutionHandler->GetOutputDevice() == ExecutionHandler::OutputDevice::RESID)
+			{
+				if (IsPlaying())
+					DoStop();
+
+				m_ExecutionHandler->SetOutputDevice(ExecutionHandler::OutputDevice::USBSID);
+			}
+
+			SetStatusBarMessage(m_ExecutionHandler->GetOutputDevice() == ExecutionHandler::OutputDevice::USBSID
+				? " USBSID-Pico reconnected, output set to USBSID-Pico"
+				: " USBSID-Pico reconnected", 5000);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+
+	void ScreenEdit::DoUSBSIDDialog()
+	{
+		Emulation::USBSid* usbsid = m_ExecutionHandler->GetUSBSID();
+
+		if (usbsid == nullptr || m_ComponentsManager->IsDisplayingDialog())
+			return;
+
+		// Choosing SIDs opens and resets every board, no switching while playing
+		if (IsPlaying())
+			DoStop();
+
+		const std::vector<Emulation::USBSid::SIDInfo> sids = usbsid->QuerySIDs(true);
+
+		if (sids.empty())
+		{
+			m_ComponentsManager->StartDialog(std::make_shared<DialogMessage>("USBSID-Pico", "No USBSID-Pico board with a configured SID found!", 60, true, []() {}));
+			return;
+		}
+
+		std::vector<std::string> labels;
+		std::vector<bool> marked;
+
+		for (const auto& sid : sids)
+		{
+			labels.push_back(Emulation::USBSid::DescribeSID(sid));
+			marked.push_back(sid.m_Selected);
+		}
+
+		m_ComponentsManager->StartDialog(
+			std::make_shared<DialogUSBSIDSelection>
+			(
+				60,
+				"USBSID-Pico: SPACE marks SID, ENTER confirms",
+				labels,
+				marked,
+				[this, usbsid, sids](const std::vector<bool>& inRows)
+				{
+					std::vector<Emulation::USBSid::SIDInfo> selection;
+
+					for (size_t i = 0; i < inRows.size() && i < sids.size(); ++i)
+					{
+						if (inRows[i])
+							selection.push_back(sids[i]);
+					}
+
+					usbsid->SelectSIDs(selection);
+				},
+				[]() {}
+			)
+		);
 	}
 
 
@@ -789,6 +919,50 @@ namespace Editor
 
 		m_ExecutionHandler->TellSIDEnvironment();
 	}
+
+	void ScreenEdit::DoCyclePanning(bool inCycleMode)
+	{
+		auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+		const unsigned int sid_count = m_ExecutionHandler->GetSIDCount();
+
+		std::string message;
+
+		if (sid_count == 1)
+		{
+			// A single SID has no layout: C, L, R
+			const SIDPan pan = hardware_preferences.GetSingleSIDPan();
+			const SIDPan next_pan = pan == SIDPan::Center ? SIDPan::Left : (pan == SIDPan::Left ? SIDPan::Right : SIDPan::Center);
+
+			hardware_preferences.SetSingleSIDPan(next_pan);
+			message = std::string(" Stereo position of the SID: ") + GetSIDPanName(next_pan);
+		}
+		else
+		{
+			if (inCycleMode)
+				hardware_preferences.SetPanMode(static_cast<SIDPanMode>((static_cast<int>(hardware_preferences.GetPanMode()) + 1) & 0x03));
+			else
+				hardware_preferences.SetPanLayout(static_cast<SIDPanLayout>((static_cast<int>(hardware_preferences.GetPanLayout()) + 1) & 0x03));
+
+			SIDPan pan[ExecutionHandler::MaxSIDCount];
+			hardware_preferences.GetPanning(sid_count, pan);
+
+			message = std::string(" SID panning: ") + GetSIDPanLayoutName(hardware_preferences.GetPanLayout())
+				+ ", " + GetSIDPanModeName(hardware_preferences.GetPanMode())
+				+ " (" + SIDPanningToString(pan, sid_count) + ")";
+		}
+
+		ApplyPanning();
+
+		m_StatusBar->SetText(message, 2500, false);
+	}
+
+
+	void ScreenEdit::ApplyPanning()
+	{
+		const auto& hardware_preferences = m_DriverInfo->GetAuxilaryDataCollection().GetHardwarePreferences();
+		m_ExecutionHandler->SetPanning(hardware_preferences.GetPanLayout(), hardware_preferences.GetPanMode(), hardware_preferences.GetSingleSIDPan());
+	}
+
 
 	void ScreenEdit::DoToggleContextHighlight()
 	{
@@ -1586,12 +1760,19 @@ namespace Editor
 	}
 
 
+	unsigned char ScreenEdit::GetSIDRegisterOffsetOfTrack(int inTrack)
+	{
+		// Three voices per SID, seven registers per voice, SID n at $d400 + n * $20
+		return static_cast<unsigned char>((inTrack / 3) * 0x20 + (inTrack % 3) * 7);
+	}
+
+
 	void ScreenEdit::OnDriverPostApplyChannelMuteState(CPUMemory* inCPUMemory, int inTrack)
 	{
 		bool track_is_muted = m_TracksComponent->IsMuted(inTrack);
 
 		unsigned short sid_offset_address = m_DriverInfo->GetDriverCommon().m_SIDChannelOffsetAddress;
-		unsigned char sid_offset_value = !track_is_muted ? (7 * static_cast<unsigned char>(inTrack)) : 0x19;
+		unsigned char sid_offset_value = !track_is_muted ? GetSIDRegisterOffsetOfTrack(inTrack) : 0x19;
 
 		(*inCPUMemory)[sid_offset_address + inTrack] = sid_offset_value;
 	}
@@ -1609,7 +1790,7 @@ namespace Editor
 		for (int i = 0; i < m_DriverInfo->GetMusicData().m_TrackCount; ++i)
 		{
 			unsigned short sid_offset_address = m_DriverInfo->GetDriverCommon().m_SIDChannelOffsetAddress;
-			unsigned char sid_offset_value = 7 * static_cast<unsigned char>(i);
+			unsigned char sid_offset_value = GetSIDRegisterOffsetOfTrack(i);
 
 			(*inCPUMemory)[sid_offset_address + i] = sid_offset_value;
 		}
@@ -1763,7 +1944,7 @@ namespace Editor
 			for (int i = 0; i < m_DriverInfo->GetMusicData().m_TrackCount; ++i)
 			{
 				unsigned short sid_offset_address = m_DriverInfo->GetDriverCommon().m_SIDChannelOffsetAddress;
-				unsigned char sid_offset_value = 7 * static_cast<unsigned char>(i);
+				unsigned char sid_offset_value = GetSIDRegisterOffsetOfTrack(i);
 
 				(*m_CPUMemory)[sid_offset_address + i] = sid_offset_value;
 			}
@@ -1897,6 +2078,12 @@ namespace Editor
 			return true;
 		} });
 
+		m_KeyHooks.push_back({ "Key.ScreenEdit.CycleWindowWidth", m_KeyHookStore, [&]()
+		{
+			m_CycleWindowWidth();
+			return true;
+		} });
+
 		m_KeyHooks.push_back({ "Key.ScreenEdit.OctaveDown", m_KeyHookStore, [&]()
 		{
 			DoOctaveChange(false);
@@ -1918,6 +2105,18 @@ namespace Editor
 		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleRegion", m_KeyHookStore, [&]()
 		{
 			DoToggleSIDModelAndRegion(true);
+			return true;
+		} });
+
+		m_KeyHooks.push_back({ "Key.ScreenEdit.CyclePanLayout", m_KeyHookStore, [&]()
+		{
+			DoCyclePanning(false);
+			return true;
+		} });
+
+		m_KeyHooks.push_back({ "Key.ScreenEdit.CyclePanMode", m_KeyHookStore, [&]()
+		{
+			DoCyclePanning(true);
 			return true;
 		} });
 
@@ -1975,30 +2174,26 @@ namespace Editor
 			return true;
 		} });
 
-		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleMuteChannel1", m_KeyHookStore, [&]()
+		// One mute key per track, four SIDs of three tracks each
+		for (unsigned int track = 0; track < 12; ++track)
 		{
-			DoToggleMute(0);
+			m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleMuteChannel" + std::to_string(track + 1), m_KeyHookStore, [&, track]()
+			{
+				DoToggleMute(track);
 
-			return true;
-		} });
-
-		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleMuteChannel2", m_KeyHookStore, [&]()
-		{
-			DoToggleMute(1);
-
-			return true;
-		} });
-
-		m_KeyHooks.push_back({ "Key.ScreenEdit.ToggleMuteChannel3", m_KeyHookStore, [&]()
-		{
-			DoToggleMute(2);
-
-			return true;
-		} });
+				return true;
+			} });
+		}
 
 		m_KeyHooks.push_back( { "Key.ScreenEdit.ToggleOutputDevice", m_KeyHookStore, [&]()
 		{
 			DoToggleOutputDevice();
+			return true;
+		}});
+
+		m_KeyHooks.push_back({ "Key.ScreenEdit.OpenUSBSIDDialog", m_KeyHookStore, [&]()
+		{
+			DoUSBSIDDialog();
 			return true;
 		}});
 

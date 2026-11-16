@@ -16,8 +16,11 @@ functions behind the keys, please consult the manual.
 | <kbd>y / n </kbd>                      | Yes / No in popup dialogs      |
 | <kbd>F9</kbd>                          | 6581 / 8580                    |
 | &#8679; <kbd>F9</kbd>                  | PAL / NTSC                     |
+| <kbd>ctrl</kbd> <kbd>F9</kbd>          | Stereo panning layout          |
+| &#8679; <kbd>ctrl</kbd> <kbd>F9</kbd>  | Stereo panning mode            |
 | <kbd>ctrl</kbd> u                      | Upper / lower case hex numbers |
 | <kbd>ctrl</kbd> <kbd>F7</kbd>          | Cycle colorscheme              |
+| <kbd>ctrl</kbd> <kbd>F12</kbd>         | Window width 1 / 2 / 3 / 4 SID |
 | <kbd>F6</kbd>                          | File utilities                 |
 | <kbd>ctrl</kbd> <kbd>F10</kbd>         | Load tune in current driver    |
 
@@ -43,6 +46,8 @@ functions behind the keys, please consult the manual.
 | -                        | Fast forward                 |
 | &#8679; -                | Faster forward               |
 | <kbd>ctrl</kbd> 1 / 2 /3 | Mute / unmute track 1 / 2 /3 |
+| <kbd>ctrl</kbd> 4 &ndash; 9 | Mute / unmute track 4 &ndash; 9 |
+| &#8679; <kbd>ctrl</kbd> 1 / 2 /3 | Mute / unmute track 10 / 11 / 12 |
 | &#8997; 1 &ndash; 8      | Select bookmark slot         |
 | <kbd>ctrl</kbd> g        | Jump to bookmark             |
 | <kbd>ctrl</kbd> m        | Set bookmark                 |

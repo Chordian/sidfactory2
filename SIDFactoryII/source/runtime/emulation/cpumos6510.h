@@ -90,6 +90,8 @@ namespace Emulation
 			inline void SetCycle(int iCycle) { m_Cycle = iCycle; }
 			inline int GetCycle() const { return m_Cycle; }
 			inline void AddCycles(int iCycles) { m_Cycle += iCycles; }
+			inline void SetWriteCycleOffset(int iCycles) { m_WriteCycleOffset = m_WriteOnLastCycle ? iCycles : 0; }
+			inline void SetWriteOnLastCycle(bool bEnabled) { m_WriteOnLastCycle = bEnabled; }
 
 			// Memory
 			inline CPUMemory& GetMemory() { FOUNDATION_ASSERT(m_Memory); return *m_Memory; }
@@ -98,7 +100,7 @@ namespace Emulation
 				if(m_WriteCallback != nullptr)
 				{
 					const unsigned int address = m_Memory->GetAddress(pAddress);
-					m_WriteCallback->Write(static_cast<unsigned short>(address), ucVal, m_Cycle);
+					m_WriteCallback->Write(static_cast<unsigned short>(address), ucVal, m_Cycle + m_WriteCycleOffset);
 				}
 			}
 
@@ -126,6 +128,12 @@ namespace Emulation
 
 			// Cycle counter
 			int m_Cycle;
+
+			// Cycles from the start of the executing instruction to its write cycle
+			int m_WriteCycleOffset;
+
+			// Report a write on the last cycle of its instruction instead of the first
+			bool m_WriteOnLastCycle;
 		};
 
 		struct Instruction
@@ -278,6 +286,11 @@ namespace Emulation
 		}
 
 		// Write callback
+		inline void SetWriteOnLastCycle(bool bEnabled)
+		{
+			m_State.SetWriteOnLastCycle(bEnabled);
+		}
+
 		inline void SetWriteCallback(ICPUWriteCallback* pCallback)
 		{
 			m_State.SetWriteCallback(pCallback);

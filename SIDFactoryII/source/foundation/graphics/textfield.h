@@ -69,6 +69,7 @@ namespace Foundation
 
 		void SetPosition(const Point& inPosition);
 		void SetPositionToCenterOfViewport();
+		void Resize(int inWidth, int inHeight);
 		
 		const Point& GetPosition() const;
 		const Extent& GetDimensions() const;

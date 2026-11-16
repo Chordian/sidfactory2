@@ -10,6 +10,8 @@
 # - g++ (Xcode with command line utilities on macOS)
 # - git
 # - sdl2
+# - libusb-1.0 and pkg-config (USBSID-Pico output)
+# - libasound2 (LINUXAUDIO=ALSA, default) or libjack (LINUXAUDIO=JACK)
 #
 # Make an executable:
 #   make
@@ -23,11 +25,13 @@
 # Build artifacts are in /artifacts
 
 PLATFORM=LINUX
+# MIDI backend on Linux: ALSA or JACK, override with `make LINUXAUDIO=JACK` or the environment
+LINUXAUDIO?=ALSA
 
 APP_NAME=SIDFactoryII
 BUILD_NR= $(shell git show --no-patch --format='%cs').$(shell git rev-parse --short HEAD)
 ARTIFACTS_FOLDER=artifacts
-DIST_FOLDER=$(ARTIFACTS_FOLDER)/$(APP_NAME)_$(PLATFORM)_$(BUILD_NR)
+DIST_FOLDER=$(ARTIFACTS_FOLDER)/$(APP_NAME)_$(PLATFORM)_$(LINUXAUDIO)_$(BUILD_NR)
 
 # SF2 sources
 PROJECT_ROOT=./SIDFactoryII
@@ -43,9 +47,20 @@ CC=g++
 CC_FLAGS=$(shell sdl2-config --cflags) -I$(SOURCE) -D_SF2_$(PLATFORM) -D_BUILD_NR=\"$(BUILD_NR)\" -std=gnu++14 -g
 LINKER_FLAGS=$(shell sdl2-config --libs) -lstdc++ -flto
 
+# USBSID-Pico driver
+CC_FLAGS := $(CC_FLAGS) $(shell pkg-config --cflags libusb-1.0)
+LINKER_FLAGS := $(LINKER_FLAGS) $(shell pkg-config --libs libusb-1.0) -lpthread
+
 ifeq ($(PLATFORM),LINUX)
-	CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
-	LINKER_FLAGS := $(LINKER_FLAGS) -ljack
+	ifeq ($(LINUXAUDIO),JACK)
+		CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
+		LINKER_FLAGS := $(LINKER_FLAGS) -ljack
+	endif
+
+	ifeq ($(LINUXAUDIO),ALSA)
+		CC_FLAGS := $(CC_FLAGS) -D__LINUX_ALSA__
+		LINKER_FLAGS := $(LINKER_FLAGS) -lasound
+	endif
 endif
 
 ifeq ($(PLATFORM),MACOS)
@@ -63,9 +78,10 @@ ifneq ($(TARGET),DEBUG)
 endif
 
 
-# Rule to compile .o from .cpp
+# Rule to compile .o from .cpp. -MMD writes a .d file next to the object that lists the headers
+# it was built from, a changed header rebuilds every object that includes it
 %.o: %.cpp
-	$(CC) $(CC_FLAGS) -c $< -o $@
+	$(CC) $(CC_FLAGS) -MMD -MP -c $< -o $@
 
 # Rule to compile .o from .c
 %.o: %.c
@@ -73,6 +89,10 @@ endif
 
 # Determine all .o files to be built
 OBJ = $(SRC:.cpp=.o) $(SOURCE)/libraries/miniz/miniz.o
+
+# Header dependencies written by the compiler. They define targets, keep the executable the default goal
+.DEFAULT_GOAL := $(EXE)
+-include $(OBJ:.o=.d)
 
 # Compile SIDFactoryII
 $(EXE): $(OBJ) $(ARTIFACTS_FOLDER) \
@@ -120,6 +140,7 @@ $(DIST_FOLDER):
 .PHONY: clean
 clean:
 	rm ${OBJ} || true
+	rm -f $(OBJ:.o=.d)
 	rm -rf $(ARTIFACTS_FOLDER) || true
 
 # Local development specific

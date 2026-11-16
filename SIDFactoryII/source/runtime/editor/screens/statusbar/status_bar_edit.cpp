@@ -20,6 +20,7 @@ namespace Editor
 			std::function<void(Mouse::Button, int)> inOctaveMousePressCallback,
 			std::function<void(Mouse::Button, int)> inSharpFlatMousePressCallback,
 			std::function<void(Mouse::Button, int)> inSIDMousePressCallback,
+			std::function<void(Mouse::Button, int)> inPanMousePressCallback,
 			std::function<void(Mouse::Button, int)> inOutputDevicePressCallback,
 			std::function<void(Mouse::Button, int)> inContextHighlightMousePressCallback,
 			std::function<void(Mouse::Button, int)> inFollowPlayerMousePressCallback
@@ -33,6 +34,7 @@ namespace Editor
 		m_TextSectionOctave = std::make_shared<TextSection>(12, inOctaveMousePressCallback);
 		m_TextSectionSharpFlat = std::make_shared<TextSection>(15, inSharpFlatMousePressCallback);
 		m_TextSectionSID = std::make_shared<TextSection>(19, inSIDMousePressCallback);
+		m_TextSectionPan = std::make_shared<TextSection>(14, inPanMousePressCallback);
 		m_TextSectionContextHighlight = std::make_shared<TextSection>(18, inContextHighlightMousePressCallback);
 		m_TextSectionFollowPlay = std::make_shared<TextSection>(15, inFollowPlayerMousePressCallback);
 		m_TextSectionOutputDevice = std::make_shared<TextSection>(17, inOutputDevicePressCallback);
@@ -40,6 +42,7 @@ namespace Editor
 		m_TextSectionList.push_back(m_TextSectionOctave);
 		m_TextSectionList.push_back(m_TextSectionSharpFlat);
 		m_TextSectionList.push_back(m_TextSectionSID);
+		m_TextSectionList.push_back(m_TextSectionPan);
 		m_TextSectionList.push_back(m_TextSectionContextHighlight);
 		m_TextSectionList.push_back(m_TextSectionFollowPlay);
 		m_TextSectionList.push_back(m_TextSectionOutputDevice);
@@ -84,11 +87,28 @@ namespace Editor
 			m_NeedRefresh = true;
 		}
 
+		// Stereo position of every SID of the tune, as the reSID output plays it
+		std::string pan_text = " Pan: ";
+
+		for (unsigned int i = 0; i < m_ExecutionHandler.GetSIDCount(); ++i)
+			pan_text += std::string(i > 0 ? "-" : "") + Utility::GetSIDPanName(m_ExecutionHandler.GetSIDPan(i));
+
+		if (pan_text != m_CachedPanText || inNeedUpdate)
+		{
+			m_TextSectionPan->SetText(pan_text);
+			m_CachedPanText = pan_text;
+			m_NeedRefresh = true;
+		}
+
 		const Emulation::ExecutionHandler::OutputDevice outputDevice = m_ExecutionHandler.GetOutputDevice();
 
 		if (outputDevice != m_CachedOutputDevice || inNeedUpdate)
 		{
-			std::string output_device_string = (outputDevice == Emulation::ExecutionHandler::OutputDevice::ASID ? "ASID" : "RESID");
+			std::string output_device_string = "RESID";
+			if (outputDevice == Emulation::ExecutionHandler::OutputDevice::ASID)
+				output_device_string = "ASID";
+			else if (outputDevice == Emulation::ExecutionHandler::OutputDevice::USBSID)
+				output_device_string = "USBSID";
 			m_TextSectionOutputDevice->SetText("Output: " + output_device_string);
 			m_CachedOutputDevice = outputDevice;
 			m_NeedRefresh = true;
