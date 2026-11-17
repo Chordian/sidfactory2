@@ -52,20 +52,15 @@ CC_FLAGS := $(CC_FLAGS) $(shell pkg-config --cflags libusb-1.0)
 LINKER_FLAGS := $(LINKER_FLAGS) $(shell pkg-config --libs libusb-1.0) -lpthread
 
 ifeq ($(PLATFORM),LINUX)
-<<<<<<< HEAD
-	CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
-	LINKER_FLAGS := $(LINKER_FLAGS) $(shell pkgconf --libs jack)
-=======
 	ifeq ($(LINUXAUDIO),JACK)
 		CC_FLAGS := $(CC_FLAGS) -D__UNIX_JACK__
-		LINKER_FLAGS := $(LINKER_FLAGS) -ljack
+		LINKER_FLAGS := $(LINKER_FLAGS) $(shell pkgconf --libs jack)
 	endif
 
 	ifeq ($(LINUXAUDIO),ALSA)
 		CC_FLAGS := $(CC_FLAGS) -D__LINUX_ALSA__
-		LINKER_FLAGS := $(LINKER_FLAGS) -lasound
+		LINKER_FLAGS := $(LINKER_FLAGS) $(shell pkgconf --libs alsa)
 	endif
->>>>>>> c72b710 (Usbsid support (#220))
 endif
 
 ifeq ($(PLATFORM),MACOS)
