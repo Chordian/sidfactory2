@@ -49,6 +49,7 @@ release](https://img.shields.io/github/commits-since/chordian/sidfactory2/releas
 
 ### Next release
 
+- Removed: macOS Support for Intel architecture before 11.0 (Big Sur)
 - Added: Native [USBSID-Pico](https://github.com/LouDnl/USBSID-Pico) output
   over USB, alongside ASID. Every SID write is sent with its cycle distance to
   the previous write and the board replays the exact timing, including the
