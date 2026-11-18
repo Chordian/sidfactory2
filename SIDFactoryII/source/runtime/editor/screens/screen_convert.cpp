@@ -138,8 +138,6 @@ namespace Editor
 		if (m_StatusBar != nullptr)
 			m_StatusBar->Update(inDeltaTick);
 
-		ComponentConsole& cout = *m_Console;
-
 		if (m_Converter != nullptr)
 			m_Converter->Update();
 		if (m_Converter->GetState() == ConverterBase::State::Completed)
@@ -167,4 +165,3 @@ namespace Editor
 		}
 	}
 }
-
