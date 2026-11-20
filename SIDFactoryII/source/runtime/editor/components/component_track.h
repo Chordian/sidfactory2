@@ -271,6 +271,7 @@ namespace Editor
 		void ConfigureKeyHooks(const Utility::KeyHookStore& inKeyHookStore);
 
 		static std::string ToHexValueString(unsigned char inValue, const bool inUppercase);
+		static std::string ToHexValueString(unsigned int inValue, const bool inUppercase);
 
 		template<typename PREDICATE>
 		std::vector<unsigned char> ForEachEventInMarkedRange(PREDICATE&& inPredicate);
@@ -283,6 +284,9 @@ namespace Editor
 
 		// Muted
 		bool m_IsMuted;
+
+		// Config: show packed size in tracklist
+		bool m_ShowPackedSize;
 
 		// Cursor and event positions
 		int m_CursorPos;
